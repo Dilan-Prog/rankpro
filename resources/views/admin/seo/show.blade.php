@@ -35,8 +35,8 @@
     <div class="kpi-grid">
         <x-stat-card label="Fase Actual" value="{{ \App\Support\Labels::faseSeo($campana->fase_actual->value) }}" icon="fa-diagram-project" color="primary" />
         <x-stat-card label="Ciclo" value="{{ $campana->ciclo_actual }}" icon="fa-arrows-rotate" color="teal" />
-        <x-stat-card label="SEO Score" value="{{ $campana->seo_score ?? '—' }}/100" icon="fa-gauge-high" color="amber" />
-        <x-stat-card label="Tráfico Orgánico" value="{{ number_format($campana->trafico_organico_mensual ?? 0) }}" sub="mensual" icon="fa-arrow-trend-up" color="emerald" />
+        <x-stat-card label="SEO Score" value="{{ $campana->faseAuditoria->seo_score ?? '—' }}/100" icon="fa-gauge-high" color="amber" />
+        <x-stat-card label="Tráfico Orgánico" value="{{ number_format($campana->reporteActual->trafico_actual ?? 0) }}" sub="actual" icon="fa-arrow-trend-up" color="emerald" />
     </div>
 
     {{-- ---------- Rastreador visual de fases ---------- --}}
@@ -62,10 +62,32 @@
         @endforeach
     </div>
 
-    @include('admin.seo._fase-' . $campana->fase_actual->value)
+    @if ($campana->fase_actual->value === 'cerrada')
+        <div class="card card--padded fase-panel">
+            <div class="fase-panel__header">
+                <h2 class="card__header-title"><i class="fa-solid fa-flag-checkered"></i> Campaña Cerrada</h2>
+            </div>
+            <p style="color:var(--color-muted-foreground); font-size:var(--text-sm);">
+                Esta campaña se cerró
+                @if ($campana->reporteActual?->fecha_aprobacion) el {{ $campana->reporteActual->fecha_aprobacion->format('Y-m-d') }} @endif
+                después de {{ $campana->ciclo_actual }} {{ $campana->ciclo_actual === 1 ? 'ciclo' : 'ciclos' }}.
+            </p>
+            @if ($campana->reporteActual?->satisfaccion_cliente)
+                <p style="margin-top: var(--space-2); font-size:var(--text-sm);">
+                    Satisfacción del cliente:
+                    @for ($i = 1; $i <= 5; $i++)
+                        <i class="fa-solid fa-star" style="color:{{ $i <= $campana->reporteActual->satisfaccion_cliente ? 'var(--text-warning)' : 'var(--color-border)' }}"></i>
+                    @endfor
+                </p>
+            @endif
+        </div>
+    @else
+        @include('admin.seo._fase-' . $campana->fase_actual->value)
+    @endif
 
     {{-- ---------- Keywords objetivo: vista previa desde Estrategia en adelante ---------- --}}
-    @if (in_array($campana->fase_actual->value, ['estrategia', 'ejecucion', 'reporte']))
+    @if (in_array($campana->fase_actual->value, ['estrategia', 'ejecucion', 'reporte', 'cerrada']))
+        @php $keywordsObjetivo = $campana->faseEstrategia?->keywords() ?? collect(); @endphp
         <div class="card" style="margin-top: var(--space-6);">
             <div class="card__header">
                 <h2 class="card__header-title">Keywords Objetivo</h2>
@@ -73,7 +95,7 @@
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver banco de keywords
                 </a>
             </div>
-            @if ($campana->keywords->isEmpty())
+            @if ($keywordsObjetivo->isEmpty())
                 <div class="empty-state">
                     <div class="empty-state__icon"><i class="fa-solid fa-key"></i></div>
                     <p class="empty-state__text">Sin keywords asignadas a esta campaña todavía.</p>
@@ -81,7 +103,7 @@
                 </div>
             @else
                 <x-data-table :headers="['Keyword', 'Tipo', 'Volumen', 'Dificultad', 'Estado']">
-                    @foreach ($campana->keywords as $k)
+                    @foreach ($keywordsObjetivo as $k)
                         <tr>
                             <td>{{ $k->keyword }}</td>
                             <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ \App\Support\Labels::tipoKeyword($k->tipo) }}</span></td>
@@ -95,8 +117,8 @@
         </div>
     @endif
 
-    {{-- ---------- Posiciones + Backlinks: visibles desde Ejecución en adelante ---------- --}}
-    @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte']))
+    {{-- ---------- Posiciones + Backlinks + Contenido: visibles desde Ejecución en adelante ---------- --}}
+    @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
         <div class="card" style="margin-top: var(--space-6);" id="posicionesCard">
             <div class="card__header">
                 <h2 class="card__header-title">Seguimiento de Posiciones</h2>
@@ -120,6 +142,18 @@
                 @include('admin.seo._backlinks-tabla', ['backlinks' => $campana->backlinks])
             </div>
         </div>
+
+        <div class="card" style="margin-top: var(--space-6);" id="contenidoCard">
+            <div class="card__header">
+                <h2 class="card__header-title">Contenido</h2>
+                <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('contenidoModal')">
+                    <i class="fa-solid fa-plus"></i> Agregar Contenido
+                </button>
+            </div>
+            <div data-contenido-body>
+                @include('admin.seo._contenido-tabla', ['contenidos' => $campana->contenido])
+            </div>
+        </div>
     @endif
 
     {{-- ---------- Historial de reportes por ciclo ---------- --}}
@@ -128,13 +162,14 @@
             <div class="card__header">
                 <h2 class="card__header-title">Historial de Reportes</h2>
             </div>
-            <x-data-table :headers="['Ciclo', 'Tráfico Final', 'Posiciones Ganadas', 'ROAS Orgánico', 'Aprobado']">
+            <x-data-table :headers="['Ciclo', 'Tráfico Inicio → Actual', 'Top 3 / Top 10', 'Backlinks Totales', '¿Continúa?', 'Aprobado']">
                 @foreach ($campana->reportes->where('aprobado', true) as $r)
                     <tr>
                         <td class="u-mono">#{{ $r->ciclo }}</td>
-                        <td class="u-mono">{{ number_format($r->trafico_organico_final ?? 0) }}</td>
-                        <td class="u-mono">{{ $r->posiciones_ganadas ?? '—' }}</td>
-                        <td class="u-mono">{{ $r->roas_organico ?? '—' }}</td>
+                        <td class="u-mono">{{ number_format($r->trafico_inicio ?? 0) }} → {{ number_format($r->trafico_actual ?? 0) }}</td>
+                        <td class="u-mono">{{ $r->keywords_top3 ?? 0 }} / {{ $r->keywords_top10 ?? 0 }}</td>
+                        <td class="u-mono">{{ number_format($r->backlinks_total ?? 0) }}</td>
+                        <td>{{ $r->continua_campana ? 'Sí' : 'No' }}</td>
                         <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $r->fecha_aprobacion?->format('Y-m-d') }}</td>
                     </tr>
                 @endforeach
@@ -234,6 +269,46 @@
             <div class="form-actions">
                 <button type="submit" class="btn btn--primary">Agregar</button>
                 <button type="button" class="btn btn--secondary" data-modal-close="backlinkModal">Cancelar</button>
+            </div>
+        </form>
+    </x-modal>
+
+    <x-modal id="contenidoModal">
+        <x-slot:header><h2 data-contenido-modal-title>Agregar Contenido</h2></x-slot:header>
+        <form id="contenidoForm"
+            data-store-action="{{ route('admin.seo.contenido.store', $campana) }}"
+            data-update-action-template="{{ route('admin.seo.contenido.update', ['contenido' => '__ID__']) }}">
+            <div class="field">
+                <label class="field__label" for="ct_titulo">Título</label>
+                <input class="input" type="text" name="titulo" id="ct_titulo" required>
+            </div>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-3);">
+                <div class="field">
+                    <label class="field__label" for="ct_keyword">Keyword objetivo</label>
+                    <input class="input" type="text" name="keyword_objetivo" id="ct_keyword">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="ct_url">URL</label>
+                    <input class="input" type="text" name="url" id="ct_url" placeholder="/blog/articulo">
+                </div>
+            </div>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-3);">
+                <div class="field">
+                    <label class="field__label" for="ct_trafico">Tráfico generado</label>
+                    <input class="input" type="number" min="0" name="trafico_generado" id="ct_trafico">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="ct_estado">Estado</label>
+                    <select class="select" name="estado" id="ct_estado" required>
+                        <option value="borrador">Borrador</option>
+                        <option value="publicado">Publicado</option>
+                        <option value="actualizar">Actualizar</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary" data-contenido-submit-label>Agregar</button>
+                <button type="button" class="btn btn--secondary" data-modal-close="contenidoModal">Cancelar</button>
             </div>
         </form>
     </x-modal>

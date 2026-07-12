@@ -25,14 +25,6 @@ class SeoCampana extends Model
         'estado',
         'fase_actual',
         'ciclo_actual',
-        'seo_score',
-        'trafico_organico_mensual',
-        'backlinks_total',
-        'errores_tecnicos',
-        'velocidad_mobile',
-        'velocidad_desktop',
-        'sitemap_ok',
-        'robots_ok',
         'notas',
         'fecha_inicio',
     ];
@@ -41,10 +33,6 @@ class SeoCampana extends Model
         'estado' => EstadoCampana::class,
         'fase_actual' => FaseSeo::class,
         'ciclo_actual' => 'integer',
-        'sitemap_ok' => 'boolean',
-        'robots_ok' => 'boolean',
-        'velocidad_mobile' => 'decimal:2',
-        'velocidad_desktop' => 'decimal:2',
         'fecha_inicio' => 'date',
     ];
 
@@ -70,22 +58,48 @@ class SeoCampana extends Model
 
     public function backlinks(): HasMany
     {
-        return $this->hasMany(Backlink::class);
+        return $this->hasMany(SeoBacklink::class);
+    }
+
+    public function contenido(): HasMany
+    {
+        return $this->hasMany(SeoContenido::class);
+    }
+
+    /**
+     * auditoria/estrategia/ejecucion/reporte are all cycle-scoped (one row
+     * per ciclo_actual) so "Nuevo Ciclo" archives history instead of
+     * overwriting it. These *Actual relations resolve to the current
+     * cycle's row via MySQL's "greatest-n-per-group" pattern (ofMany).
+     */
+    public function auditorias(): HasMany
+    {
+        return $this->hasMany(SeoFaseAuditoria::class)->orderByDesc('ciclo');
     }
 
     public function faseAuditoria(): HasOne
     {
-        return $this->hasOne(SeoFaseAuditoria::class);
+        return $this->hasOne(SeoFaseAuditoria::class)->ofMany('ciclo', 'max');
+    }
+
+    public function estrategias(): HasMany
+    {
+        return $this->hasMany(SeoFaseEstrategia::class)->orderByDesc('ciclo');
     }
 
     public function faseEstrategia(): HasOne
     {
-        return $this->hasOne(SeoFaseEstrategia::class);
+        return $this->hasOne(SeoFaseEstrategia::class)->ofMany('ciclo', 'max');
+    }
+
+    public function ejecuciones(): HasMany
+    {
+        return $this->hasMany(SeoFaseEjecucion::class)->orderByDesc('ciclo');
     }
 
     public function faseEjecucion(): HasOne
     {
-        return $this->hasOne(SeoFaseEjecucion::class);
+        return $this->hasOne(SeoFaseEjecucion::class)->ofMany('ciclo', 'max');
     }
 
     public function reportes(): HasMany
@@ -99,20 +113,20 @@ class SeoCampana extends Model
     }
 
     /**
-     * posiciones/backlinks are true children (onDelete('cascade') in the
-     * migration) so they're deleted with the campaign. keywords.campana_id
-     * is nullable with nullOnDelete() instead — a keyword can outlive its
-     * campaign — so those are just unassigned, not deleted.
+     * posiciones/backlinks/contenido are true children (onDelete('cascade')
+     * in the migration) so they're deleted with the campaign. keywords are
+     * only referenced by ID from seo_fase_estrategia.keywords_ids — they
+     * live in the shared bank and are never touched here.
      */
     protected static function booted(): void
     {
         static::deleting(function (SeoCampana $campana) {
             $campana->posiciones()->delete();
             $campana->backlinks()->delete();
-            $campana->keywords()->update(['campana_id' => null]);
-            $campana->faseAuditoria()->delete();
-            $campana->faseEstrategia()->delete();
-            $campana->faseEjecucion()->delete();
+            $campana->contenido()->delete();
+            $campana->auditorias()->delete();
+            $campana->estrategias()->delete();
+            $campana->ejecuciones()->delete();
             $campana->reportes()->delete();
         });
     }

@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Backlink extends Model
+class SeoBacklink extends Model
 {
     use HasFactory;
+
+    protected $table = 'seo_backlinks';
 
     protected $fillable = [
         'seo_campana_id',

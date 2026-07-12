@@ -15,6 +15,9 @@
   const BADGE_MAP = {
     activo: ["Activo", "badge--success"],
     caido: ["Caído", "badge--danger"],
+    borrador: ["Borrador", "badge--neutral"],
+    publicado: ["Publicado", "badge--success"],
+    actualizar: ["Actualizar", "badge--warning"],
   };
 
   function escapeHtml(value) {
@@ -97,7 +100,11 @@
       const payload = {};
 
       panel.querySelectorAll("[data-autosave]").forEach((field) => {
-        payload[field.name || field.id] = field.value;
+        if (field.multiple) {
+          payload[field.name.replace("[]", "")] = Array.from(field.selectedOptions).map((o) => o.value);
+        } else {
+          payload[field.name || field.id] = field.value;
+        }
       });
       panel.querySelectorAll("[data-autosave-toggle]").forEach((field) => {
         payload[field.name] = field.checked;
@@ -261,10 +268,95 @@
     });
   }
 
+  // ---------- Contenido ----------
+  function initContenido() {
+    const form = document.getElementById("contenidoForm");
+    const rowsBody = document.querySelector("[data-contenido-rows]");
+    if (!form || !rowsBody) return;
+
+    const modalTitle = document.querySelector("[data-contenido-modal-title]");
+    const submitLabel = document.querySelector("[data-contenido-submit-label]");
+
+    function rowHtml(ct) {
+      return `<tr data-contenido-id="${ct.id}" data-contenido-titulo="${escapeHtml(ct.titulo)}" data-contenido-keyword-objetivo="${escapeHtml(ct.keyword_objetivo || "")}" data-contenido-url="${escapeHtml(ct.url || "")}" data-contenido-trafico-generado="${ct.trafico_generado ?? ""}" data-contenido-estado="${ct.estado}">
+        <td>${escapeHtml(ct.titulo)}</td>
+        <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(ct.keyword_objetivo || "—")}</span></td>
+        <td><span class="u-mono" style="color:var(--color-primary); font-size:var(--text-xs)">${escapeHtml(ct.url || "—")}</span></td>
+        <td class="u-mono">${Number(ct.trafico_generado || 0).toLocaleString("es-MX")}</td>
+        <td>${badge(ct.estado)}</td>
+        <td><div style="display:flex; gap:4px;">
+          <button type="button" class="btn--icon" title="Editar" data-edit-contenido="${ct.id}"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-contenido="${ct.id}"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }
+
+    function resetForm() {
+      form.reset();
+      delete form.dataset.editingId;
+      if (modalTitle) modalTitle.textContent = "Agregar Contenido";
+      if (submitLabel) submitLabel.textContent = "Agregar";
+    }
+
+    document.querySelector('[onclick*="contenidoModal"]')?.addEventListener("click", resetForm);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const editingId = form.dataset.editingId;
+      const url = editingId ? form.dataset.updateActionTemplate.replace("__ID__", editingId) : form.dataset.storeAction;
+      const method = editingId ? "PUT" : "POST";
+      const payload = Object.fromEntries(new FormData(form).entries());
+
+      request(url, method, payload)
+        .then((contenido) => {
+          const existing = rowsBody.querySelector(`[data-contenido-id="${contenido.id}"]`);
+          if (existing) existing.outerHTML = rowHtml(contenido);
+          else rowsBody.insertAdjacentHTML("beforeend", rowHtml(contenido));
+
+          toggleEmptyState("data-contenido-empty", "data-contenido-table", rowsBody);
+          resetForm();
+          window.AgencyOS.closeModal("contenidoModal");
+          toast(editingId ? "Contenido actualizado." : "Contenido agregado.", "success");
+        })
+        .catch(() => toast("No se pudo guardar el contenido.", "error"));
+    });
+
+    rowsBody.addEventListener("click", (e) => {
+      const editBtn = e.target.closest("[data-edit-contenido]");
+      const deleteBtn = e.target.closest("[data-delete-contenido]");
+
+      if (editBtn) {
+        const row = editBtn.closest("tr");
+        form.dataset.editingId = row.dataset.contenidoId;
+        form.querySelector("#ct_titulo").value = row.dataset.contenidoTitulo || "";
+        form.querySelector("#ct_keyword").value = row.dataset.contenidoKeywordObjetivo || "";
+        form.querySelector("#ct_url").value = row.dataset.contenidoUrl || "";
+        form.querySelector("#ct_trafico").value = row.dataset.contenidoTraficoGenerado || "";
+        form.querySelector("#ct_estado").value = row.dataset.contenidoEstado;
+        if (modalTitle) modalTitle.textContent = "Editar Contenido";
+        if (submitLabel) submitLabel.textContent = "Guardar Cambios";
+        window.AgencyOS.openModal("contenidoModal");
+      }
+
+      if (deleteBtn) {
+        if (!window.confirm("¿Eliminar este contenido?")) return;
+        const id = deleteBtn.dataset.deleteContenido;
+        request(`/admin/seo/contenido/${id}`, "DELETE")
+          .then(() => {
+            rowsBody.querySelector(`[data-contenido-id="${id}"]`)?.remove();
+            toggleEmptyState("data-contenido-empty", "data-contenido-table", rowsBody);
+            toast("Contenido eliminado.", "success");
+          })
+          .catch(() => toast("No se pudo eliminar el contenido.", "error"));
+      }
+    });
+  }
+
   document.addEventListener("shell:ready", () => {
     initServicioCascade();
     initFasePanel();
     initPosiciones();
     initBacklinks();
+    initContenido();
   });
 })();

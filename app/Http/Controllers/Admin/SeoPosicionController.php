@@ -8,7 +8,7 @@ use App\Models\SeoPosicion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class PosicionController extends Controller
+class SeoPosicionController extends Controller
 {
     public function store(Request $request, SeoCampana $campana): JsonResponse
     {

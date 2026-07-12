@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Backlink;
+use App\Models\SeoBacklink;
 use App\Models\SeoCampana;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class BacklinkController extends Controller
+class SeoBacklinkController extends Controller
 {
     public function store(Request $request, SeoCampana $campana): JsonResponse
     {
@@ -28,7 +28,7 @@ class BacklinkController extends Controller
         return response()->json($backlink, 201);
     }
 
-    public function destroy(Backlink $backlink): JsonResponse
+    public function destroy(SeoBacklink $backlink): JsonResponse
     {
         $backlink->delete();
 

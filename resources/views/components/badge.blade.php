@@ -90,6 +90,12 @@
         'estrategia'    => ['Estrategia',    'badge--primary'],
         'ejecucion'     => ['Ejecución',     'badge--warning'],
         'reporte'       => ['Reporte',       'badge--orange'],
+        'cerrada'       => ['Cerrada',       'badge--success'],
+
+        // Spanish (seo_contenido — estado)
+        'borrador'      => ['Borrador',      'badge--neutral'],
+        'publicado'     => ['Publicado',     'badge--success'],
+        'actualizar'    => ['Actualizar',    'badge--warning'],
     ];
     [$label, $class] = $map[$key] ?? [$key, 'badge--neutral'];
 @endphp

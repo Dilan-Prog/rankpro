@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     <div class="proyecto-card__footer">
-                        <span style="color:var(--color-muted-foreground);">Tráfico orgánico mensual: {{ number_format($c['trafico_organico_mensual'] ?? 0) }}</span>
+                        <span style="color:var(--color-muted-foreground);">Tráfico orgánico actual: {{ number_format($c['trafico_actual'] ?? 0) }}</span>
                     </div>
                 </div>
             @endforeach

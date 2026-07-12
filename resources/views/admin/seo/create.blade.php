@@ -66,55 +66,103 @@
                 @error('fecha_inicio')<span class="field__error">{{ $message }}</span>@enderror
             </div>
 
-            <h3 class="fase-form__section-title" style="margin-top: var(--space-6);">Análisis técnico inicial</h3>
+            <h3 class="fase-form__section-title" style="margin-top: var(--space-6);">SEO Score y velocidad</h3>
             <div class="form-grid form-grid--2">
                 <div class="field">
-                    <label class="field__label" for="seo_score">SEO Score (0-100)</label>
+                    <label class="field__label" for="seo_score">SEO Score inicial (0-100)</label>
                     <input class="input" type="number" min="0" max="100" name="seo_score" id="seo_score" value="{{ old('seo_score') }}">
-                    @error('seo_score')<span class="field__error">{{ $message }}</span>@enderror
                 </div>
                 <div class="field">
-                    <label class="field__label" for="errores_tecnicos">Errores técnicos detectados</label>
-                    <input class="input" type="number" min="0" name="errores_tecnicos" id="errores_tecnicos" value="{{ old('errores_tecnicos') }}">
-                    @error('errores_tecnicos')<span class="field__error">{{ $message }}</span>@enderror
+                    <label class="field__label" for="herramienta">Herramienta usada</label>
+                    <select class="select" name="herramienta" id="herramienta">
+                        <option value="">— Sin definir —</option>
+                        <option value="semrush">Semrush</option>
+                        <option value="ahrefs">Ahrefs</option>
+                        <option value="screaming_frog">Screaming Frog</option>
+                        <option value="google_search_console">Google Search Console</option>
+                        <option value="otro">Otro</option>
+                    </select>
                 </div>
             </div>
-
             <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
                 <div class="field">
-                    <label class="field__label" for="velocidad_mobile">Velocidad Mobile (Core Web Vitals)</label>
+                    <label class="field__label" for="velocidad_mobile">Velocidad Mobile (0-100)</label>
                     <input class="input" type="number" step="0.01" min="0" max="100" name="velocidad_mobile" id="velocidad_mobile" value="{{ old('velocidad_mobile') }}">
-                    @error('velocidad_mobile')<span class="field__error">{{ $message }}</span>@enderror
                 </div>
                 <div class="field">
-                    <label class="field__label" for="velocidad_desktop">Velocidad Desktop (Core Web Vitals)</label>
+                    <label class="field__label" for="velocidad_desktop">Velocidad Desktop (0-100)</label>
                     <input class="input" type="number" step="0.01" min="0" max="100" name="velocidad_desktop" id="velocidad_desktop" value="{{ old('velocidad_desktop') }}">
-                    @error('velocidad_desktop')<span class="field__error">{{ $message }}</span>@enderror
                 </div>
             </div>
 
-            <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
+            <h3 class="fase-form__section-title" style="margin-top: var(--space-6);">Core Web Vitals</h3>
+            <div class="form-grid form-grid--2">
                 <div class="field">
-                    <label class="field__label" for="trafico_organico_mensual">Tráfico orgánico mensual (baseline)</label>
-                    <input class="input" type="number" min="0" name="trafico_organico_mensual" id="trafico_organico_mensual" value="{{ old('trafico_organico_mensual') }}">
-                    @error('trafico_organico_mensual')<span class="field__error">{{ $message }}</span>@enderror
+                    <label class="field__label" style="font-weight:600;">Mobile</label>
                 </div>
                 <div class="field">
-                    <label class="field__label" for="backlinks_total">Backlinks totales (baseline)</label>
-                    <input class="input" type="number" min="0" name="backlinks_total" id="backlinks_total" value="{{ old('backlinks_total') }}">
-                    @error('backlinks_total')<span class="field__error">{{ $message }}</span>@enderror
+                    <label class="field__label" style="font-weight:600;">Desktop</label>
                 </div>
+            </div>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-2);">
+                <div style="display:flex; gap: var(--space-2);">
+                    <div class="field"><label class="field__label" for="lcp_mobile">LCP</label><input class="input" type="number" step="0.01" min="0" name="lcp_mobile" id="lcp_mobile" value="{{ old('lcp_mobile') }}"></div>
+                    <div class="field"><label class="field__label" for="fid_mobile">FID</label><input class="input" type="number" step="0.01" min="0" name="fid_mobile" id="fid_mobile" value="{{ old('fid_mobile') }}"></div>
+                    <div class="field"><label class="field__label" for="cls_mobile">CLS</label><input class="input" type="number" step="0.001" min="0" name="cls_mobile" id="cls_mobile" value="{{ old('cls_mobile') }}"></div>
+                </div>
+                <div style="display:flex; gap: var(--space-2);">
+                    <div class="field"><label class="field__label" for="lcp_desktop">LCP</label><input class="input" type="number" step="0.01" min="0" name="lcp_desktop" id="lcp_desktop" value="{{ old('lcp_desktop') }}"></div>
+                    <div class="field"><label class="field__label" for="fid_desktop">FID</label><input class="input" type="number" step="0.01" min="0" name="fid_desktop" id="fid_desktop" value="{{ old('fid_desktop') }}"></div>
+                    <div class="field"><label class="field__label" for="cls_desktop">CLS</label><input class="input" type="number" step="0.001" min="0" name="cls_desktop" id="cls_desktop" value="{{ old('cls_desktop') }}"></div>
+                </div>
+            </div>
+
+            <h3 class="fase-form__section-title" style="margin-top: var(--space-6);">Errores técnicos</h3>
+            <div class="form-grid form-grid--2">
+                <div class="field">
+                    <label class="field__label" for="errores_tecnicos">Errores técnicos encontrados</label>
+                    <input class="input" type="number" min="0" name="errores_tecnicos" id="errores_tecnicos" value="{{ old('errores_tecnicos') }}">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="errores_404">Errores 404 detectados</label>
+                    <input class="input" type="number" min="0" name="errores_404" id="errores_404" value="{{ old('errores_404') }}">
+                </div>
+            </div>
+            <div class="field" style="margin-top: var(--space-4); max-width: 320px;">
+                <label class="field__label" for="redirecciones_incorrectas">Redirecciones incorrectas</label>
+                <input class="input" type="number" min="0" name="redirecciones_incorrectas" id="redirecciones_incorrectas" value="{{ old('redirecciones_incorrectas') }}">
             </div>
 
             <div class="checkbox-group" style="margin-top: var(--space-4);">
                 <label class="checkbox-item">
+                    <input type="checkbox" name="indexacion_ok" value="1" @checked(old('indexacion_ok'))>
+                    Estado de indexación en Google correcto
+                </label>
+                <label class="checkbox-item">
                     <input type="checkbox" name="sitemap_ok" value="1" @checked(old('sitemap_ok'))>
-                    Sitemap XML enviado a Search Console
+                    Sitemap presente
                 </label>
                 <label class="checkbox-item">
                     <input type="checkbox" name="robots_ok" value="1" @checked(old('robots_ok'))>
-                    robots.txt configurado correctamente
+                    Robots.txt correcto
                 </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="duplicidad_contenido" value="1" @checked(old('duplicidad_contenido'))>
+                    Duplicidad de contenido detectada
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="canonical_ok" value="1" @checked(old('canonical_ok'))>
+                    Etiquetas canonical presentes
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="schema_ok" value="1" @checked(old('schema_ok'))>
+                    Schema markup presente
+                </label>
+            </div>
+
+            <div class="field" style="margin-top: var(--space-4);">
+                <label class="field__label" for="notas">Notas de auditoría</label>
+                <textarea class="textarea" name="notas" id="notas">{{ old('notas') }}</textarea>
             </div>
 
             <h3 class="fase-form__section-title" style="margin-top: var(--space-6);">Checklist de auditoría</h3>

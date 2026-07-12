@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin\AdsController;
 use App\Http\Controllers\Admin\ArchivosController;
-use App\Http\Controllers\Admin\BacklinkController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
 use App\Http\Controllers\Admin\ComunicacionController;
@@ -12,12 +11,14 @@ use App\Http\Controllers\Admin\DocumentosController;
 use App\Http\Controllers\Admin\FinanzasController;
 use App\Http\Controllers\Admin\IntegracionesController;
 use App\Http\Controllers\Admin\KeywordsController;
-use App\Http\Controllers\Admin\PosicionController;
 use App\Http\Controllers\Admin\ProyectoFaseController;
 use App\Http\Controllers\Admin\QaController;
 use App\Http\Controllers\Admin\RolesController;
+use App\Http\Controllers\Admin\SeoBacklinkController;
+use App\Http\Controllers\Admin\SeoContenidoController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\SeoFaseController;
+use App\Http\Controllers\Admin\SeoPosicionController;
 use App\Http\Controllers\Admin\ServiciosController;
 use App\Http\Controllers\Admin\TareaController;
 use App\Http\Controllers\Admin\UsersController;
@@ -84,13 +85,19 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/{campana}/fase/guardar', [SeoFaseController::class, 'guardar'])->name('fase.guardar');
         Route::post('/{campana}/fase/aprobar', [SeoFaseController::class, 'aprobar'])->name('fase.aprobar');
         Route::post('/{campana}/fase/retroceder', [SeoFaseController::class, 'retroceder'])->name('fase.retroceder');
-        Route::post('/{campana}/fase/siguiente-ciclo', [SeoFaseController::class, 'siguienteCiclo'])->name('fase.siguiente-ciclo');
+        Route::post('/{campana}/fase/nuevo-ciclo', [SeoFaseController::class, 'nuevoCiclo'])->name('fase.nuevo-ciclo');
+        Route::post('/{campana}/fase/cerrar', [SeoFaseController::class, 'cerrar'])->name('fase.cerrar');
+        Route::post('/{campana}/fase/pausar', [SeoFaseController::class, 'pausar'])->name('fase.pausar');
 
-        Route::post('/{campana}/posiciones', [PosicionController::class, 'store'])->name('posiciones.store');
-        Route::delete('/posiciones/{posicion}', [PosicionController::class, 'destroy'])->name('posiciones.destroy');
+        Route::post('/{campana}/posiciones', [SeoPosicionController::class, 'store'])->name('posiciones.store');
+        Route::delete('/posiciones/{posicion}', [SeoPosicionController::class, 'destroy'])->name('posiciones.destroy');
 
-        Route::post('/{campana}/backlinks', [BacklinkController::class, 'store'])->name('backlinks.store');
-        Route::delete('/backlinks/{backlink}', [BacklinkController::class, 'destroy'])->name('backlinks.destroy');
+        Route::post('/{campana}/backlinks', [SeoBacklinkController::class, 'store'])->name('backlinks.store');
+        Route::delete('/backlinks/{backlink}', [SeoBacklinkController::class, 'destroy'])->name('backlinks.destroy');
+
+        Route::post('/{campana}/contenido', [SeoContenidoController::class, 'store'])->name('contenido.store');
+        Route::put('/contenido/{contenido}', [SeoContenidoController::class, 'update'])->name('contenido.update');
+        Route::delete('/contenido/{contenido}', [SeoContenidoController::class, 'destroy'])->name('contenido.destroy');
 
         Route::get('/{campana}', [SeoController::class, 'show'])->name('show');
     });

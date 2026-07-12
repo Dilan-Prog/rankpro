@@ -6,6 +6,7 @@ use App\Enums\FaseSeo;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\SeoCampana;
+use App\Models\SeoFaseAuditoria;
 use App\Models\Servicio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class SeoController extends Controller
 {
     public function index(): View
     {
-        $campanas = SeoCampana::with('cliente')
+        $campanas = SeoCampana::with('cliente', 'faseAuditoria', 'reporteActual')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (SeoCampana $c) => [
@@ -27,8 +28,8 @@ class SeoController extends Controller
                 'estado' => $c->estado->value,
                 'fase_actual' => $c->fase_actual->value,
                 'ciclo_actual' => $c->ciclo_actual,
-                'seo_score' => $c->seo_score,
-                'trafico_organico_mensual' => $c->trafico_organico_mensual,
+                'seo_score' => $c->faseAuditoria?->seo_score,
+                'trafico_actual' => $c->reporteActual?->trafico_actual,
             ]);
 
         return view('admin.seo.index', [
@@ -40,10 +41,10 @@ class SeoController extends Controller
 
     public function create(): View
     {
-        return view('admin.seo.campana-create', [
+        return view('admin.seo.create', [
             'pageTitle' => 'Nueva Campaña SEO',
             'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
-            'checklistAuditoria' => \App\Models\SeoFaseAuditoria::CHECKLIST,
+            'checklistAuditoria' => SeoFaseAuditoria::CHECKLIST,
         ]);
     }
 
@@ -55,22 +56,36 @@ class SeoController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'url_sitio' => ['nullable', 'string', 'max:255'],
             'fecha_inicio' => ['nullable', 'date'],
+
             'seo_score' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'trafico_organico_mensual' => ['nullable', 'integer', 'min:0'],
-            'backlinks_total' => ['nullable', 'integer', 'min:0'],
-            'errores_tecnicos' => ['nullable', 'integer', 'min:0'],
             'velocidad_mobile' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'velocidad_desktop' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'lcp_mobile' => ['nullable', 'numeric', 'min:0'],
+            'fid_mobile' => ['nullable', 'numeric', 'min:0'],
+            'cls_mobile' => ['nullable', 'numeric', 'min:0'],
+            'lcp_desktop' => ['nullable', 'numeric', 'min:0'],
+            'fid_desktop' => ['nullable', 'numeric', 'min:0'],
+            'cls_desktop' => ['nullable', 'numeric', 'min:0'],
+            'errores_tecnicos' => ['nullable', 'integer', 'min:0'],
+            'indexacion_ok' => ['nullable', 'boolean'],
             'sitemap_ok' => ['nullable', 'boolean'],
             'robots_ok' => ['nullable', 'boolean'],
+            'errores_404' => ['nullable', 'integer', 'min:0'],
+            'redirecciones_incorrectas' => ['nullable', 'integer', 'min:0'],
+            'duplicidad_contenido' => ['nullable', 'boolean'],
+            'canonical_ok' => ['nullable', 'boolean'],
+            'schema_ok' => ['nullable', 'boolean'],
+            'herramienta' => ['nullable', 'in:semrush,ahrefs,screaming_frog,google_search_console,otro'],
+            'notas' => ['nullable', 'string', 'max:2000'],
+
             'checklist' => ['nullable', 'array'],
             'checklist.*' => ['boolean'],
         ]);
 
-        $checklistKeys = array_keys(\App\Models\SeoFaseAuditoria::CHECKLIST);
+        $checklistKeys = array_keys(SeoFaseAuditoria::CHECKLIST);
         $checklist = collect($checklistKeys)->mapWithKeys(fn ($key) => [$key => (bool) ($data['checklist'][$key] ?? false)])->all();
 
-        $campana = DB::transaction(function () use ($data, $checklist, $request) {
+        $campana = DB::transaction(function () use ($request, $data, $checklist) {
             $campana = SeoCampana::create([
                 'cliente_id' => $data['cliente_id'],
                 'servicio_id' => $data['servicio_id'],
@@ -80,19 +95,35 @@ class SeoController extends Controller
                 'fase_actual' => FaseSeo::Auditoria->value,
                 'ciclo_actual' => 1,
                 'fecha_inicio' => $data['fecha_inicio'] ?? null,
-                'seo_score' => $data['seo_score'] ?? null,
-                'trafico_organico_mensual' => $data['trafico_organico_mensual'] ?? null,
-                'backlinks_total' => $data['backlinks_total'] ?? null,
-                'errores_tecnicos' => $data['errores_tecnicos'] ?? null,
-                'velocidad_mobile' => $data['velocidad_mobile'] ?? null,
-                'velocidad_desktop' => $data['velocidad_desktop'] ?? null,
-                'sitemap_ok' => $request->boolean('sitemap_ok'),
-                'robots_ok' => $request->boolean('robots_ok'),
             ]);
 
-            $campana->faseAuditoria()->create(['checklist' => $checklist]);
-            $campana->faseEstrategia()->create(['checklist' => []]);
-            $campana->faseEjecucion()->create(['checklist' => []]);
+            $campana->auditorias()->create([
+                'ciclo' => 1,
+                'seo_score' => $data['seo_score'] ?? null,
+                'velocidad_mobile' => $data['velocidad_mobile'] ?? null,
+                'velocidad_desktop' => $data['velocidad_desktop'] ?? null,
+                'lcp_mobile' => $data['lcp_mobile'] ?? null,
+                'fid_mobile' => $data['fid_mobile'] ?? null,
+                'cls_mobile' => $data['cls_mobile'] ?? null,
+                'lcp_desktop' => $data['lcp_desktop'] ?? null,
+                'fid_desktop' => $data['fid_desktop'] ?? null,
+                'cls_desktop' => $data['cls_desktop'] ?? null,
+                'errores_tecnicos' => $data['errores_tecnicos'] ?? null,
+                'indexacion_ok' => $request->boolean('indexacion_ok'),
+                'sitemap_ok' => $request->boolean('sitemap_ok'),
+                'robots_ok' => $request->boolean('robots_ok'),
+                'errores_404' => $data['errores_404'] ?? null,
+                'redirecciones_incorrectas' => $data['redirecciones_incorrectas'] ?? null,
+                'duplicidad_contenido' => $request->boolean('duplicidad_contenido'),
+                'canonical_ok' => $request->boolean('canonical_ok'),
+                'schema_ok' => $request->boolean('schema_ok'),
+                'herramienta' => $data['herramienta'] ?? null,
+                'notas' => $data['notas'] ?? null,
+                'checklist' => $checklist,
+            ]);
+
+            $campana->estrategias()->create(['ciclo' => 1, 'checklist' => []]);
+            $campana->ejecuciones()->create(['ciclo' => 1, 'checklist' => []]);
             $campana->reportes()->create(['ciclo' => 1, 'checklist' => []]);
 
             return $campana;
@@ -115,14 +146,14 @@ class SeoController extends Controller
                 'reportes',
                 'posiciones',
                 'backlinks',
-                'keywords'
+                'contenido'
             ),
         ]);
     }
 
     public function edit(SeoCampana $campana): View
     {
-        return view('admin.seo.campana-edit', [
+        return view('admin.seo.edit', [
             'pageTitle' => 'Editar Campaña SEO',
             'campana' => $campana,
             'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
