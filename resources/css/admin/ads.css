@@ -1,0 +1,30 @@
+/* ==========================================================================
+   Ads module
+   ========================================================================== */
+
+.ads-platform-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.ads-platform-tab {
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.ads-platform-tab:hover {
+  color: var(--color-foreground);
+}
+
+.ads-platform-tab.is-active {
+  background: var(--tab-color, var(--color-primary));
+  border-color: transparent;
+  color: #fff;
+}

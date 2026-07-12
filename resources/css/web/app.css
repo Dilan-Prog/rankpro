@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@import './components/topbar.css';
+@import './components/navbar.css';
+@import './components/hero.css';
+@import './components/partners.css';
+@import './components/services.css';
+@import './components/dashboard-cta.css';
+@import './components/testimonials.css';
+@import './components/pricing.css';
+@import './components/footer.css';
+
+:root {
+    --brand: #0F9D6E;
+    --brand-light: #34D399;
+    --brand-dark: #059669;
+    --ink: #1A2332;
+    --muted: #6B7280;
+    --surface: #F5F7FA;
+    --border: rgba(0, 0, 0, 0.05);
+    --max-width: 1280px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    color: var(--ink);
+    background: #ffffff;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+}
+
+button {
+    font-family: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: var(--brand);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+}
+
+.section-header h2 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
+
+.section-header p {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.text-brand {
+    color: var(--brand);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    color: #ffffff;
+    background: linear-gradient(to right, var(--brand), var(--brand-light));
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.25);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.3);
+    transform: scale(1.05);
+}
+
+.btn-outline {
+    color: var(--brand);
+    background: transparent;
+    border: 2px solid var(--brand);
+}
+
+.btn-outline:hover {
+    background: #ecfdf5;
+}

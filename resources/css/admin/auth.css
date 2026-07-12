@@ -1,0 +1,162 @@
+/* ==========================================================================
+   Auth pages (login, register, forgot/reset password, verify/confirm)
+   Rendered inside layouts/guest.blade.php's centered .guest-layout body.
+   ========================================================================== */
+
+.auth-card {
+  width: 100%;
+  max-width: 24rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8) var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-card__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: var(--space-6);
+}
+
+.auth-card__logo {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.auth-card__brand-name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.auth-card__header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.auth-card__title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.auth-card__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Two-up short fields (first/last name, email/phone). Uses its own small
+   breakpoint rather than the module-page .grid-2 (that one only switches
+   at 1024px viewport width, which has no relation to this ~24rem card). */
+.auth-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 420px) {
+  .auth-form__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auth-form .field .input {
+  width: 100%;
+}
+
+.auth-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.1);
+  color: #34D399;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-5);
+}
+
+.auth-form__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.auth-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.auth-checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-primary);
+}
+
+.auth-link {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-form .btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.auth-card__footer {
+  text-align: center;
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-right: 40px;
+}
+
+.password-field__toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px;
+  color: var(--color-muted-foreground);
+  border-radius: var(--radius-md);
+}
+
+.password-field__toggle:hover {
+  color: var(--color-foreground);
+}

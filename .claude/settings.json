@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/laragon/www/rankpro/resources/views/frontend/pages/**)",
+      "Read(//c/laragon/www/rankpro/**)",
+      "Read(//c/laragon/www/rankpro/resources/views/**)",
+      "Read(//c/laragon/www/rankpro/routes/**)",
+      "Bash(ls -la /c/laragon/www/rankpro/resources/views/)",
+      "Read(//c/laragon/www/rankpro/resources/views//**)"
+    ]
+  }
+}

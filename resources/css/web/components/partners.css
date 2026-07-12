@@ -1,0 +1,40 @@
+.partners {
+    background: var(--surface);
+    padding: 2.5rem 1rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.partners__inner {
+    max-width: 64rem;
+}
+
+.partners__label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.75rem;
+}
+
+.partners__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.partners__item {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 0.875rem;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+.partners__item:hover {
+    opacity: 1;
+}

@@ -1,0 +1,21 @@
+/* ==========================================================================
+   Roles y Usuarios module
+   ========================================================================== */
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .roles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .roles-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

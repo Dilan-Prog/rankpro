@@ -1,0 +1,182 @@
+.dashboard-cta {
+    padding: 5rem 1rem;
+    background: var(--surface);
+}
+
+.dashboard-cta__panel {
+    background: linear-gradient(to bottom right, var(--brand), var(--brand-light));
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-cta__blob {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-cta__blob--1 {
+    top: -5rem;
+    right: -5rem;
+    width: 20rem;
+    height: 20rem;
+}
+
+.dashboard-cta__blob--2 {
+    bottom: -4rem;
+    left: -4rem;
+    width: 15rem;
+    height: 15rem;
+}
+
+.dashboard-cta__grid {
+    position: relative;
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+}
+
+.dashboard-cta__eyebrow {
+    color: #d1fae5;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-cta__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-cta__desc {
+    color: #d1fae5;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.dashboard-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.dashboard-cta__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dashboard-cta__btn--light {
+    background: #ffffff;
+    color: var(--brand);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-cta__btn--light:hover {
+    background: #ecfdf5;
+}
+
+.dashboard-cta__btn--ghost {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+}
+
+.dashboard-cta__btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-cta__mock {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-cta__mock-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-cta__dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+}
+
+.dashboard-cta__dot--red { background: #f87171; }
+.dashboard-cta__dot--yellow { background: #facc15; }
+.dashboard-cta__dot--green { background: #6ee7b7; }
+
+.dashboard-cta__mock-url {
+    margin-left: 0.75rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: monospace;
+}
+
+.dashboard-cta__metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dashboard-cta__metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.dashboard-cta__metric-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+}
+
+.dashboard-cta__metric-values {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dashboard-cta__metric-value {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.dashboard-cta__metric-change {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #a7f3d0;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-cta__panel {
+        padding: 4rem;
+    }
+
+    .dashboard-cta__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

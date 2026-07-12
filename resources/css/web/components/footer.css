@@ -1,0 +1,107 @@
+.site-footer {
+    background: var(--ink);
+    color: #ffffff;
+    padding: 4rem 1rem;
+}
+
+.site-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+}
+
+.site-footer__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 1rem;
+}
+
+.site-footer__logo {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(to bottom right, var(--brand), var(--brand-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.site-footer__brand-name {
+    font-weight: 800;
+    font-size: 1.125rem;
+}
+
+.site-footer__desc {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+}
+
+.site-footer__col-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.site-footer__links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.site-footer__links a {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.site-footer__links a:hover {
+    color: var(--brand-light);
+}
+
+.site-footer__bottom {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.site-footer__copy {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.site-footer__bottom-links {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.site-footer__bottom-links a {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.site-footer__bottom-links a:hover {
+    color: var(--brand-light);
+}
+
+@media (min-width: 768px) {
+    .site-footer__grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .site-footer__bottom {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
