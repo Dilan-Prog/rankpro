@@ -66,6 +66,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{cliente}/editar', [ClientesController::class, 'edit'])->name('edit');
         Route::put('/{cliente}', [ClientesController::class, 'update'])->name('update');
         Route::delete('/{cliente}', [ClientesController::class, 'destroy'])->name('destroy');
+
+        Route::get('/{cliente}/integraciones', [IntegracionesController::class, 'clienteIndex'])->name('integraciones');
+        Route::post('/{cliente}/integraciones/token', [IntegracionesController::class, 'regenerarToken'])->name('integraciones.token');
+        Route::get('/{cliente}/clics', [IntegracionesController::class, 'clics'])->name('clics');
+        Route::get('/{cliente}/conversiones', [IntegracionesController::class, 'conversiones'])->name('conversiones');
+        Route::post('/{cliente}/conversiones/exportar', [IntegracionesController::class, 'exportarCsv'])->name('conversiones.exportar');
+        Route::post('/{cliente}/clics/{clic}/asignar', [IntegracionesController::class, 'asignarCampana'])->name('clics.asignar');
+
         Route::get('/{cliente}', [ClientesController::class, 'show'])->name('show');
     });
 

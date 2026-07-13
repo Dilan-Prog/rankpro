@@ -99,6 +99,9 @@
 
         // Spanish (ads_campanas — fase_actual; briefing/lanzamiento ya existen arriba con otros colores aceptables)
         'configuracion' => ['Configuración', 'badge--primary'],
+
+        // Spanish (ads_conversiones — estado)
+        'exportada'     => ['Exportada',     'badge--success'],
     ];
     [$label, $class] = $map[$key] ?? [$key, 'badge--neutral'];
 @endphp

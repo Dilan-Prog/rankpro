@@ -137,6 +137,22 @@
                 @include('admin.ads._optimizaciones-tabla', ['optimizaciones' => $campana->optimizaciones])
             </div>
         </div>
+
+        <div class="card" style="margin-top: var(--space-6);">
+            <div class="card__header">
+                <h2 class="card__header-title">Clics de Google Ads (tracking)</h2>
+                <a href="{{ route('admin.clientes.clics', $campana->cliente_id) }}" class="btn btn--ghost">Ver todo con filtros</a>
+            </div>
+            @include('admin.ads._clics-tabla', ['clics' => $clics, 'campana' => $campana])
+        </div>
+
+        <div class="card" style="margin-top: var(--space-6);">
+            <div class="card__header">
+                <h2 class="card__header-title">Conversiones (tracking)</h2>
+                <a href="{{ route('admin.clientes.conversiones', $campana->cliente_id) }}" class="btn btn--ghost">Ver todo con filtros</a>
+            </div>
+            @include('admin.ads._conversiones-tabla', ['conversiones' => $conversiones])
+        </div>
     @endif
 
     {{-- ---------- Historial de reportes por ciclo ---------- --}}

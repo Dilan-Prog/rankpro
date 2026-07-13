@@ -60,6 +60,9 @@
                             <a href="{{ route('admin.clientes.show', $cliente['id']) }}" class="btn--icon" title="Ver ficha completa">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
                             </a>
+                            <a href="{{ route('admin.clientes.integraciones', $cliente['id']) }}" class="btn--icon" title="Integraciones y tracking">
+                                <i class="fa-solid fa-plug"></i>
+                            </a>
                             <a href="{{ route('admin.clientes.edit', $cliente['id']) }}" class="btn--icon" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </a>

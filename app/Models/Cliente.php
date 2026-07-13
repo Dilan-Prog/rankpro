@@ -67,6 +67,16 @@ class Cliente extends Model
         return $this->hasMany(Archivo::class);
     }
 
+    public function adsClics(): HasMany
+    {
+        return $this->hasMany(AdsClic::class);
+    }
+
+    public function adsConversiones(): HasMany
+    {
+        return $this->hasMany(AdsConversion::class);
+    }
+
     /**
      * Cascades a delete (soft or force) to every child relation. Children
      * that also use SoftDeletes (servicios, seoCampanas, adsCampanas,
@@ -87,6 +97,8 @@ class Cliente extends Model
             $cliente->keywords()->delete();
             $cliente->finanzas()->delete();
             $cliente->archivos()->delete();
+            $cliente->adsClics()->delete();
+            $cliente->adsConversiones()->delete();
         });
     }
 }

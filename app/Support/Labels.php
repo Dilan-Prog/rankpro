@@ -171,4 +171,14 @@ class Labels
             'keyword' => 'Keyword',
         ][$tipo] ?? ucfirst($tipo);
     }
+
+    public static function tipoConversion(string $tipo): string
+    {
+        return [
+            'formulario' => 'Formulario',
+            'whatsapp' => 'WhatsApp',
+            'llamada' => 'Llamada',
+            'compra' => 'Compra',
+        ][$tipo] ?? ucfirst($tipo);
+    }
 }

@@ -6,6 +6,8 @@ use App\Enums\FaseAds;
 use App\Http\Controllers\Controller;
 use App\Models\AdsBriefing;
 use App\Models\AdsCampana;
+use App\Models\AdsClic;
+use App\Models\AdsConversion;
 use App\Models\Cliente;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -146,21 +148,38 @@ class AdsController extends Controller
 
     public function show(AdsCampana $campana): View
     {
+        $campana->load(
+            'cliente',
+            'servicio',
+            'briefing',
+            'configuracion',
+            'lanzamiento',
+            'reporteActual',
+            'reportes',
+            'grupos',
+            'creativos',
+            'metricas',
+            'optimizaciones'
+        );
+
+        // Vista rápida (últimas 50): clics ya vinculados a esta campaña + clics sin asignar del mismo cliente, para que quede a la vista lo que falta emparejar manualmente.
+        $clics = AdsClic::where('cliente_id', $campana->cliente_id)
+            ->where(fn ($q) => $q->whereNull('ads_campana_id')->orWhere('ads_campana_id', $campana->id))
+            ->latest('created_at')
+            ->limit(50)
+            ->get();
+
+        $conversiones = AdsConversion::where('cliente_id', $campana->cliente_id)
+            ->with('adsClic')
+            ->latest('created_at')
+            ->limit(50)
+            ->get();
+
         return view('admin.ads.show', [
             'pageTitle' => $campana->nombre,
-            'campana' => $campana->load(
-                'cliente',
-                'servicio',
-                'briefing',
-                'configuracion',
-                'lanzamiento',
-                'reporteActual',
-                'reportes',
-                'grupos',
-                'creativos',
-                'metricas',
-                'optimizaciones'
-            ),
+            'campana' => $campana,
+            'clics' => $clics,
+            'conversiones' => $conversiones,
         ]);
     }
 
