@@ -1,0 +1,167 @@
+{
+  "resources/css/admin/ads.css": {
+    "file": "assets/ads-DxzBYZJt.css",
+    "src": "resources/css/admin/ads.css",
+    "isEntry": true
+  },
+  "resources/css/admin/archivos.css": {
+    "file": "assets/archivos-_4_yAGeW.css",
+    "src": "resources/css/admin/archivos.css",
+    "isEntry": true
+  },
+  "resources/css/admin/auth.css": {
+    "file": "assets/auth-DpL96kdA.css",
+    "src": "resources/css/admin/auth.css",
+    "isEntry": true
+  },
+  "resources/css/admin/clientes.css": {
+    "file": "assets/clientes-D2cvyIjf.css",
+    "src": "resources/css/admin/clientes.css",
+    "isEntry": true
+  },
+  "resources/css/admin/dashboard.css": {
+    "file": "assets/dashboard-D8Uw3uYv.css",
+    "src": "resources/css/admin/dashboard.css",
+    "isEntry": true
+  },
+  "resources/css/admin/desarrollo.css": {
+    "file": "assets/desarrollo-wLISwuYI.css",
+    "src": "resources/css/admin/desarrollo.css",
+    "isEntry": true
+  },
+  "resources/css/admin/finanzas.css": {
+    "file": "assets/finanzas-tn0RQdqM.css",
+    "src": "resources/css/admin/finanzas.css",
+    "isEntry": true
+  },
+  "resources/css/admin/global.css": {
+    "file": "assets/global-CKtDK3CL.css",
+    "src": "resources/css/admin/global.css",
+    "isEntry": true
+  },
+  "resources/css/admin/integraciones.css": {
+    "file": "assets/integraciones-ZF-zMv3f.css",
+    "src": "resources/css/admin/integraciones.css",
+    "isEntry": true
+  },
+  "resources/css/admin/keywords.css": {
+    "file": "assets/finanzas-tn0RQdqM.css",
+    "src": "resources/css/admin/finanzas.css",
+    "isEntry": true
+  },
+  "resources/css/admin/roles.css": {
+    "file": "assets/roles-DS6utR2b.css",
+    "src": "resources/css/admin/roles.css",
+    "isEntry": true
+  },
+  "resources/css/admin/seo.css": {
+    "file": "assets/seo-2haJR71g.css",
+    "src": "resources/css/admin/seo.css",
+    "isEntry": true
+  },
+  "resources/css/admin/servicios.css": {
+    "file": "assets/finanzas-tn0RQdqM.css",
+    "src": "resources/css/admin/finanzas.css",
+    "isEntry": true
+  },
+  "resources/css/admin/sidebar.css": {
+    "file": "assets/sidebar-5i2CY_z7.css",
+    "src": "resources/css/admin/sidebar.css",
+    "isEntry": true
+  },
+  "resources/css/web/app.css": {
+    "file": "assets/app-C-RZzmiC.css",
+    "src": "resources/css/web/app.css",
+    "isEntry": true
+  },
+  "resources/js/ads.js": {
+    "file": "assets/ads-D93RDHY3.js",
+    "name": "ads",
+    "src": "resources/js/ads.js",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DZlRXGjV.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/archivos.js": {
+    "file": "assets/archivos-q4SSHe0L.js",
+    "name": "archivos",
+    "src": "resources/js/archivos.js",
+    "isEntry": true
+  },
+  "resources/js/auth.js": {
+    "file": "assets/auth-CujPzgBo.js",
+    "name": "auth",
+    "src": "resources/js/auth.js",
+    "isEntry": true
+  },
+  "resources/js/clientes.js": {
+    "file": "assets/clientes-BPrekH9k.js",
+    "name": "clientes",
+    "src": "resources/js/clientes.js",
+    "isEntry": true
+  },
+  "resources/js/dashboard.js": {
+    "file": "assets/dashboard-gMdSqpFz.js",
+    "name": "dashboard",
+    "src": "resources/js/dashboard.js",
+    "isEntry": true
+  },
+  "resources/js/desarrollo.js": {
+    "file": "assets/desarrollo-4BKyI86S.js",
+    "name": "desarrollo",
+    "src": "resources/js/desarrollo.js",
+    "isEntry": true
+  },
+  "resources/js/documentos.js": {
+    "file": "assets/documentos-BWYWxTqM.js",
+    "name": "documentos",
+    "src": "resources/js/documentos.js",
+    "isEntry": true
+  },
+  "resources/js/finanzas.js": {
+    "file": "assets/finanzas-DHxzeZlU.js",
+    "name": "finanzas",
+    "src": "resources/js/finanzas.js",
+    "isEntry": true
+  },
+  "resources/js/global.js": {
+    "file": "assets/global-CuOrb9xo.js",
+    "name": "global",
+    "src": "resources/js/global.js",
+    "isEntry": true
+  },
+  "resources/js/keywords.js": {
+    "file": "assets/keywords-CaWdcvej.js",
+    "name": "keywords",
+    "src": "resources/js/keywords.js",
+    "isEntry": true
+  },
+  "resources/js/roles.js": {
+    "file": "assets/roles-D16XE-CB.js",
+    "name": "roles",
+    "src": "resources/js/roles.js",
+    "isEntry": true
+  },
+  "resources/js/seo.js": {
+    "file": "assets/seo-DZaJotn9.js",
+    "name": "seo",
+    "src": "resources/js/seo.js",
+    "isEntry": true
+  },
+  "resources/js/servicios.js": {
+    "file": "assets/servicios-D6gTz_8t.js",
+    "name": "servicios",
+    "src": "resources/js/servicios.js",
+    "isEntry": true
+  },
+  "resources/js/theme.js": {
+    "file": "assets/theme-CrwEq5zO.js",
+    "name": "theme",
+    "src": "resources/js/theme.js",
+    "isEntry": true
+  }
+}

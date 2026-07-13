@@ -1,0 +1,1 @@
+(function(){function t(){const e=document.getElementById("archivoClientSelect");e&&e.addEventListener("change",()=>{const n=new URL(window.location.href);n.searchParams.set("cliente",e.value),window.location.href=n.toString()})}document.addEventListener("shell:ready",t)})();

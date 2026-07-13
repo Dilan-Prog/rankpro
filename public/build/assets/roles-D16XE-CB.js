@@ -1,0 +1,1 @@
+(function(){function a(){const t=document.querySelectorAll("#rolesTabs .tabs__item");t.length&&t.forEach(n=>{n.addEventListener("click",()=>{t.forEach(e=>e.classList.remove("is-active")),n.classList.add("is-active"),document.querySelectorAll("[data-panel-content]").forEach(e=>{e.hidden=e.dataset.panelContent!==n.dataset.panel})})})}document.addEventListener("shell:ready",a)})();
