@@ -146,6 +146,29 @@ class Labels
             'estrategia' => 'Estrategia',
             'ejecucion' => 'Ejecución',
             'reporte' => 'Reporte y Análisis',
+            'cerrada' => 'Cerrada',
         ][$fase] ?? ucfirst($fase);
+    }
+
+    public static function faseAds(string $fase): string
+    {
+        return [
+            'briefing' => 'Briefing y Estrategia',
+            'configuracion' => 'Configuración',
+            'lanzamiento' => 'Lanzamiento y Optimización',
+            'reporte' => 'Reporte y Análisis',
+            'cerrada' => 'Cerrada',
+        ][$fase] ?? ucfirst($fase);
+    }
+
+    public static function tipoOptimizacion(string $tipo): string
+    {
+        return [
+            'puja' => 'Puja',
+            'audiencia' => 'Audiencia',
+            'creativo' => 'Creativo',
+            'presupuesto' => 'Presupuesto',
+            'keyword' => 'Keyword',
+        ][$tipo] ?? ucfirst($tipo);
     }
 }

@@ -6,8 +6,8 @@
             <h1 class="page-header__title">Editar Campaña</h1>
             <p class="page-header__subtitle">{{ $campana->nombre }}</p>
         </div>
-        <a href="{{ route('admin.ads.index') }}" class="btn btn--secondary">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Ads
+        <a href="{{ route('admin.ads.show', $campana) }}" class="btn btn--secondary">
+            <i class="fa-solid fa-arrow-left"></i> Volver a la campaña
         </a>
     </div>
 
@@ -19,7 +19,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn--primary"><i class="fa-solid fa-check"></i> Guardar Cambios</button>
-                <a href="{{ route('admin.ads.index') }}" class="btn btn--secondary">Cancelar</a>
+                <a href="{{ route('admin.ads.show', $campana) }}" class="btn btn--secondary">Cancelar</a>
             </div>
         </form>
     </div>

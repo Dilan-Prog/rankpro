@@ -44,18 +44,18 @@
             <a href="{{ route('admin.ads.create') }}" class="btn" style="background:{{ $colorActual }}; color:#fff;">Crear primera campaña</a>
         </div>
     @else
-        <x-data-table :headers="['Campaña', 'Cliente', 'Objetivo', 'Estado', 'Invertido', 'Impr.', 'Clics', 'CTR', 'CPC', 'Conv.', 'ROAS', '']">
+        <x-data-table :headers="['Campaña', 'Cliente', 'Fase', 'Ciclo', 'Objetivo', 'Estado', 'Invertido', 'Impr.', 'Clics', 'Conv.', 'ROAS', '']">
             @foreach ($campanas as $c)
                 <tr>
                     <td><a href="{{ route('admin.ads.show', $c['id']) }}" style="font-weight:500; color:var(--color-foreground);">{{ $c['nombre'] }}</a></td>
                     <td>{{ $c['cliente'] }}</td>
+                    <td><x-badge :status="$c['fase_actual']" /></td>
+                    <td class="u-mono">{{ $c['ciclo_actual'] }}</td>
                     <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ \App\Support\Labels::objetivo($c['objetivo']) }}</span></td>
                     <td><x-badge :status="$c['estado']" /></td>
                     <td class="u-mono">${{ number_format($c['inversion']) }}</td>
                     <td class="u-mono">{{ $c['impresiones'] > 1000000 ? number_format($c['impresiones']/1000000, 1).'M' : number_format($c['impresiones']/1000, 0).'K' }}</td>
-                    <td class="u-mono">{{ number_format($c['clics']/1000, 1) }}K</td>
-                    <td class="u-mono">{{ $c['ctr'] }}%</td>
-                    <td class="u-mono">${{ $c['cpc'] }}</td>
+                    <td class="u-mono">{{ number_format($c['clics']) }}</td>
                     <td class="u-mono">{{ $c['conversiones'] }}</td>
                     <td class="u-mono"><strong style="color:{{ $c['roas'] >= 5 ? 'var(--text-success)' : ($c['roas'] >= 3 ? 'var(--text-warning)' : 'var(--text-danger)') }}">{{ $c['roas'] }}x</strong></td>
                     <td>

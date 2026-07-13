@@ -96,6 +96,9 @@
         'borrador'      => ['Borrador',      'badge--neutral'],
         'publicado'     => ['Publicado',     'badge--success'],
         'actualizar'    => ['Actualizar',    'badge--warning'],
+
+        // Spanish (ads_campanas — fase_actual; briefing/lanzamiento ya existen arriba con otros colores aceptables)
+        'configuracion' => ['Configuración', 'badge--primary'],
     ];
     [$label, $class] = $map[$key] ?? [$key, 'badge--neutral'];
 @endphp

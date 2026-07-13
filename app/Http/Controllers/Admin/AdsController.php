@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\FaseAds;
 use App\Http\Controllers\Controller;
+use App\Models\AdsBriefing;
 use App\Models\AdsCampana;
-use App\Models\AdsCreativo;
 use App\Models\Cliente;
-use App\Models\Servicio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdsController extends Controller
@@ -31,8 +32,6 @@ class AdsController extends Controller
                     'conversiones' => (int) $campana->metricas->sum('conversiones'),
                 ];
                 $roasPromedio = $campana->metricas->count() ? round((float) $campana->metricas->avg('roas'), 2) : 0;
-                $ctrPromedio = $totales['impresiones'] > 0 ? round(($totales['clics'] / $totales['impresiones']) * 100, 2) : 0;
-                $cpcPromedio = $totales['clics'] > 0 ? round($totales['inversion'] / $totales['clics'], 2) : 0;
 
                 return [
                     'id' => $campana->id,
@@ -40,12 +39,12 @@ class AdsController extends Controller
                     'cliente' => $campana->cliente?->nombre ?? '—',
                     'objetivo' => $campana->objetivo,
                     'estado' => $campana->estado->value,
+                    'fase_actual' => $campana->fase_actual->value,
+                    'ciclo_actual' => $campana->ciclo_actual,
                     'presupuesto_mensual' => (float) $campana->presupuesto_mensual,
                     'inversion' => $totales['inversion'],
                     'impresiones' => $totales['impresiones'],
                     'clics' => $totales['clics'],
-                    'ctr' => $ctrPromedio,
-                    'cpc' => $cpcPromedio,
                     'conversiones' => $totales['conversiones'],
                     'roas' => $roasPromedio,
                 ];
@@ -71,24 +70,97 @@ class AdsController extends Controller
         return view('admin.ads.create', [
             'pageTitle' => 'Nueva Campaña',
             'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
+            'checklistBriefing' => AdsBriefing::CHECKLIST,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validated($request);
+        $data = $request->validate([
+            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
+            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'plataforma' => ['required', 'in:google_ads,meta_ads,tiktok_ads'],
+            'objetivo' => ['required', 'in:leads,ventas,trafico,branding'],
+            'presupuesto_mensual' => ['required', 'numeric', 'min:0'],
+            'fecha_inicio' => ['nullable', 'date'],
 
-        $campana = AdsCampana::create($data);
+            'publico_objetivo' => ['nullable', 'string', 'max:5000'],
+            'rango_edad' => ['nullable', 'string', 'max:100'],
+            'genero' => ['nullable', 'string', 'max:100'],
+            'ubicacion_geografica' => ['nullable', 'string', 'max:255'],
+            'intereses' => ['nullable', 'string', 'max:5000'],
+            'propuesta_valor' => ['nullable', 'string', 'max:5000'],
+            'analisis_competencia' => ['nullable', 'string', 'max:5000'],
+            'producto_servicio' => ['nullable', 'string', 'max:255'],
+            'url_destino' => ['nullable', 'string', 'max:255'],
+            'fecha_inicio_estimada' => ['nullable', 'date'],
+            'notas' => ['nullable', 'string', 'max:2000'],
 
-        return redirect()->route('admin.ads.index', ['plataforma' => $campana->plataforma])
-            ->with('status', "Campaña \"{$campana->nombre}\" creada correctamente.");
+            'checklist' => ['nullable', 'array'],
+            'checklist.*' => ['boolean'],
+        ]);
+
+        $checklistKeys = array_keys(AdsBriefing::CHECKLIST);
+        $checklist = collect($checklistKeys)->mapWithKeys(fn ($key) => [$key => (bool) ($data['checklist'][$key] ?? false)])->all();
+
+        $campana = DB::transaction(function () use ($data, $checklist) {
+            $campana = AdsCampana::create([
+                'cliente_id' => $data['cliente_id'],
+                'servicio_id' => $data['servicio_id'],
+                'nombre' => $data['nombre'],
+                'plataforma' => $data['plataforma'],
+                'objetivo' => $data['objetivo'],
+                'presupuesto_mensual' => $data['presupuesto_mensual'],
+                'estado' => 'activa',
+                'fase_actual' => FaseAds::Briefing->value,
+                'ciclo_actual' => 1,
+                'fecha_inicio' => $data['fecha_inicio'] ?? null,
+            ]);
+
+            $campana->briefings()->create([
+                'ciclo' => 1,
+                'publico_objetivo' => $data['publico_objetivo'] ?? null,
+                'rango_edad' => $data['rango_edad'] ?? null,
+                'genero' => $data['genero'] ?? null,
+                'ubicacion_geografica' => $data['ubicacion_geografica'] ?? null,
+                'intereses' => $data['intereses'] ?? null,
+                'propuesta_valor' => $data['propuesta_valor'] ?? null,
+                'analisis_competencia' => $data['analisis_competencia'] ?? null,
+                'producto_servicio' => $data['producto_servicio'] ?? null,
+                'url_destino' => $data['url_destino'] ?? null,
+                'fecha_inicio_estimada' => $data['fecha_inicio_estimada'] ?? null,
+                'notas' => $data['notas'] ?? null,
+                'checklist' => $checklist,
+            ]);
+
+            $campana->configuraciones()->create(['ciclo' => 1, 'checklist' => []]);
+            $campana->lanzamientos()->create(['ciclo' => 1, 'checklist' => []]);
+            $campana->reportes()->create(['ciclo' => 1, 'checklist' => []]);
+
+            return $campana;
+        });
+
+        return redirect()->route('admin.ads.show', $campana)->with('status', "Campaña \"{$campana->nombre}\" creada. Comienza en fase de Briefing.");
     }
 
     public function show(AdsCampana $campana): View
     {
         return view('admin.ads.show', [
             'pageTitle' => $campana->nombre,
-            'campana' => $campana->load('cliente', 'creativos', 'metricas'),
+            'campana' => $campana->load(
+                'cliente',
+                'servicio',
+                'briefing',
+                'configuracion',
+                'lanzamiento',
+                'reporteActual',
+                'reportes',
+                'grupos',
+                'creativos',
+                'metricas',
+                'optimizaciones'
+            ),
         ]);
     }
 
@@ -103,51 +175,7 @@ class AdsController extends Controller
 
     public function update(Request $request, AdsCampana $campana): RedirectResponse
     {
-        $data = $this->validated($request);
-
-        $campana->update($data);
-
-        return redirect()->route('admin.ads.index', ['plataforma' => $campana->plataforma])
-            ->with('status', "Campaña \"{$campana->nombre}\" actualizada correctamente.");
-    }
-
-    public function destroy(AdsCampana $campana): RedirectResponse
-    {
-        $plataforma = $campana->plataforma;
-        $campana->delete();
-
-        return redirect()->route('admin.ads.index', ['plataforma' => $plataforma])->with('status', 'Campaña eliminada.');
-    }
-
-    public function storeCreativo(Request $request, AdsCampana $campana): RedirectResponse
-    {
         $data = $request->validate([
-            'titulo' => ['required', 'string', 'max:255'],
-            'copy' => ['nullable', 'string', 'max:2000'],
-            'tipo' => ['required', 'in:imagen,video,carrusel'],
-            'url_imagen' => ['nullable', 'string', 'max:255'],
-            'ctr' => ['nullable', 'numeric', 'min:0'],
-            'estado' => ['required', 'in:activo,pausado'],
-            'ab_testing' => ['nullable', 'boolean'],
-        ]);
-
-        $data['ab_testing'] = $request->boolean('ab_testing');
-        $campana->creativos()->create($data);
-
-        return redirect()->route('admin.ads.show', $campana)->with('status', 'Creativo agregado.');
-    }
-
-    public function destroyCreativo(AdsCreativo $creativo): RedirectResponse
-    {
-        $campanaId = $creativo->ads_campana_id;
-        $creativo->delete();
-
-        return redirect()->route('admin.ads.show', $campanaId)->with('status', 'Creativo eliminado.');
-    }
-
-    private function validated(Request $request): array
-    {
-        return $request->validate([
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
             'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
             'nombre' => ['required', 'string', 'max:255'],
@@ -159,5 +187,17 @@ class AdsController extends Controller
             'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
             'notas' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $campana->update($data);
+
+        return redirect()->route('admin.ads.show', $campana)->with('status', "Campaña \"{$campana->nombre}\" actualizada correctamente.");
+    }
+
+    public function destroy(AdsCampana $campana): RedirectResponse
+    {
+        $plataforma = $campana->plataforma;
+        $campana->delete();
+
+        return redirect()->route('admin.ads.index', ['plataforma' => $plataforma])->with('status', 'Campaña eliminada.');
     }
 }

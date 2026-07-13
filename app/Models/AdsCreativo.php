@@ -18,7 +18,7 @@ class AdsCreativo extends Model
         'titulo',
         'copy',
         'tipo',
-        'url_imagen',
+        'url_creativo',
         'ctr',
         'estado',
         'ab_testing',

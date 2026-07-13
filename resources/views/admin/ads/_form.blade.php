@@ -1,4 +1,4 @@
-{{-- Shared by create.blade.php and edit.blade.php --}}
+{{-- Editar Campaña — general data only. Phase-specific fields (briefing, configuración, lanzamiento, reporte) live in show.blade.php's phase panels. --}}
 <div class="form-grid form-grid--2">
     <div class="field">
         <label class="field__label" for="cliente_id">Cliente</label>

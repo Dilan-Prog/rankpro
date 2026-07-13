@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\AdsController;
+use App\Http\Controllers\Admin\AdsCreativoController;
+use App\Http\Controllers\Admin\AdsFaseController;
+use App\Http\Controllers\Admin\AdsGrupoController;
+use App\Http\Controllers\Admin\AdsMetricaController;
+use App\Http\Controllers\Admin\AdsOptimizacionController;
 use App\Http\Controllers\Admin\ArchivosController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
@@ -118,8 +123,30 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{campana}/editar', [AdsController::class, 'edit'])->name('edit');
         Route::put('/{campana}', [AdsController::class, 'update'])->name('update');
         Route::delete('/{campana}', [AdsController::class, 'destroy'])->name('destroy');
-        Route::post('/{campana}/creativos', [AdsController::class, 'storeCreativo'])->name('creativos.store');
-        Route::delete('/creativos/{creativo}', [AdsController::class, 'destroyCreativo'])->name('creativos.destroy');
+
+        Route::post('/{campana}/fase/guardar', [AdsFaseController::class, 'guardar'])->name('fase.guardar');
+        Route::post('/{campana}/fase/aprobar', [AdsFaseController::class, 'aprobar'])->name('fase.aprobar');
+        Route::post('/{campana}/fase/retroceder', [AdsFaseController::class, 'retroceder'])->name('fase.retroceder');
+        Route::post('/{campana}/fase/nuevo-ciclo', [AdsFaseController::class, 'nuevoCiclo'])->name('fase.nuevo-ciclo');
+        Route::post('/{campana}/fase/cerrar', [AdsFaseController::class, 'cerrar'])->name('fase.cerrar');
+        Route::post('/{campana}/fase/pausar', [AdsFaseController::class, 'pausar'])->name('fase.pausar');
+
+        Route::post('/{campana}/grupos', [AdsGrupoController::class, 'store'])->name('grupos.store');
+        Route::put('/grupos/{grupo}', [AdsGrupoController::class, 'update'])->name('grupos.update');
+        Route::delete('/grupos/{grupo}', [AdsGrupoController::class, 'destroy'])->name('grupos.destroy');
+
+        Route::post('/{campana}/creativos', [AdsCreativoController::class, 'store'])->name('creativos.store');
+        Route::put('/creativos/{creativo}', [AdsCreativoController::class, 'update'])->name('creativos.update');
+        Route::delete('/creativos/{creativo}', [AdsCreativoController::class, 'destroy'])->name('creativos.destroy');
+
+        Route::post('/{campana}/metricas', [AdsMetricaController::class, 'store'])->name('metricas.store');
+        Route::put('/metricas/{metrica}', [AdsMetricaController::class, 'update'])->name('metricas.update');
+        Route::delete('/metricas/{metrica}', [AdsMetricaController::class, 'destroy'])->name('metricas.destroy');
+
+        Route::post('/{campana}/optimizaciones', [AdsOptimizacionController::class, 'store'])->name('optimizaciones.store');
+        Route::put('/optimizaciones/{optimizacion}', [AdsOptimizacionController::class, 'update'])->name('optimizaciones.update');
+        Route::delete('/optimizaciones/{optimizacion}', [AdsOptimizacionController::class, 'destroy'])->name('optimizaciones.destroy');
+
         Route::get('/{campana}', [AdsController::class, 'show'])->name('show');
     });
 
