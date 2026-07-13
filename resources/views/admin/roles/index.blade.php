@@ -70,6 +70,11 @@
     </div>
 
     <div data-panel-content="usuarios" hidden>
+        <div style="display:flex; justify-content:flex-end; margin-bottom: var(--space-3);">
+            <a href="{{ route('admin.usuarios.create') }}" class="btn btn--primary">
+                <i class="fa-solid fa-user-plus"></i> Nuevo Usuario
+            </a>
+        </div>
         <x-data-table :headers="['Usuario', 'Email', 'Rol', 'Activo', 'Último acceso', '']">
             @foreach ($usuarios as $usuario)
                 @php $formId = 'user-form-'.$usuario->id; @endphp

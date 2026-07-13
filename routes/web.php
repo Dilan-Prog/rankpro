@@ -220,7 +220,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
     });
 
-    Route::put('/usuarios/{user}', [UsersController::class, 'update'])->name('usuarios.update');
+    Route::prefix('usuarios')->name('usuarios.')->group(function () {
+        Route::get('/nuevo', [UsersController::class, 'create'])->name('create');
+        Route::post('/', [UsersController::class, 'store'])->name('store');
+        Route::put('/{user}', [UsersController::class, 'update'])->name('update');
+    });
 });
 
 require __DIR__.'/auth.php';
