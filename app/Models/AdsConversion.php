@@ -27,6 +27,7 @@ class AdsConversion extends Model
         'estado',
         'exportada_at',
         'metadata',
+        'ads_embudo_etapa_id',
     ];
 
     protected $casts = [
@@ -45,5 +46,10 @@ class AdsConversion extends Model
     public function adsClic(): BelongsTo
     {
         return $this->belongsTo(AdsClic::class, 'ads_clic_id');
+    }
+
+    public function etapa(): BelongsTo
+    {
+        return $this->belongsTo(AdsEmbudoEtapa::class, 'ads_embudo_etapa_id');
     }
 }

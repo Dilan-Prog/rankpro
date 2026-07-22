@@ -16,7 +16,7 @@ class AdsGrupoController extends Controller
 
         $grupo = $campana->grupos()->create($data);
 
-        return response()->json($grupo, 201);
+        return response()->json($grupo->load('keywords', 'columnasPersonalizadas'), 201);
     }
 
     public function update(Request $request, AdsGrupo $grupo): JsonResponse
@@ -25,7 +25,7 @@ class AdsGrupoController extends Controller
 
         $grupo->update($data);
 
-        return response()->json($grupo->fresh());
+        return response()->json($grupo->fresh()->load('keywords', 'columnasPersonalizadas'));
     }
 
     public function destroy(AdsGrupo $grupo): JsonResponse
@@ -41,14 +41,9 @@ class AdsGrupoController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'audiencia' => ['nullable', 'string', 'max:255'],
             'presupuesto' => ['nullable', 'numeric', 'min:0'],
-            'keywords' => ['nullable', 'string', 'max:2000'],
             'estado' => ['required', 'in:activo,pausado'],
         ]);
 
-        // Keywords arrive as a comma-separated string from the form; stored as a JSON array.
-        $data['keywords'] = filled($data['keywords'] ?? null)
-            ? array_values(array_filter(array_map('trim', explode(',', $data['keywords']))))
-            : [];
         $data['presupuesto'] = $data['presupuesto'] ?? 0;
 
         return $data;

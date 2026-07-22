@@ -22,6 +22,7 @@
                 ['route' => 'admin.seo.index', 'active' => 'admin.seo.*', 'icon' => 'fa-magnifying-glass', 'label' => 'Módulo SEO'],
                 ['route' => 'admin.keywords.index', 'active' => 'admin.keywords.*', 'icon' => 'fa-key', 'label' => 'Keywords'],
                 ['route' => 'admin.ads.index', 'active' => 'admin.ads.*', 'icon' => 'fa-bullhorn', 'label' => 'Módulo Ads'],
+                ['route' => 'admin.conversiones.index', 'active' => 'admin.conversiones.*', 'icon' => 'fa-filter', 'label' => 'Conversiones'],
                 ['route' => 'admin.desarrollo.index', 'active' => 'admin.desarrollo.*', 'icon' => 'fa-code', 'label' => 'Desarrollo'],
                 ['route' => 'admin.finanzas.index', 'active' => 'admin.finanzas.*', 'icon' => 'fa-dollar-sign', 'label' => 'Finanzas'],
                 ['route' => 'admin.archivos.index', 'active' => 'admin.archivos.*', 'icon' => 'fa-folder-open', 'label' => 'Archivos'],

@@ -77,6 +77,11 @@ class Cliente extends Model
         return $this->hasMany(AdsConversion::class);
     }
 
+    public function embudoEtapas(): HasMany
+    {
+        return $this->hasMany(AdsEmbudoEtapa::class)->orderBy('orden');
+    }
+
     /**
      * Cascades a delete (soft or force) to every child relation. Children
      * that also use SoftDeletes (servicios, seoCampanas, adsCampanas,
@@ -99,6 +104,7 @@ class Cliente extends Model
             $cliente->archivos()->delete();
             $cliente->adsClics()->delete();
             $cliente->adsConversiones()->delete();
+            $cliente->embudoEtapas()->delete();
         });
     }
 }

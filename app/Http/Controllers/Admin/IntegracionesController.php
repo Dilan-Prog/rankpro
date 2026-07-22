@@ -97,9 +97,10 @@ class IntegracionesController extends Controller
         return view('admin.integraciones.conversiones', [
             'pageTitle' => 'Conversiones — '.$cliente->nombre,
             'cliente' => $cliente,
-            'conversiones' => $query->with('adsClic.adsCampana')->latest('created_at')->paginate(50)->withQueryString(),
+            'conversiones' => $query->with('adsClic.adsCampana', 'etapa')->latest('created_at')->paginate(50)->withQueryString(),
             'campanas' => AdsCampana::where('cliente_id', $cliente->id)->orderBy('nombre')->get(['id', 'nombre']),
             'tiposConversion' => TipoConversion::cases(),
+            'etapas' => $cliente->embudoEtapas,
         ]);
     }
 
@@ -160,6 +161,56 @@ class IntegracionesController extends Controller
         return back()->with('status', 'Clic asignado correctamente.');
     }
 
+    public function asignarEtapa(Request $request, Cliente $cliente, AdsConversion $conversion): RedirectResponse
+    {
+        abort_unless($conversion->cliente_id === $cliente->id, 404);
+
+        $data = $request->validate([
+            'ads_embudo_etapa_id' => ['nullable', 'exists:ads_embudo_etapas,id'],
+        ]);
+
+        $conversion->update(['ads_embudo_etapa_id' => $data['ads_embudo_etapa_id'] ?? null]);
+
+        return back()->with('status', 'Conversión clasificada correctamente.');
+    }
+
+    /**
+     * Exportación general a Excel (CSV con BOM UTF-8, se abre directo en
+     * Excel sin problemas de acentos) — distinta del exportarCsv() de arriba,
+     * que es específico para la carga manual de conversiones en Google Ads.
+     * Respeta los filtros activos (incluida la etapa del embudo).
+     */
+    public function exportarExcel(Request $request, Cliente $cliente)
+    {
+        $conversiones = $this->conversionesFiltradas($request, $cliente)
+            ->with('adsClic.adsCampana', 'etapa')
+            ->orderBy('created_at')
+            ->get();
+
+        $filename = 'embudo-'.Str::slug($cliente->nombre).'-'.now()->format('Y-m-d_His').'.csv';
+
+        return response()->streamDownload(function () use ($conversiones) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // BOM UTF-8
+            fputcsv($out, ['Fecha', 'Tipo', 'Etapa del embudo', 'Campaña', 'Valor', 'Moneda', 'Estado', 'Identificador (gclid/gbraid/wbraid)']);
+
+            foreach ($conversiones as $conversion) {
+                fputcsv($out, [
+                    $conversion->created_at->format('Y-m-d H:i'),
+                    \App\Support\Labels::tipoConversion($conversion->tipo->value),
+                    $conversion->etapa->nombre ?? 'Sin clasificar',
+                    $conversion->adsClic?->adsCampana?->nombre ?? '—',
+                    $conversion->valor,
+                    $conversion->moneda,
+                    $conversion->estado->value,
+                    $conversion->gclid ?? $conversion->gbraid ?? $conversion->wbraid,
+                ]);
+            }
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
     private function conversionesFiltradas(Request $request, Cliente $cliente)
     {
         $query = $cliente->adsConversiones();
@@ -183,6 +234,13 @@ class IntegracionesController extends Controller
 
         if ($request->filled('valor_min')) {
             $query->where('valor', '>=', $request->get('valor_min'));
+        }
+
+        if ($request->filled('ads_embudo_etapa_id')) {
+            $etapaId = $request->get('ads_embudo_etapa_id');
+            $etapaId === 'sin_clasificar'
+                ? $query->whereNull('ads_embudo_etapa_id')
+                : $query->where('ads_embudo_etapa_id', $etapaId);
         }
 
         return $query;

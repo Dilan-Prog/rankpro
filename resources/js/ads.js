@@ -252,43 +252,405 @@
     </div>`;
   }
 
-  // ---------- Grupos de anuncios ----------
+  // ---------- Grupos de anuncios (con hoja de cálculo de keywords + columnas personalizadas) ----------
+  const COMPETENCIA_LABEL = { baja: "Baja", media: "Media", alta: "Alta" };
+  const COMPETENCIA_CLASS = { baja: "badge--success", media: "badge--warning", alta: "badge--danger" };
+
+  function grupoRowHtml(g) {
+    const count = (g.keywords || []).length;
+    const keywordsCell = count
+      ? `<span class="badge badge--info">${count} ${count === 1 ? "palabra clave" : "palabras clave"}</span>`
+      : '<span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">Sin palabras clave</span>';
+
+    return `<tr data-grupo-id="${g.id}" data-grupo-nombre="${escapeHtml(g.nombre)}" data-grupo-audiencia="${escapeHtml(g.audiencia || "")}" data-grupo-presupuesto="${g.presupuesto ?? ""}" data-grupo-estado="${g.estado}" data-grupo-keywords-json='${escapeHtml(JSON.stringify(g.keywords || []))}' data-grupo-columnas-json='${escapeHtml(JSON.stringify(g.columnas_personalizadas || []))}'>
+      <td>${escapeHtml(g.nombre)}</td>
+      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(g.audiencia || "—")}</span></td>
+      <td class="u-mono">$${Number(g.presupuesto || 0).toLocaleString("es-MX")}</td>
+      <td>${keywordsCell}</td>
+      <td>${badge(g.estado)}</td>
+      <td>${iconButtons("grupo", g.id)}</td>
+    </tr>`;
+  }
+
   function initGrupos() {
-    initCrudTable({
-      formId: "grupoForm",
-      slug: "grupos",
-      entity: "grupo",
-      modalId: "grupoModal",
-      addTitle: "Agregar Grupo de Anuncios",
-      editTitle: "Editar Grupo de Anuncios",
-      addLabel: "Agregar",
-      confirmDelete: "¿Eliminar este grupo de anuncios?",
-      createdMsg: "Grupo agregado.",
-      updatedMsg: "Grupo actualizado.",
-      deletedMsg: "Grupo eliminado.",
-      errorMsg: "No se pudo guardar el grupo.",
-      deleteUrl: (id) => `/admin/ads/grupos/${id}`,
-      rowHtml: (g) => {
-        const keywords = Array.isArray(g.keywords) ? g.keywords : [];
-        const chips = keywords.length
-          ? keywords.map((kw) => `<span style="padding:2px 6px; border-radius:4px; background:var(--color-secondary); border:1px solid var(--color-border); font-size:var(--text-xs);">${escapeHtml(kw)}</span>`).join("")
-          : '<span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">—</span>';
-        return `<tr data-grupo-id="${g.id}" data-grupo-nombre="${escapeHtml(g.nombre)}" data-grupo-audiencia="${escapeHtml(g.audiencia || "")}" data-grupo-presupuesto="${g.presupuesto ?? ""}" data-grupo-keywords="${escapeHtml(keywords.join(", "))}" data-grupo-estado="${g.estado}">
-          <td>${escapeHtml(g.nombre)}</td>
-          <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(g.audiencia || "—")}</span></td>
-          <td class="u-mono">$${Number(g.presupuesto || 0).toLocaleString("es-MX")}</td>
-          <td><div style="display:flex; flex-wrap:wrap; gap:4px;">${chips}</div></td>
-          <td>${badge(g.estado)}</td>
-          <td>${iconButtons("grupo", g.id)}</td>
-        </tr>`;
-      },
-      fillForm: (form, d) => {
-        form.querySelector("#g_nombre").value = d.grupoNombre || "";
-        form.querySelector("#g_audiencia").value = d.grupoAudiencia || "";
-        form.querySelector("#g_presupuesto").value = d.grupoPresupuesto || "";
-        form.querySelector("#g_keywords").value = d.grupoKeywords || "";
-        form.querySelector("#g_estado").value = d.grupoEstado;
-      },
+    const form = document.getElementById("grupoForm");
+    const rowsBody = document.querySelector("[data-grupos-rows]");
+    if (!form || !rowsBody) return;
+
+    const modalTitle = document.querySelector("[data-grupo-modal-title]");
+    const submitLabel = document.querySelector("[data-grupo-submit-label]");
+    const keywordsBlock = document.querySelector("[data-keywords-block]");
+    const keywordsLockedHint = document.querySelector("[data-keywords-locked-hint]");
+    const tableContainer = document.querySelector("[data-keywords-table-container]");
+
+    // Estado en memoria de la hoja de cálculo actualmente abierta — se re-renderiza completa en cada cambio (agregar/borrar columna, editar celda, agregar/borrar fila) para mantener el DOM siempre consistente con los datos guardados.
+    const kwState = { grupoId: null, columnas: [], keywords: [] };
+
+    function addSuggestion(nombre) {
+      const datalist = document.getElementById("columnasSugeridas");
+      if (!datalist || [...datalist.options].some((o) => o.value === nombre)) return;
+      const opt = document.createElement("option");
+      opt.value = nombre;
+      datalist.appendChild(opt);
+    }
+
+    function competenciaOptionsHtml(selected) {
+      return ["", "baja", "media", "alta"]
+        .map((v) => `<option value="${v}" ${selected === v ? "selected" : ""}>${v ? COMPETENCIA_LABEL[v] : "—"}</option>`)
+        .join("");
+    }
+
+    function keywordDisplayCell(field, kw, columnaId) {
+      if (field === "keyword") return escapeHtml(kw.keyword);
+      if (field === "volumen_busqueda") return kw.volumen_busqueda != null ? Number(kw.volumen_busqueda).toLocaleString("es-MX") : "—";
+      if (field === "competencia") return kw.competencia ? `<span class="badge ${COMPETENCIA_CLASS[kw.competencia]}">${COMPETENCIA_LABEL[kw.competencia]}</span>` : "—";
+      if (field === "cpc") return kw.cpc != null ? "$" + kw.cpc : "—";
+      if (field === "custom") {
+        const val = (kw.datos_personalizados || {})[columnaId];
+        return val ? escapeHtml(val) : "—";
+      }
+      return "—";
+    }
+
+    function renderTable() {
+      const theadExtra = kwState.columnas
+        .map(
+          (c) => `<th data-columna-id="${c.id}">
+            <span data-columna-nombre-display="${c.id}">${escapeHtml(c.nombre)}</span>
+            <button type="button" class="btn--icon" data-delete-columna="${c.id}" title="Eliminar columna"><i class="fa-solid fa-xmark"></i></button>
+          </th>`
+        )
+        .join("");
+
+      const thead = `<tr>
+        <th>Palabra clave</th><th>Volumen de búsqueda</th><th>Competencia</th><th>CPC (MXN)</th>
+        ${theadExtra}
+        <th style="white-space:nowrap;"><button type="button" class="btn--icon" data-add-columna title="Agregar columna"><i class="fa-solid fa-plus"></i></button></th>
+      </tr>`;
+
+      const bodyRows = kwState.keywords
+        .map((kw) => {
+          const customCells = kwState.columnas
+            .map((c) => `<td data-editable-cell data-field="custom" data-columna-id="${c.id}">${keywordDisplayCell("custom", kw, c.id)}</td>`)
+            .join("");
+          return `<tr data-keyword-id="${kw.id}">
+            <td data-editable-cell data-field="keyword">${keywordDisplayCell("keyword", kw)}</td>
+            <td class="u-mono" data-editable-cell data-field="volumen_busqueda">${keywordDisplayCell("volumen_busqueda", kw)}</td>
+            <td data-editable-cell data-field="competencia">${keywordDisplayCell("competencia", kw)}</td>
+            <td class="u-mono" data-editable-cell data-field="cpc">${keywordDisplayCell("cpc", kw)}</td>
+            ${customCells}
+            <td><button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-keyword-row="${kw.id}"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>`;
+        })
+        .join("");
+
+      const footExtra = kwState.columnas.map((c) => `<td><input class="input" type="text" data-kw-custom-input="${c.id}" placeholder="${escapeHtml(c.nombre)}"></td>`).join("");
+
+      const tfoot = `<tr>
+        <td><input class="input" type="text" id="kw_keyword" placeholder="Nueva palabra clave"></td>
+        <td><input class="input" type="number" min="0" id="kw_volumen" placeholder="0"></td>
+        <td><select class="select" id="kw_competencia">${competenciaOptionsHtml("")}</select></td>
+        <td><input class="input" type="number" step="0.01" min="0" id="kw_cpc" placeholder="0.00"></td>
+        ${footExtra}
+        <td><button type="button" class="btn btn--primary" data-add-keyword-row title="Agregar fila"><i class="fa-solid fa-plus"></i></button></td>
+      </tr>`;
+
+      tableContainer.innerHTML = `<table class="table"><thead>${thead}</thead><tbody data-keyword-rows>${bodyRows}</tbody><tfoot>${tfoot}</tfoot></table>`;
+    }
+
+    function lockKeywords() {
+      keywordsBlock.hidden = true;
+      keywordsLockedHint.hidden = false;
+      kwState.grupoId = null;
+      kwState.columnas = [];
+      kwState.keywords = [];
+      tableContainer.innerHTML = "";
+    }
+
+    function unlockKeywords(grupoId, keywords, columnas) {
+      keywordsBlock.hidden = false;
+      keywordsLockedHint.hidden = true;
+      kwState.grupoId = grupoId;
+      kwState.columnas = columnas || [];
+      kwState.keywords = keywords || [];
+      renderTable();
+    }
+
+    function resetForm() {
+      form.reset();
+      delete form.dataset.editingId;
+      if (modalTitle) modalTitle.textContent = "Agregar Grupo de Anuncios";
+      if (submitLabel) submitLabel.textContent = "Agregar Grupo";
+      lockKeywords();
+    }
+
+    document.querySelector('[onclick*="grupoModal"]')?.addEventListener("click", resetForm);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const editingId = form.dataset.editingId;
+      const url = editingId ? form.dataset.updateActionTemplate.replace("__ID__", editingId) : form.dataset.storeAction;
+      const payload = Object.fromEntries(new FormData(form).entries());
+
+      request(url, editingId ? "PUT" : "POST", payload)
+        .then((grupo) => {
+          const rowData = { ...grupo, columnas_personalizadas: grupo.columnas_personalizadas || [] };
+          const existing = rowsBody.querySelector(`[data-grupo-id="${grupo.id}"]`);
+          if (existing) existing.outerHTML = grupoRowHtml(rowData);
+          else rowsBody.insertAdjacentHTML("beforeend", grupoRowHtml(rowData));
+          toggleEmptyState("data-grupos-empty", "data-grupos-table", rowsBody);
+
+          if (editingId) {
+            window.AgencyOS.closeModal("grupoModal");
+            resetForm();
+            toast("Grupo actualizado.", "success");
+          } else {
+            // Al crear, el modal se queda abierto y pasa a modo edición para que se puedan agregar palabras clave de inmediato.
+            form.dataset.editingId = grupo.id;
+            if (modalTitle) modalTitle.textContent = "Editar Grupo de Anuncios";
+            if (submitLabel) submitLabel.textContent = "Guardar Cambios";
+            unlockKeywords(grupo.id, grupo.keywords, grupo.columnas_personalizadas);
+            toast("Grupo agregado. Ya puedes agregar palabras clave.", "success");
+          }
+        })
+        .catch(() => toast("No se pudo guardar el grupo.", "error"));
+    });
+
+    rowsBody.addEventListener("click", (e) => {
+      const editBtn = e.target.closest("[data-edit-grupo]");
+      const deleteBtn = e.target.closest("[data-delete-grupo]");
+
+      if (editBtn) {
+        const row = editBtn.closest("tr");
+        form.dataset.editingId = row.dataset.grupoId;
+        form.querySelector("#g_nombre").value = row.dataset.grupoNombre || "";
+        form.querySelector("#g_audiencia").value = row.dataset.grupoAudiencia || "";
+        form.querySelector("#g_presupuesto").value = row.dataset.grupoPresupuesto || "";
+        form.querySelector("#g_estado").value = row.dataset.grupoEstado;
+        if (modalTitle) modalTitle.textContent = "Editar Grupo de Anuncios";
+        if (submitLabel) submitLabel.textContent = "Guardar Cambios";
+        unlockKeywords(row.dataset.grupoId, JSON.parse(row.dataset.grupoKeywordsJson || "[]"), JSON.parse(row.dataset.grupoColumnasJson || "[]"));
+        window.AgencyOS.openModal("grupoModal");
+      }
+
+      if (deleteBtn) {
+        if (!window.confirm("¿Eliminar este grupo de anuncios? También se eliminarán sus palabras clave.")) return;
+        const id = deleteBtn.dataset.deleteGrupo;
+        request(`/admin/ads/grupos/${id}`, "DELETE")
+          .then(() => {
+            rowsBody.querySelector(`[data-grupo-id="${id}"]`)?.remove();
+            toggleEmptyState("data-grupos-empty", "data-grupos-table", rowsBody);
+            toast("Grupo eliminado.", "success");
+          })
+          .catch(() => toast("No se pudo eliminar el grupo.", "error"));
+      }
+    });
+
+    // ---------- Delegación de eventos sobre la tabla dinámica (se re-crea en cada render) ----------
+    tableContainer.addEventListener("click", (e) => {
+      // Agregar fila de keyword
+      const addRowBtn = e.target.closest("[data-add-keyword-row]");
+      if (addRowBtn) {
+        const keywordInput = document.getElementById("kw_keyword");
+        const keyword = keywordInput.value.trim();
+        if (!keyword) {
+          keywordInput.focus();
+          return;
+        }
+        const datosPersonalizados = {};
+        kwState.columnas.forEach((c) => {
+          const input = tableContainer.querySelector(`[data-kw-custom-input="${c.id}"]`);
+          if (input && input.value) datosPersonalizados[c.id] = input.value;
+        });
+        const payload = {
+          keyword,
+          volumen_busqueda: document.getElementById("kw_volumen").value || null,
+          competencia: document.getElementById("kw_competencia").value || null,
+          cpc: document.getElementById("kw_cpc").value || null,
+          datos_personalizados: datosPersonalizados,
+        };
+        request(`/admin/ads/grupos/${kwState.grupoId}/keywords`, "POST", payload)
+          .then((kw) => {
+            kwState.keywords.push(kw);
+            renderTable();
+            document.getElementById("kw_keyword")?.focus();
+          })
+          .catch(() => toast("No se pudo agregar la palabra clave.", "error"));
+        return;
+      }
+
+      // Borrar fila de keyword
+      const deleteRowBtn = e.target.closest("[data-delete-keyword-row]");
+      if (deleteRowBtn) {
+        const id = deleteRowBtn.dataset.deleteKeywordRow;
+        request(`/admin/ads/grupos/keywords/${id}`, "DELETE")
+          .then(() => {
+            kwState.keywords = kwState.keywords.filter((k) => String(k.id) !== String(id));
+            renderTable();
+          })
+          .catch(() => toast("No se pudo eliminar la palabra clave.", "error"));
+        return;
+      }
+
+      // Agregar columna — el encabezado "+" se convierte en un input con sugerencias (datalist) de nombres ya usados en cualquier otro grupo.
+      const addColBtn = e.target.closest("[data-add-columna]");
+      if (addColBtn) {
+        const th = addColBtn.closest("th");
+        th.innerHTML = `<input class="input" type="text" list="columnasSugeridas" placeholder="Nombre de columna" autocomplete="off" style="width:140px;">`;
+        const input = th.querySelector("input");
+        input.focus();
+
+        const confirmAdd = () => {
+          const nombre = input.value.trim();
+          if (!nombre) {
+            renderTable();
+            return;
+          }
+          request(`/admin/ads/grupos/${kwState.grupoId}/columnas`, "POST", { nombre })
+            .then((columna) => {
+              kwState.columnas.push(columna);
+              addSuggestion(columna.nombre);
+              renderTable();
+            })
+            .catch(() => {
+              toast("No se pudo agregar la columna.", "error");
+              renderTable();
+            });
+        };
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            confirmAdd();
+          }
+          if (ev.key === "Escape") renderTable();
+        });
+        input.addEventListener("blur", confirmAdd);
+        return;
+      }
+
+      // Borrar columna
+      const delColBtn = e.target.closest("[data-delete-columna]");
+      if (delColBtn) {
+        if (!window.confirm("¿Eliminar esta columna? Se perderán los valores guardados en ella para todas las palabras clave de este grupo.")) return;
+        const columnaId = delColBtn.dataset.deleteColumna;
+        request(`/admin/ads/grupos/columnas/${columnaId}`, "DELETE")
+          .then(() => {
+            kwState.columnas = kwState.columnas.filter((c) => String(c.id) !== String(columnaId));
+            renderTable();
+          })
+          .catch(() => toast("No se pudo eliminar la columna.", "error"));
+        return;
+      }
+
+      // Renombrar columna (clic en el nombre del encabezado)
+      const nombreSpan = e.target.closest("[data-columna-nombre-display]");
+      if (nombreSpan) {
+        const columnaId = nombreSpan.dataset.columnaNombreDisplay;
+        const columna = kwState.columnas.find((c) => String(c.id) === String(columnaId));
+        if (!columna) return;
+        nombreSpan.innerHTML = `<input class="input" type="text" value="${escapeHtml(columna.nombre)}" autocomplete="off" style="width:110px;">`;
+        const input = nombreSpan.querySelector("input");
+        input.focus();
+        input.select();
+
+        const saveRename = () => {
+          const nuevoNombre = input.value.trim();
+          if (!nuevoNombre || nuevoNombre === columna.nombre) {
+            renderTable();
+            return;
+          }
+          request(`/admin/ads/grupos/columnas/${columnaId}`, "PUT", { nombre: nuevoNombre })
+            .then((updated) => {
+              columna.nombre = updated.nombre;
+              addSuggestion(updated.nombre);
+              renderTable();
+            })
+            .catch(() => {
+              toast("No se pudo renombrar la columna.", "error");
+              renderTable();
+            });
+        };
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            input.blur();
+          }
+          if (ev.key === "Escape") renderTable();
+        });
+        input.addEventListener("blur", saveRename);
+        return;
+      }
+
+      // Edición en línea de una celda existente (keyword/volumen/competencia/cpc/columna personalizada)
+      const cell = e.target.closest("[data-editable-cell]");
+      if (cell && !cell.querySelector("input,select")) {
+        const field = cell.dataset.field;
+        const row = cell.closest("tr");
+        const kw = kwState.keywords.find((k) => String(k.id) === String(row.dataset.keywordId));
+        if (!kw) return;
+
+        let inputHtml;
+        if (field === "competencia") {
+          inputHtml = `<select class="select">${competenciaOptionsHtml(kw.competencia || "")}</select>`;
+        } else if (field === "volumen_busqueda") {
+          inputHtml = `<input class="input" type="number" min="0" value="${kw.volumen_busqueda ?? ""}">`;
+        } else if (field === "cpc") {
+          inputHtml = `<input class="input" type="number" step="0.01" min="0" value="${kw.cpc ?? ""}">`;
+        } else if (field === "custom") {
+          const columnaId = cell.dataset.columnaId;
+          const val = (kw.datos_personalizados || {})[columnaId] ?? "";
+          inputHtml = `<input class="input" type="text" value="${escapeHtml(val)}">`;
+        } else {
+          inputHtml = `<input class="input" type="text" value="${escapeHtml(kw.keyword)}">`;
+        }
+
+        cell.innerHTML = inputHtml;
+        const input = cell.querySelector("input,select");
+        input.focus();
+        if (input.select) input.select();
+
+        const saveCell = () => {
+          const value = input.value;
+          const payload = {
+            keyword: field === "keyword" ? value : kw.keyword,
+            volumen_busqueda: field === "volumen_busqueda" ? value || null : kw.volumen_busqueda,
+            competencia: field === "competencia" ? value || null : kw.competencia,
+            cpc: field === "cpc" ? value || null : kw.cpc,
+            datos_personalizados: kw.datos_personalizados || {},
+          };
+          if (field === "custom") {
+            payload.datos_personalizados = { ...(kw.datos_personalizados || {}), [cell.dataset.columnaId]: value || null };
+          }
+
+          request(`/admin/ads/grupos/keywords/${kw.id}`, "PUT", payload)
+            .then((fresh) => {
+              const idx = kwState.keywords.findIndex((k) => k.id === kw.id);
+              kwState.keywords[idx] = fresh;
+              renderTable();
+            })
+            .catch(() => {
+              toast("No se pudo guardar el cambio.", "error");
+              renderTable();
+            });
+        };
+
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            input.blur();
+          }
+          if (ev.key === "Escape") renderTable();
+        });
+        input.addEventListener("blur", saveCell);
+      }
+    });
+
+    // Enter en cualquier campo de la fila de captura agrega la palabra clave, como en una hoja de cálculo.
+    tableContainer.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      if (!["kw_keyword", "kw_volumen", "kw_cpc"].includes(e.target.id) && !e.target.hasAttribute("data-kw-custom-input")) return;
+      e.preventDefault();
+      tableContainer.querySelector("[data-add-keyword-row]")?.click();
     });
   }
 

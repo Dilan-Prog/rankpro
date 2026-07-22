@@ -177,42 +177,58 @@
     @endif
 
     {{-- ---------- Modales ---------- --}}
-    <x-modal id="grupoModal">
+    <x-modal id="grupoModal" size="lg">
         <x-slot:header><h2 data-grupo-modal-title>Agregar Grupo de Anuncios</h2></x-slot:header>
+
         <form id="grupoForm"
             data-store-action="{{ route('admin.ads.grupos.store', $campana) }}"
             data-update-action-template="{{ route('admin.ads.grupos.update', ['grupo' => '__ID__']) }}">
-            <div class="field">
-                <label class="field__label" for="g_nombre">Nombre del grupo</label>
-                <input class="input" type="text" name="nombre" id="g_nombre" required>
-            </div>
-            <div class="form-grid form-grid--2" style="margin-top: var(--space-3);">
+            <div class="form-grid form-grid--2">
+                <div class="field">
+                    <label class="field__label" for="g_nombre">Nombre del grupo</label>
+                    <input class="input" type="text" name="nombre" id="g_nombre" required>
+                </div>
                 <div class="field">
                     <label class="field__label" for="g_audiencia">Audiencia objetivo</label>
                     <input class="input" type="text" name="audiencia" id="g_audiencia">
                 </div>
+            </div>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-3);">
                 <div class="field">
                     <label class="field__label" for="g_presupuesto">Presupuesto del grupo (MXN)</label>
                     <input class="input" type="number" step="0.01" min="0" name="presupuesto" id="g_presupuesto">
                 </div>
+                <div class="field">
+                    <label class="field__label" for="g_estado">Estado</label>
+                    <select class="select" name="estado" id="g_estado" required>
+                        <option value="activo">Activo</option>
+                        <option value="pausado">Pausado</option>
+                    </select>
+                </div>
             </div>
-            <div class="field" style="margin-top: var(--space-3);">
-                <label class="field__label" for="g_keywords">Keywords (Google Ads)</label>
-                <input class="input" type="text" name="keywords" id="g_keywords" placeholder="hotel aguascalientes, hospedaje centro">
-                <span class="field__hint">Sepáralas con comas.</span>
-            </div>
-            <div class="field" style="margin-top: var(--space-3); max-width: 200px;">
-                <label class="field__label" for="g_estado">Estado</label>
-                <select class="select" name="estado" id="g_estado" required>
-                    <option value="activo">Activo</option>
-                    <option value="pausado">Pausado</option>
-                </select>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" data-grupo-submit-label>Agregar</button>
+            <div class="form-actions" style="margin-top: var(--space-4);">
+                <button type="submit" class="btn btn--primary" data-grupo-submit-label>Agregar Grupo</button>
                 <button type="button" class="btn btn--secondary" data-modal-close="grupoModal">Cancelar</button>
             </div>
         </form>
+
+        <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top:1px solid var(--color-border);">
+            <h3 class="fase-form__section-title">Palabras clave (Keyword Planner)</h3>
+
+            <p class="field__hint" data-keywords-locked-hint style="margin-bottom: var(--space-3);">
+                Guarda el grupo primero para poder agregar palabras clave.
+            </p>
+
+            <div data-keywords-block hidden>
+                <div class="table-wrap" data-keywords-table-container></div>
+            </div>
+
+            <datalist id="columnasSugeridas">
+                @foreach ($columnasSugeridas as $sugerida)
+                    <option value="{{ $sugerida }}"></option>
+                @endforeach
+            </datalist>
+        </div>
     </x-modal>
 
     <x-modal id="creativoModal">

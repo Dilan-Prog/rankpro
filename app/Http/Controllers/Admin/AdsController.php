@@ -8,6 +8,7 @@ use App\Models\AdsBriefing;
 use App\Models\AdsCampana;
 use App\Models\AdsClic;
 use App\Models\AdsConversion;
+use App\Models\AdsKeywordColumna;
 use App\Models\Cliente;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -156,7 +157,8 @@ class AdsController extends Controller
             'lanzamiento',
             'reporteActual',
             'reportes',
-            'grupos',
+            'grupos.keywords',
+            'grupos.columnasPersonalizadas',
             'creativos',
             'metricas',
             'optimizaciones'
@@ -180,6 +182,8 @@ class AdsController extends Controller
             'campana' => $campana,
             'clics' => $clics,
             'conversiones' => $conversiones,
+            // Sugerencias de nombres de columnas ya creadas en cualquier otro grupo, para reutilizar nomenclatura al agregar una nueva.
+            'columnasSugeridas' => AdsKeywordColumna::query()->distinct()->orderBy('nombre')->pluck('nombre'),
         ]);
     }
 

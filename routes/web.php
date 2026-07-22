@@ -4,12 +4,16 @@ use App\Http\Controllers\Admin\AdsController;
 use App\Http\Controllers\Admin\AdsCreativoController;
 use App\Http\Controllers\Admin\AdsFaseController;
 use App\Http\Controllers\Admin\AdsGrupoController;
+use App\Http\Controllers\Admin\AdsEmbudoEtapaController;
+use App\Http\Controllers\Admin\AdsGrupoKeywordController;
+use App\Http\Controllers\Admin\AdsKeywordColumnaController;
 use App\Http\Controllers\Admin\AdsMetricaController;
 use App\Http\Controllers\Admin\AdsOptimizacionController;
 use App\Http\Controllers\Admin\ArchivosController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
 use App\Http\Controllers\Admin\ComunicacionController;
+use App\Http\Controllers\Admin\ConversionesController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DesarrolloController;
 use App\Http\Controllers\Admin\DocumentosController;
@@ -72,7 +76,13 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{cliente}/clics', [IntegracionesController::class, 'clics'])->name('clics');
         Route::get('/{cliente}/conversiones', [IntegracionesController::class, 'conversiones'])->name('conversiones');
         Route::post('/{cliente}/conversiones/exportar', [IntegracionesController::class, 'exportarCsv'])->name('conversiones.exportar');
+        Route::post('/{cliente}/conversiones/exportar-excel', [IntegracionesController::class, 'exportarExcel'])->name('conversiones.exportar-excel');
+        Route::post('/{cliente}/conversiones/{conversion}/etapa', [IntegracionesController::class, 'asignarEtapa'])->name('conversiones.etapa');
         Route::post('/{cliente}/clics/{clic}/asignar', [IntegracionesController::class, 'asignarCampana'])->name('clics.asignar');
+
+        Route::post('/{cliente}/embudo/etapas', [AdsEmbudoEtapaController::class, 'store'])->name('embudo.etapas.store');
+        Route::put('/embudo/etapas/{etapa}', [AdsEmbudoEtapaController::class, 'update'])->name('embudo.etapas.update');
+        Route::delete('/embudo/etapas/{etapa}', [AdsEmbudoEtapaController::class, 'destroy'])->name('embudo.etapas.destroy');
 
         Route::get('/{cliente}', [ClientesController::class, 'show'])->name('show');
     });
@@ -124,6 +134,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/{keyword}', [KeywordsController::class, 'destroy'])->name('destroy');
     });
 
+    Route::prefix('conversiones')->name('conversiones.')->group(function () {
+        Route::get('/', [ConversionesController::class, 'index'])->name('index');
+        Route::post('/exportar-excel', [ConversionesController::class, 'exportarExcel'])->name('exportar-excel');
+        Route::post('/{conversion}/etapa', [ConversionesController::class, 'asignarEtapa'])->name('etapa');
+    });
+
     Route::prefix('ads')->name('ads.')->group(function () {
         Route::get('/', [AdsController::class, 'index'])->name('index');
         Route::get('/nueva', [AdsController::class, 'create'])->name('create');
@@ -142,6 +158,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/{campana}/grupos', [AdsGrupoController::class, 'store'])->name('grupos.store');
         Route::put('/grupos/{grupo}', [AdsGrupoController::class, 'update'])->name('grupos.update');
         Route::delete('/grupos/{grupo}', [AdsGrupoController::class, 'destroy'])->name('grupos.destroy');
+
+        Route::post('/grupos/{grupo}/keywords', [AdsGrupoKeywordController::class, 'store'])->name('grupos.keywords.store');
+        Route::put('/grupos/keywords/{keyword}', [AdsGrupoKeywordController::class, 'update'])->name('grupos.keywords.update');
+        Route::delete('/grupos/keywords/{keyword}', [AdsGrupoKeywordController::class, 'destroy'])->name('grupos.keywords.destroy');
+
+        Route::post('/grupos/{grupo}/columnas', [AdsKeywordColumnaController::class, 'store'])->name('grupos.columnas.store');
+        Route::put('/grupos/columnas/{columna}', [AdsKeywordColumnaController::class, 'update'])->name('grupos.columnas.update');
+        Route::delete('/grupos/columnas/{columna}', [AdsKeywordColumnaController::class, 'destroy'])->name('grupos.columnas.destroy');
 
         Route::post('/{campana}/creativos', [AdsCreativoController::class, 'store'])->name('creativos.store');
         Route::put('/creativos/{creativo}', [AdsCreativoController::class, 'update'])->name('creativos.update');

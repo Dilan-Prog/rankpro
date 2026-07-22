@@ -11,7 +11,7 @@
                 <th>Nombre</th>
                 <th>Audiencia</th>
                 <th>Presupuesto</th>
-                <th>Keywords</th>
+                <th>Palabras clave</th>
                 <th>Estado</th>
                 <th></th>
             </tr>
