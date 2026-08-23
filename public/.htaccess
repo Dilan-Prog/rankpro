@@ -5,6 +5,23 @@
 
     RewriteEngine On
 
+    # ------------------------------------------------------------------
+    # Forzar HTTPS (se omite en entornos locales: localhost, *.test, 127.0.0.1)
+    # ------------------------------------------------------------------
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+    RewriteCond %{HTTP_HOST} !\.test$ [NC]
+    RewriteCond %{HTTP_HOST} !\.local$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # ------------------------------------------------------------------
+    # Host canonico: www -> sin www (301)
+    # ------------------------------------------------------------------
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -18,4 +35,79 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Cabeceras de seguridad
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+
+    # Assets con hash de Vite: inmutables durante 1 anio
+    <FilesMatch "\.(css|js|woff2?|ttf|otf|eot)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # Documentos HTML: nunca cachear la respuesta de Laravel de forma agresiva
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Compresion
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    <IfModule mod_filter.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+        AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+        AddOutputFilterByType DEFLATE application/json application/xml application/rss+xml
+        AddOutputFilterByType DEFLATE image/svg+xml application/xhtml+xml
+        AddOutputFilterByType DEFLATE font/ttf font/otf application/vnd.ms-fontobject
+    </IfModule>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Cache de assets estaticos
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 week"
+
+    # Bundles compilados (nombre con hash) -> 1 anio
+    ExpiresByType text/css                  "access plus 1 year"
+    ExpiresByType text/javascript           "access plus 1 year"
+    ExpiresByType application/javascript    "access plus 1 year"
+
+    # Fuentes -> 1 anio
+    ExpiresByType font/woff                 "access plus 1 year"
+    ExpiresByType font/woff2                "access plus 1 year"
+    ExpiresByType font/ttf                  "access plus 1 year"
+    ExpiresByType font/otf                  "access plus 1 year"
+    ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+
+    # Imagenes -> 1 mes
+    ExpiresByType image/jpeg                "access plus 1 month"
+    ExpiresByType image/png                 "access plus 1 month"
+    ExpiresByType image/gif                 "access plus 1 month"
+    ExpiresByType image/webp                "access plus 1 month"
+    ExpiresByType image/avif                "access plus 1 month"
+    ExpiresByType image/svg+xml             "access plus 1 month"
+    ExpiresByType image/x-icon              "access plus 1 month"
+
+    # HTML dinamico -> sin cache de navegador
+    ExpiresByType text/html                 "access plus 0 seconds"
+    ExpiresByType application/xml           "access plus 0 seconds"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Bloquear acceso a archivos sensibles servidos por error desde /public
+# ----------------------------------------------------------------------
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.(env|git|htaccess)|composer\.(json|lock)$">
+        Require all denied
+    </FilesMatch>
 </IfModule>

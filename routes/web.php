@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdsController;
+use App\Http\Controllers\Admin\AdsConversionColumnaController;
 use App\Http\Controllers\Admin\AdsCreativoController;
 use App\Http\Controllers\Admin\AdsFaseController;
 use App\Http\Controllers\Admin\AdsGrupoController;
@@ -31,6 +32,8 @@ use App\Http\Controllers\Admin\SeoPosicionController;
 use App\Http\Controllers\Admin\ServiciosController;
 use App\Http\Controllers\Admin\TareaController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\PaginasController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,6 +50,28 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('pages.index');
 })->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Public site routes
+|--------------------------------------------------------------------------
+|
+| Content architecture for SEO: the site used to be a single indexable URL,
+| so nothing could rank per service. Each service now has its own page.
+|
+*/
+
+Route::get('/nosotros', [PaginasController::class, 'nosotros'])->name('nosotros');
+Route::get('/contacto', [PaginasController::class, 'contacto'])->name('contacto');
+
+Route::get('/servicios', [PaginasController::class, 'serviciosIndex'])->name('servicios.index');
+Route::get('/servicios/{slug}', [PaginasController::class, 'serviciosShow'])->name('servicios.show');
+
+Route::get('/terminos-y-condiciones', [PaginasController::class, 'terminos'])->name('legal.terminos');
+Route::get('/aviso-de-privacidad', [PaginasController::class, 'privacidad'])->name('legal.privacidad');
+Route::get('/politica-de-cookies', [PaginasController::class, 'cookies'])->name('legal.cookies');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 /*
 |--------------------------------------------------------------------------
@@ -75,6 +100,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/{cliente}/integraciones/token', [IntegracionesController::class, 'regenerarToken'])->name('integraciones.token');
         Route::get('/{cliente}/clics', [IntegracionesController::class, 'clics'])->name('clics');
         Route::get('/{cliente}/conversiones', [IntegracionesController::class, 'conversiones'])->name('conversiones');
+        Route::get('/{cliente}/conversiones/embudo', [IntegracionesController::class, 'conversionesEmbudo'])->name('conversiones.embudo');
         Route::post('/{cliente}/conversiones/exportar', [IntegracionesController::class, 'exportarCsv'])->name('conversiones.exportar');
         Route::post('/{cliente}/conversiones/exportar-excel', [IntegracionesController::class, 'exportarExcel'])->name('conversiones.exportar-excel');
         Route::post('/{cliente}/conversiones/{conversion}/etapa', [IntegracionesController::class, 'asignarEtapa'])->name('conversiones.etapa');
@@ -138,6 +164,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/', [ConversionesController::class, 'index'])->name('index');
         Route::post('/exportar-excel', [ConversionesController::class, 'exportarExcel'])->name('exportar-excel');
         Route::post('/{conversion}/etapa', [ConversionesController::class, 'asignarEtapa'])->name('etapa');
+        Route::put('/{conversion}', [ConversionesController::class, 'actualizar'])->name('actualizar');
+        Route::post('/columnas', [AdsConversionColumnaController::class, 'store'])->name('columnas.store');
+        Route::put('/columnas/{columna}', [AdsConversionColumnaController::class, 'update'])->name('columnas.update');
+        Route::delete('/columnas/{columna}', [AdsConversionColumnaController::class, 'destroy'])->name('columnas.destroy');
     });
 
     Route::prefix('ads')->name('ads.')->group(function () {

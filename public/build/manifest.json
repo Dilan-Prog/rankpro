@@ -35,12 +35,12 @@
     "isEntry": true
   },
   "resources/css/admin/global.css": {
-    "file": "assets/global-CCGLLtWn.css",
+    "file": "assets/global-C1pD1iv8.css",
     "src": "resources/css/admin/global.css",
     "isEntry": true
   },
   "resources/css/admin/integraciones.css": {
-    "file": "assets/integraciones-ZF-zMv3f.css",
+    "file": "assets/integraciones-6Q2whPCH.css",
     "src": "resources/css/admin/integraciones.css",
     "isEntry": true
   },
@@ -70,8 +70,13 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-C-RZzmiC.css",
+    "file": "assets/app-BEyv_YZU.css",
     "src": "resources/css/web/app.css",
+    "isEntry": true
+  },
+  "resources/css/web/pages.css": {
+    "file": "assets/pages-Cz8GdPfT.css",
+    "src": "resources/css/web/pages.css",
     "isEntry": true
   },
   "resources/js/ads.js": {
@@ -81,7 +86,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DZlRXGjV.js",
+    "file": "assets/app-BcIE1ldB.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
@@ -102,6 +107,18 @@
     "file": "assets/clientes-BPrekH9k.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
+    "isEntry": true
+  },
+  "resources/js/conversiones-embudo.js": {
+    "file": "assets/conversiones-embudo-CIxXyBR4.js",
+    "name": "conversiones-embudo",
+    "src": "resources/js/conversiones-embudo.js",
+    "isEntry": true
+  },
+  "resources/js/conversiones.js": {
+    "file": "assets/conversiones-DwKnJrZi.js",
+    "name": "conversiones",
+    "src": "resources/js/conversiones.js",
     "isEntry": true
   },
   "resources/js/dashboard.js": {

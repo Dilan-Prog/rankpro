@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\TipoConversion;
 use App\Http\Controllers\Controller;
 use App\Models\AdsConversion;
+use App\Models\AdsConversionColumna;
 use App\Models\Cliente;
 use App\Support\Labels;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -36,7 +38,40 @@ class ConversionesController extends Controller
             'clienteSeleccionado' => $clienteSeleccionado,
             'etapas' => $clienteSeleccionado?->embudoEtapas ?? collect(),
             'tiposConversion' => TipoConversion::cases(),
+            'columnas' => AdsConversionColumna::orderBy('nombre')->get(),
         ]);
+    }
+
+    /**
+     * Edición en línea (AJAX) del valor y de las columnas personalizadas —
+     * el resto de los campos del registro (fecha, cliente, tipo,
+     * identificador) se quedan bloqueados a propósito, ya que vienen del
+     * script de tracking y no deben poder desincronizarse de la fuente real.
+     */
+    public function actualizar(Request $request, AdsConversion $conversion): JsonResponse
+    {
+        $data = $request->validate([
+            'valor' => ['nullable', 'numeric', 'min:0'],
+            'datos_personalizados' => ['nullable', 'array'],
+            'datos_personalizados.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($request->has('valor')) {
+            $conversion->valor = $data['valor'] ?? null;
+        }
+
+        if ($request->has('datos_personalizados')) {
+            // array_replace (no array_merge) — preserva las claves numéricas
+            // (IDs de columna) tal cual, sin reindexarlas como lista.
+            $conversion->datos_personalizados = array_replace(
+                $conversion->datos_personalizados ?? [],
+                $data['datos_personalizados']
+            );
+        }
+
+        $conversion->save();
+
+        return response()->json($conversion->fresh());
     }
 
     public function asignarEtapa(Request $request, AdsConversion $conversion): RedirectResponse

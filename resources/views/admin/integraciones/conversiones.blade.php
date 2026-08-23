@@ -6,9 +6,14 @@
             <h1 class="page-header__title">Conversiones — {{ $cliente->nombre }}</h1>
             <p class="page-header__subtitle">Formularios, WhatsApp, llamadas y compras vinculadas a clics de Google Ads</p>
         </div>
-        <a href="{{ route('admin.clientes.integraciones', $cliente) }}" class="btn btn--secondary">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Integraciones
-        </a>
+        <div style="display:flex; gap: var(--space-2);">
+            <a href="{{ route('admin.clientes.conversiones.embudo', $cliente) }}" class="btn btn--primary">
+                <i class="fa-solid fa-columns"></i> Ver como embudo
+            </a>
+            <a href="{{ route('admin.clientes.integraciones', $cliente) }}" class="btn btn--secondary">
+                <i class="fa-solid fa-arrow-left"></i> Volver a Integraciones
+            </a>
+        </div>
     </div>
 
     @if (session('status'))

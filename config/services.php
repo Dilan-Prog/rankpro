@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google' => [
+        // Token de verificacion de Google Search Console. Se emite como
+        // <meta name="google-site-verification"> desde components/seo/meta.blade.php.
+        'site_verification' => env('GOOGLE_SITE_VERIFICATION'),
+    ],
+
 ];

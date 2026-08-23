@@ -28,6 +28,7 @@ class AdsConversion extends Model
         'exportada_at',
         'metadata',
         'ads_embudo_etapa_id',
+        'datos_personalizados',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class AdsConversion extends Model
         'estado' => EstadoConversion::class,
         'exportada_at' => 'datetime',
         'metadata' => 'array',
+        'datos_personalizados' => 'array',
     ];
 
     public function cliente(): BelongsTo

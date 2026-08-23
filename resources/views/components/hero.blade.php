@@ -1,7 +1,7 @@
 @php
     $stats = [
-        ['value' => '500+', 'label' => 'Clientes satisfechos'],
-        ['value' => '8 años', 'label' => 'De experiencia en México'],
+        ['value' => '+200', 'label' => 'Clientes satisfechos'],
+        ['value' => '4 Años', 'label' => 'De experiencia en México'],
         ['value' => '98%', 'label' => 'Tasa de retención'],
         ['value' => '$120M+', 'label' => 'En ventas generadas'],
     ];
@@ -30,7 +30,7 @@
             </div>
 
             <div class="hero__heading">
-                <h1>Agencia de<br>Marketing <span class="text-brand">Digital</span></h1>
+                <h1>Agencia de Marketing<br aria-hidden="true"> <span class="text-brand">Digital</span> en México</h1>
                 <p class="hero__subtitle">Tu Socio Estratégico para el Éxito Digital</p>
             </div>
 
@@ -41,36 +41,36 @@
                     Agendar Consultoría Gratuita
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                 </button>
-                <button class="btn btn-outline">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <a href="https://wa.me/527341036410" class="btn btn-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
                     Escríbenos
-                </button>
+                </a>
             </div>
 
-            <div class="hero__stats">
+            <ul class="hero__stats" aria-label="RankPro en cifras">
                 @foreach ($stats as $stat)
-                    <div class="hero__stat">
+                    <li class="hero__stat">
                         <div class="hero__stat-value">{{ $stat['value'] }}</div>
                         <div class="hero__stat-label">{{ $stat['label'] }}</div>
-                    </div>
+                    </li>
                 @endforeach
-            </div>
+            </ul>
         </div>
 
         <div class="hero__cards">
             @foreach ($featureCards as $card)
                 <div class="feature-card">
-                    <div class="feature-card__icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $icons[$card['icon']] !!}</svg>
+                    <div class="feature-card__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">{!! $icons[$card['icon']] !!}</svg>
                     </div>
-                    <div class="feature-card__title">{{ $card['title'] }}</div>
+                    <h2 class="feature-card__title">{{ $card['title'] }}</h2>
                     <div class="feature-card__desc">{{ $card['desc'] }}</div>
                     <div class="feature-card__progress">
                         <div class="feature-card__progress-labels">
                             <span>Rendimiento</span>
                             <span class="text-brand">{{ $card['percent'] }}%</span>
                         </div>
-                        <div class="feature-card__bar">
+                        <div class="feature-card__bar" role="img" aria-label="Nivel de rendimiento de {{ $card['title'] }}: {{ $card['percent'] }} por ciento">
                             <div class="feature-card__bar-fill" style="width: {{ $card['percent'] }}%;"></div>
                         </div>
                     </div>

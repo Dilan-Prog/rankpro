@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AdsCampana;
 use App\Models\AdsClic;
 use App\Models\AdsConversion;
+use App\Models\AdsConversionColumna;
 use App\Models\Cliente;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -105,6 +107,30 @@ class IntegracionesController extends Controller
     }
 
     /**
+     * Tablero tipo kanban de las etapas del embudo — una columna por etapa
+     * (más "Sin clasificar") con las conversiones como tarjetas arrastrables.
+     * Complementa la vista de tabla; no la reemplaza.
+     */
+    public function conversionesEmbudo(Request $request, Cliente $cliente): View
+    {
+        $conversiones = $this->conversionesFiltradas($request, $cliente)
+            ->with('adsClic.adsCampana', 'etapa')
+            ->latest('created_at')
+            ->get();
+
+        $columnaIds = $conversiones->pluck('datos_personalizados')->filter()->flatMap(fn ($datos) => array_keys($datos))->unique();
+        $columnas = $columnaIds->isNotEmpty() ? AdsConversionColumna::whereIn('id', $columnaIds)->get()->keyBy('id') : collect();
+
+        return view('admin.integraciones.conversiones-embudo', [
+            'pageTitle' => 'Embudo de Conversiones — '.$cliente->nombre,
+            'cliente' => $cliente,
+            'etapas' => $cliente->embudoEtapas,
+            'conversiones' => $conversiones,
+            'columnasPersonalizadas' => $columnas,
+        ]);
+    }
+
+    /**
      * Descarga un CSV en el formato que Google Ads espera para carga manual
      * de conversiones (Herramientas > Medición > Conversiones > Cargas).
      * Verificar los nombres exactos de columna contra la plantilla vigente
@@ -161,7 +187,7 @@ class IntegracionesController extends Controller
         return back()->with('status', 'Clic asignado correctamente.');
     }
 
-    public function asignarEtapa(Request $request, Cliente $cliente, AdsConversion $conversion): RedirectResponse
+    public function asignarEtapa(Request $request, Cliente $cliente, AdsConversion $conversion): RedirectResponse|JsonResponse
     {
         abort_unless($conversion->cliente_id === $cliente->id, 404);
 
@@ -169,7 +195,17 @@ class IntegracionesController extends Controller
             'ads_embudo_etapa_id' => ['nullable', 'exists:ads_embudo_etapas,id'],
         ]);
 
+        // La etapa elegida debe pertenecer al mismo cliente — mismo resguardo que ConversionesController::asignarEtapa().
+        if (! empty($data['ads_embudo_etapa_id'])) {
+            $perteneceAlCliente = $cliente->embudoEtapas()->where('id', $data['ads_embudo_etapa_id'])->exists();
+            abort_unless($perteneceAlCliente, 422, 'La etapa seleccionada no pertenece a este cliente.');
+        }
+
         $conversion->update(['ads_embudo_etapa_id' => $data['ads_embudo_etapa_id'] ?? null]);
+
+        if ($request->wantsJson()) {
+            return response()->json($conversion->fresh());
+        }
 
         return back()->with('status', 'Conversión clasificada correctamente.');
     }

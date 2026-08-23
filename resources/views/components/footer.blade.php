@@ -1,16 +1,33 @@
 @php
+    // NOTA SEO: "Casos de éxito", "Blog" y "Promociones" se retiraron porque no existen
+    // como página ni como sección con id propio. Vuelve a añadirlos aquí cuando tengan URL real.
     $footerColumns = [
         [
             'title' => 'Servicios',
-            'links' => ['SEM & Google Ads', 'SEO Orgánico', 'Desarrollo Web', 'Analytics & Data', 'Social Media'],
+            'links' => [
+                ['label' => 'SEM & Google Ads', 'url' => route('servicios.show', 'sem-google-ads')],
+                ['label' => 'SEO Orgánico', 'url' => route('servicios.show', 'seo-organico')],
+                ['label' => 'Desarrollo Web', 'url' => route('servicios.show', 'desarrollo-web')],
+                ['label' => 'PageSpeed & Core Web Vitals', 'url' => route('servicios.show', 'pagespeed-core-web-vitals')],
+                ['label' => 'Analytics & Data', 'url' => route('servicios.show', 'analytics-data')],
+                ['label' => 'Social Media', 'url' => route('servicios.show', 'social-media')],
+            ],
         ],
         [
             'title' => 'Empresa',
-            'links' => ['Nosotros', 'Casos de éxito', 'Blog', 'Promociones', 'Contacto'],
+            'links' => [
+                ['label' => 'Nosotros', 'url' => route('nosotros')],
+                ['label' => 'Servicios', 'url' => route('servicios.index')],
+                ['label' => 'Contacto', 'url' => route('contacto')],
+            ],
         ],
         [
             'title' => 'Legal',
-            'links' => ['Términos y condiciones', 'Política de privacidad', 'Aviso de cookies'],
+            'links' => [
+                ['label' => 'Términos y condiciones', 'url' => route('legal.terminos')],
+                ['label' => 'Aviso de privacidad', 'url' => route('legal.privacidad')],
+                ['label' => 'Política de cookies', 'url' => route('legal.cookies')],
+            ],
         ],
     ];
 @endphp
@@ -19,20 +36,24 @@
     <div class="container site-footer__grid">
         <div>
             <div class="site-footer__brand">
-                <div class="site-footer__logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>
-                </div>
-                <span class="site-footer__brand-name">RankPro</span>
+                <picture class="site-footer__brand-picture">
+                    <source srcset="{{ asset('images/rankpro-logo-white.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/rankpro-logo-white.png') }}"
+                         alt="RankPro"
+                         class="site-footer__brand-logo"
+                         width="493" height="160"
+                         loading="lazy" decoding="async">
+                </picture>
             </div>
-            <p class="site-footer__desc">Agencia de marketing digital en México. Resultados medibles, crecimiento real.</p>
+            <p class="site-footer__desc">Agencia de marketing digital y desarrollo de software.</p>
         </div>
 
         @foreach ($footerColumns as $column)
             <div>
-                <h4 class="site-footer__col-title">{{ $column['title'] }}</h4>
+                <h2 class="site-footer__col-title">{{ $column['title'] }}</h2>
                 <ul class="site-footer__links">
                     @foreach ($column['links'] as $link)
-                        <li><a href="#">{{ $link }}</a></li>
+                        <li><a href="{{ $link['url'] }}">{{ $link['label'] }}</a></li>
                     @endforeach
                 </ul>
             </div>
@@ -42,8 +63,8 @@
     <div class="container site-footer__bottom">
         <p class="site-footer__copy">© {{ date('Y') }} RankPro. Todos los derechos reservados.</p>
         <div class="site-footer__bottom-links">
-            <a href="tel:+525512345678">+52 55 1234 5678</a>
-            <a href="mailto:hola@rankpro.mx">hola@rankpro.mx</a>
+            <a href="https://wa.me/527341036410" target="_blank" rel="noopener">WhatsApp</a>
+            <a href="mailto:administracion@rankprosolutions.com.mx">administracion@rankprosolutions.com.mx</a>
         </div>
     </div>
 </footer>

@@ -8,6 +8,7 @@ export default defineConfig({
             input: [
                 // Marketing site
                 'resources/css/web/app.css',
+                'resources/css/web/pages.css',
                 'resources/js/app.js',
                 // Admin panel — shared
                 'resources/css/admin/global.css',
@@ -41,6 +42,8 @@ export default defineConfig({
                 'resources/css/admin/roles.css',
                 'resources/js/roles.js',
                 'resources/js/documentos.js',
+                'resources/js/conversiones.js',
+                'resources/js/conversiones-embudo.js',
             ],
             refresh: true,
         }),

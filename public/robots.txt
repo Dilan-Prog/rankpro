@@ -1,2 +1,36 @@
 User-agent: *
-Disallow:
+
+# --- Areas privadas / autenticacion ---
+Disallow: /admin
+Disallow: /login
+Disallow: /logout
+Disallow: /register
+Disallow: /password
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /confirm-password
+
+# --- Almacenamiento interno ---
+Disallow: /storage/
+
+# --- Parametros de tracking ---
+# NO se bloquean con Disallow a proposito: si Google no puede rastrear la URL
+# con ?utm_source=... tampoco puede leer su <link rel="canonical">, y podria
+# indexar la URL sin contenido. La consolidacion se hace via canonical, que ya
+# esta implementado en resources/views/components/seo/meta.blade.php.
+
+# --- Assets: Google NECESITA CSS/JS para renderizar ---
+# Se permiten explicitamente los bundles compilados por Vite.
+Allow: /build/assets/
+Allow: /build/manifest.json
+Allow: /images/
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.woff2$
+
+Sitemap: https://rankprosolutions.com.mx/sitemap.xml

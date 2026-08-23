@@ -13,24 +13,16 @@
 .site-footer__brand {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
     margin-bottom: 1rem;
 }
 
-.site-footer__logo {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(to bottom right, var(--brand), var(--brand-light));
+.site-footer__brand-picture {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
 }
 
-.site-footer__brand-name {
-    font-weight: 800;
-    font-size: 1.125rem;
+.site-footer__brand-logo {
+    height: 3.25rem;
+    width: auto;
 }
 
 .site-footer__desc {

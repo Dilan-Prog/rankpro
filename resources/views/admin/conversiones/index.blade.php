@@ -15,7 +15,12 @@
         <div class="form-status form-status--error"><i class="fa-solid fa-triangle-exclamation" style="margin-top:2px"></i><span>{{ $errors->first() }}</span></div>
     @endif
 
-    <div class="card card--padded" style="margin-bottom: var(--space-6);">
+    <details class="card card--padded" style="margin-bottom: var(--space-6);" open>
+        <summary class="filters-toggle">
+            <span class="filters-toggle__label"><i class="fa-solid fa-filter"></i> Filtros</span>
+            <i class="fa-solid fa-chevron-down filters-toggle__chevron"></i>
+        </summary>
+        <div class="filters-toggle__body">
         <form method="GET" class="form-grid form-grid--2">
             <div class="field">
                 <label class="field__label" for="cliente_id">Cliente</label>
@@ -92,7 +97,8 @@
                 <i class="fa-solid fa-file-excel"></i> Exportar a Excel
             </button>
         </form>
-    </div>
+        </div>
+    </details>
 
     @if ($conversiones->isEmpty())
         <div class="card empty-state">
@@ -100,34 +106,75 @@
             <p class="empty-state__text">No hay conversiones registradas con estos filtros.</p>
         </div>
     @else
-        <x-data-table :headers="['Fecha', 'Cliente', 'Tipo', 'Identificador', 'Campaña', 'Valor', 'Estado', 'Etapa del embudo']">
-            @foreach ($conversiones as $conversion)
-                <tr>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $conversion->created_at->format('Y-m-d H:i') }}</td>
-                    <td><a href="{{ route('admin.clientes.conversiones', $conversion->cliente) }}" style="color:var(--color-foreground);">{{ $conversion->cliente->nombre }}</a></td>
-                    <td>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</td>
-                    <td>
-                        @php $identificador = $conversion->gclid ?? $conversion->gbraid ?? $conversion->wbraid; @endphp
-                        <span class="u-mono" style="font-size:var(--text-xs);" title="{{ $identificador }}">{{ $identificador ? \Illuminate\Support\Str::limit($identificador, 16) : '—' }}</span>
-                    </td>
-                    <td>{{ $conversion->adsClic?->adsCampana?->nombre ?? '—' }}</td>
-                    <td class="u-mono">{{ $conversion->valor ? '$'.number_format($conversion->valor, 2).' '.$conversion->moneda : '—' }}</td>
-                    <td><x-badge :status="$conversion->estado" /></td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.conversiones.etapa', $conversion) }}">
-                            @csrf
-                            <select name="ads_embudo_etapa_id" class="select" style="font-size:var(--text-xs); padding:2px 4px;" onchange="this.form.requestSubmit()">
-                                <option value="">Sin clasificar</option>
-                                @foreach ($conversion->cliente->embudoEtapas as $etapa)
-                                    <option value="{{ $etapa->id }}" @selected($conversion->ads_embudo_etapa_id === $etapa->id)>{{ $etapa->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </x-data-table>
+        <div class="table-wrap table-wrap--grid" data-conversiones-table
+             data-columnas-store="{{ route('admin.conversiones.columnas.store') }}"
+             data-columnas-base="{{ url('admin/conversiones/columnas') }}"
+             data-actualizar-base="{{ url('admin/conversiones') }}">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th>Tipo ID</th>
+                        <th>Identificador</th>
+                        <th>Campaña</th>
+                        <th class="u-mono">Valor</th>
+                        <th>Estado</th>
+                        <th>Etapa del embudo</th>
+                        @foreach ($columnas as $columna)
+                            <th data-columna-id="{{ $columna->id }}">
+                                <span data-columna-nombre-display="{{ $columna->id }}">{{ $columna->nombre }}</span>
+                                <button type="button" class="btn--icon" data-delete-columna="{{ $columna->id }}" title="Eliminar columna"><i class="fa-solid fa-xmark"></i></button>
+                            </th>
+                        @endforeach
+                        <th style="white-space:nowrap;">
+                            <button type="button" class="btn--icon" data-add-columna title="Agregar columna"><i class="fa-solid fa-plus"></i></button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($conversiones as $conversion)
+                        @php
+                            $tipoId = $conversion->gclid ? 'Gclid' : ($conversion->gbraid ? 'Gbraid' : ($conversion->wbraid ? 'Wbraid' : null));
+                            $identificador = $conversion->gclid ?? $conversion->gbraid ?? $conversion->wbraid;
+                        @endphp
+                        <tr data-conversion-id="{{ $conversion->id }}">
+                            <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $conversion->created_at->format('Y-m-d H:i') }}</td>
+                            <td><a href="{{ route('admin.clientes.conversiones', $conversion->cliente) }}" style="color:var(--color-foreground);">{{ $conversion->cliente->nombre }}</a></td>
+                            <td>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</td>
+                            <td>{{ $tipoId ?? '—' }}</td>
+                            <td>
+                                <span class="u-mono" style="font-size:var(--text-xs);" title="{{ $identificador }}">{{ $identificador ? \Illuminate\Support\Str::limit($identificador, 16) : '—' }}</span>
+                            </td>
+                            <td>{{ $conversion->adsClic?->adsCampana?->nombre ?? '—' }}</td>
+                            <td class="u-mono" data-editable-cell data-field="valor">{{ $conversion->valor !== null ? number_format($conversion->valor, 2) : '—' }}</td>
+                            <td><x-badge :status="$conversion->estado" /></td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.conversiones.etapa', $conversion) }}">
+                                    @csrf
+                                    <select name="ads_embudo_etapa_id" class="select" style="font-size:var(--text-xs); padding:2px 4px;" onchange="this.form.requestSubmit()">
+                                        <option value="">Sin clasificar</option>
+                                        @foreach ($conversion->cliente->embudoEtapas as $etapa)
+                                            <option value="{{ $etapa->id }}" @selected($conversion->ads_embudo_etapa_id === $etapa->id)>{{ $etapa->nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            </td>
+                            @foreach ($columnas as $columna)
+                                <td data-editable-cell data-field="custom" data-columna-id="{{ $columna->id }}">{{ $conversion->datos_personalizados[$columna->id] ?? '—' }}</td>
+                            @endforeach
+                            <td></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
         @include('admin.integraciones._paginacion', ['paginator' => $conversiones])
     @endif
+@endsection
+
+@section('scripts')
+    @vite('resources/js/conversiones.js')
 @endsection

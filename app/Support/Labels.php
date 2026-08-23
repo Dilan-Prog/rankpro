@@ -181,4 +181,15 @@ class Labels
             'compra' => 'Compra',
         ][$tipo] ?? ucfirst($tipo);
     }
+
+    /** Ícono + color por tipo de conversión — usado en la tarjeta del tablero de embudo. */
+    public static function tipoConversionIcono(string $tipo): array
+    {
+        return [
+            'formulario' => ['fa-file-lines', '#6366f1'],
+            'whatsapp' => ['fa-whatsapp', '#22c55e'],
+            'llamada' => ['fa-phone', '#3b82f6'],
+            'compra' => ['fa-cart-shopping', '#f59e0b'],
+        ][$tipo] ?? ['fa-circle-question', '#6b7280'];
+    }
 }

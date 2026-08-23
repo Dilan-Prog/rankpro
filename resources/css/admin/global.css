@@ -407,6 +407,39 @@ h4 { font-size: var(--text-base); }
   font-weight: var(--font-weight-semibold);
 }
 
+/* ---------- Filtros colapsables (details/summary) ---------- */
+.filters-toggle {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
+  padding: var(--space-1) 0;
+}
+.filters-toggle::-webkit-details-marker {
+  display: none;
+}
+.filters-toggle__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.filters-toggle__chevron {
+  transition: transform 0.15s ease;
+  color: var(--color-muted-foreground);
+}
+details[open] > .filters-toggle .filters-toggle__chevron {
+  transform: rotate(180deg);
+}
+.filters-toggle__body {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
 /* ---------- Chart container (Dashboard revenue chart, Finanzas chart, ...) ---------- */
 .chart-head {
   display: flex;
@@ -620,6 +653,57 @@ h4 { font-size: var(--text-base); }
   text-align: center;
   color: var(--color-muted-foreground);
   font-size: var(--text-sm);
+}
+
+/* ---------- Tabla tipo grid (Google Ads-style: bordes verticales, zebra, cabecera fija) ---------- */
+.table-wrap--grid {
+  max-height: 70vh;
+  overflow: auto;
+}
+.table-wrap--grid .table th,
+.table-wrap--grid .table td {
+  padding: var(--space-2) var(--space-3);
+  border-right: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+}
+.table-wrap--grid .table th:last-child,
+.table-wrap--grid .table td:last-child {
+  border-right: none;
+}
+.table-wrap--grid .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+}
+.table-wrap--grid .table tbody tr:nth-child(even) {
+  background: var(--color-secondary);
+}
+.table-wrap--grid .table tbody tr:nth-child(even):hover,
+.table-wrap--grid .table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+/* ---------- Celdas editables (click para editar) ---------- */
+[data-editable-cell] {
+  cursor: pointer;
+  position: relative;
+}
+[data-editable-cell]:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  outline: 1px dashed var(--color-primary);
+  outline-offset: -1px;
+}
+[data-editable-cell] input,
+[data-editable-cell] select {
+  width: 100%;
+  min-width: 90px;
+  padding: 2px 4px;
+  font-size: var(--text-xs);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-card);
+  color: var(--color-foreground);
 }
 
 /* ---------- Filters bar ---------- */
