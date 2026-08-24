@@ -11,6 +11,10 @@
 }
 
 .process__grid {
+    /* Es un <ol> para que el orden de los pasos sea semantico, pero el numero
+       lo pinta .process-step__number: sin esto el navegador dibuja ademas su
+       propio marcador ("1." "2." "3.") junto a cada tarjeta. */
+    list-style: none;
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;

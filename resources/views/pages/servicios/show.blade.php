@@ -95,6 +95,34 @@
             </div>
         </section>
 
+        {{-- Hub -> spoke: la página de servicio devuelve el enlace a los artículos que
+             la apoyan. Sin este bloque el blog sería un silo que no alimenta a las
+             páginas que convierten. Si el servicio aún no tiene artículos publicados
+             no se pinta nada: un bloque vacío solo añade ruido. --}}
+        @if (isset($articulos) && $articulos->isNotEmpty())
+            <section class="page-section" aria-labelledby="guias">
+                <div class="container">
+                    <div class="page-section__inner prose">
+                        <h2 id="guias">Guías sobre {{ $servicio['nombre'] }}</h2>
+                        <p>
+                            Lo que publicamos sobre este tema, con el mismo criterio con el que trabajamos:
+                            qué se puede esperar, qué no, y cómo comprobarlo por tu cuenta.
+                        </p>
+                    </div>
+
+                    <div class="services__grid" style="margin-top: 2rem;">
+                        @foreach ($articulos as $articulo)
+                            <x-blog.tarjeta :articulo="$articulo" />
+                        @endforeach
+                    </div>
+
+                    <p style="margin-top: 1.5rem;">
+                        <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
+                    </p>
+                </div>
+            </section>
+        @endif
+
         <section class="page-section page-section--alt" aria-labelledby="otros-servicios">
             <div class="container">
                 <div class="page-section__inner prose">

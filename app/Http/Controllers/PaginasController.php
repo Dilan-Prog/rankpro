@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Articulo;
+use App\Support\Clusters;
 use App\Support\Servicios;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
 
 /**
@@ -57,7 +60,42 @@ class PaginasController extends Controller
         return view($vista, [
             'servicio' => $servicios[$slug],
             'otrosServicios' => array_values(array_diff_key($servicios, [$slug => true])),
+            'articulos' => $this->articulosDelServicio($slug),
         ]);
+    }
+
+    /**
+     * Articulos del blog que apoyan a un servicio (spokes -> hub).
+     *
+     * Hay dos caminos y los dos cuentan, porque cubren casos distintos:
+     *
+     *  1. Relacion explicita en la tabla pivote articulo_servicio: sirve para el
+     *     articulo que habla de un servicio aunque viva en otro cluster (por
+     *     ejemplo una guia de analitica que apoya a Google Ads).
+     *  2. Pertenencia al cluster tematico que apoya al servicio: es la relacion
+     *     estructural por defecto, sin tener que etiquetar articulo por articulo.
+     *
+     * Se unen en una sola consulta con OR para no traer dos colecciones y tener
+     * que deduplicar en PHP: asi el "3 mas recientes" se aplica sobre el conjunto
+     * real y no sobre uno de los dos caminos.
+     *
+     * @return Collection<int, Articulo>
+     */
+    private function articulosDelServicio(string $slug): Collection
+    {
+        $clusters = Clusters::deServicio($slug);
+
+        return Articulo::query()
+            ->publicados()
+            ->where(function ($query) use ($slug, $clusters) {
+                $query->delServicio($slug);
+
+                if ($clusters !== []) {
+                    $query->orWhereIn('cluster', $clusters);
+                }
+            })
+            ->limit(3)
+            ->get();
     }
 
     public function contacto(): View

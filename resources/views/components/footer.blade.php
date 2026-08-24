@@ -1,6 +1,6 @@
 @php
-    // NOTA SEO: "Casos de éxito", "Blog" y "Promociones" se retiraron porque no existen
-    // como página ni como sección con id propio. Vuelve a añadirlos aquí cuando tengan URL real.
+    // NOTA SEO: "Casos de éxito" y "Promociones" siguen fuera porque no existen como
+    // página ni como sección con id propio. Vuelve a añadirlos aquí cuando tengan URL real.
     $footerColumns = [
         [
             'title' => 'Servicios',
@@ -10,6 +10,18 @@
                 ...array_map(
                     fn (array $s): array => ['label' => $s['nombre'], 'url' => $s['url']],
                     \App\Support\Servicios::navegacion()
+                ),
+            ],
+        ],
+        [
+            'title' => 'Blog',
+            'links' => [
+                ['label' => 'Todos los artículos', 'url' => route('blog.index')],
+                // Mismo criterio que en Servicios: los clústeres salen del catálogo
+                // (App\Support\Clusters), no de una lista escrita a mano aquí.
+                ...array_map(
+                    fn (array $c): array => ['label' => $c['nombre_corto'], 'url' => $c['url']],
+                    \App\Support\Clusters::navegacion()
                 ),
             ],
         ],

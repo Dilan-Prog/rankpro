@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\Servicios;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -12,10 +13,13 @@ use Tests\TestCase;
  * APP_ENV=production, asi que las 13 URLs del sitio emitieron "noindex, nofollow"
  * durante meses y Google solo indexo 1 pagina. Nada en el codigo lo detecto.
  *
- * No necesita base de datos: el contenido publico sale de App\Support\Servicios.
+ * Necesita base de datos desde que las paginas de servicio listan sus articulos
+ * del blog (enlazado hub-and-spoke): sin las tablas, esas rutas devuelven 500.
  */
 class SeoTest extends TestCase
 {
+    use RefreshDatabase;
+
     /** @return list<string> Todas las URLs publicas del sitio. */
     public static function urlsPublicas(): array
     {

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,5 +28,12 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // Paginacion propia (sin Tailwind), coherente con el CSS del sitio.
+        // Se registra como vista por defecto para no repetir ->links('...') en
+        // cada listado y para que ninguna vista caiga por error en la de Tailwind.
+        // No se toca defaultSimpleView: la vista usa $elements, que
+        // simplePaginate() no proporciona.
+        Paginator::defaultView('vendor.pagination.rankpro');
     }
 }

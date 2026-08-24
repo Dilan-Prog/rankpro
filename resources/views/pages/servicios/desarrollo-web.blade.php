@@ -394,6 +394,27 @@
             </div>
         </section>
 
+        {{-- ------------------------------------------------------ guías del blog --}}
+        {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se
+             pinta nada, para no dejar un bloque vacío en una landing de conversión. --}}
+        @if (isset($articulos) && $articulos->isNotEmpty())
+            <section class="cv-section cv-section--tight" aria-labelledby="guias">
+                <div class="container">
+                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
+                        <h2 id="guias" style="font-size:1.5rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
+                    </div>
+                    <div class="cv-cards">
+                        @foreach ($articulos as $articulo)
+                            <x-blog.tarjeta :articulo="$articulo" />
+                        @endforeach
+                    </div>
+                    <p style="margin-top:1.5rem;">
+                        <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
+                    </p>
+                </div>
+            </section>
+        @endif
+
         {{-- --------------------------------------------------- otros servicios --}}
         <section class="cv-section cv-section--alt cv-section--tight">
             <div class="container">

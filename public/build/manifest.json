@@ -14,6 +14,11 @@
     "src": "resources/css/admin/auth.css",
     "isEntry": true
   },
+  "resources/css/admin/blog.css": {
+    "file": "assets/blog-CCsFf3Ut.css",
+    "src": "resources/css/admin/blog.css",
+    "isEntry": true
+  },
   "resources/css/admin/clientes.css": {
     "file": "assets/clientes-D2cvyIjf.css",
     "src": "resources/css/admin/clientes.css",
@@ -70,8 +75,13 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-DSVE4jiI.css",
+    "file": "assets/app-nI7caEtd.css",
     "src": "resources/css/web/app.css",
+    "isEntry": true
+  },
+  "resources/css/web/blog.css": {
+    "file": "assets/blog-4xyhVLwn.css",
+    "src": "resources/css/web/blog.css",
     "isEntry": true
   },
   "resources/css/web/pages.css": {
@@ -91,7 +101,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CBBpT8Oq.js",
+    "file": "assets/app-CyqUEO4X.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
@@ -106,6 +116,18 @@
     "file": "assets/auth-CujPzgBo.js",
     "name": "auth",
     "src": "resources/js/auth.js",
+    "isEntry": true
+  },
+  "resources/js/blog-publico.js": {
+    "file": "assets/blog-publico-BSpZo1Ax.js",
+    "name": "blog-publico",
+    "src": "resources/js/blog-publico.js",
+    "isEntry": true
+  },
+  "resources/js/blog.js": {
+    "file": "assets/blog-IEZK6xx8.js",
+    "name": "blog",
+    "src": "resources/js/blog.js",
     "isEntry": true
   },
   "resources/js/clientes.js": {

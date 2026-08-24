@@ -46,6 +46,9 @@ class DatabaseSeeder extends Seeder
             // Finanzas / Archivos
             FinanzaSeeder::class,
             ArchivoSeeder::class,
+
+            // Blog publico (necesita users: usa el primer usuario existente).
+            ArticuloSeeder::class,
         ]);
     }
 }

@@ -74,7 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger.addEventListener('click', () => {
             const abierto = submenu.classList.toggle('is-open');
             trigger.setAttribute('aria-expanded', String(abierto));
-            trigger.setAttribute('aria-label', abierto ? 'Ocultar servicios' : 'Mostrar servicios');
+            // Cada acordeon (Servicios, Blog...) trae su propia etiqueta en el HTML;
+            // los valores por defecto conservan el comportamiento anterior.
+            trigger.setAttribute(
+                'aria-label',
+                abierto
+                    ? trigger.dataset.labelOcultar ?? 'Ocultar servicios'
+                    : trigger.dataset.labelMostrar ?? 'Mostrar servicios'
+            );
         });
     });
 });

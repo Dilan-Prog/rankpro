@@ -12,6 +12,8 @@ export default defineConfig({
                 'resources/css/web/servicios-conversion.css',
                 'resources/js/app.js',
                 'resources/js/servicios-conversion.js',
+                'resources/css/web/blog.css',
+                'resources/js/blog-publico.js',
                 // Admin panel — shared
                 'resources/css/admin/global.css',
                 'resources/css/admin/sidebar.css',
@@ -30,6 +32,8 @@ export default defineConfig({
                 'resources/js/servicios.js',
                 'resources/css/admin/seo.css',
                 'resources/js/seo.js',
+                'resources/css/admin/blog.css',
+                'resources/js/blog.js',
                 'resources/css/admin/keywords.css',
                 'resources/js/keywords.js',
                 'resources/css/admin/ads.css',

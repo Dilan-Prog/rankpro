@@ -97,6 +97,10 @@
         'publicado'     => ['Publicado',     'badge--success'],
         'actualizar'    => ['Actualizar',    'badge--warning'],
 
+        // Spanish (articulos del blog — App\Enums\EstadoArticulo; borrador y
+        // publicado ya estan arriba con los mismos colores)
+        'archivado'     => ['Archivado',     'badge--neutral'],
+
         // Spanish (ads_campanas — fase_actual; briefing/lanzamiento ya existen arriba con otros colores aceptables)
         'configuracion' => ['Configuración', 'badge--primary'],
 

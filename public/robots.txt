@@ -20,6 +20,12 @@ Disallow: /storage/
 # indexar la URL sin contenido. La consolidacion se hace via canonical, que ya
 # esta implementado en resources/views/components/seo/meta.blade.php.
 
+# --- Rastreadores de IA ---
+# NO se bloquean a proposito. GPTBot, ClaudeBot, PerplexityBot, Google-Extended y
+# CCBot pueden rastrear todo lo publico. El plan de contenidos apuesta por que los
+# articulos se citen en AI Overviews, ChatGPT y Perplexity: bloquearlos seria
+# renunciar a ese canal. Si algun dia se decide lo contrario, es aqui.
+
 # --- Assets: Google NECESITA CSS/JS para renderizar ---
 # Se permiten explicitamente los bundles compilados por Vite.
 Allow: /build/assets/
@@ -32,5 +38,9 @@ Allow: /*.webp$
 Allow: /*.png$
 Allow: /*.jpg$
 Allow: /*.woff2$
+
+# --- Blog ---
+# /blog y /blog/categoria/ son rastreables sin restricciones, incluidas las
+# paginas ?page=N: son la via de descubrimiento de los articulos profundos.
 
 Sitemap: https://rankprosolutions.com.mx/sitemap.xml

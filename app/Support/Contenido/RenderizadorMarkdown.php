@@ -37,6 +37,16 @@ class RenderizadorMarkdown
             'html_input' => 'escape',
             'allow_unsafe_links' => false,
             'max_nesting_level' => 20,
+
+            // Anclas en ASCII: ver App\Support\Contenido\NormalizadorSlug.
+            // 'unique' => 'document' evita colisiones si dos H2 del mismo
+            // articulo se titulan igual (pasa con "Conclusion" o "Ejemplo").
+            'slug_normalizer' => [
+                'instance' => new NormalizadorSlug(),
+                'unique' => 'document',
+                'max_length' => 60,
+            ],
+
             'heading_permalink' => [
                 'html_class' => 'ancla-titulo',
                 'id_prefix' => '',
@@ -108,16 +118,29 @@ class RenderizadorMarkdown
 
         $toc = [];
 
-        foreach ((new DOMXPath($doc))->query('//h2|//h3') as $nodo) {
-            $id = $nodo->getAttribute('id');
+        $xpath = new DOMXPath($doc);
+
+        foreach ($xpath->query('//h2|//h3') as $nodo) {
+            // HeadingPermalink pone el id en el <a> que inyecta dentro del
+            // encabezado, no en el propio <h2>. Se admite tambien el id en el
+            // encabezado por si algun dia se desactiva la extension.
+            $ancla = $xpath->query('.//a[@id]', $nodo)->item(0);
+            $id = $ancla ? $ancla->getAttribute('id') : $nodo->getAttribute('id');
 
             if ($id === '') {
                 continue; // Sin ancla no se puede enlazar; no entra en la TOC.
             }
 
-            // El texto incluye el simbolo del permalink ("#"): se quita para que
-            // la TOC no muestre almohadillas sueltas.
-            $texto = trim(preg_replace('/\s*#\s*$/u', '', $nodo->textContent));
+            // textContent incluye el simbolo del permalink ("#"): se descuenta
+            // el texto del ancla en lugar de recortar con una regexp, que
+            // borraria una almohadilla legitima al final de un titulo.
+            $texto = $nodo->textContent;
+
+            if ($ancla) {
+                $texto = preg_replace('/'.preg_quote($ancla->textContent, '/').'$/u', '', $texto);
+            }
+
+            $texto = trim($texto);
 
             if ($texto === '') {
                 continue;

@@ -343,6 +343,27 @@
             </div>
         </section>
 
+        {{-- ------------------------------------------------------ guías del blog --}}
+        {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se
+             pinta nada, para no dejar un bloque vacío en una landing de conversión.
+             Hoy este servicio no tiene clúster propio en App\Support\Clusters, así
+             que solo aparecerán artículos que lo declaren en la tabla pivote. --}}
+        @if (isset($articulos) && $articulos->isNotEmpty())
+            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="guias">
+                <div class="container">
+                    <h2 id="guias" class="cv-dark-h2" style="font-size:1.5rem;margin-bottom:2rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
+                    <div class="cv-dark-cards cv-dark-cards--3" style="margin-top:0;">
+                        @foreach ($articulos as $articulo)
+                            <x-blog.tarjeta :articulo="$articulo" />
+                        @endforeach
+                    </div>
+                    <p style="margin-top:1.5rem;">
+                        <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
+                    </p>
+                </div>
+            </section>
+        @endif
+
         {{-- ------------------------------------------------ otros servicios --}}
         <section class="cv-dark-sec cv-dark-sec--panel" style="padding:4rem 0;">
             <div class="container">
