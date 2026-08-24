@@ -70,13 +70,18 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-BEyv_YZU.css",
+    "file": "assets/app-Db2wibZt.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
   "resources/css/web/pages.css": {
     "file": "assets/pages-Cz8GdPfT.css",
     "src": "resources/css/web/pages.css",
+    "isEntry": true
+  },
+  "resources/css/web/servicios-conversion.css": {
+    "file": "assets/servicios-conversion-Djep8TBo.css",
+    "src": "resources/css/web/servicios-conversion.css",
     "isEntry": true
   },
   "resources/js/ads.js": {
@@ -86,7 +91,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-BcIE1ldB.js",
+    "file": "assets/app-CYFyyOX8.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
@@ -167,6 +172,12 @@
     "file": "assets/seo-DZaJotn9.js",
     "name": "seo",
     "src": "resources/js/seo.js",
+    "isEntry": true
+  },
+  "resources/js/servicios-conversion.js": {
+    "file": "assets/servicios-conversion-uJPgqOUf.js",
+    "name": "servicios-conversion",
+    "src": "resources/js/servicios-conversion.js",
     "isEntry": true
   },
   "resources/js/servicios.js": {

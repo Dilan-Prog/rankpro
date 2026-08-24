@@ -18,6 +18,16 @@
     --surface: #F5F7FA;
     --border: rgba(0, 0, 0, 0.05);
     --max-width: 1280px;
+
+    /* Degradados de los iconos de servicio. Viven aqui porque los usan tanto
+       las tarjetas del home y del hub como el megamenu del navbar. */
+    --gradient-1: linear-gradient(to bottom right, #34d399, #059669);
+    --gradient-2: linear-gradient(to bottom right, #2dd4bf, #10b981);
+    --gradient-3: linear-gradient(to bottom right, #4ade80, #10b981);
+    --gradient-4: linear-gradient(to bottom right, #10b981, #14b8a6);
+    --gradient-5: linear-gradient(to bottom right, #14b8a6, #059669);
+    --gradient-6: linear-gradient(to bottom right, #34d399, #0d9488);
+    --gradient-7: linear-gradient(to bottom right, #059669, #1A2332);
 }
 
 * {

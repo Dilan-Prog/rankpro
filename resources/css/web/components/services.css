@@ -39,12 +39,13 @@
     transform: scale(1.1);
 }
 
-.service-card__icon.gradient-1 { background: linear-gradient(to bottom right, #34d399, #059669); }
-.service-card__icon.gradient-2 { background: linear-gradient(to bottom right, #2dd4bf, #10b981); }
-.service-card__icon.gradient-3 { background: linear-gradient(to bottom right, #4ade80, #10b981); }
-.service-card__icon.gradient-4 { background: linear-gradient(to bottom right, #10b981, #14b8a6); }
-.service-card__icon.gradient-5 { background: linear-gradient(to bottom right, #14b8a6, #059669); }
-.service-card__icon.gradient-6 { background: linear-gradient(to bottom right, #34d399, #0d9488); }
+.service-card__icon.gradient-1 { background: var(--gradient-1); }
+.service-card__icon.gradient-2 { background: var(--gradient-2); }
+.service-card__icon.gradient-3 { background: var(--gradient-3); }
+.service-card__icon.gradient-4 { background: var(--gradient-4); }
+.service-card__icon.gradient-5 { background: var(--gradient-5); }
+.service-card__icon.gradient-6 { background: var(--gradient-6); }
+.service-card__icon.gradient-7 { background: var(--gradient-7); }
 
 .service-card__title {
     font-weight: 700;

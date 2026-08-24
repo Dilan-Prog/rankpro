@@ -5,12 +5,12 @@
         [
             'title' => 'Servicios',
             'links' => [
-                ['label' => 'SEM & Google Ads', 'url' => route('servicios.show', 'sem-google-ads')],
-                ['label' => 'SEO Orgánico', 'url' => route('servicios.show', 'seo-organico')],
-                ['label' => 'Desarrollo Web', 'url' => route('servicios.show', 'desarrollo-web')],
-                ['label' => 'PageSpeed & Core Web Vitals', 'url' => route('servicios.show', 'pagespeed-core-web-vitals')],
-                ['label' => 'Analytics & Data', 'url' => route('servicios.show', 'analytics-data')],
-                ['label' => 'Social Media', 'url' => route('servicios.show', 'social-media')],
+                // Se derivan del catalogo: dar de alta un servicio nuevo lo agrega
+                // aqui automaticamente, igual que en el megamenu y el sitemap.
+                ...array_map(
+                    fn (array $s): array => ['label' => $s['nombre'], 'url' => $s['url']],
+                    \App\Support\Servicios::navegacion()
+                ),
             ],
         ],
         [

@@ -74,42 +74,187 @@
     transform: rotate(180deg);
 }
 
-/* Submenu de Servicios. Se renderiza siempre en el HTML (rastreable por Google)
-   y solo se oculta visualmente; nunca con [hidden], que lo sacaria del arbol. */
-.navbar__dropdown {
-    display: none;
+/* ------------------------------------------------------------------
+   Megamenu de Servicios
+   Vive siempre en el HTML (rastreable por Google); solo se oculta
+   visualmente. Nunca con [hidden], que lo saca del arbol accesible.
+   ------------------------------------------------------------------ */
+.navbar__item {
+    position: relative;
+}
+
+.megamenu {
     position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    min-width: 15rem;
-    padding: 0.375rem;
-    margin: 0;
-    list-style: none;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    width: min(56rem, calc(100vw - 3rem));
+    padding: 1rem;
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 0.625rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
     z-index: 50;
 }
 
-.nav-dropdown-trigger.is-open + .navbar__dropdown {
-    display: block;
+.navbar__item--mega:hover .megamenu,
+.navbar__item--mega:focus-within .megamenu,
+.nav-dropdown-trigger.is-open ~ .megamenu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
 }
 
-.navbar__dropdown-link {
-    display: block;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--ink);
+.megamenu__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 1120px) {
+    .megamenu__inner {
+        grid-template-columns: 1fr 15rem;
+    }
+}
+
+.megamenu__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.megamenu__card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: background 0.18s ease;
 }
 
-.navbar__dropdown-link:hover {
-    color: var(--brand);
+.megamenu__card:hover,
+.megamenu__card:focus-visible {
+    background: #f0fdf4;
+}
+
+.megamenu__card[aria-current="page"] {
     background: #ecfdf5;
+}
+
+.megamenu__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.625rem;
+    color: #ffffff;
+}
+
+.megamenu__icon.gradient-1 { background: var(--gradient-1); }
+.megamenu__icon.gradient-2 { background: var(--gradient-2); }
+.megamenu__icon.gradient-3 { background: var(--gradient-3); }
+.megamenu__icon.gradient-4 { background: var(--gradient-4); }
+.megamenu__icon.gradient-5 { background: var(--gradient-5); }
+.megamenu__icon.gradient-6 { background: var(--gradient-6); }
+.megamenu__icon.gradient-7 { background: var(--gradient-7); }
+
+.megamenu__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.megamenu__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.megamenu__card:hover .megamenu__title {
+    color: var(--brand);
+}
+
+.megamenu__desc {
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--muted, #6B7280);
+}
+
+.megamenu__aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1.125rem;
+    border-radius: 0.875rem;
+    background: linear-gradient(160deg, #0F9D6E, #1A2332);
+    color: #ffffff;
+}
+
+.megamenu__aside-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.megamenu__aside-text {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.megamenu__aside-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    color: #0B7C57;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.18s ease;
+}
+
+.megamenu__aside-cta:hover {
+    transform: translateX(2px);
+    color: #0B7C57;
+}
+
+.megamenu__aside-link {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+}
+
+.megamenu__aside-link:hover {
+    color: #ffffff;
+}
+
+/* En pantallas sin hover fiable el megamenu no se despliega al pasar el raton;
+   queda el enlace directo a /servicios y el acordeon del menu movil. */
+@media (hover: none) {
+    .navbar__item--mega:hover .megamenu {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
 }
 
 .navbar__actions {
@@ -207,6 +352,66 @@
 }
 
 .navbar__mobile-link:hover {
+    color: var(--brand);
+    background: #ecfdf5;
+}
+
+.navbar__mobile-group {
+    display: flex;
+    align-items: center;
+}
+
+.navbar__mobile-link--parent {
+    flex: 1 1 auto;
+}
+
+.navbar__mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.navbar__mobile-toggle:hover {
+    background: #ecfdf5;
+}
+
+.navbar__mobile-toggle[aria-expanded="true"] .navbar__chevron {
+    transform: rotate(180deg);
+}
+
+.navbar__mobile-submenu {
+    display: none;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0 0 0.25rem;
+    padding: 0 0 0 0.75rem;
+    border-left: 2px solid var(--border);
+    list-style: none;
+}
+
+.navbar__mobile-submenu.is-open {
+    display: flex;
+}
+
+.navbar__mobile-sublink {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--muted, #6B7280);
+    text-decoration: none;
+}
+
+.navbar__mobile-sublink:hover {
     color: var(--brand);
     background: #ecfdf5;
 }

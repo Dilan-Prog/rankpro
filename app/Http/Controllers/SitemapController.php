@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Servicios;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -20,12 +21,6 @@ class SitemapController extends Controller
         '/'                                  => ['weekly',  '1.0', 'pages.index'],
         '/nosotros'                          => ['monthly', '0.7', 'pages.nosotros'],
         '/servicios'                         => ['monthly', '0.9', 'pages.servicios.index'],
-        '/servicios/sem-google-ads'          => ['monthly', '0.8', 'pages.servicios.show'],
-        '/servicios/seo-organico'            => ['monthly', '0.8', 'pages.servicios.show'],
-        '/servicios/desarrollo-web'          => ['monthly', '0.8', 'pages.servicios.show'],
-        '/servicios/pagespeed-core-web-vitals' => ['monthly', '0.8', 'pages.servicios.show'],
-        '/servicios/analytics-data'          => ['monthly', '0.8', 'pages.servicios.show'],
-        '/servicios/social-media'            => ['monthly', '0.8', 'pages.servicios.show'],
         '/contacto'                          => ['monthly', '0.7', 'pages.contacto'],
         '/terminos-y-condiciones'            => ['yearly',  '0.3', 'pages.legal.terminos'],
         '/aviso-de-privacidad'               => ['yearly',  '0.3', 'pages.legal.privacidad'],
@@ -41,7 +36,7 @@ class SitemapController extends Controller
         $xml[] = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
-        foreach (self::PAGES as $path => $meta) {
+        foreach ($this->paginas() as $path => $meta) {
             [$changefreq, $priority, $view] = $meta;
 
             $xml[] = '    <url>';
@@ -62,6 +57,33 @@ class SitemapController extends Controller
         return response(implode(PHP_EOL, $xml) . PHP_EOL, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Paginas estaticas mas una entrada por cada servicio del catalogo.
+     *
+     * Las URLs de servicio se derivan de App\Support\Servicios para que dar de
+     * alta un servicio nuevo no obligue a tocar tambien este archivo.
+     *
+     * @return array<string, array{0: string, 1: string, 2: string|null}>
+     */
+    private function paginas(): array
+    {
+        $paginas = [];
+
+        foreach (self::PAGES as $path => $meta) {
+            $paginas[$path] = $meta;
+
+            // Los detalles de servicio van justo despues del hub.
+            if ($path === '/servicios') {
+                foreach (Servicios::todos() as $servicio) {
+                    $slug = $servicio['slug'];
+                    $paginas["/servicios/{$slug}"] = ['monthly', '0.8', "pages.servicios.{$slug}"];
+                }
+            }
+        }
+
+        return $paginas;
     }
 
     /**

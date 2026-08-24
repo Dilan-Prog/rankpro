@@ -9,7 +9,9 @@ export default defineConfig({
                 // Marketing site
                 'resources/css/web/app.css',
                 'resources/css/web/pages.css',
+                'resources/css/web/servicios-conversion.css',
                 'resources/js/app.js',
+                'resources/js/servicios-conversion.js',
                 // Admin panel — shared
                 'resources/css/admin/global.css',
                 'resources/css/admin/sidebar.css',
