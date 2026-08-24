@@ -1,0 +1,127 @@
+/* ----------------------------------------------------------------------
+   Banner de consentimiento
+   ----------------------------------------------------------------------
+   Fijo abajo, fuera del flujo: no puede provocar CLS (la auditoria mide
+   CLS 0.000 y hay que mantenerlo). Nace oculto con [hidden] y consent.js
+   le anade .is-visible solo si no hay decision vigente.
+   ---------------------------------------------------------------------- */
+
+.cookie-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60; /* por encima del boton flotante de WhatsApp */
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 32px rgba(26, 35, 50, 0.10);
+    transform: translateY(100%);
+    transition: transform 0.28s ease;
+}
+
+.cookie-banner[hidden] {
+    display: none;
+}
+
+.cookie-banner.is-visible {
+    transform: translateY(0);
+}
+
+.cookie-banner__contenido {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.cookie-banner__texto {
+    flex: 1;
+    min-width: 0;
+}
+
+.cookie-banner__titulo {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--ink);
+}
+
+.cookie-banner__texto p:last-child {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+.cookie-banner__texto a {
+    color: var(--brand-dark);
+    text-decoration: underline;
+}
+
+.cookie-banner__acciones {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.cookie-banner__btn {
+    padding: 0.7rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.cookie-banner__btn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+.cookie-banner__btn--primary {
+    background: var(--brand);
+    color: #ffffff;
+}
+
+.cookie-banner__btn--primary:hover {
+    background: var(--brand-dark);
+}
+
+.cookie-banner__btn--ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--border);
+}
+
+.cookie-banner__btn--ghost:hover {
+    border-color: var(--muted);
+}
+
+/* En movil el banner tapa el boton de WhatsApp: se apilan los botones y se
+   deja aire abajo para que ambos sigan siendo alcanzables con el pulgar. */
+@media (max-width: 767px) {
+    .cookie-banner__contenido {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    .cookie-banner__acciones {
+        flex-direction: column-reverse;
+    }
+
+    .cookie-banner__btn {
+        width: 100%;
+        padding: 0.85rem 1.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cookie-banner {
+        transition: none;
+    }
+}

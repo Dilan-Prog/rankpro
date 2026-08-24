@@ -38,3 +38,7 @@
 .partners__item:hover {
     opacity: 1;
 }
+
+.partners__list {
+    list-style: none;
+}

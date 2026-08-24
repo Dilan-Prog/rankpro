@@ -17,7 +17,15 @@
     $seoDescription = trim($__env->yieldContent('description', 'Agencia de marketing digital en México: SEM, SEO, desarrollo web y optimización de velocidad.'));
 
     // Canónica: por defecto la URL actual SIN query string; se puede sobrescribir con @section('canonical').
+    // Las vistas paginadas (p. ej. /blog?page=2) DEBEN sobrescribirla incluyendo el query string,
+    // porque url()->current() lo descarta y todas las páginas declararían la misma canónica.
     $seoCanonical = trim($__env->yieldContent('canonical')) ?: url()->current();
+
+    // La portada se sirve en "/" pero url()->current() devuelve el origen sin barra final.
+    // Normalizarla evita que Search Console reporte la canónica y la URL rastreada como distintas.
+    if ($seoCanonical === rtrim(url('/'), '/')) {
+        $seoCanonical .= '/';
+    }
 
     // Imagen social: absoluta siempre. Override con @section('og_image').
     $seoImage = trim($__env->yieldContent('og_image')) ?: asset('images/og-rankpro.jpg');
@@ -25,18 +33,38 @@
         $seoImage = asset(ltrim($seoImage, '/'));
     }
 
-    // Protección para entornos que no son producción: nunca indexar staging/local.
-    $seoRobots = config('app.env') === 'production'
-        ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
-        : 'noindex, nofollow';
+    // Indexabilidad. Decisión explícita vía SEO_INDEXABLE (config/seo.php); si no está
+    // definida, se cae al comportamiento anterior basado en APP_ENV.
+    //
+    // Motivo del cambio: el .env de producción no tenía APP_ENV=production y el sitio entero
+    // estuvo emitiendo noindex sin aviso. Un fallo de configuración no debe desindexar en silencio.
+    $seoIndexable = config('seo.indexable');
+    $seoIndexable = $seoIndexable === null
+        ? config('app.env') === 'production'
+        : filter_var($seoIndexable, FILTER_VALIDATE_BOOLEAN);
+
+    $seoRobots = $seoIndexable
+        ? config('seo.robots_index')
+        : config('seo.robots_noindex');
+
+    // Override por pagina: @section('robots', 'noindex, follow').
+    // Lo necesitan las paginas que nunca deben indexarse aunque el sitio si lo sea
+    // (errores, resultados de busqueda, paginas de agradecimiento). Se aplica solo
+    // cuando el sitio es indexable: en staging manda siempre el noindex global.
+    $seoRobotsOverride = trim($__env->yieldContent('robots'));
+    if ($seoIndexable && $seoRobotsOverride !== '') {
+        $seoRobots = $seoRobotsOverride;
+    }
+
+    // Tipo Open Graph. Por defecto "website"; los artículos del blog declaran
+    // @section('og_type', 'article'). yieldContent sobre una sección no definida
+    // devuelve '', así que las páginas existentes no cambian.
+    $seoOgType = trim($__env->yieldContent('og_type')) ?: 'website';
 
     // Verificación de Google Search Console.
-    // NOTA: la clave services.google.site_verification NO existe todavía en config/services.php.
-    // Se lee con fallback a env() para no tener que tocar ese archivo. Para dejarlo "config-cache safe",
-    // añadir en config/services.php:
-    //     'google' => ['site_verification' => env('GOOGLE_SITE_VERIFICATION')],
-    // y definir GOOGLE_SITE_VERIFICATION=... en el .env
-    $seoGoogleVerification = config('services.google.site_verification') ?: env('GOOGLE_SITE_VERIFICATION');
+    // La clave vive en config/services.php (config-cache safe). Definir
+    // GOOGLE_SITE_VERIFICATION=... en el .env de producción.
+    $seoGoogleVerification = config('services.google.site_verification');
 @endphp
 
 <title>{{ $seoTitle }}</title>
@@ -46,7 +74,7 @@
 <link rel="canonical" href="{{ $seoCanonical }}">
 
 {{-- Open Graph --}}
-<meta property="og:type" content="website">
+<meta property="og:type" content="{{ $seoOgType }}">
 <meta property="og:site_name" content="RankPro">
 <meta property="og:locale" content="es_MX">
 <meta property="og:title" content="{{ $seoTitle }}">
@@ -64,6 +92,7 @@
 <meta name="twitter:image" content="{{ $seoImage }}">
 
 {{-- Iconos y color de marca (--brand de resources/css/web/app.css) --}}
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/icon-192.png') }}">
 <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('images/icon-512.png') }}">

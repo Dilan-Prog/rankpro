@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdsKeywordColumnaController;
 use App\Http\Controllers\Admin\AdsMetricaController;
 use App\Http\Controllers\Admin\AdsOptimizacionController;
 use App\Http\Controllers\Admin\ArchivosController;
+use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
 use App\Http\Controllers\Admin\ComunicacionController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Admin\SeoPosicionController;
 use App\Http\Controllers\Admin\ServiciosController;
 use App\Http\Controllers\Admin\TareaController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PaginasController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +73,24 @@ Route::get('/terminos-y-condiciones', [PaginasController::class, 'terminos'])->n
 Route::get('/aviso-de-privacidad', [PaginasController::class, 'privacidad'])->name('legal.privacidad');
 Route::get('/politica-de-cookies', [PaginasController::class, 'cookies'])->name('legal.cookies');
 
+/*
+|--------------------------------------------------------------------------
+| Blog
+|--------------------------------------------------------------------------
+|
+| El orden importa: /blog/categoria/{cluster} tiene que ir ANTES de
+| /blog/{slug}, o "categoria" se interpretaria como el slug de un articulo.
+|
+*/
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/categoria/{cluster}', [BlogController::class, 'cluster'])
+    ->where('cluster', '[a-z0-9-]+')
+    ->name('blog.cluster');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('blog.show');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 /*
@@ -87,6 +107,16 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::prefix('blog')->name('blog.')->group(function () {
+        Route::get('/', [AdminBlogController::class, 'index'])->name('index');
+        Route::get('/nuevo', [AdminBlogController::class, 'create'])->name('create');
+        Route::post('/', [AdminBlogController::class, 'store'])->name('store');
+        Route::post('/previsualizar', [AdminBlogController::class, 'previsualizar'])->name('preview');
+        Route::get('/{articulo}/editar', [AdminBlogController::class, 'edit'])->name('edit');
+        Route::put('/{articulo}', [AdminBlogController::class, 'update'])->name('update');
+        Route::delete('/{articulo}', [AdminBlogController::class, 'destroy'])->name('destroy');
+    });
 
     Route::prefix('clientes')->name('clientes.')->group(function () {
         Route::get('/', [ClientesController::class, 'index'])->name('index');

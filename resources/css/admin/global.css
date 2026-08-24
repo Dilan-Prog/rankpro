@@ -1039,6 +1039,12 @@ details[open] > .filters-toggle .filters-toggle__chevron {
   padding: var(--space-5);
 }
 
+.guest-layout.auth-split-page {
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
 /* ---------- Responsive helpers ---------- */
 .grid-2 {
   display: grid;

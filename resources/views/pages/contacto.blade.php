@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Contacto | RankPro Agencia de Marketing Digital')
-@section('description', 'Escríbenos por WhatsApp al +52 734 103 6410 o a administracion@rankprosolutions.com.mx. Diagnóstico inicial sin costo para tu proyecto de marketing digital en México.')
+@section('description', 'Escríbenos por WhatsApp al +52 734 103 6410 o por correo. Diagnóstico inicial sin costo para tu proyecto de marketing digital en México.')
 @section('canonical', route('contacto'))
 
 @push('styles')

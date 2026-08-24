@@ -1,54 +1,17 @@
 @php
-    $services = [
-        [
-            'icon' => '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>',
-            'gradient' => 'gradient-1',
-            'slug' => 'sem-google-ads',
-            'title' => 'SEM & Google Ads',
-            'desc' => 'Campañas de búsqueda, display y shopping para maximizar tu ROI.',
-            'tags' => ['Google Ads', 'Shopping', 'Display'],
-        ],
-        [
-            'icon' => '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>',
-            'gradient' => 'gradient-2',
-            'slug' => 'seo-organico',
-            'title' => 'SEO Orgánico',
-            'desc' => 'Estrategia de contenido, link building y SEO técnico para el Top 3.',
-            'tags' => ['On-Page', 'Off-Page', 'Técnico'],
-        ],
-        [
-            'icon' => '<path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path>',
-            'gradient' => 'gradient-3',
-            'slug' => 'desarrollo-web',
-            'title' => 'Desarrollo Web',
-            'desc' => 'Sitios web y tiendas online de alto rendimiento con diseño único.',
-            'tags' => ['React', 'Shopify', 'WordPress'],
-        ],
-        [
-            'icon' => '<path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path>',
-            'gradient' => 'gradient-4',
-            'slug' => 'pagespeed-core-web-vitals',
-            'title' => 'PageSpeed & Core Web Vitals',
-            'desc' => 'Optimización técnica para alcanzar 90+ en Lighthouse.',
-            'tags' => ['Performance', 'CWV', 'Lighthouse'],
-        ],
-        [
-            'icon' => '<line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line>',
-            'gradient' => 'gradient-5',
-            'slug' => 'analytics-data',
-            'title' => 'Analytics & Data',
-            'desc' => 'GA4, Tag Manager y dashboards para decisiones basadas en datos reales.',
-            'tags' => ['GA4', 'Looker Studio', 'GTM'],
-        ],
-        [
-            'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
-            'gradient' => 'gradient-6',
-            'slug' => 'social-media',
-            'title' => 'Social Media',
-            'desc' => 'Gestión profesional de redes: contenido, pauta y crecimiento de comunidad.',
-            'tags' => ['Instagram', 'Facebook', 'LinkedIn'],
-        ],
-    ];
+    // Los servicios se derivan del catalogo (App\Support\Servicios), la misma fuente
+    // que alimentan el megamenu, el footer y el sitemap. Estaban duplicados a mano
+    // aqui y la lista se desincronizo: faltaba "Automatizacion de Procesos", que si
+    // tiene landing propia. Se usa todos() en vez de navegacion() porque esta seccion
+    // necesita ademas 'tags', que navegacion() no expone.
+    $services = array_values(array_map(static fn (array $s): array => [
+        'icon' => $s['icon'],
+        'gradient' => $s['gradient'],
+        'slug' => $s['slug'],
+        'title' => $s['nombre'],
+        'desc' => $s['resumen'],
+        'tags' => $s['tags'],
+    ], \App\Support\Servicios::todos()));
 @endphp
 
 <section class="services">

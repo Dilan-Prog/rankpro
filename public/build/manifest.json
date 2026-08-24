@@ -10,7 +10,7 @@
     "isEntry": true
   },
   "resources/css/admin/auth.css": {
-    "file": "assets/auth-DpL96kdA.css",
+    "file": "assets/auth-oR1mBQTr.css",
     "src": "resources/css/admin/auth.css",
     "isEntry": true
   },
@@ -35,7 +35,7 @@
     "isEntry": true
   },
   "resources/css/admin/global.css": {
-    "file": "assets/global-C1pD1iv8.css",
+    "file": "assets/global-DrGyegOV.css",
     "src": "resources/css/admin/global.css",
     "isEntry": true
   },
@@ -70,7 +70,7 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-Db2wibZt.css",
+    "file": "assets/app-DSVE4jiI.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
@@ -91,7 +91,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CYFyyOX8.js",
+    "file": "assets/app-CBBpT8Oq.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

@@ -30,7 +30,7 @@ class Servicios
                 'tags' => ['Google Ads', 'Shopping', 'Display'],
                 'resumen' => 'Campañas de búsqueda, display y shopping para maximizar tu ROI.',
                 'meta_title' => 'Agencia de Google Ads en México | Campañas SEM | RankPro',
-                'meta_description' => 'Gestionamos campañas de Google Ads (búsqueda, Shopping, Display y YouTube) con medición de conversiones real. Estructura, pujas y creatividades orientadas a rentabilidad.',
+                'meta_description' => 'Campañas de Google Ads en búsqueda, Shopping, Display y YouTube con medición de conversiones real. Estructura, pujas y creatividades rentables.',
                 'h1' => 'Google Ads y SEM para empresas en México',
                 'intro' => 'Google Ads es el canal más rápido para poner tu oferta frente a alguien que ya está buscando lo que vendes. También es el más fácil de desperdiciar: basta una estructura de campañas mal armada, concordancias demasiado abiertas o una conversión mal configurada para quemar presupuesto durante meses sin darte cuenta. En RankPro trabajamos la publicidad de búsqueda como un sistema medible, no como un botón de "promocionar".',
                 'secciones' => [
@@ -418,7 +418,7 @@ class Servicios
                 'tags' => ['n8n', 'CRM', 'Integraciones'],
                 'resumen' => 'Flujos automáticos con n8n: leads al CRM, avisos al vendedor y reportes solos.',
                 'meta_title' => 'Automatización de Procesos con n8n en México | RankPro',
-                'meta_description' => 'Conectamos marketing, ventas y operaciones con n8n: captación automática de leads, integración con tu CRM, notificaciones en tiempo real y reportes sin trabajo manual.',
+                'meta_description' => 'Conectamos marketing, ventas y operaciones con n8n: captación automática de leads, integración con tu CRM y reportes sin trabajo manual.',
                 'h1' => 'Automatización de procesos con n8n',
                 'intro' => 'La mayoría de las empresas que atendemos no tienen un problema de generación de demanda: tienen un problema de qué pasa después. Un formulario llega al correo de alguien que está en junta, un vendedor captura a mano el mismo dato en tres sistemas, y el reporte del lunes se arma copiando celdas. Automatizar no es comprar una herramienta más: es conectar lo que ya usas para que el trabajo repetitivo deje de consumir a gente capaz. Lo hacemos con n8n, que puede vivir en tu propia infraestructura, así que tus datos no salen de tu servidor y no pagas por cada ejecución.',
                 'secciones' => [

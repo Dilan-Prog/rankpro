@@ -160,3 +160,132 @@
 .password-field__toggle:hover {
   color: var(--color-foreground);
 }
+
+.auth-form__field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted-foreground);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Login — split screen (form left, brand panel right)
+   ========================================================================== */
+
+.auth-split {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.auth-split__form-side {
+  /* Login always reads as "light brand" regardless of the admin panel's
+     dark/light toggle — overriding the theme tokens locally is simpler
+     and safer than fighting every .input/.field rule that consumes them. */
+  --color-card: #FFFFFF;
+  --color-foreground: #1A2332;
+  --color-muted-foreground: #64748B;
+  --color-border: rgba(15, 23, 42, 0.09);
+
+  flex: 1 1 42%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-card);
+  padding: var(--space-8) var(--space-6);
+}
+
+.auth-split__form-inner {
+  width: 100%;
+  max-width: 24rem;
+}
+
+.auth-split__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+  margin-bottom: var(--space-8);
+}
+
+.auth-split__back:hover {
+  color: var(--color-primary);
+}
+
+.auth-split__logo {
+  height: 2.25rem;
+  width: auto;
+}
+
+.auth-split__hero-side {
+  flex: 1 1 58%;
+  display: none;
+  position: relative;
+  background: linear-gradient(135deg, var(--color-primary), #059669);
+  padding: var(--space-8);
+}
+
+.auth-split__hero-panel {
+  max-width: 30rem;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+}
+
+.auth-split__hero-logo {
+  height: 2rem;
+  width: auto;
+  margin-bottom: var(--space-5);
+}
+
+.auth-split__hero-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: var(--space-3);
+}
+
+.auth-split__hero-desc {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+}
+
+.auth-split__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.auth-split__stat {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.auth-split__stat-value {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+}
+
+.auth-split__stat-label {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+}
+
+@media (min-width: 1024px) {
+  .auth-split__hero-side {
+    display: flex;
+  }
+}

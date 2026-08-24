@@ -10,7 +10,7 @@
     @vite(['resources/css/admin/global.css'])
     @yield('styles')
 </head>
-<body class="guest-layout">
+<body class="guest-layout @yield('bodyClass')">
     @yield('content')
 
     @yield('scripts')

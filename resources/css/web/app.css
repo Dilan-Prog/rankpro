@@ -5,9 +5,10 @@
 @import './components/hero.css';
 @import './components/partners.css';
 @import './components/services.css';
-@import './components/testimonials.css';
+@import './components/home-content.css';
 @import './components/footer.css';
 @import './components/whatsapp-float.css';
+@import './components/cookie-banner.css';
 
 :root {
     --brand: #0F9D6E;

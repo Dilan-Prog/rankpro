@@ -10,7 +10,7 @@
 @extends('layouts.app')
 
 @section('title', 'Aviso de Privacidad | RankPro')
-@section('description', 'Aviso de privacidad de RankPro conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares: qué datos tratamos, para qué y cómo ejercer tus derechos ARCO.')
+@section('description', 'Aviso de privacidad de RankPro conforme a la LFPDPPP: qué datos personales tratamos, con qué finalidad y cómo ejercer tus derechos ARCO.')
 @section('canonical', route('legal.privacidad'))
 
 @push('styles')

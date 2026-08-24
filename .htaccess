@@ -1,4 +1,80 @@
+# ======================================================================
+# .htaccess de la RAIZ del proyecto
+# ----------------------------------------------------------------------
+# Este archivo solo hace falta cuando el document root del hosting apunta
+# a la raiz del proyecto en lugar de a /public (configuracion tipica de
+# hosting compartido).
+#
+# Si algun dia se puede mover el document root a /public, BORRAR este
+# archivo: /public/.htaccess ya cubre todo lo de abajo por si solo.
+#
+# Historico (ago-2026): aqui solo habia una reescritura INTERNA a public/,
+# sin 301. Resultado: /servicios y /public/servicios devolvian ambos 200 y
+# Google veia dos sitios identicos. Toda la canonicalizacion se resuelve
+# ahora aqui, ANTES de entrar al front controller, para que sea una sola
+# redireccion y no una cadena.
+# ======================================================================
+
+<IfModule mod_negotiation.c>
+    Options -MultiViews -Indexes
+</IfModule>
+
 RewriteEngine On
 
+# ----------------------------------------------------------------------
+# 1. HTTPS (se omite en entornos locales)
+# ----------------------------------------------------------------------
+RewriteCond %{HTTP_HOST} !^localhost [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+RewriteCond %{HTTP_HOST} !\.test$ [NC]
+RewriteCond %{HTTP_HOST} !\.local$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ----------------------------------------------------------------------
+# 2. Host canonico: www -> sin www
+# ----------------------------------------------------------------------
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+# ----------------------------------------------------------------------
+# 3. /public/... -> 301 a la misma URL sin /public
+#    Se compara contra THE_REQUEST (la peticion original del navegador) y no
+#    contra REQUEST_URI, para que la reescritura interna del punto 6 no
+#    vuelva a entrar aqui y provoque un bucle.
+# ----------------------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+public/(.*)\sHTTP [NC]
+RewriteRule ^ /%1 [L,R=301]
+
+# ----------------------------------------------------------------------
+# 4. /index.php -> 301 a la raiz (tercera copia indexable de la portada)
+# ----------------------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+index\.php(\?[^\s]*)?\sHTTP [NC]
+RewriteRule ^ / [L,R=301]
+
+# ----------------------------------------------------------------------
+# 5. Barra final -> 301 sin barra (salvo la raiz y los directorios reales)
+# ----------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/(.+)/$
+RewriteRule ^ /%1 [L,R=301]
+
+# ----------------------------------------------------------------------
+# 6. Todo lo demas: reescritura INTERNA a public/ (sin redireccion)
+# ----------------------------------------------------------------------
 RewriteCond %{REQUEST_URI} !^/public/
 RewriteRule ^(.*)$ public/$1 [L]
+
+# ----------------------------------------------------------------------
+# Nunca servir el codigo fuente si la reescritura falla
+# ----------------------------------------------------------------------
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.(env|git)|composer\.(json|lock)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+</IfModule>

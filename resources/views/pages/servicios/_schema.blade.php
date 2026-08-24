@@ -7,6 +7,7 @@
             '@graph' => [
                 [
                     '@type' => 'Service',
+                    '@id' => route('servicios.show', $servicio['slug']).'#service',
                     'name' => $servicio['nombre'],
                     'description' => $servicio['meta_description'],
                     'serviceType' => $servicio['nombre'],

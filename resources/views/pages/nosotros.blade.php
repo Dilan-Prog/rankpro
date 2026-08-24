@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Sobre RankPro | Agencia de Marketing Digital en México')
-@section('description', 'Quiénes somos, cómo trabajamos y qué puedes esperar de RankPro: una agencia de marketing digital en México enfocada en medición, transparencia y resultados verificables.')
+@section('description', 'Quiénes somos y cómo trabajamos en RankPro: agencia de marketing digital en México enfocada en medición, transparencia y resultados verificables.')
 @section('canonical', route('nosotros'))
 
 @push('styles')

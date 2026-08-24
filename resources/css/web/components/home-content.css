@@ -1,0 +1,198 @@
+/* Bloques de contenido propios de la portada: metodología, encaje (para quién
+   es / para quién no), entregables y preguntas frecuentes de nivel agencia.
+   Sustituyen a los testimonios y a las cifras que se retiraron en la revisión
+   de E-E-A-T. Reutilizan los tokens y las utilidades globales de app.css. */
+
+/* ── Metodología ─────────────────────────────────────────────────────────── */
+
+.process {
+    padding: 6rem 1rem;
+    background: var(--surface);
+}
+
+.process__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.process-step {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    transition: all 0.3s ease;
+}
+
+.process-step:hover {
+    box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.15);
+    transform: translateY(-4px);
+}
+
+.process-step__number {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 1.125rem;
+    background: var(--gradient-1);
+}
+
+.process-step__number.gradient-1 { background: var(--gradient-1); }
+.process-step__number.gradient-2 { background: var(--gradient-2); }
+.process-step__number.gradient-3 { background: var(--gradient-3); }
+.process-step__number.gradient-4 { background: var(--gradient-4); }
+.process-step__number.gradient-5 { background: var(--gradient-5); }
+
+.process-step__title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+}
+
+.process-step__desc {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+    .process__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .process__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ── Encaje: para quién es y para quién no ───────────────────────────────── */
+
+.fit {
+    padding: 6rem 1rem;
+    background: #ffffff;
+}
+
+.fit__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.fit-panel {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    background: var(--surface);
+}
+
+.fit-panel--yes {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+.fit-panel__title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+}
+
+.fit-panel__list {
+    list-style: none;
+    display: grid;
+    gap: 0.875rem;
+}
+
+.fit-panel__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    color: var(--ink);
+    font-size: 0.875rem;
+    line-height: 1.65;
+}
+
+.fit-panel__icon {
+    flex: 0 0 auto;
+    margin-top: 0.2rem;
+    color: var(--brand);
+}
+
+.fit-panel--no .fit-panel__icon {
+    color: var(--muted);
+}
+
+.fit__deliverables {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.75rem;
+}
+
+.fit__deliverables-title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+}
+
+.fit__deliverables-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .fit__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fit__deliverables-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ── Preguntas frecuentes de la portada ──────────────────────────────────── */
+
+.home-faq {
+    padding: 6rem 1rem;
+    background: var(--surface);
+}
+
+.home-faq__list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 52rem;
+    margin: 0 auto;
+}
+
+.home-faq__item {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem 1.75rem;
+}
+
+.home-faq__question {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1rem;
+    margin-bottom: 0.625rem;
+}
+
+.home-faq__answer {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}

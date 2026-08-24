@@ -22,6 +22,14 @@
     RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
     RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
+    # ------------------------------------------------------------------
+    # /index.php -> 301 a la raiz (evita una segunda copia de la portada)
+    # Se compara THE_REQUEST para no interceptar la reescritura interna
+    # al front controller que hace la ultima regla de este bloque.
+    # ------------------------------------------------------------------
+    RewriteCond %{THE_REQUEST} \s/+index\.php(\?[^\s]*)?\sHTTP [NC]
+    RewriteRule ^ / [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -41,6 +49,17 @@
 # Cabeceras de seguridad
 # ----------------------------------------------------------------------
 <IfModule mod_headers.c>
+    # No anunciar la version de PHP.
+    Header always unset X-Powered-By
+
+    # HSTS: NO ACTIVAR todavia.
+    # Requisito previo: que https:// funcione en el dominio Y en el subdominio www
+    # (hoy www.rankprosolutions.com.mx no resuelve en DNS). Activarlo antes deja
+    # inaccesible cualquier host que no tenga certificado valido, y el navegador
+    # recuerda la directiva durante max-age aunque se retire la cabecera.
+    # Descomentar solo despues de verificar ambos hosts por https:
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
