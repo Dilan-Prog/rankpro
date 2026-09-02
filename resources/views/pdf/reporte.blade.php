@@ -54,8 +54,10 @@
         .cv-band-1 { padding: 84px 72px 0; }
         .cv-band-2 { padding: 232px 72px 0; }
         .cv-band-3 { padding: 176px 72px 0; }
-        .cv-brand { font-size: 13px; font-weight: bold; letter-spacing: 3px; color: #1A2332; }
-        .cv-brand-sub { font-size: 10px; letter-spacing: 2.2px; color: #64748B; padding-top: 3px; }
+        /* El logo va a 180px de ancho; el original es 493x160, asi que dompdf lo
+           escala a 58px de alto manteniendo la proporcion. */
+        .cv-logo { width: 180px; height: 58px; }
+        .cv-brand-sub { font-size: 10px; letter-spacing: 2.2px; color: #64748B; padding-top: 6px; }
         .cv-folio { text-align: right; font-size: 10px; letter-spacing: 1.6px; color: #64748B; }
         .cv-kicker { font-size: 12px; font-weight: bold; letter-spacing: 3.4px; color: #0F9D6E; }
         .cv-titulo { font-size: 54px; font-weight: bold; color: #1A2332; letter-spacing: -1.4px; line-height: 1.05; padding-top: 22px; }
@@ -93,9 +95,15 @@
         .marca-fecha { font-size: 9px; background: #FEF3C7; color: #B45309; padding: 1px 4px; }
 
         /* ── Tabla base (artboard 09 · estilo de tabla) ─────────────────── */
-        table.t { width: 100%; }
-        table.t thead td { background: #1A2332; padding: 7px 8px; font-size: 9px; font-weight: bold; letter-spacing: 0.8px; color: #FFFFFF; vertical-align: middle; }
-        table.t tbody td { padding: 4px 8px; font-size: 10px; color: #1A2332; border-bottom: 1px solid #EEF1F5; vertical-align: top; }
+        /* `table-layout: fixed` no es cosmético: con el reparto automático,
+           dompdf ensancha la columna hasta que quepa su contenido más largo, y
+           una URL es una cadena sin espacios que no puede partir. La tabla
+           crecía más allá de los 704px de la caja y las últimas columnas se
+           salían del papel. Con el reparto fijo mandan los anchos declarados y
+           `word-wrap` permite cortar la URL dentro de su celda. */
+        table.t { width: 100%; table-layout: fixed; }
+        table.t thead td { background: #1A2332; padding: 7px 8px; font-size: 9px; font-weight: bold; letter-spacing: 0.8px; color: #FFFFFF; vertical-align: middle; word-wrap: break-word; }
+        table.t tbody td { padding: 4px 8px; font-size: 10px; color: #1A2332; border-bottom: 1px solid #EEF1F5; vertical-align: top; word-wrap: break-word; }
         table.t td.num { font-size: 10px; text-align: right; }
         table.t td.txt2 { font-size: 9px; color: #64748B; }
         .zebra { background: #F9FAFC; }
@@ -251,7 +259,7 @@
 <div class="pg-foot">
     <table class="w">
         <tr>
-            <td>RankPro Solutions · rankpro.mx</td>
+            <td>RankPro Solutions · rankprosolutions.com.mx</td>
             <td class="ft-c">{{ $reporte['cliente']['empresa'] ?: $reporte['cliente']['nombre'] }} — {{ $reporte['titulo'] }}</td>
             <td class="ft-r"><span class="pg-num"></span></td>
         </tr>

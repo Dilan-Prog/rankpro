@@ -28,7 +28,7 @@
 <body>
     <header>
         <div class="brand">RankPro Solutions</div>
-        <div class="brand-sub">Agencia de Marketing Digital · rankpro.mx</div>
+        <div class="brand-sub">Agencia de Marketing Digital · rankprosolutions.com.mx</div>
     </header>
     <footer>RankPro Solutions — Contrato {{ $numero }} — Página <span></span></footer>
 

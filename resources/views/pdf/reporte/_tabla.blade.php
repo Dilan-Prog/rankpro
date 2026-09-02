@@ -29,6 +29,40 @@
     $numericos = ['numero', 'decimal', 'porcentaje', 'moneda'];
     $anchos = ['numero' => 56, 'decimal' => 56, 'porcentaje' => 60, 'moneda' => 72, 'fecha' => 72, 'nivel' => 76];
 
+    // Con `table-layout: fixed` (ver reporte.blade.php) manda el ancho declarado,
+    // asi que hay que declararlos todos: lo que no se declare se reparte a
+    // partes iguales, y la primera columna —la que identifica la fila, casi
+    // siempre una URL o una consulta— necesita mas sitio que las demas. De ahi
+    // que pese el doble al repartir el espacio sobrante.
+    $anchoCaja = 704;
+    $columnasTexto = [];
+    $ocupado = 0;
+
+    foreach ($columnas as $i => $col) {
+        $t = $col['tipo'] ?? 'texto';
+        if (isset($anchos[$t])) {
+            $ocupado += $anchos[$t];
+        } else {
+            $columnasTexto[] = $i;
+        }
+    }
+
+    $pesos = [];
+    foreach ($columnasTexto as $n => $i) {
+        $pesos[$i] = $n === 0 ? 2 : 1;
+    }
+
+    $sumaPesos = array_sum($pesos) ?: 1;
+    $libre = max(120, $anchoCaja - $ocupado);
+
+    $anchoDe = function (int $i, array $col) use ($anchos, $pesos, $libre, $sumaPesos) {
+        $t = $col['tipo'] ?? 'texto';
+
+        return isset($anchos[$t])
+            ? $anchos[$t]
+            : (int) floor($libre * ($pesos[$i] ?? 1) / $sumaPesos);
+    };
+
     $alineacion = function (array $col) use ($numericos) {
         $a = $col['alineacion'] ?? '';
         if ($a === 'derecha') return 'right';
@@ -76,9 +110,8 @@
     <table class="t" style="margin-top: 14px;">
         <thead>
             <tr>
-                @foreach ($columnas as $col)
-                    @php $ancho = $anchos[$col['tipo'] ?? 'texto'] ?? null; @endphp
-                    <td style="text-align: {{ $alineacion($col) }};@if ($ancho) width: {{ $ancho }}px;@endif">{{ mb_strtoupper($col['titulo'] ?? $col['clave'] ?? '') }}</td>
+                @foreach ($columnas as $i => $col)
+                    <td style="text-align: {{ $alineacion($col) }}; width: {{ $anchoDe($i, $col) }}px;">{{ mb_strtoupper($col['titulo'] ?? $col['clave'] ?? '') }}</td>
                 @endforeach
             </tr>
         </thead>

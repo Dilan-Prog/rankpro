@@ -33,7 +33,7 @@
     // después el derecho (secundaria, verde al 20% para que no compita).
     $trazos = [];
     foreach (['izq', 'der'] as $lado) {
-        foreach ($ejes[$lado]['claves'] ?? [] as $clave) {
+        foreach ($ejes[$lado]['series'] ?? [] as $clave) {
             $trazos[] = [
                 'clave' => $clave,
                 'lado' => $lado,
@@ -154,7 +154,7 @@
                         @if ($conPeso)
                             <td>
                                 <div class="barra-fondo" style="height: 8px;">
-                                    <div class="barra-llena" style="height: 8px; width: {{ max(0, min(100, (float) ($a['peso'] ?? 0))) }}%;"></div>
+                                    <div class="barra-llena" style="height: 8px; width: {{ max(0, min(100, (float) ($a['peso'] ?? 0) * 100)) }}%;"></div>
                                 </div>
                             </td>
                         @endif

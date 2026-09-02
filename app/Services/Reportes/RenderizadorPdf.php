@@ -35,7 +35,14 @@ class RenderizadorPdf
      */
     private function contarPaginas(array $datos): int
     {
-        return $this->renderizar($datos)->getDomPDF()->getCanvas()->get_page_count();
+        $pdf = $this->renderizar($datos);
+
+        // El canvas no sabe cuántas páginas hay hasta que dompdf ha maquetado el
+        // documento, y `loadView` es perezoso: sin este `output()` el contador
+        // devuelve 1 siempre, y el pie acaba diciendo «Página 12 de 1».
+        $pdf->output();
+
+        return max(1, $pdf->getDomPDF()->getCanvas()->get_page_count());
     }
 
     private function renderizar(array $datos): \Barryvdh\DomPDF\PDF

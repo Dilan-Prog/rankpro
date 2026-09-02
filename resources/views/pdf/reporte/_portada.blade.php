@@ -23,8 +23,10 @@
     <table class="w">
         <tr>
             <td>
-                <div class="cv-brand">RANKPRO</div>
-                <div class="cv-brand-sub">SOLUTIONS · RANKPRO.MX</div>
+                {{-- Ruta de disco, no URL: dompdf no tiene habilitado el acceso
+                     remoto y resolverla por HTTP dejaria la portada sin logo. --}}
+                <img class="cv-logo" src="{{ public_path('images/rankpro-logo-black.png') }}" alt="RankPro Solutions">
+                <div class="cv-brand-sub">RANKPROSOLUTIONS.COM.MX</div>
             </td>
             <td class="cv-folio">@if ($reporte['numero']) FOLIO {{ mb_strtoupper($reporte['numero']) }} @endif</td>
         </tr>
