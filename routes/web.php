@@ -45,6 +45,7 @@ use App\Http\Controllers\Admin\TareaController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PaginasController;
+use App\Http\Controllers\LlmsTxtController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -102,6 +103,11 @@ Route::get('/blog/{slug}', [BlogController::class, 'show'])
     ->name('blog.show');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// Mapa del sitio en markdown para asistentes de IA (convencion llmstxt.org).
+// Se sirve desde una ruta y no como archivo estatico para que no se desactualice
+// cuando se da de alta un servicio o se publica un articulo.
+Route::get('/llms.txt', [LlmsTxtController::class, 'index'])->name('llms');
 
 /*
 |--------------------------------------------------------------------------
