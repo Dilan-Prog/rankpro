@@ -12,7 +12,63 @@
   flex-direction: column;
   background: var(--color-sidebar);
   border-right: 1px solid var(--color-sidebar-border);
-  transition: transform var(--transition-base);
+  transition: transform var(--transition-base), width var(--transition-base);
+}
+
+/* ---------- Collapsed state ----------
+   The "sidebar--collapsed" class lives on <html> (toggled by
+   initSidebarCollapse() in global.js), not on .sidebar itself — same
+   reasoning as the theme's [data-theme] attribute: a pre-paint inline
+   script in layouts/admin.blade.php needs to apply the saved state before
+   first paint, and at that point in <head> the .sidebar element doesn't
+   exist in the DOM yet, but <html> already does. */
+:root.sidebar--collapsed .sidebar {
+  width: var(--sidebar-width-collapsed);
+}
+
+:root.sidebar--collapsed .sidebar__brand-name,
+:root.sidebar--collapsed .sidebar__brand-plan,
+:root.sidebar--collapsed .sidebar__link-label,
+:root.sidebar--collapsed .sidebar__group-label,
+:root.sidebar--collapsed .sidebar__user-info,
+:root.sidebar--collapsed .sidebar__lock-icon,
+:root.sidebar--collapsed .sidebar__collapse-toggle span {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+:root.sidebar--collapsed .sidebar__brand-row,
+:root.sidebar--collapsed .sidebar__link,
+:root.sidebar--collapsed .sidebar__user {
+  justify-content: center;
+}
+
+:root.sidebar--collapsed .sidebar__link.is-active::after {
+  display: none;
+}
+
+.sidebar__collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: var(--space-1);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar__collapse-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-foreground);
+}
+
+:root.sidebar--collapsed .sidebar__collapse-toggle i {
+  transform: rotate(180deg);
 }
 
 .sidebar__brand {
@@ -62,6 +118,23 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.sidebar__group + .sidebar__group {
+  margin-top: var(--space-3);
+}
+
+.sidebar__group-label {
+  display: block;
+  padding: var(--space-3) 10px var(--space-1);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted-foreground);
+  opacity: 0.7;
+  white-space: nowrap;
+  transition: opacity var(--transition-base);
 }
 
 .sidebar__link {
@@ -130,12 +203,22 @@
 .sidebar__footer {
   padding: var(--space-3);
   border-top: 1px solid var(--color-sidebar-border);
+  position: relative;
 }
 
 .sidebar__user {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.sidebar__user:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar__avatar {
@@ -268,6 +351,12 @@
   border-radius: var(--radius-full);
 }
 
+.topbar__user {
+  position: relative;
+  display: flex;
+  border-radius: var(--radius-full);
+}
+
 .topbar__avatar {
   width: 24px;
   height: 24px;
@@ -279,6 +368,43 @@
   justify-content: center;
   font-size: 10px;
   font-weight: var(--font-weight-bold);
+}
+
+.command-palette-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.command-palette-trigger:hover {
+  color: var(--color-foreground);
+  border-color: var(--color-muted-foreground);
+}
+
+.command-palette-trigger__kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+}
+
+@media (max-width: 639px) {
+  .command-palette-trigger__label {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .command-palette-trigger {
+    display: none;
+  }
 }
 
 /* ---------- Mobile behavior ---------- */

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoArchivo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,10 @@ class Archivo extends Model
         'tamano',
         'extension',
         'subido_por',
+    ];
+
+    protected $casts = [
+        'tipo' => TipoArchivo::class,
     ];
 
     public function cliente(): BelongsTo

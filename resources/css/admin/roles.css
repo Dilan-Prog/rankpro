@@ -19,3 +19,118 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ---------- Role card ---------- */
+.role-card {
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.role-card:hover {
+  border-color: rgba(15, 157, 110, 0.4);
+}
+
+.role-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.role-card__name {
+  font-weight: 600;
+}
+
+.role-card__slug {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.role-card__actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.role-card__meta {
+  margin-bottom: var(--space-3);
+}
+
+.role-card__description {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+  line-height: 1.5;
+  margin-bottom: var(--space-3);
+}
+
+.role-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.role-card__footer {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* On/off module chip — granted vs. not-granted permission, reused in the
+   card grid; same visual language as the read-only detail modal's tags. */
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+}
+
+.role-chip i {
+  font-size: 9px;
+}
+
+.role-chip--on {
+  background: rgba(15, 157, 110, 0.12);
+  color: var(--color-primary);
+  border-color: rgba(15, 157, 110, 0.3);
+}
+
+.role-chip--off {
+  opacity: 0.55;
+}
+
+/* ---------- "Matriz de permisos" table ---------- */
+.matrix-check {
+  color: #34D399;
+}
+
+.matrix-dash {
+  color: var(--color-muted-foreground);
+  opacity: 0.5;
+}
+
+:root[data-theme="light"] .matrix-check {
+  color: #047857;
+}
+
+/* ---------- "Seleccionar todos / Quitar todos" text-link action ---------- */
+.link-action {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.link-action:hover {
+  text-decoration: underline;
+}

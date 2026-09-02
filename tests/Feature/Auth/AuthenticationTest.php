@@ -50,6 +50,10 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        // This app's AuthenticatedSessionController::destroy() intentionally
+        // redirects to the login page after logout (there's no public
+        // homepage to send an admin user back to), diverging from Breeze's
+        // default redirect('/').
+        $response->assertRedirect('/login');
     }
 }

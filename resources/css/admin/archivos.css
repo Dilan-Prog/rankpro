@@ -2,6 +2,142 @@
    Archivos module
    ========================================================================== */
 
+/* ---------- Client picker (index) — horizontal scroll row, one card per
+   client (mirrors Ads' .ads-account-row pattern; cards here are plain real
+   <a href> links causing a full page reload, no AJAX client switch). ---------- */
+.archivo-cliente-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.archivo-cliente-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 240px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.archivo-cliente-card:hover {
+  border-color: var(--color-primary);
+}
+
+.archivo-cliente-card.is-active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
+}
+
+/* Toggled by archivos.js's search filter — a custom class needs its own
+   display:none since .archivo-cliente-card already sets display:flex above
+   (same specificity as the UA [hidden] rule would give, so [hidden] alone
+   can't be trusted to win — see the identical note on seo-cliente-card). */
+.archivo-cliente-card.hidden {
+  display: none;
+}
+
+.archivo-cliente-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+}
+
+.archivo-cliente-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.archivo-cliente-card__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archivo-cliente-card__meta {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- List/grid view toggle (mirrors Desarrollo's .view-toggle look,
+   kept as a local copy here since it's not centralized in global.css). ---------- */
+.archivo-view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.archivo-view-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+  border: none;
+  border-right: 1px solid var(--color-border);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.archivo-view-toggle__btn:last-child {
+  border-right: none;
+}
+
+.archivo-view-toggle__btn:hover {
+  color: var(--color-foreground);
+  background: var(--color-secondary);
+}
+
+.archivo-view-toggle__btn.is-active {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+/* ---------- Extension pill (list view) — same color-by-extension logic as
+   the file icon, formatted like Ads' .ads-plataforma-pill. ---------- */
+.archivo-ext-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--pill-color, #64748B) 15%, transparent);
+  color: var(--pill-color, #64748B);
+}
+
+/* ---------- Grid view: category section + file grid (kept/adapted from the
+   old bare-bones view; still used for the grouped-by-categoría grid panel) ---------- */
 .archivos-category__title {
   font-size: var(--text-xs);
   font-weight: var(--font-weight-semibold);
@@ -46,6 +182,14 @@
 
 .archivos-file:hover {
   border-color: rgba(15, 157, 110, 0.4);
+}
+
+/* archivos.js filters this card via the native [hidden] attribute, but the
+   rule above already sets display:flex with the same specificity as the UA
+   [hidden] rule — without this override [hidden] would lose and the card
+   would stay visible. Same fix as Ads' .ads-account-card[hidden]. */
+.archivos-file[hidden] {
+  display: none;
 }
 
 .archivos-file__icon {

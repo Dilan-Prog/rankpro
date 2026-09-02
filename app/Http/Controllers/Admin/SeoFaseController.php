@@ -107,6 +107,16 @@ class SeoFaseController extends Controller
             ]),
         };
 
+        // Independent of the per-phase fields above and of the campaign's current phase — the
+        // Técnico tab is editable regardless of which phase the campaign is sitting in today, so
+        // this is validated/persisted separately rather than folded into the $fase match above.
+        // Never read by checklistKeys()/checklistCompleto()/aprobar(), always stored on the
+        // current cycle's Auditoria row.
+        $tecnico = $request->validate([
+            'tecnico_checklist' => ['nullable', 'array'],
+            'tecnico_checklist.*' => ['boolean'],
+        ]);
+
         $registro = $this->registroFase($campana, $fase);
 
         if (array_key_exists('checklist', $data)) {
@@ -124,8 +134,24 @@ class SeoFaseController extends Controller
 
         $registro->update($data);
 
+        // $registro already IS the Auditoria row when $fase is Auditoria — reuse it directly
+        // rather than re-reading $campana->faseAuditoria, whose relation cache registroFase()
+        // may have already populated with a stale null before the row above was created.
+        $auditoria = $fase === FaseSeo::Auditoria
+            ? $registro
+            : ($campana->faseAuditoria ?? $campana->auditorias()->create(['ciclo' => $campana->ciclo_actual, 'checklist' => []]));
+        if (array_key_exists('tecnico_checklist', $tecnico)) {
+            $keys = array_keys(collect(SeoFaseAuditoria::TECNICO_CHECKLIST)->collapse()->all());
+            $auditoria->update([
+                'tecnico_checklist' => collect($keys)
+                    ->mapWithKeys(fn ($key) => [$key => (bool) ($tecnico['tecnico_checklist'][$key] ?? $auditoria->tecnico_checklist[$key] ?? false)])
+                    ->all(),
+            ]);
+        }
+
         return response()->json([
             'checklist' => $registro->fresh()->checklist,
+            'tecnico_checklist' => $auditoria->fresh()->tecnico_checklist,
             'completo' => $this->checklistCompleto($registro->fresh(), $fase),
         ]);
     }

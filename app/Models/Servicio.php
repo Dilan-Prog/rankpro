@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EstadoClienteServicio;
+use App\Enums\TipoServicio;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,7 @@ class Servicio extends Model
 
     protected $fillable = [
         'cliente_id',
+        'responsable_id',
         'tipo',
         'nombre',
         'descripcion',
@@ -25,6 +27,7 @@ class Servicio extends Model
     ];
 
     protected $casts = [
+        'tipo' => TipoServicio::class,
         'estado' => EstadoClienteServicio::class,
         'precio_mensual' => 'decimal:2',
         'fecha_inicio' => 'date',
@@ -34,6 +37,16 @@ class Servicio extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    public function responsable(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function eventos(): HasMany
+    {
+        return $this->hasMany(ServicioEvento::class)->latest('created_at');
     }
 
     public function seoCampanas(): HasMany
@@ -61,6 +74,7 @@ class Servicio extends Model
             $servicio->seoCampanas()->get()->each->delete();
             $servicio->adsCampanas()->get()->each->delete();
             $servicio->finanzas()->delete();
+            $servicio->eventos()->delete();
         });
     }
 }

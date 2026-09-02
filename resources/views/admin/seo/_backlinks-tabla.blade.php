@@ -1,10 +1,8 @@
-@if ($backlinks->isEmpty())
-    <div class="empty-state" data-backlinks-empty>
-        <div class="empty-state__icon"><i class="fa-solid fa-link"></i></div>
-        <p class="empty-state__text">Sin backlinks registrados todavía.</p>
-    </div>
-@endif
-<div class="table-wrap" data-backlinks-table {{ $backlinks->isEmpty() ? 'hidden' : '' }}>
+<div class="empty-state" data-backlinks-empty {{ $backlinks->isEmpty() ? '' : 'hidden' }}>
+    <div class="empty-state__icon"><i class="fa-solid fa-link"></i></div>
+    <p class="empty-state__text">Sin backlinks registrados todavía.</p>
+</div>
+<div class="table-wrap" data-backlinks-table data-paginate="15" {{ $backlinks->isEmpty() ? 'hidden' : '' }}>
     <table class="table">
         <thead>
             <tr>

@@ -92,6 +92,11 @@
         'reporte'       => ['Reporte',       'badge--orange'],
         'cerrada'       => ['Cerrada',       'badge--success'],
 
+        // Spanish (reportes — App\Enums\EstadoReporte; 'borrador' se comparte
+        // con seo_contenido y los artículos del blog, así que no se repite)
+        'listo'         => ['Listo',         'badge--info'],
+        'entregado'     => ['Entregado',     'badge--success'],
+
         // Spanish (seo_contenido — estado)
         'borrador'      => ['Borrador',      'badge--neutral'],
         'publicado'     => ['Publicado',     'badge--success'],
@@ -106,6 +111,14 @@
 
         // Spanish (ads_conversiones — estado)
         'exportada'     => ['Exportada',     'badge--success'],
+
+        // Spanish (automatizacion_proyectos — fase_actual; reporte/cerrada ya existen arriba)
+        'diagnostico'   => ['Diagnóstico',   'badge--info'],
+        'diseno_flujo'  => ['Diseño de Flujo', 'badge--primary'],
+        'implementacion' => ['Implementación', 'badge--warning'],
+
+        // Spanish (automatizacion_flujos — estado; activo/pausado ya existen arriba)
+        'inactivo'      => ['Inactivo',      'badge--neutral'],
     ];
     [$label, $class] = $map[$key] ?? [$key, 'badge--neutral'];
 @endphp

@@ -1,0 +1,32 @@
+/**
+ * Usuarios del Sistema — mostly reuses global.css primitives (.kpi-grid,
+ * .table, .badge, .btn--icon, .field, .form-grid, .filters-bar). Only two
+ * additions genuinely needed here: the avatar-initials circle (mirrors
+ * archivos.css's .archivo-cliente-card__avatar, no global equivalent
+ * exists yet) and a max-width/ellipsis rule for the "Cuentas asignadas"
+ * cell, which can otherwise hold an arbitrarily long comma-joined list.
+ */
+
+.usuario-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+}
+
+.usuario-cuentas-cell {
+  display: inline-block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  font-size: var(--text-sm);
+}

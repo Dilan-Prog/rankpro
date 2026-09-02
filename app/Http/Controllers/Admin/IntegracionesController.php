@@ -19,6 +19,10 @@ class IntegracionesController extends Controller
 {
     public function index(): View
     {
+        // Third-party SaaS connectors (Google Ads API, GA4, Meta Ads, etc.) —
+        // none of these have any real backend yet, genuinely "próximamente".
+        // Kept honestly locked/decorative, separate from the real per-client
+        // tracking-pixel integrations below.
         $integraciones = [
             ['name' => 'Google Ads API', 'desc' => 'Sincronización automática de campañas', 'icon' => 'fa-google', 'brand' => true],
             ['name' => 'Google Analytics 4', 'desc' => 'Tráfico, conversiones y audiencias', 'icon' => 'fa-chart-line', 'brand' => false],
@@ -30,10 +34,38 @@ class IntegracionesController extends Controller
             ['name' => 'Slack', 'desc' => 'Notificaciones y alertas en tiempo real', 'icon' => 'fa-slack', 'brand' => true],
         ];
 
+        $clientes = Cliente::orderBy('nombre')->get()->map(fn (Cliente $c) => $this->toClienteRow($c));
+
+        $pendientesTotal = (int) $clientes->sum('pendientes_count');
+        $ultimaSenalGlobal = $clientes->pluck('ultima_senal')->filter()->max();
+
         return view('admin.integraciones.index', [
             'pageTitle' => 'Integraciones',
             'integraciones' => $integraciones,
+            'clientes' => $clientes,
+            'clientesConectados' => $clientes->where('conectado', true)->count(),
+            'clientesTotal' => $clientes->count(),
+            'pendientesTotal' => $pendientesTotal,
+            'ultimaSenalGlobalLabel' => $ultimaSenalGlobal ? $ultimaSenalGlobal->diffForHumans() : 'Sin señal registrada todavía',
         ]);
+    }
+
+    /** Real per-client tracking-pixel integration state — same data clienteIndex() itself is built from. */
+    private function toClienteRow(Cliente $cliente): array
+    {
+        $ultimoClic = $cliente->adsClics()->latest('created_at')->value('created_at');
+        $ultimaConversion = $cliente->adsConversiones()->latest('created_at')->value('created_at');
+        $ultimaSenal = collect([$ultimoClic, $ultimaConversion])->filter()->max();
+
+        return [
+            'cliente_id' => $cliente->id,
+            'cliente' => $cliente->nombre,
+            'conectado' => (bool) $cliente->api_token,
+            'pendientes_count' => $cliente->adsConversiones()->where('estado', 'pendiente')->count(),
+            'ultima_senal' => $ultimaSenal,
+            'ultima_senal_label' => $ultimaSenal ? $ultimaSenal->diffForHumans() : 'Sin señal registrada',
+            'show_url' => route('admin.clientes.integraciones', $cliente->id),
+        ];
     }
 
     public function clienteIndex(Cliente $cliente): View

@@ -1,7 +1,152 @@
 /* ==========================================================================
-   Integraciones module — locked/coming-soon cards
+   Integraciones module
    ========================================================================== */
 
+/* ---------- Section headings — separates the real "Tracking por cliente"
+   picker above from the decorative "Próximamente" SaaS-connector grid
+   below, so the two read as clearly distinct blocks. ---------- */
+.integraciones-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.integraciones-section-head #integracionClienteSearch {
+  max-width: 280px;
+}
+
+.integraciones-section-head--proximamente {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.integraciones-section-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+/* ---------- Real client picker — one card per client, whole card is a
+   plain <a href> to the already-built admin.clientes.integraciones page
+   (mirrors .seo-cliente-card's avatar/name/status-line conventions). ---------- */
+.integracion-cliente-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.integracion-cliente-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast);
+}
+
+.integracion-cliente-card:hover {
+  border-color: var(--color-primary);
+}
+
+.integracion-cliente-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Toggled by the inline search filter — a custom class needs its own
+   display:none since .integracion-cliente-card already sets display:flex
+   above (same reasoning as the identical note on .seo-cliente-card.hidden). */
+.integracion-cliente-card.hidden {
+  display: none;
+}
+
+.integracion-cliente-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.integracion-cliente-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+}
+
+.integracion-cliente-card__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.integracion-cliente-card__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.integracion-cliente-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.integracion-cliente-card__dot--on {
+  background: var(--text-success);
+}
+
+.integracion-cliente-card__dot--off {
+  background: var(--color-muted-foreground);
+}
+
+.integracion-cliente-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.integracion-cliente-card__stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.integracion-cliente-card__stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.integracion-cliente-card__stat-value {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* ---------- Locked/coming-soon SaaS-connector cards (unchanged) ---------- */
 .integraciones-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -92,140 +237,5 @@
   color: var(--color-muted-foreground);
 }
 
-/* ==========================================================================
-   Tablero de embudo (kanban) — Conversiones por cliente
-   ========================================================================== */
-
-.kanban {
-  display: flex;
-  gap: var(--space-4);
-  overflow-x: auto;
-  padding-bottom: var(--space-2);
-  align-items: flex-start;
-}
-
-.kanban__column {
-  flex: 0 0 280px;
-  background: var(--color-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 260px);
-}
-
-.kanban__column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.kanban__count {
-  font-size: var(--text-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-muted-foreground);
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 1px 8px;
-}
-
-.kanban__column-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 80px;
-  transition: background-color var(--transition-fast);
-}
-
-.kanban__column-body.is-drag-over {
-  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  outline: 2px dashed var(--color-primary);
-  outline-offset: -2px;
-  border-radius: var(--radius-lg);
-}
-
-.kanban__card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
-  cursor: grab;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-.kanban__card.is-dragging {
-  opacity: 0.4;
-}
-
-.kanban__card-top {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.kanban__card-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xs);
-  flex-shrink: 0;
-}
-
-.kanban__card-title {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-foreground);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-}
-
-.kanban__card-date {
-  font-size: var(--text-xs);
-  color: var(--color-muted-foreground);
-  flex-shrink: 0;
-}
-
-.kanban__card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: var(--text-xs);
-  color: var(--color-muted-foreground);
-}
-
-.kanban__card-valor {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-success);
-}
-
-.kanban__card-tags {
-  margin-top: var(--space-2);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.kanban__card-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--color-secondary);
-  border: 1px solid var(--color-border);
-  color: var(--color-muted-foreground);
-}
+/* .kanban* styles moved to global.css (shared with Desarrollo's
+   Tareas/Bugs/proyecto-fase boards). */

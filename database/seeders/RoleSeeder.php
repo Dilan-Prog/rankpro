@@ -25,12 +25,12 @@ class RoleSeeder extends Seeder
             'manager' => [
                 'label' => 'Gerente',
                 'description' => 'Gestiona operación de clientes y campañas, sin administrar roles ni integraciones.',
-                'permissions' => ['dashboard', 'clientes', 'servicios', 'seo', 'keywords', 'ads', 'desarrollo', 'finanzas', 'archivos'],
+                'permissions' => ['dashboard', 'clientes', 'servicios', 'seo', 'keywords', 'ads', 'reportes', 'desarrollo', 'finanzas', 'archivos', 'usuarios'],
             ],
             'viewer' => [
                 'label' => 'Visualizador',
                 'description' => 'Acceso de solo consulta a los módulos principales de reporting.',
-                'permissions' => ['dashboard', 'clientes', 'seo', 'keywords', 'ads', 'finanzas'],
+                'permissions' => ['dashboard', 'clientes', 'seo', 'keywords', 'ads', 'reportes', 'finanzas'],
             ],
         ];
 

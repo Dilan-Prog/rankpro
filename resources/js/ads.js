@@ -778,6 +778,555 @@
     });
   }
 
+  // ==========================================================================
+  // Ads index — client-picker cards, platform tabs, KPI/chart aggregates,
+  // and AJAX-modal campaign CRUD. Everything below is additive: it only
+  // targets elements that exist on index.blade.php (each init* guards on
+  // its own required element), so it's inert on show.blade.php where this
+  // same file is also loaded for initFasePanel()/initGrupos()/etc above.
+  // ==========================================================================
+
+  const PLATAFORMA_META = {
+    google_ads: ["Google Ads", "#4285F4"],
+    meta_ads: ["Meta Ads", "#1877F2"],
+    tiktok_ads: ["TikTok Ads", "#FE2C55"],
+  };
+  const OBJETIVO_LABELS = { leads: "Leads", ventas: "Ventas", trafico: "Tráfico", branding: "Branding" };
+  // Mirrors components/badge.blade.php's own label/class map for these keys
+  // exactly (not Labels::faseAds()'s longer strings) so JS-built rows look
+  // identical to the <x-badge> the server renders for page-load rows.
+  const FASE_ADS_BADGE = {
+    briefing: ["Briefing", "badge--neutral"],
+    configuracion: ["Configuración", "badge--primary"],
+    lanzamiento: ["Lanzamiento", "badge--success"],
+    reporte: ["Reporte", "badge--orange"],
+    cerrada: ["Cerrada", "badge--success"],
+  };
+  const ESTADO_CAMPANA_BADGE = {
+    activa: ["Activa", "badge--success"],
+    pausada: ["Pausada", "badge--warning"],
+    finalizada: ["Finalizada", "badge--neutral"],
+  };
+
+  let adsActiveCliente = "all";
+  let adsActivePlataforma = "todas";
+  let adsChartInstance = null;
+
+  function adsBadgeHtml(map, key) {
+    const [label, cls] = map[key] || [key, "badge--neutral"];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function fmtMoney(n) {
+    return "$" + Math.round(Number(n) || 0).toLocaleString("es-MX");
+  }
+
+  function fmtNum(n) {
+    return Number(n || 0).toLocaleString("es-MX");
+  }
+
+  /** Mirrors AgencyOS.formatCompact() exactly — see the matching PHP closure in index.blade.php's @php block ($compact). */
+  function fmtCompact(n) {
+    return window.AgencyOS.formatCompact(Number(n) || 0);
+  }
+
+  function adsRoasColor(roas) {
+    const r = Number(roas) || 0;
+    return r >= 5 ? "var(--text-success)" : r >= 3 ? "var(--text-warning)" : "var(--text-danger)";
+  }
+
+  /** Up to 2 uppercase initials from a display name — mirrors App\Support\Labels::initials() exactly. */
+  function adsInitials(name) {
+    const source = (name || "").trim() || "Usuario";
+    return source
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("");
+  }
+
+  /**
+   * Like request(), but rejects with err.message "validation_failed"
+   * (err.data.errors) on 422 and carries err.status/err.data on any
+   * failure — needed for the campaign form's field-level error rendering.
+   * Kept separate from the shared request() above so that function's
+   * behavior (and the five existing init-panel/initCrudTable callers
+   * relying on its plain "request_failed" throw) is untouched.
+   */
+  function adsRequest(url, method, payload) {
+    return fetch(url, { method, headers: jsonHeaders(), body: JSON.stringify(payload || {}) }).then((res) => {
+      if (!res.ok) {
+        return res
+          .json()
+          .catch(() => ({}))
+          .then((data) => {
+            const err = new Error(res.status === 422 ? "validation_failed" : "request_failed");
+            err.status = res.status;
+            err.data = data;
+            throw err;
+          });
+      }
+      return res.json();
+    });
+  }
+
+  function renderAdsFieldErrors(form, errors) {
+    form.querySelectorAll("[data-error-for]").forEach((span) => {
+      span.textContent = "";
+    });
+    Object.keys(errors || {}).forEach((field) => {
+      const span = form.querySelector(`[data-error-for="${field}"]`);
+      if (span) span.textContent = errors[field][0];
+    });
+  }
+
+  // ---------- Row rendering — matches index.blade.php's <tr data-campana-row> markup exactly ----------
+
+  function campanaRowCellsHtml(c) {
+    const [platLabel, platColor] = PLATAFORMA_META[c.plataforma] || [c.plataforma, "#6b7280"];
+    return `
+      <td><a href="${c.show_url}" style="font-weight:500; color:var(--color-foreground);">${escapeHtml(c.nombre)}</a></td>
+      <td>${escapeHtml(c.cliente)}</td>
+      <td><span class="ads-plataforma-pill" style="--pill-color:${platColor}">${platLabel}</span></td>
+      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${OBJETIVO_LABELS[c.objetivo] || escapeHtml(c.objetivo)}</span></td>
+      <td>${adsBadgeHtml(FASE_ADS_BADGE, c.fase_actual)}</td>
+      <td>${adsBadgeHtml(ESTADO_CAMPANA_BADGE, c.estado)}</td>
+      <td class="u-mono">${fmtMoney(c.inversion)}</td>
+      <td class="u-mono">${fmtCompact(c.impresiones)}</td>
+      <td class="u-mono">${fmtNum(c.clics)}</td>
+      <td class="u-mono">${fmtNum(c.conversiones)}</td>
+      <td class="u-mono"><strong style="color:${adsRoasColor(c.roas)}">${c.roas}x</strong></td>
+      <td>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="btn--icon" title="Editar" data-edit-campana="${c.id}"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-campana="${c.id}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>`;
+  }
+
+  /** Dataset assigned via properties (not string-embedded JSON), safe regardless of quote characters in the data — mirrors keywords.js's buildKeywordRowElement. */
+  function buildCampanaRowElement(c) {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-campana-row", "");
+    tr.dataset.campanaId = String(c.id);
+    tr.dataset.plataforma = c.plataforma;
+    tr.dataset.clienteId = String(c.cliente_id);
+    tr.dataset.campana = JSON.stringify(c);
+    tr.innerHTML = campanaRowCellsHtml(c);
+    return tr;
+  }
+
+  function allCampanas() {
+    return Array.from(document.querySelectorAll("[data-campana-row]")).map((row) => JSON.parse(row.dataset.campana));
+  }
+
+  function updateAdsCountSubtitle() {
+    const subtitle = document.getElementById("adsCountSubtitle");
+    if (!subtitle) return;
+    const rows = document.querySelectorAll("[data-campana-row]");
+    const clienteCount = new Set(Array.from(rows).map((r) => r.dataset.clienteId)).size;
+    subtitle.textContent = `${rows.length} campaña${rows.length === 1 ? "" : "s"} · ${clienteCount} cliente${clienteCount === 1 ? "" : "s"}`;
+  }
+
+  // ---------- Account picker ----------
+
+  /** Rebuilds the card row from [data-campana-row]'s embedded JSON — always includes "Todas las cuentas" first, then one card per cliente with >=1 campaign. Card totals are always summed across ALL platforms (never affected by the platform tab). */
+  function renderAccountCards() {
+    const row = document.getElementById("adsAccountRow");
+    if (!row) return;
+
+    const searchValue = (document.getElementById("adsAccountSearch")?.value || "").trim().toLowerCase();
+    const campanas = allCampanas();
+
+    const byCliente = new Map();
+    campanas.forEach((c) => {
+      const key = String(c.cliente_id);
+      if (!byCliente.has(key)) byCliente.set(key, { id: key, nombre: c.cliente, contacto: c.cliente_contacto, count: 0, inversion: 0 });
+      const entry = byCliente.get(key);
+      entry.count += 1;
+      entry.inversion += Number(c.inversion) || 0;
+    });
+
+    const clientes = Array.from(byCliente.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+    const cards = [{ id: "all", nombre: "Todas las cuentas", contacto: null, count: campanas.length, inversion: campanas.reduce((a, c) => a + (Number(c.inversion) || 0), 0) }, ...clientes];
+
+    let visibleClientCards = 0;
+    row.innerHTML = cards
+      .map((c) => {
+        const isActive = String(adsActiveCliente) === c.id;
+        const matchesSearch = c.id === "all" || !searchValue || c.nombre.toLowerCase().includes(searchValue);
+        if (c.id !== "all" && matchesSearch) visibleClientCards++;
+        const metaLine = `${c.contacto ? escapeHtml(c.contacto) + " · " : ""}${c.count} camp. · ${fmtMoney(c.inversion)}`;
+        return `<button type="button" class="ads-account-card${isActive ? " is-active" : ""}" data-account-card="${c.id}" ${matchesSearch ? "" : "hidden"}>
+          <span class="ads-account-card__avatar">${escapeHtml(adsInitials(c.nombre))}</span>
+          <span class="ads-account-card__body">
+            <span class="ads-account-card__name">${escapeHtml(c.nombre)}</span>
+            <span class="ads-account-card__meta">${metaLine}</span>
+          </span>
+        </button>`;
+      })
+      .join("");
+
+    const emptyEl = document.getElementById("adsAccountEmpty");
+    const emptyQueryEl = document.getElementById("adsAccountEmptyQuery");
+    if (emptyEl) emptyEl.hidden = !searchValue || visibleClientCards > 0;
+    if (emptyQueryEl) emptyQueryEl.textContent = searchValue;
+  }
+
+  function initAdsAccountPicker() {
+    const row = document.getElementById("adsAccountRow");
+    if (!row) return;
+
+    renderAccountCards();
+
+    row.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-account-card]");
+      if (!card) return;
+      adsActiveCliente = card.dataset.accountCard;
+      renderAccountCards();
+      applyAdsFilters();
+    });
+
+    document.getElementById("adsAccountSearch")?.addEventListener("input", window.AgencyOS.debounce(renderAccountCards, 150));
+  }
+
+  // ---------- Platform tabs ----------
+
+  function initAdsPlatformTabs() {
+    const tabsWrap = document.getElementById("adsPlatformTabs");
+    if (!tabsWrap) return;
+
+    const presetPlataforma = new URLSearchParams(location.search).get("plataforma");
+    if (presetPlataforma && (presetPlataforma === "todas" || PLATAFORMA_META[presetPlataforma])) {
+      adsActivePlataforma = presetPlataforma;
+    }
+
+    function syncActiveClass() {
+      tabsWrap.querySelectorAll("[data-plataforma-tab]").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.plataformaTab === adsActivePlataforma);
+      });
+    }
+
+    tabsWrap.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-plataforma-tab]");
+      if (!btn) return;
+      adsActivePlataforma = btn.dataset.plataformaTab;
+      syncActiveClass();
+      applyAdsFilters();
+    });
+
+    syncActiveClass();
+  }
+
+  function updatePlatformTabCounts(total, counts) {
+    const todasBadge = document.querySelector('[data-plataforma-count="todas"]');
+    if (todasBadge) todasBadge.textContent = total;
+    Object.keys(counts).forEach((p) => {
+      const el = document.querySelector(`[data-plataforma-count="${p}"]`);
+      if (el) el.textContent = counts[p];
+    });
+  }
+
+  // ---------- Filters — AND composition of activeCliente + activePlataforma ----------
+
+  /**
+   * Toggles every [data-campana-row]'s display based on both the account
+   * picker's selection and the platform tab (both must pass). Tab counts
+   * are scoped to activeCliente only (never activePlataforma), matching
+   * the account cards' own always-all-platforms totals. global.js's
+   * initTablePagination() MutationObserver picks up these style.display
+   * writes automatically — no extra coordination needed here.
+   */
+  function applyAdsFilters() {
+    const rows = Array.from(document.querySelectorAll("[data-campana-row]"));
+    const clienteCounts = {};
+    Object.keys(PLATAFORMA_META).forEach((p) => (clienteCounts[p] = 0));
+    let clienteTotal = 0;
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      const matchesCliente = adsActiveCliente === "all" || row.dataset.clienteId === String(adsActiveCliente);
+      if (matchesCliente) {
+        clienteTotal++;
+        if (clienteCounts[row.dataset.plataforma] !== undefined) clienteCounts[row.dataset.plataforma]++;
+      }
+      const matchesPlataforma = adsActivePlataforma === "todas" || row.dataset.plataforma === adsActivePlataforma;
+      const show = matchesCliente && matchesPlataforma;
+      row.style.display = show ? "" : "none";
+      if (show) visibleCount++;
+    });
+
+    updatePlatformTabCounts(clienteTotal, clienteCounts);
+
+    // "No campaigns match the current filters" — a visibility check, not a
+    // DOM-existence check like the shared toggleEmptyState() helper, since
+    // this table is client-side filterable (rows can exist but be hidden).
+    const emptyEl = document.querySelector("[data-campanas-empty]");
+    const tableEl = document.querySelector("[data-campanas-table]");
+    if (emptyEl) emptyEl.hidden = visibleCount > 0;
+    if (tableEl) tableEl.hidden = visibleCount === 0;
+
+    recomputeAdsAggregates();
+  }
+
+  // ---------- KPI / chart / platform-split aggregates ----------
+
+  function setKpi(id, value, sub) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const valueEl = el.querySelector(".kpi__value");
+    if (valueEl) valueEl.textContent = value;
+    if (sub !== undefined) {
+      const subEl = el.querySelector(".kpi__sub");
+      if (subEl) subEl.textContent = sub;
+    }
+  }
+
+  /**
+   * Recomputes the 6 KPI cards, the chart, and the platform-split bars from
+   * every currently-visible [data-campana-row]. The ROAS KPI is the total
+   * ratio (totalIngreso / totalInversion), never an average of per-campaign
+   * roas values — averaging individual roas would hit the same null-vs-zero
+   * pitfall fixed today in Keywords' promedio(), since a campaign's roas is
+   * 0.0 both when it genuinely has zero attributed revenue AND when it has
+   * no AdsMetrica rows yet, and the backend can't tell those apart in this
+   * field. The total-ratio never needs to make that distinction.
+   */
+  function recomputeAdsAggregates() {
+    const campanas = Array.from(document.querySelectorAll("[data-campana-row]"))
+      .filter((r) => r.style.display !== "none")
+      .map((r) => JSON.parse(r.dataset.campana));
+
+    const totalInversion = campanas.reduce((a, c) => a + (Number(c.inversion) || 0), 0);
+    const totalIngreso = campanas.reduce((a, c) => a + (Number(c.ingreso_atribuido) || 0), 0);
+    const totalConversiones = campanas.reduce((a, c) => a + (Number(c.conversiones) || 0), 0);
+    const totalClics = campanas.reduce((a, c) => a + (Number(c.clics) || 0), 0);
+    const totalImpresiones = campanas.reduce((a, c) => a + (Number(c.impresiones) || 0), 0);
+
+    const roas = totalInversion > 0 ? totalIngreso / totalInversion : 0;
+    const cpa = totalConversiones > 0 ? totalInversion / totalConversiones : 0;
+    const ctr = totalImpresiones > 0 ? (totalClics / totalImpresiones) * 100 : 0;
+
+    setKpi("kpiInversion", window.AgencyOS.formatCurrency(totalInversion));
+    setKpi("kpiIngreso", window.AgencyOS.formatCurrency(totalIngreso));
+    setKpi("kpiRoas", roas.toFixed(1) + "x");
+    setKpi("kpiConversiones", window.AgencyOS.formatNumber(totalConversiones), "CPA " + window.AgencyOS.formatCurrency(cpa));
+    setKpi("kpiClics", window.AgencyOS.formatNumber(totalClics), "CTR " + ctr.toFixed(2) + "%");
+    setKpi("kpiImpresiones", window.AgencyOS.formatCompact(totalImpresiones));
+
+    updateAdsChart(campanas);
+    renderPlatformSplit();
+  }
+
+  function initAdsChart() {
+    const canvas = document.getElementById("adsChart");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    const colors = window.AgencyOS.chartColors();
+    adsChartInstance = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          { label: "Inversión", data: [], backgroundColor: "#14B8A6", borderRadius: 4, maxBarThickness: 28 },
+          { label: "Ingreso atribuido", data: [], backgroundColor: "#0F9D6E", borderRadius: 4, maxBarThickness: 28 },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: "bottom", labels: { color: colors.tick, boxWidth: 10, font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            padding: 10,
+            callbacks: { label: (ctx) => `${ctx.dataset.label}: ${window.AgencyOS.formatCurrency(ctx.parsed.y)}` },
+          },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: colors.tick, font: { size: 11 } } },
+          y: { grid: { color: colors.grid }, ticks: { color: colors.tick, font: { size: 11 }, callback: (v) => window.AgencyOS.formatCompact(v) } },
+        },
+      },
+    });
+  }
+
+  /** Updates the existing Chart.js instance in place (chart.data = ...; chart.update();) instead of destroying/recreating the canvas — exact pattern from seo.js's initMetricasChart(). */
+  function updateAdsChart(campanas) {
+    if (!adsChartInstance) return;
+    adsChartInstance.data.labels = campanas.map((c) => c.nombre);
+    adsChartInstance.data.datasets[0].data = campanas.map((c) => Number(c.inversion) || 0);
+    adsChartInstance.data.datasets[1].data = campanas.map((c) => Number(c.ingreso_atribuido) || 0);
+    adsChartInstance.update();
+  }
+
+  /** Scoped to activeCliente only (ignores activePlataforma) — always shows all 3 platforms' split for the selected account, matching the account cards' all-platforms scoping. */
+  function renderPlatformSplit() {
+    const container = document.getElementById("adsPlatformSplit");
+    if (!container) return;
+
+    const campanas = Array.from(document.querySelectorAll("[data-campana-row]"))
+      .filter((r) => adsActiveCliente === "all" || r.dataset.clienteId === String(adsActiveCliente))
+      .map((r) => JSON.parse(r.dataset.campana));
+
+    const byPlataforma = {};
+    Object.keys(PLATAFORMA_META).forEach((p) => (byPlataforma[p] = { count: 0, inversion: 0 }));
+    campanas.forEach((c) => {
+      if (!byPlataforma[c.plataforma]) return;
+      byPlataforma[c.plataforma].count++;
+      byPlataforma[c.plataforma].inversion += Number(c.inversion) || 0;
+    });
+
+    const active = Object.entries(byPlataforma).filter(([, v]) => v.count > 0);
+    if (!active.length) {
+      container.innerHTML = '<p style="font-size:var(--text-sm); color:var(--color-muted-foreground); margin:0;">Sin campañas para esta cuenta.</p>';
+      return;
+    }
+
+    const maxInversion = Math.max(1, ...active.map(([, v]) => v.inversion));
+    container.innerHTML = active
+      .map(([plataforma, v]) => {
+        const [label, color] = PLATAFORMA_META[plataforma];
+        const pct = Math.max(2, Math.round((v.inversion / maxInversion) * 100));
+        return `<div class="ads-split-row">
+          <div class="ads-split-row__label">${label}</div>
+          <div class="ads-split-row__bar progress-bar">
+            <div class="progress-bar__fill" style="width:${pct}%; background:${color};"></div>
+          </div>
+          <div class="ads-split-row__meta">${fmtMoney(v.inversion)} · ${v.count} camp.</div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  // ---------- Create/edit modal ----------
+
+  function openCampanaFormModal(c) {
+    const form = document.getElementById("campanaForm");
+    if (!form) return;
+
+    form.reset();
+    form.querySelectorAll("[data-error-for]").forEach((span) => {
+      span.textContent = "";
+    });
+    form.dataset.editingId = c?.id ?? "";
+
+    const editOnlyWrap = form.querySelector("[data-edit-only]");
+    if (editOnlyWrap) editOnlyWrap.hidden = !c;
+
+    document.getElementById("campanaFormModalTitle").textContent = c ? "Editar Campaña" : "Nueva Campaña";
+    document.getElementById("campanaFormSubmit").innerHTML = c
+      ? '<i class="fa-solid fa-check"></i> Guardar Cambios'
+      : '<i class="fa-solid fa-check"></i> Crear Campaña';
+
+    if (c) {
+      const clienteSelect = form.querySelector("#cliente_id");
+      clienteSelect.value = String(c.cliente_id);
+      clienteSelect.dispatchEvent(new Event("change")); // re-runs initServicioCascade()'s filtering before we set servicio_id below
+      form.querySelector("#servicio_id").value = String(c.servicio_id);
+      form.querySelector("#cf_nombre").value = c.nombre;
+      form.querySelector("#cf_plataforma").value = c.plataforma;
+      form.querySelector("#cf_objetivo").value = c.objetivo;
+      form.querySelector("#cf_presupuesto").value = c.presupuesto_mensual;
+      form.querySelector("#cf_estado").value = c.estado;
+      form.querySelector("#cf_fecha_inicio").value = c.fecha_inicio || "";
+      form.querySelector("#cf_fecha_fin").value = c.fecha_fin || "";
+      form.querySelector("#cf_notas").value = c.notas || "";
+    }
+
+    window.AgencyOS.openModal("campanaFormModal");
+  }
+
+  /** Inserts/replaces a campaign's <tr> (create -> prepended at top, matching the controller's created_at desc ordering; update -> replaced in place). */
+  function upsertCampanaRow(c) {
+    const tbody = document.querySelector("[data-campanas-table] tbody");
+    if (!tbody) return;
+
+    const existing = tbody.querySelector(`[data-campana-row][data-campana-id="${c.id}"]`);
+    const newRow = buildCampanaRowElement(c);
+    if (existing) existing.replaceWith(newRow);
+    else tbody.insertBefore(newRow, tbody.firstChild);
+
+    updateAdsCountSubtitle();
+    renderAccountCards();
+    applyAdsFilters();
+  }
+
+  function initAdsCampanaForm() {
+    const form = document.getElementById("campanaForm");
+    if (!form) return;
+
+    document.querySelector("[data-open-campana-modal]")?.addEventListener("click", () => openCampanaFormModal(null));
+
+    document.addEventListener("click", (e) => {
+      const editBtn = e.target.closest("[data-edit-campana]");
+      if (!editBtn) return;
+      const row = editBtn.closest("[data-campana-row]");
+      if (row) openCampanaFormModal(JSON.parse(row.dataset.campana));
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const editingId = form.dataset.editingId;
+      const url = editingId ? form.dataset.updateActionTemplate.replace("__ID__", editingId) : form.dataset.storeAction;
+      const payload = Object.fromEntries(new FormData(form).entries());
+
+      adsRequest(url, editingId ? "PUT" : "POST", payload)
+        .then((c) => {
+          upsertCampanaRow(c);
+          window.AgencyOS.closeModal("campanaFormModal");
+          toast(editingId ? "Campaña actualizada." : "Campaña creada.", "success");
+        })
+        .catch((err) => {
+          if (err.message === "validation_failed") {
+            renderAdsFieldErrors(form, err.data.errors || {});
+            toast("Revisa los campos marcados.", "error");
+          } else {
+            toast("No se pudo guardar la campaña.", "error");
+          }
+        });
+    });
+  }
+
+  // ---------- Delete — native window.confirm(), matching every other delete flow already in this file (initGrupos/initCrudTable) ----------
+
+  function initAdsCampanaDelete() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-delete-campana]");
+      if (!btn) return;
+      const row = document.querySelector(`[data-campana-row][data-campana-id="${btn.dataset.deleteCampana}"]`);
+      if (!row) return;
+      const c = JSON.parse(row.dataset.campana);
+
+      if (!window.confirm(`¿Eliminar la campaña "${c.nombre}"? También se eliminarán sus grupos de anuncios (con sus palabras clave), creativos, métricas mensuales y optimizaciones registradas. Esta acción no se puede deshacer.`)) return;
+
+      adsRequest(`/admin/ads/${c.id}`, "DELETE")
+        .then(() => {
+          row.remove();
+          updateAdsCountSubtitle();
+          renderAccountCards();
+          applyAdsFilters();
+          toast("Campaña eliminada.", "success");
+        })
+        .catch(() => toast("No se pudo eliminar la campaña.", "error"));
+    });
+  }
+
+  // ---------- ?editar=ID / ?plataforma=X on load — "Volver a editar" from show.blade.php's line 19 ----------
+
+  function initAdsEditFromQuery() {
+    const editId = new URLSearchParams(location.search).get("editar");
+    if (!editId) return;
+    const row = document.querySelector(`[data-campana-row][data-campana-id="${editId}"]`);
+    if (!row) return;
+    openCampanaFormModal(JSON.parse(row.dataset.campana));
+  }
+
   document.addEventListener("shell:ready", () => {
     initServicioCascade();
     initFasePanel();
@@ -785,5 +1334,12 @@
     initCreativos();
     initMetricas();
     initOptimizaciones();
+    initAdsAccountPicker();
+    initAdsPlatformTabs();
+    initAdsChart();
+    initAdsCampanaForm();
+    initAdsCampanaDelete();
+    initAdsEditFromQuery();
+    applyAdsFilters();
   });
 })();

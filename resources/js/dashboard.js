@@ -1,14 +1,30 @@
 /**
  * Dashboard module — client-side behavior only.
- * KPIs, alerts, top-campaigns table and contracts list are rendered
- * server-side by resources/views/admin/dashboard/index.blade.php; this
- * file just draws the revenue chart (Chart.js needs JS regardless) and
- * wires the export button.
+ * KPIs, alerts and contracts list are rendered server-side by
+ * resources/views/admin/dashboard/index.blade.php; this file draws the
+ * revenue chart (Chart.js needs JS regardless) and wires the campaign
+ * detail modal (row click → populate from its data-campana JSON attribute).
+ * The export button is now a plain download link, no JS needed for it.
  */
 (function () {
   "use strict";
 
-  const { formatCurrency, formatCompact, toast, chartColors } = window.AgencyOS;
+  const { formatCurrency, formatNumber, formatCompact, chartColors } = window.AgencyOS;
+
+  // estado/fase => [label, badge class]. Must mirror the server-side map in
+  // resources/views/components/badge.blade.php (ads_campanas keys).
+  const ESTADO_MAP = {
+    activa: ["Activa", "badge--success"],
+    pausada: ["Pausada", "badge--warning"],
+    finalizada: ["Finalizada", "badge--neutral"],
+  };
+  const FASE_MAP = {
+    briefing: ["Briefing", "badge--neutral"],
+    configuracion: ["Configuración", "badge--primary"],
+    lanzamiento: ["Lanzamiento", "badge--success"],
+    reporte: ["Reporte", "badge--orange"],
+    cerrada: ["Cerrada", "badge--success"],
+  };
 
   let chart = null;
 
@@ -83,15 +99,46 @@
     });
   }
 
+  function badgeHtml(id, value, map) {
+    const [label, cls] = map[value] || [value, "badge--neutral"];
+    return `<span id="${id}" class="badge ${cls}">${label}</span>`;
+  }
+
+  function populateCampanaModal(c) {
+    document.getElementById("campanaModalName").textContent = c.name;
+    document.getElementById("campanaModalBadgeEstado").outerHTML = badgeHtml("campanaModalBadgeEstado", c.estado, ESTADO_MAP);
+    document.getElementById("campanaModalBadgeFase").outerHTML = badgeHtml("campanaModalBadgeFase", c.fase, FASE_MAP);
+
+    document.getElementById("campanaModalClient").textContent = c.client;
+    document.getElementById("campanaModalPlatform").textContent = c.platform;
+    document.getElementById("campanaModalPresupuesto").textContent = formatCurrency(c.presupuesto_mensual) + " MXN/mes";
+    document.getElementById("campanaModalGasto").textContent = formatCurrency(c.gasto_total) + " MXN";
+    document.getElementById("campanaModalRoas").textContent = c.roas + "x";
+
+    const ultima = c.ultima_metrica;
+    document.getElementById("campanaModalUltimaMetrica").textContent = ultima
+      ? `${formatNumber(ultima.impresiones)} impresiones · ${formatNumber(ultima.clics)} clics · CTR ${ultima.ctr}% · CPC ${formatCurrency(ultima.cpc)} · ${formatNumber(ultima.conversiones)} conversiones`
+      : "Sin métricas registradas todavía.";
+
+    const modal = document.getElementById("campanaModal");
+    const adsBase = modal.closest("[data-ads-base]")?.dataset.adsBase || "";
+    document.getElementById("campanaModalLink").href = `${adsBase}/${c.id}`;
+  }
+
+  function initCampanaModal() {
+    document.querySelectorAll("[data-campana-row]").forEach((row) => {
+      row.addEventListener("click", (e) => {
+        if (e.target.closest("a, button, form")) return; // let action links/buttons behave normally
+        const c = JSON.parse(row.dataset.campana);
+        populateCampanaModal(c);
+        window.AgencyOS.openModal("campanaModal");
+      });
+    });
+  }
+
   function init() {
     renderChart();
-
-    const exportBtn = document.getElementById("exportReportBtn");
-    if (exportBtn) {
-      exportBtn.addEventListener("click", () => {
-        toast("Generando reporte ejecutivo…", "success");
-      });
-    }
+    initCampanaModal();
 
     document.addEventListener("theme:change", renderChart);
   }

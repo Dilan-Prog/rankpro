@@ -76,114 +76,146 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* ---------- Fase tracker (Proceso Administrativo: Auditoría -> Estrategia -> Ejecución -> Reporte) ---------- */
-.fase-tracker {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  margin-bottom: var(--space-6);
-  padding: var(--space-5) var(--space-4);
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+/* Fase tracker / fase panel styles moved to global.css (shared across
+   SEO, Ads, Automatizaciones, Desarrollo). */
+
+/* ---------- Client picker (index) ---------- */
+
+#seoClienteSearch {
+  margin-bottom: var(--space-4);
+  width: 100%;
 }
 
-.fase-tracker__step {
+.seo-cliente-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.seo-cliente-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 84px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
 }
 
-.fase-tracker__circle {
+.seo-cliente-card:hover {
+  border-color: var(--color-primary);
+}
+
+/* Toggled by seo.js's search filter — a custom class needs its own
+   display:none since there's no UA-stylesheet rule for it like [hidden]. */
+.seo-cliente-card.hidden {
+  display: none;
+}
+
+.seo-cliente-card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.seo-cliente-card__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Padding lives on header/body themselves (not their .seo-cliente-card__link
+   wrapper) so the "no campaign" state — where header/body are direct
+   children of the card, not wrapped in a link — gets identical spacing. */
+.seo-cliente-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+.seo-cliente-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-bold);
-  border: 2px solid var(--color-border);
-  background: var(--color-secondary);
-  color: var(--color-muted-foreground);
-  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
-}
-
-.fase-tracker__step--current .fase-tracker__circle {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: 0 0 0 4px rgba(15, 157, 110, 0.15);
-}
-
-.fase-tracker__step--done .fase-tracker__circle {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.fase-tracker__label {
   font-size: var(--text-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-muted-foreground);
-  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
 }
 
-.fase-tracker__step--current .fase-tracker__label {
-  color: var(--color-foreground);
-}
-
-.fase-tracker__line {
-  flex: 1;
-  height: 2px;
-  margin-top: 17px;
-  background: var(--color-border);
-  min-width: 24px;
-}
-
-.fase-tracker__line--done {
-  background: var(--color-primary);
-}
-
-/* ---------- Fase panel (per-phase form + checklist + approve) ---------- */
-.fase-panel__header {
+.seo-cliente-card__id {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: var(--space-5);
+  min-width: 0;
+  flex: 1;
 }
 
-.fase-panel__hint {
+.seo-cliente-card__name {
   font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seo-cliente-card__contacto {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seo-cliente-card__sin-campana {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.seo-cliente-card__body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.seo-cliente-card__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.seo-cliente-card__stat-label {
+  font-size: var(--text-xs);
   color: var(--color-muted-foreground);
 }
 
-.fase-form__section-title {
+.seo-cliente-card__stat-value {
   font-size: var(--text-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-foreground);
+}
+
+.seo-cliente-card__body--empty {
+  display: block;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.seo-cliente-card__empty-text {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
   margin-bottom: var(--space-3);
 }
 
-.fase-panel__autosave-note {
-  font-size: var(--text-xs);
-  color: var(--text-success);
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
-
-.fase-panel__autosave-note.is-visible {
-  opacity: 1;
-}
-
-.fase-panel__approve {
+.seo-cliente-card__footer {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
+  justify-content: flex-end;
+  gap: 4px;
+  padding: var(--space-2) var(--space-4);
   border-top: 1px solid var(--color-border);
 }

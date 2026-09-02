@@ -13,7 +13,7 @@ class AdsMetricaController extends Controller
 {
     public function store(Request $request, AdsCampana $campana): JsonResponse
     {
-        $data = $this->validated($request, $campana);
+        $data = $this->withZeroDefaults($this->validated($request, $campana));
         $data['cliente_id'] = $campana->cliente_id;
 
         $metrica = $campana->metricas()->create($data);
@@ -23,11 +23,23 @@ class AdsMetricaController extends Controller
 
     public function update(Request $request, AdsMetrica $metrica): JsonResponse
     {
-        $data = $this->validated($request, $metrica->adsCampana, $metrica->id);
+        $data = $this->withZeroDefaults($this->validated($request, $metrica->adsCampana, $metrica->id));
 
         $metrica->update($data);
 
         return response()->json($metrica->fresh());
+    }
+
+    /** inversion_real/impresiones/clics/conversiones son NOT NULL con default 0 en la BD — ese default solo aplica si la columna se omite del INSERT, no si llega null explícito (input vacío). */
+    private function withZeroDefaults(array $data): array
+    {
+        foreach (['inversion_real', 'impresiones', 'clics', 'conversiones'] as $campo) {
+            if (array_key_exists($campo, $data) && $data[$campo] === null) {
+                $data[$campo] = 0;
+            }
+        }
+
+        return $data;
     }
 
     public function destroy(AdsMetrica $metrica): JsonResponse

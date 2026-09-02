@@ -16,7 +16,7 @@
             <p class="page-header__subtitle">{{ $campana->cliente->nombre }} · {{ \App\Support\Labels::plataforma($campana->plataforma) }}</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
-            <a href="{{ route('admin.ads.edit', $campana) }}" class="btn btn--secondary">
+            <a href="{{ route('admin.ads.index', ['editar' => $campana->id, 'plataforma' => $campana->plataforma]) }}" class="btn btn--secondary">
                 <i class="fa-solid fa-pen"></i> Editar
             </a>
             <a href="{{ route('admin.ads.index', ['plataforma' => $campana->plataforma]) }}" class="btn btn--secondary">

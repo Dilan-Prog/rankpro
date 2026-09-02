@@ -4,7 +4,7 @@
         <p class="empty-state__text">Sin conversiones registradas todavía.</p>
     </div>
 @else
-    <div class="table-wrap">
+    <div class="table-wrap" data-paginate="15">
         <table class="table">
             <thead>
                 <tr>

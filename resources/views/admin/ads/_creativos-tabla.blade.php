@@ -4,7 +4,7 @@
         <p class="empty-state__text">Sin creativos todavía.</p>
     </div>
 @endif
-<div class="table-wrap" data-creativos-table {{ $creativos->isEmpty() ? 'hidden' : '' }}>
+<div class="table-wrap" data-creativos-table data-paginate="15" {{ $creativos->isEmpty() ? 'hidden' : '' }}>
     <table class="table">
         <thead>
             <tr>

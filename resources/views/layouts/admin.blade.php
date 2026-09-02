@@ -15,6 +15,17 @@
         })();
     </script>
 
+    {{-- Same pre-paint pattern as the theme script above, for the sidebar's collapsed state. The
+         class lives on <html> (not .sidebar) since .sidebar doesn't exist in the DOM yet at this
+         point — see the "sidebar--collapsed" selector notes in css/admin/sidebar.css. --}}
+    <script>
+        (function () {
+            if (localStorage.getItem("agencyos-sidebar-collapsed") === "1") {
+                document.documentElement.classList.add("sidebar--collapsed");
+            }
+        })();
+    </script>
+
     {{-- Chart.js and Font Awesome load via CDN across the whole admin panel --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
@@ -34,6 +45,8 @@
             </main>
         </div>
     </div>
+
+    <x-command-palette />
 
     @yield('scripts')
 </body>

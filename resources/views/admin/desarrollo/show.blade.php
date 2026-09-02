@@ -16,7 +16,7 @@
             <p class="page-header__subtitle">{{ $proyecto->cliente->nombre }} · {{ \App\Support\Labels::tipoProyecto($proyecto->tipo) }}</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
-            <a href="{{ route('admin.desarrollo.edit', $proyecto) }}" class="btn btn--secondary">
+            <a href="{{ route('admin.desarrollo.index', ['editar' => $proyecto->id]) }}" class="btn btn--secondary">
                 <i class="fa-solid fa-pen"></i> Editar
             </a>
             <a href="{{ route('admin.desarrollo.index') }}" class="btn btn--secondary">
@@ -95,12 +95,25 @@
         <div class="card" style="margin-top: var(--space-6);" id="tareasCard">
             <div class="card__header">
                 <h2 class="card__header-title">Tareas</h2>
-                <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('tareaModal')">
-                    <i class="fa-solid fa-plus"></i> Agregar Tarea
-                </button>
+                <div style="display:flex; gap: var(--space-2); align-items:center;">
+                    <div class="view-toggle">
+                        <button type="button" class="view-toggle__btn" data-view-toggle-btn="table" data-view-toggle-group="tareasView" title="Vista de tabla">
+                            <i class="fa-solid fa-table"></i>
+                        </button>
+                        <button type="button" class="view-toggle__btn" data-view-toggle-btn="kanban" data-view-toggle-group="tareasView" title="Vista Kanban">
+                            <i class="fa-solid fa-table-columns"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('tareaModal')">
+                        <i class="fa-solid fa-plus"></i> Agregar Tarea
+                    </button>
+                </div>
             </div>
-            <div data-tareas-body>
+            <div data-tareas-body data-view-panel="table" data-view-toggle-group="tareasView">
                 @include('admin.desarrollo._tareas-tabla', ['tareas' => $proyecto->tareas])
+            </div>
+            <div data-tareas-kanban-body data-view-panel="kanban" data-view-toggle-group="tareasView" hidden>
+                @include('admin.desarrollo._tareas-kanban', ['tareas' => $proyecto->tareas])
             </div>
         </div>
     @endif
@@ -110,12 +123,25 @@
         <div class="card" style="margin-top: var(--space-6);" id="bugsCard">
             <div class="card__header">
                 <h2 class="card__header-title">Bugs</h2>
-                <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('bugModal')">
-                    <i class="fa-solid fa-plus"></i> Reportar Bug
-                </button>
+                <div style="display:flex; gap: var(--space-2); align-items:center;">
+                    <div class="view-toggle">
+                        <button type="button" class="view-toggle__btn" data-view-toggle-btn="table" data-view-toggle-group="bugsView" title="Vista de tabla">
+                            <i class="fa-solid fa-table"></i>
+                        </button>
+                        <button type="button" class="view-toggle__btn" data-view-toggle-btn="kanban" data-view-toggle-group="bugsView" title="Vista Kanban">
+                            <i class="fa-solid fa-table-columns"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('bugModal')">
+                        <i class="fa-solid fa-plus"></i> Reportar Bug
+                    </button>
+                </div>
             </div>
-            <div data-bugs-body>
+            <div data-bugs-body data-view-panel="table" data-view-toggle-group="bugsView">
                 @include('admin.desarrollo._bugs-tabla', ['bugs' => $proyecto->bugs])
+            </div>
+            <div data-bugs-kanban-body data-view-panel="kanban" data-view-toggle-group="bugsView" hidden>
+                @include('admin.desarrollo._bugs-kanban', ['bugs' => $proyecto->bugs])
             </div>
         </div>
 

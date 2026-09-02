@@ -1,4 +1,51 @@
 /* ==========================================================================
-   Keywords module — layout built entirely from shared primitives
-   (filters-bar, data-table, badge) defined in global.css.
+   Keywords module — layout built mostly from shared primitives (filters-bar,
+   data-table, badge, record-modal, empty-state) defined in global.css. Only
+   two things have no existing equivalent: the bulk-selection toolbar shown
+   above the listas table, and the expand/collapse chevron on each lista row
+   that reveals its keyword sub-table.
    ========================================================================== */
+
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+}
+
+.bulk-toolbar[hidden] {
+  display: none;
+}
+
+.bulk-toolbar__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.lista-toggle__chevron {
+  transition: transform 0.15s ease;
+}
+
+.lista-toggle__chevron.is-open {
+  transform: rotate(90deg);
+}
+
+/* Neutralizes .table__empty's centered/muted placeholder styling for the
+   keyword sub-table row that borrows the class only to opt out of
+   global.js's pagination row-counting (see the comment on this element in
+   _lista-row.blade.php). */
+.table tbody tr.table__empty[data-lista-subrow] {
+  padding: 0;
+}
+.table tbody tr.table__empty[data-lista-subrow] > td {
+  padding: 0;
+  text-align: left;
+  color: var(--color-foreground);
+  font-size: var(--text-sm);
+}

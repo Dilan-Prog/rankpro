@@ -1,10 +1,8 @@
-@if ($contenidos->isEmpty())
-    <div class="empty-state" data-contenido-empty>
-        <div class="empty-state__icon"><i class="fa-solid fa-file-lines"></i></div>
-        <p class="empty-state__text">Sin contenido registrado todavía.</p>
-    </div>
-@endif
-<div class="table-wrap" data-contenido-table {{ $contenidos->isEmpty() ? 'hidden' : '' }}>
+<div class="empty-state" data-contenido-empty {{ $contenidos->isEmpty() ? '' : 'hidden' }}>
+    <div class="empty-state__icon"><i class="fa-solid fa-file-lines"></i></div>
+    <p class="empty-state__text">Sin contenido registrado todavía.</p>
+</div>
+<div class="table-wrap" data-contenido-table data-paginate="15" {{ $contenidos->isEmpty() ? 'hidden' : '' }}>
     <table class="table">
         <thead>
             <tr>

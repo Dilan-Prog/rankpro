@@ -1,10 +1,8 @@
-@if ($posiciones->isEmpty())
-    <div class="empty-state" data-posiciones-empty>
-        <div class="empty-state__icon"><i class="fa-solid fa-ranking-star"></i></div>
-        <p class="empty-state__text">Sin posiciones registradas todavía.</p>
-    </div>
-@endif
-<div class="table-wrap" data-posiciones-table {{ $posiciones->isEmpty() ? 'hidden' : '' }}>
+<div class="empty-state" data-posiciones-empty {{ $posiciones->isEmpty() ? '' : 'hidden' }}>
+    <div class="empty-state__icon"><i class="fa-solid fa-ranking-star"></i></div>
+    <p class="empty-state__text">Sin posiciones registradas todavía.</p>
+</div>
+<div class="table-wrap" data-posiciones-table data-paginate="15" {{ $posiciones->isEmpty() ? 'hidden' : '' }}>
     <table class="table">
         <thead>
             <tr>

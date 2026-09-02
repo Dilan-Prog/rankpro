@@ -10,15 +10,15 @@
             <h1 class="page-header__title">Dashboard General</h1>
             <p class="page-header__subtitle">{{ $periodoActual }} · Vista ejecutiva</p>
         </div>
-        <button class="btn btn--secondary" type="button" id="exportReportBtn">
+        <a class="btn btn--secondary" id="exportReportBtn" href="{{ route('admin.dashboard.exportar') }}">
             <i class="fa-solid fa-download"></i> Exportar reporte
-        </button>
+        </a>
     </div>
 
     <div class="kpi-grid">
         @foreach ($kpis as $kpi)
             <x-stat-card :label="$kpi['label']" :value="$kpi['value']" :sub="$kpi['sub']"
-                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" />
+                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" />
         @endforeach
     </div>
 
@@ -66,7 +66,7 @@
             @else
                 <x-data-table :headers="['#', 'Campaña', 'Cliente', 'Plataforma', 'ROAS']">
                     @foreach ($topRoas as $i => $c)
-                        <tr>
+                        <tr class="is-clickable" data-campana-row data-campana="{{ json_encode($c) }}">
                             <td class="u-mono" style="color:var(--color-muted-foreground)">{{ $i + 1 }}</td>
                             <td>
                                 <div style="font-weight:500;max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--text-xs)">
@@ -99,20 +99,66 @@
                                 ? 'dashboard__contract-days--soon'
                                 : ($c['days'] <= 60 ? 'dashboard__contract-days--warn' : 'dashboard__contract-days--ok');
                         @endphp
-                        <li class="dashboard__contract">
-                            <div>
-                                <div class="dashboard__contract-client">{{ $c['client'] }}</div>
-                                <div class="dashboard__contract-date">Vence: {{ $c['end'] }}</div>
-                            </div>
-                            <div>
-                                <div class="dashboard__contract-days {{ $daysClass }}">{{ $c['days'] }} días</div>
-                                <div class="dashboard__contract-mrr">${{ number_format($c['mrr']) }}/mo</div>
-                            </div>
+                        <li>
+                            <a href="{{ route('admin.clientes.show', $c['id']) }}" class="dashboard__contract" style="text-decoration:none;color:inherit;">
+                                <div>
+                                    <div class="dashboard__contract-client">{{ $c['client'] }}</div>
+                                    <div class="dashboard__contract-date">Vence: {{ $c['end'] }}</div>
+                                </div>
+                                <div>
+                                    <div class="dashboard__contract-days {{ $daysClass }}">{{ $c['days'] }} días</div>
+                                    <div class="dashboard__contract-mrr">${{ number_format($c['mrr']) }}/mo</div>
+                                </div>
+                            </a>
                         </li>
                     @endforeach
                 </ul>
             @endif
         </div>
+    </div>
+
+    <div data-ads-base="{{ route('admin.ads.index') }}">
+        <x-modal id="campanaModal">
+            <x-slot:header>
+                <h2 id="campanaModalName" style="margin-bottom:6px;"></h2>
+                <div style="display:flex;gap:6px;">
+                    <span id="campanaModalBadgeEstado"></span>
+                    <span id="campanaModalBadgeFase"></span>
+                </div>
+            </x-slot:header>
+
+            <div class="record-modal__stats">
+                <div>
+                    <div class="record-modal__section-label">Cliente</div>
+                    <div id="campanaModalClient"></div>
+                </div>
+                <div>
+                    <div class="record-modal__section-label">Plataforma</div>
+                    <div id="campanaModalPlatform"></div>
+                </div>
+                <div>
+                    <div class="record-modal__section-label">Presupuesto mensual</div>
+                    <div id="campanaModalPresupuesto"></div>
+                </div>
+                <div>
+                    <div class="record-modal__section-label">Gasto total</div>
+                    <div id="campanaModalGasto"></div>
+                </div>
+                <div>
+                    <div class="record-modal__section-label">ROAS promedio</div>
+                    <div id="campanaModalRoas"></div>
+                </div>
+            </div>
+
+            <div class="record-modal__section">
+                <div class="record-modal__section-label">Último mes</div>
+                <div id="campanaModalUltimaMetrica"></div>
+            </div>
+
+            <div class="record-modal__actions">
+                <a id="campanaModalLink" href="#" class="btn btn--primary">Ver campaña completa</a>
+            </div>
+        </x-modal>
     </div>
 @endsection
 

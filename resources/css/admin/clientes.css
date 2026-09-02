@@ -2,13 +2,6 @@
    Clientes module (CRM)
    ========================================================================== */
 
-.client-modal__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
 .client-modal__field {
   display: flex;
   align-items: flex-start;
@@ -27,12 +20,6 @@
   color: var(--color-muted-foreground);
 }
 
-.client-modal__section {
-  padding-top: var(--space-4);
-  margin-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-
 .client-modal__notes {
   font-size: var(--text-sm);
   line-height: 1.6;
@@ -40,10 +27,4 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
-}
-
-@media (max-width: 480px) {
-  .client-modal__grid {
-    grid-template-columns: 1fr;
-  }
 }

@@ -4,9 +4,15 @@
                  :trend="8.2" icon="fa-arrow-trend-up" color="emerald" />
     $color maps to a .kpi__icon--{color} modifier defined in global.css
     (emerald, primary, amber, teal, red, blue).
+    Pass href to render the tile as a clickable <a> instead of a plain <div>
+    (same inner markup and .kpi class either way).
 --}}
-@props(['label', 'value', 'sub' => null, 'trend' => null, 'icon', 'color' => 'primary'])
-<div {{ $attributes->merge(['class' => 'kpi']) }}>
+@props(['label', 'value', 'sub' => null, 'trend' => null, 'icon', 'color' => 'primary', 'href' => null])
+@if ($href)
+    <a href="{{ $href }}" {{ $attributes->merge(['class' => 'kpi']) }}>
+@else
+    <div {{ $attributes->merge(['class' => 'kpi']) }}>
+@endif
     <div class="kpi__top">
         <span class="kpi__label">{{ $label }}</span>
         <span class="kpi__icon kpi__icon--{{ $color }}"><i class="fa-solid {{ $icon }}"></i></span>
@@ -21,4 +27,8 @@
             {{ abs($trend) }}% vs mes anterior
         </div>
     @endif
-</div>
+@if ($href)
+    </a>
+@else
+    </div>
+@endif

@@ -6,7 +6,7 @@
     data-bug-fecha-resolucion="{{ $bug->fecha_resolucion?->format('Y-m-d') }}">
     <td>{{ $bug->titulo }}</td>
     <td><x-badge :status="$bug->prioridad" /></td>
-    <td><x-badge :status="$bug->estado" /></td>
+    <td data-bug-estado-cell><x-badge :status="$bug->estado" /></td>
     <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $bug->fecha_resolucion?->format('Y-m-d') ?? '—' }}</td>
     <td>
         <div style="display:flex; gap:4px;">

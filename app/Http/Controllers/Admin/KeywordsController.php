@@ -5,88 +5,77 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\Keyword;
-use Illuminate\Http\RedirectResponse;
+use App\Models\KeywordLista;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class KeywordsController extends Controller
 {
     public function index(): View
     {
-        $keywords = Keyword::with('cliente')
+        $listas = KeywordLista::with(['cliente', 'responsable', 'keywords' => fn ($q) => $q->orderBy('keyword')])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn (Keyword $k) => [
-                'id' => $k->id,
-                'keyword' => $k->keyword,
-                'tipo' => $k->tipo,
-                'volumen_busqueda' => $k->volumen_busqueda,
-                'dificultad' => $k->dificultad,
-                'cpc_estimado' => (float) $k->cpc_estimado,
-                'intencion' => $k->intencion,
-                'url_asignada' => $k->url_asignada,
-                'posicion_actual' => $k->posicion_actual,
-                'estado' => $k->estado->value,
-                'herramienta_origen' => $k->herramienta_origen,
-                'cliente' => $k->cliente?->nombre ?? '—',
-                'cliente_id' => $k->cliente_id,
-            ]);
+            ->map(fn (KeywordLista $l) => $l->toRow());
 
-        $clientes = Cliente::orderBy('nombre')->pluck('nombre', 'id');
+        $keywordsSinLista = Keyword::whereNull('lista_id')
+            ->with('cliente')
+            ->orderBy('keyword')
+            ->get()
+            ->map(fn (Keyword $k) => $k->toRow());
 
         return view('admin.keywords.index', [
             'pageTitle' => 'Banco de Keywords',
-            'keywords' => $keywords,
-            'clientes' => $clientes,
-        ]);
-    }
-
-    public function create(): View
-    {
-        return view('admin.keywords.create', [
-            'pageTitle' => 'Nueva Keyword',
+            'listas' => $listas,
+            'keywordsSinLista' => $keywordsSinLista,
+            'totalKeywords' => $listas->sum('keywords_count') + $keywordsSinLista->count(),
             'clientes' => Cliente::orderBy('nombre')->pluck('nombre', 'id'),
+            'usuarios' => User::where('is_active', true)->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
-        $data = $this->validated($request);
+        $keyword = Keyword::create($this->validated($request));
 
-        $keyword = Keyword::create($data);
-
-        return redirect()->route('admin.keywords.index')->with('status', "Keyword \"{$keyword->keyword}\" añadida correctamente.");
+        return response()->json($keyword->fresh(['cliente', 'lista'])->toRow(), 201);
     }
 
-    public function edit(Keyword $keyword): View
+    public function update(Request $request, Keyword $keyword): JsonResponse
     {
-        return view('admin.keywords.edit', [
-            'pageTitle' => 'Editar Keyword',
-            'keyword' => $keyword,
-            'clientes' => Cliente::orderBy('nombre')->pluck('nombre', 'id'),
-        ]);
-    }
+        $data = $this->validated($request, $keyword);
 
-    public function update(Request $request, Keyword $keyword): RedirectResponse
-    {
-        $data = $this->validated($request);
+        // posicion_anterior is server-only — only advanced when posicion_actual genuinely changed.
+        if (array_key_exists('posicion_actual', $data) && (int) ($data['posicion_actual'] ?? 0) !== (int) ($keyword->posicion_actual ?? 0)) {
+            $data['posicion_anterior'] = $keyword->posicion_actual;
+        }
 
         $keyword->update($data);
 
-        return redirect()->route('admin.keywords.index')->with('status', "Keyword \"{$keyword->keyword}\" actualizada correctamente.");
+        return response()->json($keyword->fresh(['cliente', 'lista'])->toRow());
     }
 
-    public function destroy(Keyword $keyword): RedirectResponse
+    public function destroy(Keyword $keyword): JsonResponse
     {
         $keyword->delete();
 
-        return redirect()->route('admin.keywords.index')->with('status', 'Keyword eliminada.');
+        return response()->json(['deleted' => true]);
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Keyword $keyword = null): array
     {
+        $clienteId = $request->input('cliente_id', $keyword?->cliente_id);
+
         return $request->validate([
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
+            'lista_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('keyword_listas', 'id')->where(fn ($q) => $q->where('cliente_id', $clienteId)),
+            ],
             'keyword' => ['required', 'string', 'max:255'],
             'tipo' => ['required', 'in:principal,secundaria,long_tail,lsi'],
             'volumen_busqueda' => ['nullable', 'integer', 'min:0'],

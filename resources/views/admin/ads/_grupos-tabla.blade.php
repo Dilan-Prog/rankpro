@@ -4,7 +4,7 @@
         <p class="empty-state__text">Sin grupos de anuncios todavía.</p>
     </div>
 @endif
-<div class="table-wrap" data-grupos-table {{ $grupos->isEmpty() ? 'hidden' : '' }}>
+<div class="table-wrap" data-grupos-table data-paginate="15" {{ $grupos->isEmpty() ? 'hidden' : '' }}>
     <table class="table">
         <thead>
             <tr>

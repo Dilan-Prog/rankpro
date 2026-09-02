@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\EstadoBug;
 use App\Enums\FaseProyecto;
 use App\Http\Controllers\Controller;
+use App\Models\Bug;
 use App\Models\Cliente;
 use App\Models\Proyecto;
 use App\Models\ProyectoPlaneacion;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -16,41 +18,27 @@ class DesarrolloController extends Controller
 {
     public function index(): View
     {
-        $proyectos = Proyecto::with('cliente')
+        $proyectos = Proyecto::with(['cliente', 'organizacion', 'bugs' => fn ($q) => $q->select('id', 'proyecto_id', 'estado')])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn (Proyecto $p) => [
-                'id' => $p->id,
-                'nombre' => $p->nombre,
-                'cliente' => $p->cliente?->nombre ?? '—',
-                'tipo' => $p->tipo,
-                'fase_actual' => $p->fase_actual->value,
-                'estado' => $p->estado->value,
-                'porcentaje_avance' => $p->porcentaje_avance,
-                'fecha_inicio' => $p->fecha_inicio?->format('Y-m-d'),
-                'fecha_entrega_estimada' => $p->fecha_entrega_estimada?->format('Y-m-d'),
-                'presupuesto' => (float) $p->presupuesto,
-                'pagos_recibidos' => (float) $p->pagos_recibidos,
-                'responsable' => $p->responsable,
-            ]);
+            ->map(fn (Proyecto $p) => $this->toRow($p));
+
+        $bugs = Bug::with('proyecto:id,nombre')
+            ->whereHas('proyecto')
+            ->latest('created_at')
+            ->get()
+            ->map(fn (Bug $b) => $this->bugToRow($b));
 
         return view('admin.desarrollo.index', [
-            'pageTitle' => 'Desarrollo',
+            'pageTitle' => 'Módulo de Desarrollo',
             'proyectos' => $proyectos,
-            'enProceso' => $proyectos->whereNotIn('fase_actual', ['cerrado'])->count(),
+            'bugs' => $bugs,
+            'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->count(),
+            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
         ]);
     }
 
-    public function create(): View
-    {
-        return view('admin.desarrollo.create', [
-            'pageTitle' => 'Nuevo Proyecto',
-            'clientes' => Cliente::orderBy('nombre')->pluck('nombre', 'id'),
-            'checklistPlaneacion' => ProyectoPlaneacion::CHECKLIST,
-        ]);
-    }
-
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
@@ -63,17 +51,9 @@ class DesarrolloController extends Controller
             'fecha_inicio' => ['nullable', 'date'],
             'fecha_entrega_estimada' => ['nullable', 'date'],
             'responsable' => ['nullable', 'string', 'max:255'],
-            'objetivos' => ['nullable', 'string', 'max:5000'],
-            'requerimientos_funcionales' => ['nullable', 'string', 'max:5000'],
-            'requerimientos_tecnicos' => ['nullable', 'string', 'max:5000'],
-            'checklist' => ['nullable', 'array'],
-            'checklist.*' => ['boolean'],
         ]);
 
-        $checklistKeys = array_keys(ProyectoPlaneacion::CHECKLIST);
-        $checklist = collect($checklistKeys)->mapWithKeys(fn ($key) => [$key => (bool) ($data['checklist'][$key] ?? false)])->all();
-
-        $proyecto = DB::transaction(function () use ($data, $checklist) {
+        $proyecto = DB::transaction(function () use ($data) {
             $proyecto = Proyecto::create([
                 'cliente_id' => $data['cliente_id'],
                 'nombre' => $data['nombre'],
@@ -92,16 +72,13 @@ class DesarrolloController extends Controller
             ]);
 
             $proyecto->planeacion()->create([
-                'objetivos' => $data['objetivos'] ?? null,
-                'requerimientos_funcionales' => $data['requerimientos_funcionales'] ?? null,
-                'requerimientos_tecnicos' => $data['requerimientos_tecnicos'] ?? null,
-                'checklist' => $checklist,
+                'checklist' => collect(array_keys(ProyectoPlaneacion::CHECKLIST))->mapWithKeys(fn ($key) => [$key => false])->all(),
             ]);
 
             return $proyecto;
         });
 
-        return redirect()->route('admin.desarrollo.show', $proyecto)->with('status', "Proyecto \"{$proyecto->nombre}\" creado. Comienza en fase de Planeación.");
+        return response()->json($this->toRow($proyecto->fresh(['cliente', 'organizacion', 'bugs'])), 201);
     }
 
     public function show(Proyecto $proyecto): View
@@ -122,16 +99,7 @@ class DesarrolloController extends Controller
         ]);
     }
 
-    public function edit(Proyecto $proyecto): View
-    {
-        return view('admin.desarrollo.edit', [
-            'pageTitle' => 'Editar Proyecto',
-            'proyecto' => $proyecto,
-            'clientes' => Cliente::orderBy('nombre')->pluck('nombre', 'id'),
-        ]);
-    }
-
-    public function update(Request $request, Proyecto $proyecto): RedirectResponse
+    public function update(Request $request, Proyecto $proyecto): JsonResponse
     {
         $data = $request->validate([
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
@@ -151,13 +119,62 @@ class DesarrolloController extends Controller
 
         $proyecto->update($data);
 
-        return redirect()->route('admin.desarrollo.show', $proyecto)->with('status', "Proyecto \"{$proyecto->nombre}\" actualizado correctamente.");
+        return response()->json($this->toRow($proyecto->fresh(['cliente', 'organizacion', 'bugs'])));
     }
 
-    public function destroy(Proyecto $proyecto): RedirectResponse
+    public function destroy(Proyecto $proyecto): JsonResponse
     {
         $proyecto->delete();
 
-        return redirect()->route('admin.desarrollo.index')->with('status', 'Proyecto eliminado.');
+        return response()->json(['deleted' => true]);
+    }
+
+    /** Shared shape for index()'s server-rendered cards and store()/update()'s AJAX responses. */
+    private function toRow(Proyecto $p): array
+    {
+        $pendiente = max(0, (float) $p->presupuesto - (float) $p->pagos_recibidos);
+
+        return [
+            'id' => $p->id,
+            'cliente_id' => $p->cliente_id,
+            'cliente' => $p->cliente?->nombre ?? '—',
+            'nombre' => $p->nombre,
+            'tipo' => $p->tipo,
+            'descripcion' => $p->descripcion,
+            'fase_actual' => $p->fase_actual->value,
+            'fase_orden' => $p->fase_actual->orden(),
+            'estado' => $p->estado->value,
+            'porcentaje_avance' => $p->porcentaje_avance,
+            'presupuesto' => (float) $p->presupuesto,
+            'anticipo' => (float) $p->anticipo,
+            'pagos_recibidos' => (float) $p->pagos_recibidos,
+            'pendiente' => $pendiente,
+            'forma_pago' => $p->forma_pago?->value,
+            'fecha_inicio' => $p->fecha_inicio?->format('Y-m-d'),
+            'fecha_entrega_estimada' => $p->fecha_entrega_estimada?->format('Y-m-d'),
+            'fecha_entrega_real' => $p->fecha_entrega_real?->format('Y-m-d'),
+            'responsable' => $p->responsable,
+            'bugs_abiertos_count' => $p->bugs->whereIn('estado', [EstadoBug::Abierto, EstadoBug::EnProgreso])->count(),
+            'url_repositorio' => $p->organizacion?->url_repositorio,
+            'url_staging' => $p->organizacion?->url_staging,
+            'show_url' => route('admin.desarrollo.show', $p->id),
+        ];
+    }
+
+    /** Shared shape for index()'s embedded bug rows — kept in sync with BugController::toRow(). */
+    private function bugToRow(Bug $b): array
+    {
+        return [
+            'id' => $b->id,
+            'proyecto_id' => $b->proyecto_id,
+            'proyecto_nombre' => $b->proyecto->nombre,
+            'titulo' => $b->titulo,
+            'descripcion' => $b->descripcion,
+            'prioridad' => $b->prioridad,
+            'estado' => $b->estado->value,
+            'fecha_resolucion' => $b->fecha_resolucion?->format('Y-m-d'),
+            'created_at' => $b->created_at->format('Y-m-d'),
+            'dias_abierto' => $b->estado === EstadoBug::Resuelto ? null : $b->created_at->diffInDays(now()),
+        ];
     }
 }

@@ -66,6 +66,17 @@ class SeoCampana extends Model
         return $this->hasMany(SeoContenido::class);
     }
 
+    public function onPageAcciones(): HasMany
+    {
+        return $this->hasMany(SeoOnPageAccion::class)->orderByDesc('fecha');
+    }
+
+    /** Captura mensual dentro de cada ciclo — la base de los reportes de crecimiento (gráficas de tendencia). */
+    public function metricasMensuales(): HasMany
+    {
+        return $this->hasMany(SeoMetricaMensual::class)->orderBy('anio')->orderBy('mes');
+    }
+
     /**
      * auditoria/estrategia/ejecucion/reporte are all cycle-scoped (one row
      * per ciclo_actual) so "Nuevo Ciclo" archives history instead of
@@ -124,10 +135,12 @@ class SeoCampana extends Model
             $campana->posiciones()->delete();
             $campana->backlinks()->delete();
             $campana->contenido()->delete();
+            $campana->onPageAcciones()->delete();
             $campana->auditorias()->delete();
             $campana->estrategias()->delete();
             $campana->ejecuciones()->delete();
             $campana->reportes()->delete();
+            $campana->metricasMensuales()->delete();
         });
     }
 }

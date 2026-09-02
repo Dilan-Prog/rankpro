@@ -21,6 +21,43 @@ class SeoFaseAuditoria extends Model
         'reporte_entregado_cliente' => 'Reporte de auditoría entregado al cliente',
     ];
 
+    /**
+     * Informational technical-SEO tracking, grouped by category — fully
+     * independent of CHECKLIST above (which gates phase approval via
+     * SeoFaseController::aprobar()). Stored in the separate
+     * `tecnico_checklist` column; never read by checklistCompleto().
+     */
+    public const TECNICO_CHECKLIST = [
+        'Indexación y Rastreo' => [
+            'sitemap_enviado_gsc' => 'Sitemap XML enviado a Google Search Console',
+            'robots_sin_bloqueos' => 'Robots.txt sin bloqueos indebidos',
+            'canonicals_correctos' => 'Etiquetas canonical correctas en todas las páginas',
+            'paginas_huerfanas_eliminadas' => 'Páginas huérfanas eliminadas o enlazadas',
+            'errores_404_corregidos' => 'Errores 404 corregidos',
+        ],
+        'Velocidad y Rendimiento' => [
+            'imagenes_webp' => 'Imágenes convertidas a WebP',
+            'lazy_loading' => 'Lazy loading implementado',
+            'cdn_activo' => 'CDN activo',
+            'cache_navegador' => 'Cache del navegador configurado',
+            'css_js_minificados' => 'CSS y JS minificados',
+        ],
+        'Datos Estructurados' => [
+            'schema_organization' => 'Schema Organization implementado',
+            'schema_localbusiness' => 'Schema LocalBusiness implementado',
+            'schema_faqpage' => 'Schema FAQPage implementado',
+            'schema_review' => 'Schema Review implementado',
+            'schema_breadcrumblist' => 'Schema BreadcrumbList implementado',
+        ],
+        'Mobile y UX' => [
+            'diseno_responsive' => 'Diseño responsive verificado',
+            'botones_touch_friendly' => 'Botones táctiles de tamaño adecuado',
+            'fuentes_legibles' => 'Fuentes legibles en móvil',
+            'sin_overflow_horizontal' => 'Sin desbordamiento horizontal',
+            'cwv_verde_movil' => 'Core Web Vitals en verde (móvil)',
+        ],
+    ];
+
     protected $fillable = [
         'seo_campana_id',
         'ciclo',
@@ -45,6 +82,7 @@ class SeoFaseAuditoria extends Model
         'herramienta',
         'notas',
         'checklist',
+        'tecnico_checklist',
         'aprobado',
         'fecha_aprobacion',
     ];
@@ -70,6 +108,7 @@ class SeoFaseAuditoria extends Model
         'canonical_ok' => 'boolean',
         'schema_ok' => 'boolean',
         'checklist' => 'array',
+        'tecnico_checklist' => 'array',
         'aprobado' => 'boolean',
         'fecha_aprobacion' => 'datetime',
     ];

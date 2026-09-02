@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\EstadoClienteServicio;
+use App\Enums\FormaPago;
+use App\Enums\MetodoPago;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClientesController extends Controller
@@ -15,28 +19,7 @@ class ClientesController extends Controller
         $clientes = Cliente::with('servicios')
             ->orderBy('nombre')
             ->get()
-            ->map(function (Cliente $cliente) {
-                $mrr = $cliente->servicios
-                    ->where('estado', 'activo')
-                    ->sum('precio_mensual');
-
-                return [
-                    'id' => $cliente->id,
-                    'nombre' => $cliente->nombre,
-                    'empresa' => $cliente->empresa,
-                    'email' => $cliente->email,
-                    'telefono' => $cliente->telefono,
-                    'contacto_nombre' => $cliente->contacto_nombre,
-                    'estado' => $cliente->estado->value,
-                    'servicios' => $cliente->servicios->pluck('tipo')->unique()->values()->all(),
-                    'mrr' => (float) $mrr,
-                    'fecha_inicio_contrato' => $cliente->fecha_inicio_contrato?->format('Y-m-d'),
-                    'fecha_renovacion_contrato' => $cliente->fecha_renovacion_contrato?->format('Y-m-d'),
-                    'forma_pago' => $cliente->forma_pago,
-                    'metodo_pago' => $cliente->metodo_pago,
-                    'notas' => $cliente->notas,
-                ];
-            });
+            ->map(fn (Cliente $cliente) => $this->toRow($cliente));
 
         return view('admin.clientes.index', [
             'pageTitle' => 'CRM — Clientes',
@@ -45,18 +28,11 @@ class ClientesController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function store(Request $request): JsonResponse
     {
-        return view('admin.clientes.create', ['pageTitle' => 'Nuevo Cliente']);
-    }
+        $cliente = Cliente::create($this->validated($request));
 
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $this->validated($request);
-
-        $cliente = Cliente::create($data);
-
-        return redirect()->route('admin.clientes.index')->with('status', "Cliente \"{$cliente->nombre}\" creado correctamente.");
+        return response()->json($this->toRow($cliente), 201);
     }
 
     public function show(Cliente $cliente): View
@@ -64,40 +40,58 @@ class ClientesController extends Controller
         return view('admin.clientes.show', ['pageTitle' => $cliente->nombre, 'cliente' => $cliente]);
     }
 
-    public function edit(Cliente $cliente): View
+    public function update(Request $request, Cliente $cliente): JsonResponse
     {
-        return view('admin.clientes.edit', ['pageTitle' => 'Editar Cliente', 'cliente' => $cliente]);
+        $cliente->update($this->validated($request, $cliente));
+
+        return response()->json($this->toRow($cliente->fresh()));
     }
 
-    public function update(Request $request, Cliente $cliente): RedirectResponse
-    {
-        $data = $this->validated($request);
-
-        $cliente->update($data);
-
-        return redirect()->route('admin.clientes.index')->with('status', "Cliente \"{$cliente->nombre}\" actualizado correctamente.");
-    }
-
-    public function destroy(Cliente $cliente): RedirectResponse
+    public function destroy(Cliente $cliente): JsonResponse
     {
         $cliente->delete();
 
-        return redirect()->route('admin.clientes.index')->with('status', "Cliente \"{$cliente->nombre}\" eliminado.");
+        return response()->json(['deleted' => true]);
     }
 
-    private function validated(Request $request): array
+    /** Shared shape for the index's server-rendered rows and store()/update()'s AJAX responses. */
+    private function toRow(Cliente $cliente): array
+    {
+        $mrr = $cliente->servicios
+            ->where('estado', 'activo')
+            ->sum('precio_mensual');
+
+        return [
+            'id' => $cliente->id,
+            'nombre' => $cliente->nombre,
+            'empresa' => $cliente->empresa,
+            'email' => $cliente->email,
+            'telefono' => $cliente->telefono,
+            'contacto_nombre' => $cliente->contacto_nombre,
+            'estado' => $cliente->estado->value,
+            'servicios' => $cliente->servicios->pluck('tipo')->unique()->values()->all(),
+            'mrr' => (float) $mrr,
+            'fecha_inicio_contrato' => $cliente->fecha_inicio_contrato?->format('Y-m-d'),
+            'fecha_renovacion_contrato' => $cliente->fecha_renovacion_contrato?->format('Y-m-d'),
+            'forma_pago' => $cliente->forma_pago?->value,
+            'metodo_pago' => $cliente->metodo_pago?->value,
+            'notas' => $cliente->notas,
+        ];
+    }
+
+    private function validated(Request $request, ?Cliente $cliente = null): array
     {
         return $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
             'empresa' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('clientes', 'email')->ignore($cliente?->id)->where(fn ($q) => $q->whereNull('deleted_at'))],
             'telefono' => ['nullable', 'string', 'max:30'],
             'contacto_nombre' => ['nullable', 'string', 'max:255'],
-            'estado' => ['required', 'in:activo,pausado,cancelado'],
+            'estado' => ['required', Rule::enum(EstadoClienteServicio::class)],
             'fecha_inicio_contrato' => ['nullable', 'date'],
             'fecha_renovacion_contrato' => ['nullable', 'date'],
-            'forma_pago' => ['nullable', 'in:mensual,trimestral,anual'],
-            'metodo_pago' => ['nullable', 'in:transferencia,tarjeta,efectivo,paypal'],
+            'forma_pago' => ['nullable', Rule::enum(FormaPago::class)],
+            'metodo_pago' => ['nullable', Rule::enum(MetodoPago::class)],
             'notas' => ['nullable', 'string', 'max:2000'],
         ]);
     }

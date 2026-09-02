@@ -1,4 +1,60 @@
 /* ==========================================================================
    Finanzas module — layout built from shared primitives (kpi-grid, card,
-   chart-wrap, data-table, badge) defined in global.css.
+   tabs, chart-wrap, data-table, badge, progress-bar) defined in global.css.
+   Only the cartera/concentración row layouts and the totals bar below the
+   Facturación table are genuinely specific to this module.
    ========================================================================== */
+
+/* ---------- Resumen tab: "Estado de la cartera" bucket rows ---------- */
+.cartera-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cartera-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cartera-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ---------- Por cliente tab: "Concentración" list rows ---------- */
+.concentracion-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.concentracion-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.concentracion-row__name {
+  flex: 1;
+  font-size: var(--text-sm);
+}
+
+.concentracion-row__pct {
+  width: 48px;
+  text-align: right;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+/* ---------- Facturación tab: totals bar below the table ---------- */
+.finanzas-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}

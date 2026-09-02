@@ -99,6 +99,7 @@
 
   /* Layout */
   --sidebar-width: 208px;
+  --sidebar-width-collapsed: 62px;
   --header-height: 44px;
 
   /* Motion */
@@ -368,6 +369,14 @@ h4 { font-size: var(--text-base); }
   background: rgba(15, 157, 110, 0.2);
 }
 
+.btn--danger {
+  background: var(--color-destructive);
+  color: #fff;
+}
+.btn--danger:hover {
+  background: #DC2626;
+}
+
 .btn--sm {
   padding: 6px var(--space-3);
   font-size: var(--text-xs);
@@ -476,6 +485,12 @@ details[open] > .filters-toggle .filters-toggle__chevron {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
+}
+
+a.kpi {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .kpi__top {
@@ -1065,4 +1080,712 @@ details[open] > .filters-toggle .filters-toggle__chevron {
   .u-hide-mobile {
     display: block;
   }
+}
+
+/* ==========================================================================
+   Fase tracker / fase panel (shared: SEO, Ads, Automatizaciones, Desarrollo)
+   Was duplicated byte-for-byte in each module's own CSS file — consolidated
+   here since every "proceso administrativo" module needs the identical
+   stepper + per-phase form treatment.
+   ========================================================================== */
+.fase-tracker {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.fase-tracker__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 84px;
+}
+
+.fase-tracker__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+  border: 2px solid var(--color-border);
+  background: var(--color-secondary);
+  color: var(--color-muted-foreground);
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+}
+
+.fase-tracker__step--current .fase-tracker__circle {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(15, 157, 110, 0.15);
+}
+
+.fase-tracker__step--done .fase-tracker__circle {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.fase-tracker__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  text-align: center;
+}
+
+.fase-tracker__step--current .fase-tracker__label {
+  color: var(--color-foreground);
+}
+
+.fase-tracker__line {
+  flex: 1;
+  height: 2px;
+  margin-top: 17px;
+  background: var(--color-border);
+  min-width: 24px;
+}
+
+.fase-tracker__line--done {
+  background: var(--color-primary);
+}
+
+.fase-panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-5);
+}
+
+.fase-panel__hint {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.fase-form__section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
+  margin-bottom: var(--space-3);
+}
+
+.fase-panel__autosave-note {
+  font-size: var(--text-xs);
+  color: var(--text-success);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.fase-panel__autosave-note.is-visible {
+  opacity: 1;
+}
+
+.fase-panel__approve {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ==========================================================================
+   Kanban board (shared: Conversiones/Integraciones embudo, Desarrollo)
+   Was defined only in integraciones.css for the Conversiones-embudo board —
+   consolidated here since Desarrollo reuses the exact same drag/drop visual
+   language for its Tareas/Bugs boards and, optionally, its proyecto-fase
+   board.
+   ========================================================================== */
+.kanban {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  align-items: flex-start;
+}
+
+.kanban__column {
+  flex: 0 0 280px;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 260px);
+}
+
+.kanban__column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kanban__count {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 1px 8px;
+}
+
+.kanban__column-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 80px;
+  transition: background-color var(--transition-fast);
+}
+
+.kanban__column-body.is-drag-over {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-lg);
+}
+
+.kanban__card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.kanban__card.is-dragging {
+  opacity: 0.4;
+}
+
+.kanban__card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.kanban__card-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+.kanban__card-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.kanban__card-date {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.kanban__card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.kanban__card-valor {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-success);
+}
+
+.kanban__card-tags {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kanban__card-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+}
+
+/* ==========================================================================
+   Dropdown panels (shared: notif panel, user menu — anything anchored off
+   a topbar/sidebar trigger). Positioning is relative to a `position:
+   relative` ancestor set by the caller.
+   ========================================================================== */
+.dropdown-panel {
+  position: absolute;
+  z-index: 120;
+  background: var(--color-popover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.dropdown-panel[hidden] {
+  display: none;
+}
+
+/* ---------- Notifications panel ---------- */
+.notif-panel {
+  top: calc(var(--header-height) + 8px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - var(--space-8));
+}
+
+.notif-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notif-panel__title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.notif-panel__mark-read {
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+}
+
+.notif-panel__mark-read:hover {
+  color: var(--color-primary-hover);
+}
+
+.notif-panel__list {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.notif-panel__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notif-panel__item:last-child {
+  border-bottom: none;
+}
+
+.notif-panel__item:hover {
+  background: var(--color-secondary);
+}
+
+.notif-panel__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  background: var(--color-info);
+}
+
+.notif-panel__dot--warning { background: var(--color-warning); }
+.notif-panel__dot--danger { background: var(--color-destructive); }
+
+.notif-panel__text {
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  line-height: 1.4;
+}
+
+.notif-panel__meta {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.notif-panel__footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.notif-panel__empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+/* ---------- User menu ---------- */
+.user-menu {
+  top: calc(var(--header-height) + 8px);
+  right: 0;
+  width: 236px;
+}
+
+.user-menu--sidebar {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+}
+
+.user-menu__header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.user-menu__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu__role {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.user-menu__list {
+  padding: var(--space-2);
+}
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  transition: background-color var(--transition-fast);
+}
+
+.user-menu__item:hover {
+  background: var(--color-secondary);
+}
+
+.user-menu__item i {
+  width: 14px;
+  text-align: center;
+  color: var(--color-muted-foreground);
+}
+
+.user-menu__item--danger {
+  color: var(--text-danger);
+}
+
+.user-menu__item--danger i {
+  color: var(--text-danger);
+}
+
+/* ==========================================================================
+   Command palette (Cmd/Ctrl+K)
+   ========================================================================== */
+.command-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh var(--space-4) var(--space-4);
+  z-index: 150;
+}
+
+.command-palette-overlay[hidden] {
+  display: none;
+}
+
+.command-palette {
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.command-palette__input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.command-palette__input-row i {
+  color: var(--color-muted-foreground);
+}
+
+.command-palette__input {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: var(--text-base);
+  color: var(--color-foreground);
+}
+
+.command-palette__input:focus {
+  outline: none;
+}
+
+.command-palette__kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 5px;
+}
+
+.command-palette__results {
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.command-palette__group-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: var(--space-2) var(--space-3) 6px;
+}
+
+.command-palette__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+}
+
+.command-palette__row i {
+  width: 14px;
+  text-align: center;
+  color: var(--color-muted-foreground);
+}
+
+.command-palette__row:hover,
+.command-palette__row.is-active {
+  background: var(--color-secondary);
+}
+
+.command-palette__row.is-active {
+  color: var(--color-primary);
+}
+
+.command-palette__row-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.command-palette__row-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.command-palette__empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+/* ==========================================================================
+   Table pagination (client-side, paginates an already-rendered <tbody>)
+   ========================================================================== */
+.table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+}
+
+.table-pagination__info {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.table-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-pagination__page {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  border: 1px solid var(--color-border);
+}
+
+.table-pagination__page:hover {
+  color: var(--color-foreground);
+  background: var(--color-secondary);
+}
+
+.table-pagination__page.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.table-pagination__ellipsis {
+  padding: 0 4px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.table-pagination__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+}
+
+.table-pagination__nav:hover:not(:disabled) {
+  color: var(--color-foreground);
+  background: var(--color-secondary);
+}
+
+/* ==========================================================================
+   Record modal (generic "detail drawer" — extends .modal/.modal__body)
+   ========================================================================== */
+.record-modal__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.record-modal__section {
+  margin-bottom: var(--space-5);
+}
+
+.record-modal__section:last-child {
+  margin-bottom: 0;
+}
+
+.record-modal__section-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-2);
+}
+
+.record-modal__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.record-modal__timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.record-modal__timeline-item {
+  position: relative;
+  padding: 0 0 var(--space-4) var(--space-5);
+  border-left: 2px solid var(--color-border);
+}
+
+.record-modal__timeline-item:last-child {
+  padding-bottom: 0;
+  border-color: transparent;
+}
+
+.record-modal__timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.record-modal__timeline-text {
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+}
+
+.record-modal__timeline-meta {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.record-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
 }

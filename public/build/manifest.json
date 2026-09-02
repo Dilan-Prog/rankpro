@@ -1,11 +1,11 @@
 {
   "resources/css/admin/ads.css": {
-    "file": "assets/ads-B9CzMqRS.css",
+    "file": "assets/ads-DwYb6avH.css",
     "src": "resources/css/admin/ads.css",
     "isEntry": true
   },
   "resources/css/admin/archivos.css": {
-    "file": "assets/archivos-_4_yAGeW.css",
+    "file": "assets/archivos-N_pHQ4GD.css",
     "src": "resources/css/admin/archivos.css",
     "isEntry": true
   },
@@ -14,13 +14,18 @@
     "src": "resources/css/admin/auth.css",
     "isEntry": true
   },
+  "resources/css/admin/automatizaciones.css": {
+    "file": "assets/automatizaciones-DbB3tKJ5.css",
+    "src": "resources/css/admin/automatizaciones.css",
+    "isEntry": true
+  },
   "resources/css/admin/blog.css": {
     "file": "assets/blog-CCsFf3Ut.css",
     "src": "resources/css/admin/blog.css",
     "isEntry": true
   },
   "resources/css/admin/clientes.css": {
-    "file": "assets/clientes-D2cvyIjf.css",
+    "file": "assets/clientes-BezzuIOO.css",
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
@@ -30,48 +35,58 @@
     "isEntry": true
   },
   "resources/css/admin/desarrollo.css": {
-    "file": "assets/desarrollo-wLISwuYI.css",
+    "file": "assets/desarrollo-Bck7QhfA.css",
     "src": "resources/css/admin/desarrollo.css",
     "isEntry": true
   },
   "resources/css/admin/finanzas.css": {
-    "file": "assets/finanzas-tn0RQdqM.css",
+    "file": "assets/finanzas-CnZXbuv2.css",
     "src": "resources/css/admin/finanzas.css",
     "isEntry": true
   },
   "resources/css/admin/global.css": {
-    "file": "assets/global-DrGyegOV.css",
+    "file": "assets/global-B5eO18nE.css",
     "src": "resources/css/admin/global.css",
     "isEntry": true
   },
   "resources/css/admin/integraciones.css": {
-    "file": "assets/integraciones-6Q2whPCH.css",
+    "file": "assets/integraciones-Cu5ugLwi.css",
     "src": "resources/css/admin/integraciones.css",
     "isEntry": true
   },
   "resources/css/admin/keywords.css": {
-    "file": "assets/finanzas-tn0RQdqM.css",
-    "src": "resources/css/admin/finanzas.css",
+    "file": "assets/keywords-CpDutZmv.css",
+    "src": "resources/css/admin/keywords.css",
+    "isEntry": true
+  },
+  "resources/css/admin/reportes.css": {
+    "file": "assets/reportes-t8-1MPpu.css",
+    "src": "resources/css/admin/reportes.css",
     "isEntry": true
   },
   "resources/css/admin/roles.css": {
-    "file": "assets/roles-DS6utR2b.css",
+    "file": "assets/roles-88H3s6eP.css",
     "src": "resources/css/admin/roles.css",
     "isEntry": true
   },
   "resources/css/admin/seo.css": {
-    "file": "assets/seo-2haJR71g.css",
+    "file": "assets/seo-BBU7TQcS.css",
     "src": "resources/css/admin/seo.css",
     "isEntry": true
   },
   "resources/css/admin/servicios.css": {
-    "file": "assets/finanzas-tn0RQdqM.css",
-    "src": "resources/css/admin/finanzas.css",
+    "file": "assets/servicios-tn0RQdqM.css",
+    "src": "resources/css/admin/servicios.css",
     "isEntry": true
   },
   "resources/css/admin/sidebar.css": {
-    "file": "assets/sidebar-5i2CY_z7.css",
+    "file": "assets/sidebar-Cs-KgY2s.css",
     "src": "resources/css/admin/sidebar.css",
+    "isEntry": true
+  },
+  "resources/css/admin/usuarios.css": {
+    "file": "assets/usuarios-CpEd2JCA.css",
+    "src": "resources/css/admin/usuarios.css",
     "isEntry": true
   },
   "resources/css/web/app.css": {
@@ -95,7 +110,7 @@
     "isEntry": true
   },
   "resources/js/ads.js": {
-    "file": "assets/ads-DEbdys6h.js",
+    "file": "assets/ads-6OoYvifR.js",
     "name": "ads",
     "src": "resources/js/ads.js",
     "isEntry": true
@@ -107,7 +122,7 @@
     "isEntry": true
   },
   "resources/js/archivos.js": {
-    "file": "assets/archivos-q4SSHe0L.js",
+    "file": "assets/archivos-CG4TI3f_.js",
     "name": "archivos",
     "src": "resources/js/archivos.js",
     "isEntry": true
@@ -116,6 +131,12 @@
     "file": "assets/auth-CujPzgBo.js",
     "name": "auth",
     "src": "resources/js/auth.js",
+    "isEntry": true
+  },
+  "resources/js/automatizaciones.js": {
+    "file": "assets/automatizaciones-DKMd7qA2.js",
+    "name": "automatizaciones",
+    "src": "resources/js/automatizaciones.js",
     "isEntry": true
   },
   "resources/js/blog-publico.js": {
@@ -131,7 +152,7 @@
     "isEntry": true
   },
   "resources/js/clientes.js": {
-    "file": "assets/clientes-BPrekH9k.js",
+    "file": "assets/clientes-B362Zilk.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
     "isEntry": true
@@ -149,13 +170,13 @@
     "isEntry": true
   },
   "resources/js/dashboard.js": {
-    "file": "assets/dashboard-gMdSqpFz.js",
+    "file": "assets/dashboard-DT_znYqh.js",
     "name": "dashboard",
     "src": "resources/js/dashboard.js",
     "isEntry": true
   },
   "resources/js/desarrollo.js": {
-    "file": "assets/desarrollo-4BKyI86S.js",
+    "file": "assets/desarrollo-AG9hskmF.js",
     "name": "desarrollo",
     "src": "resources/js/desarrollo.js",
     "isEntry": true
@@ -167,31 +188,37 @@
     "isEntry": true
   },
   "resources/js/finanzas.js": {
-    "file": "assets/finanzas-DHxzeZlU.js",
+    "file": "assets/finanzas-Cza6Ts4J.js",
     "name": "finanzas",
     "src": "resources/js/finanzas.js",
     "isEntry": true
   },
   "resources/js/global.js": {
-    "file": "assets/global-CuOrb9xo.js",
+    "file": "assets/global-a34gLdr6.js",
     "name": "global",
     "src": "resources/js/global.js",
     "isEntry": true
   },
   "resources/js/keywords.js": {
-    "file": "assets/keywords-CaWdcvej.js",
+    "file": "assets/keywords-CXyuWd_s.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
     "isEntry": true
   },
+  "resources/js/reportes.js": {
+    "file": "assets/reportes-DhyeVK69.js",
+    "name": "reportes",
+    "src": "resources/js/reportes.js",
+    "isEntry": true
+  },
   "resources/js/roles.js": {
-    "file": "assets/roles-D16XE-CB.js",
+    "file": "assets/roles-Hh7jG6i5.js",
     "name": "roles",
     "src": "resources/js/roles.js",
     "isEntry": true
   },
   "resources/js/seo.js": {
-    "file": "assets/seo-DZaJotn9.js",
+    "file": "assets/seo-C9HtuZUv.js",
     "name": "seo",
     "src": "resources/js/seo.js",
     "isEntry": true
@@ -203,7 +230,7 @@
     "isEntry": true
   },
   "resources/js/servicios.js": {
-    "file": "assets/servicios-D6gTz_8t.js",
+    "file": "assets/servicios-Dq4bzi3d.js",
     "name": "servicios",
     "src": "resources/js/servicios.js",
     "isEntry": true
@@ -212,6 +239,12 @@
     "file": "assets/theme-CrwEq5zO.js",
     "name": "theme",
     "src": "resources/js/theme.js",
+    "isEntry": true
+  },
+  "resources/js/usuarios.js": {
+    "file": "assets/usuarios-ceSG5T2a.js",
+    "name": "usuarios",
+    "src": "resources/js/usuarios.js",
     "isEntry": true
   }
 }

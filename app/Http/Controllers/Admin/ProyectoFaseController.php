@@ -102,18 +102,34 @@ class ProyectoFaseController extends Controller
         ]);
     }
 
-    public function aprobar(Proyecto $proyecto): RedirectResponse
+    /**
+     * Approves the current phase and advances fase_actual by one step.
+     * Used both by the "Aprobar Fase" button on the show page (normal form
+     * POST -> redirect) and by the Desarrollo index Kanban drag-and-drop
+     * (fetch with Accept: application/json -> JSON), which drags a proyecto
+     * card forward exactly one column and needs a status code + payload it
+     * can read without following a redirect.
+     */
+    public function aprobar(Request $request, Proyecto $proyecto): RedirectResponse|JsonResponse
     {
         $fase = $proyecto->fase_actual;
 
         if ($fase === FaseProyecto::Cerrado) {
-            return back()->withErrors(['fase' => 'Este proyecto ya está cerrado.']);
+            $mensaje = 'Este proyecto ya está cerrado.';
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $mensaje], 422)
+                : back()->withErrors(['fase' => $mensaje]);
         }
 
         $registro = $this->registroFase($proyecto, $fase);
 
         if (! $this->checklistCompleto($registro, $fase)) {
-            return back()->withErrors(['checklist' => 'Completa todo el checklist antes de aprobar esta fase.']);
+            $mensaje = 'Completa todo el checklist antes de aprobar esta fase.';
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $mensaje], 422)
+                : back()->withErrors(['checklist' => $mensaje]);
         }
 
         $registro->update(['aprobado' => true, 'fecha_aprobacion' => now()]);
@@ -137,19 +153,38 @@ class ProyectoFaseController extends Controller
 
         $proyecto->save();
 
-        return redirect()->route('admin.desarrollo.show', $proyecto)
-            ->with('status', $siguiente === FaseProyecto::Cerrado
-                ? 'Fase de Control aprobada. El proyecto quedó cerrado.'
-                : 'Fase aprobada. El proyecto avanzó a la siguiente etapa.');
+        $mensaje = $siguiente === FaseProyecto::Cerrado
+            ? 'Fase de Control aprobada. El proyecto quedó cerrado.'
+            : 'Fase aprobada. El proyecto avanzó a la siguiente etapa.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'fase_actual' => $proyecto->fase_actual->value,
+                'estado' => $proyecto->estado->value,
+                'porcentaje_avance' => $proyecto->porcentaje_avance,
+                'message' => $mensaje,
+            ]);
+        }
+
+        return redirect()->route('admin.desarrollo.show', $proyecto)->with('status', $mensaje);
     }
 
-    public function retroceder(Proyecto $proyecto): RedirectResponse
+    /**
+     * Moves fase_actual back one step, no gate. Same dual redirect/JSON
+     * shape as aprobar() above, for the same reason (Kanban drag one
+     * column back, or the "Reabrir fase de Control" button when cerrado).
+     */
+    public function retroceder(Request $request, Proyecto $proyecto): RedirectResponse|JsonResponse
     {
         $fase = $proyecto->fase_actual;
         $anterior = $fase->anterior();
 
         if ($anterior === null) {
-            return back()->withErrors(['fase' => 'El proyecto ya está en la primera fase.']);
+            $mensaje = 'El proyecto ya está en la primera fase.';
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $mensaje], 422)
+                : back()->withErrors(['fase' => $mensaje]);
         }
 
         $registroAnterior = $this->registroFase($proyecto, $anterior);
@@ -158,7 +193,18 @@ class ProyectoFaseController extends Controller
         $proyecto->fase_actual = $anterior;
         $proyecto->save();
 
-        return redirect()->route('admin.desarrollo.show', $proyecto)->with('status', 'El proyecto retrocedió a la fase anterior.');
+        $mensaje = 'El proyecto retrocedió a la fase anterior.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'fase_actual' => $proyecto->fase_actual->value,
+                'estado' => $proyecto->estado->value,
+                'porcentaje_avance' => $proyecto->porcentaje_avance,
+                'message' => $mensaje,
+            ]);
+        }
+
+        return redirect()->route('admin.desarrollo.show', $proyecto)->with('status', $mensaje);
     }
 
     /** Finds (or lazily creates) the phase record for $fase, keyed off its dedicated model/table. */

@@ -19,9 +19,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'seo', 'label' => 'Módulo SEO', 'module' => 'seo'],
             ['name' => 'keywords', 'label' => 'Keywords', 'module' => 'keywords'],
             ['name' => 'ads', 'label' => 'Módulo Ads', 'module' => 'ads'],
+            ['name' => 'reportes', 'label' => 'Reportes', 'module' => 'reportes'],
             ['name' => 'desarrollo', 'label' => 'Desarrollo', 'module' => 'desarrollo'],
             ['name' => 'finanzas', 'label' => 'Finanzas', 'module' => 'finanzas'],
             ['name' => 'archivos', 'label' => 'Archivos', 'module' => 'archivos'],
+            ['name' => 'usuarios', 'label' => 'Usuarios', 'module' => 'usuarios'],
             ['name' => 'integraciones', 'label' => 'Integraciones', 'module' => 'integraciones'],
             ['name' => 'roles', 'label' => 'Roles y Permisos', 'module' => 'roles'],
         ];

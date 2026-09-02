@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Enums\TipoServicio;
+
 /**
  * Human-readable Spanish labels for the various categorical DB columns
  * (tipo, plataforma, objetivo, ...) that aren't full status enums with
@@ -9,8 +11,21 @@ namespace App\Support;
  */
 class Labels
 {
-    public static function servicioTipo(string $tipo): string
+    /** Up to 2 uppercase initials from a display name — shared by the sidebar and header avatar. */
+    public static function initials(?string $name): string
     {
+        return collect(explode(' ', trim($name ?? '') ?: 'Usuario'))
+            ->filter()
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->take(2)
+            ->join('');
+    }
+
+    /** Accepts either the raw column value or the TipoServicio enum the Servicio model casts it to. */
+    public static function servicioTipo(string|TipoServicio $tipo): string
+    {
+        $tipo = $tipo instanceof TipoServicio ? $tipo->value : $tipo;
+
         return [
             'seo' => 'SEO',
             'google_ads' => 'Google Ads',
@@ -18,6 +33,7 @@ class Labels
             'tiktok_ads' => 'TikTok Ads',
             'rediseno' => 'Rediseño',
             'software' => 'Software',
+            'automatizacion' => 'Automatización',
         ][$tipo] ?? ucfirst($tipo);
     }
 
@@ -86,8 +102,19 @@ class Labels
             'propuesta' => 'Propuesta',
             'diseno' => 'Diseño',
             'reporte' => 'Reporte',
+            'datos' => 'Datos',
+            'entregable' => 'Entregable',
             'otro' => 'Otro',
         ][$tipo] ?? ucfirst($tipo);
+    }
+
+    public static function estadoCliente(string $estado): string
+    {
+        return [
+            'activo' => 'Activo',
+            'pausado' => 'Pausado',
+            'cancelado' => 'Cancelado',
+        ][$estado] ?? ucfirst($estado);
     }
 
     public static function formaPago(?string $forma): string
@@ -161,6 +188,37 @@ class Labels
         ][$fase] ?? ucfirst($fase);
     }
 
+    public static function faseAutomatizacion(string $fase): string
+    {
+        return [
+            'diagnostico' => 'Diagnóstico',
+            'diseno_flujo' => 'Diseño de Flujo',
+            'implementacion' => 'Implementación',
+            'reporte' => 'Reporte y Análisis',
+            'cerrada' => 'Cerrada',
+        ][$fase] ?? ucfirst($fase);
+    }
+
+    public static function tipoFlujoAutomatizacion(string $tipo): string
+    {
+        return [
+            'whatsapp' => 'WhatsApp',
+            'crm' => 'CRM',
+            'email' => 'Email',
+            'notificaciones' => 'Notificaciones',
+            'otro' => 'Otro',
+        ][$tipo] ?? ucfirst($tipo);
+    }
+
+    public static function complejidadFlujoAutomatizacion(string $complejidad): string
+    {
+        return [
+            'basico' => 'Básico',
+            'intermedio' => 'Intermedio',
+            'avanzado' => 'Avanzado',
+        ][$complejidad] ?? ucfirst($complejidad);
+    }
+
     public static function tipoOptimizacion(string $tipo): string
     {
         return [
@@ -180,6 +238,49 @@ class Labels
             'llamada' => 'Llamada',
             'compra' => 'Compra',
         ][$tipo] ?? ucfirst($tipo);
+    }
+
+    public static function areaUsuario(?string $area): string
+    {
+        return [
+            'direccion' => 'Dirección',
+            'seo' => 'SEO',
+            'ads' => 'Ads',
+            'social' => 'Social',
+            'desarrollo' => 'Desarrollo',
+            'administracion' => 'Administración',
+            'externo' => 'Externo',
+        ][$area] ?? ($area ? ucfirst($area) : '—');
+    }
+
+    public static function estadoReporte(?string $estado): string
+    {
+        return [
+            'borrador' => 'Borrador',
+            'listo' => 'Listo',
+            'entregado' => 'Entregado',
+        ][$estado] ?? ($estado ? ucfirst($estado) : '—');
+    }
+
+    public static function severidadHallazgo(?string $severidad): string
+    {
+        return [
+            'critico' => 'Crítico',
+            'alto' => 'Alto',
+            'medio' => 'Medio',
+            'informativo' => 'Informativo',
+        ][$severidad] ?? ($severidad ? ucfirst($severidad) : '—');
+    }
+
+    /** P0 bloqueante, P1 alto retorno, P2 mejora acumulativa, P3 exploratorio. */
+    public static function prioridadAccion(?string $prioridad): string
+    {
+        return [
+            'p0' => 'P0 — Bloqueante',
+            'p1' => 'P1 — Alta',
+            'p2' => 'P2 — Media',
+            'p3' => 'P3 — Baja',
+        ][$prioridad] ?? ($prioridad ? mb_strtoupper($prioridad) : '—');
     }
 
     /** Ícono + color por tipo de conversión — usado en la tarjeta del tablero de embudo. */

@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\AdsKeywordColumnaController;
 use App\Http\Controllers\Admin\AdsMetricaController;
 use App\Http\Controllers\Admin\AdsOptimizacionController;
 use App\Http\Controllers\Admin\ArchivosController;
+use App\Http\Controllers\Admin\AutomatizacionController;
+use App\Http\Controllers\Admin\AutomatizacionFaseController;
+use App\Http\Controllers\Admin\AutomatizacionFlujoController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
@@ -21,12 +24,19 @@ use App\Http\Controllers\Admin\DesarrolloController;
 use App\Http\Controllers\Admin\DocumentosController;
 use App\Http\Controllers\Admin\FinanzasController;
 use App\Http\Controllers\Admin\IntegracionesController;
+use App\Http\Controllers\Admin\KeywordImportController;
+use App\Http\Controllers\Admin\KeywordListasController;
 use App\Http\Controllers\Admin\KeywordsController;
 use App\Http\Controllers\Admin\ProyectoFaseController;
 use App\Http\Controllers\Admin\QaController;
+use App\Http\Controllers\Admin\ReporteGeneracionController;
+use App\Http\Controllers\Admin\ReporteSeccionController;
+use App\Http\Controllers\Admin\ReportesController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SeoBacklinkController;
+use App\Http\Controllers\Admin\SeoMetricaMensualController;
 use App\Http\Controllers\Admin\SeoContenidoController;
+use App\Http\Controllers\Admin\SeoOnPageAccionController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\SeoFaseController;
 use App\Http\Controllers\Admin\SeoPosicionController;
@@ -107,6 +117,7 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/exportar', [DashboardController::class, 'exportarReporte'])->name('dashboard.exportar');
 
     Route::prefix('blog')->name('blog.')->group(function () {
         Route::get('/', [AdminBlogController::class, 'index'])->name('index');
@@ -120,9 +131,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::prefix('clientes')->name('clientes.')->group(function () {
         Route::get('/', [ClientesController::class, 'index'])->name('index');
-        Route::get('/nuevo', [ClientesController::class, 'create'])->name('create');
         Route::post('/', [ClientesController::class, 'store'])->name('store');
-        Route::get('/{cliente}/editar', [ClientesController::class, 'edit'])->name('edit');
         Route::put('/{cliente}', [ClientesController::class, 'update'])->name('update');
         Route::delete('/{cliente}', [ClientesController::class, 'destroy'])->name('destroy');
 
@@ -145,19 +154,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::prefix('servicios')->name('servicios.')->group(function () {
         Route::get('/', [ServiciosController::class, 'index'])->name('index');
-        Route::get('/nuevo', [ServiciosController::class, 'create'])->name('create');
         Route::post('/', [ServiciosController::class, 'store'])->name('store');
-        Route::get('/{servicio}/editar', [ServiciosController::class, 'edit'])->name('edit');
         Route::put('/{servicio}', [ServiciosController::class, 'update'])->name('update');
         Route::delete('/{servicio}', [ServiciosController::class, 'destroy'])->name('destroy');
-        Route::get('/{servicio}', [ServiciosController::class, 'show'])->name('show');
     });
 
     Route::prefix('seo')->name('seo.')->group(function () {
         Route::get('/', [SeoController::class, 'index'])->name('index');
-        Route::get('/nueva', [SeoController::class, 'create'])->name('create');
         Route::post('/', [SeoController::class, 'store'])->name('store');
-        Route::get('/{campana}/editar', [SeoController::class, 'edit'])->name('edit');
         Route::put('/{campana}', [SeoController::class, 'update'])->name('update');
         Route::delete('/{campana}', [SeoController::class, 'destroy'])->name('destroy');
 
@@ -178,16 +182,52 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::put('/contenido/{contenido}', [SeoContenidoController::class, 'update'])->name('contenido.update');
         Route::delete('/contenido/{contenido}', [SeoContenidoController::class, 'destroy'])->name('contenido.destroy');
 
+        Route::post('/{campana}/onpage', [SeoOnPageAccionController::class, 'store'])->name('onpage.store');
+        Route::put('/onpage/{accion}', [SeoOnPageAccionController::class, 'update'])->name('onpage.update');
+        Route::delete('/onpage/{accion}', [SeoOnPageAccionController::class, 'destroy'])->name('onpage.destroy');
+
+        Route::post('/{campana}/metricas-mensuales', [SeoMetricaMensualController::class, 'store'])->name('metricas-mensuales.store');
+        Route::put('/metricas-mensuales/{metrica}', [SeoMetricaMensualController::class, 'update'])->name('metricas-mensuales.update');
+        Route::delete('/metricas-mensuales/{metrica}', [SeoMetricaMensualController::class, 'destroy'])->name('metricas-mensuales.destroy');
+
         Route::get('/{campana}', [SeoController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('automatizaciones')->name('automatizaciones.')->group(function () {
+        Route::get('/', [AutomatizacionController::class, 'index'])->name('index');
+        Route::get('/nueva', [AutomatizacionController::class, 'create'])->name('create');
+        Route::post('/', [AutomatizacionController::class, 'store'])->name('store');
+        Route::get('/{proyecto}/editar', [AutomatizacionController::class, 'edit'])->name('edit');
+        Route::put('/{proyecto}', [AutomatizacionController::class, 'update'])->name('update');
+        Route::delete('/{proyecto}', [AutomatizacionController::class, 'destroy'])->name('destroy');
+
+        Route::post('/{proyecto}/fase/guardar', [AutomatizacionFaseController::class, 'guardar'])->name('fase.guardar');
+        Route::post('/{proyecto}/fase/aprobar', [AutomatizacionFaseController::class, 'aprobar'])->name('fase.aprobar');
+        Route::post('/{proyecto}/fase/retroceder', [AutomatizacionFaseController::class, 'retroceder'])->name('fase.retroceder');
+        Route::post('/{proyecto}/fase/nuevo-ciclo', [AutomatizacionFaseController::class, 'nuevoCiclo'])->name('fase.nuevo-ciclo');
+        Route::post('/{proyecto}/fase/cerrar', [AutomatizacionFaseController::class, 'cerrar'])->name('fase.cerrar');
+        Route::post('/{proyecto}/fase/pausar', [AutomatizacionFaseController::class, 'pausar'])->name('fase.pausar');
+
+        Route::post('/{proyecto}/flujos', [AutomatizacionFlujoController::class, 'store'])->name('flujos.store');
+        Route::put('/flujos/{flujo}', [AutomatizacionFlujoController::class, 'update'])->name('flujos.update');
+        Route::delete('/flujos/{flujo}', [AutomatizacionFlujoController::class, 'destroy'])->name('flujos.destroy');
+
+        Route::get('/{proyecto}', [AutomatizacionController::class, 'show'])->name('show');
     });
 
     Route::prefix('keywords')->name('keywords.')->group(function () {
         Route::get('/', [KeywordsController::class, 'index'])->name('index');
-        Route::get('/nueva', [KeywordsController::class, 'create'])->name('create');
         Route::post('/', [KeywordsController::class, 'store'])->name('store');
-        Route::get('/{keyword}/editar', [KeywordsController::class, 'edit'])->name('edit');
         Route::put('/{keyword}', [KeywordsController::class, 'update'])->name('update');
         Route::delete('/{keyword}', [KeywordsController::class, 'destroy'])->name('destroy');
+
+        Route::prefix('listas')->name('listas.')->group(function () {
+            Route::post('/', [KeywordListasController::class, 'store'])->name('store');
+            Route::put('/{lista}', [KeywordListasController::class, 'update'])->name('update');
+            Route::delete('/{lista}', [KeywordListasController::class, 'destroy'])->name('destroy');
+            Route::post('/bulk-descartar', [KeywordListasController::class, 'bulkDescartar'])->name('bulk-descartar');
+            Route::post('/{lista}/importar', [KeywordImportController::class, 'store'])->name('importar');
+        });
     });
 
     Route::prefix('conversiones')->name('conversiones.')->group(function () {
@@ -200,11 +240,39 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/columnas/{columna}', [AdsConversionColumnaController::class, 'destroy'])->name('columnas.destroy');
     });
 
+    Route::prefix('reportes')->name('reportes.')->group(function () {
+        Route::get('/', [ReportesController::class, 'index'])->name('index');
+        Route::post('/', [ReportesController::class, 'store'])->name('store');
+
+        // Las secciones cuelgan del reporte y el grupo va con scopeBindings():
+        // así Laravel resuelve {seccion} DENTRO del {reporte} de la URL y
+        // devuelve 404 si no le pertenece. Colgando de la raíz, el binding
+        // global dejaba que cualquier usuario autenticado reescribiera o
+        // borrara la sección de un reporte de otro cliente con solo saber el id.
+        Route::scopeBindings()->group(function () {
+            Route::post('/{reporte}/secciones', [ReporteSeccionController::class, 'store'])->name('secciones.store');
+            Route::post('/{reporte}/secciones/reordenar', [ReporteSeccionController::class, 'reordenar'])->name('secciones.reordenar');
+            Route::put('/{reporte}/secciones/{seccion}', [ReporteSeccionController::class, 'update'])->name('secciones.update');
+            Route::delete('/{reporte}/secciones/{seccion}', [ReporteSeccionController::class, 'destroy'])->name('secciones.destroy');
+            Route::post('/{reporte}/secciones/{seccion}/pegar', [ReporteSeccionController::class, 'pegar'])->name('secciones.pegar');
+        });
+
+        Route::get('/{reporte}/preview', [ReporteGeneracionController::class, 'preview'])->name('preview');
+        Route::post('/{reporte}/pdf', [ReporteGeneracionController::class, 'pdf'])->name('pdf');
+        Route::post('/{reporte}/xlsx', [ReporteGeneracionController::class, 'xlsx'])->name('xlsx');
+
+        Route::put('/{reporte}', [ReportesController::class, 'update'])->name('update');
+        Route::delete('/{reporte}', [ReportesController::class, 'destroy'])->name('destroy');
+
+        // Al final del grupo, como en seo/desarrollo: el comodín {reporte} se
+        // traga cualquier ruta literal declarada después (/secciones/... se
+        // resolvería como un reporte llamado "secciones").
+        Route::get('/{reporte}', [ReportesController::class, 'show'])->name('show');
+    });
+
     Route::prefix('ads')->name('ads.')->group(function () {
         Route::get('/', [AdsController::class, 'index'])->name('index');
-        Route::get('/nueva', [AdsController::class, 'create'])->name('create');
         Route::post('/', [AdsController::class, 'store'])->name('store');
-        Route::get('/{campana}/editar', [AdsController::class, 'edit'])->name('edit');
         Route::put('/{campana}', [AdsController::class, 'update'])->name('update');
         Route::delete('/{campana}', [AdsController::class, 'destroy'])->name('destroy');
 
@@ -244,9 +312,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::prefix('desarrollo')->name('desarrollo.')->group(function () {
         Route::get('/', [DesarrolloController::class, 'index'])->name('index');
-        Route::get('/nuevo', [DesarrolloController::class, 'create'])->name('create');
         Route::post('/', [DesarrolloController::class, 'store'])->name('store');
-        Route::get('/{proyecto}/editar', [DesarrolloController::class, 'edit'])->name('edit');
         Route::put('/{proyecto}', [DesarrolloController::class, 'update'])->name('update');
         Route::delete('/{proyecto}', [DesarrolloController::class, 'destroy'])->name('destroy');
 
@@ -258,6 +324,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
         Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
 
+        Route::get('/bugs', [BugController::class, 'index'])->name('bugs.index');
         Route::post('/{proyecto}/bugs', [BugController::class, 'store'])->name('bugs.store');
         Route::put('/bugs/{bug}', [BugController::class, 'update'])->name('bugs.update');
         Route::delete('/bugs/{bug}', [BugController::class, 'destroy'])->name('bugs.destroy');
@@ -274,15 +341,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::prefix('finanzas')->name('finanzas.')->group(function () {
         Route::get('/', [FinanzasController::class, 'index'])->name('index');
-        Route::get('/nuevo', [FinanzasController::class, 'create'])->name('create');
+        Route::get('/exportar', [FinanzasController::class, 'exportar'])->name('exportar');
         Route::post('/', [FinanzasController::class, 'store'])->name('store');
-        Route::get('/{finanza}/editar', [FinanzasController::class, 'edit'])->name('edit');
         Route::put('/{finanza}', [FinanzasController::class, 'update'])->name('update');
         Route::delete('/{finanza}', [FinanzasController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('archivos')->name('archivos.')->group(function () {
         Route::get('/', [ArchivosController::class, 'index'])->name('index');
+        Route::post('/', [ArchivosController::class, 'store'])->name('store');
         Route::get('/contratos/nuevo', [DocumentosController::class, 'createContrato'])->name('contratos.create');
         Route::post('/contratos/vista-previa', [DocumentosController::class, 'previewContrato'])->name('contratos.preview');
         Route::post('/contratos', [DocumentosController::class, 'storeContrato'])->name('contratos.store');
@@ -297,17 +364,16 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RolesController::class, 'index'])->name('index');
-        Route::get('/nuevo', [RolesController::class, 'create'])->name('create');
         Route::post('/', [RolesController::class, 'store'])->name('store');
-        Route::get('/{role}/editar', [RolesController::class, 'edit'])->name('edit');
         Route::put('/{role}', [RolesController::class, 'update'])->name('update');
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
-        Route::get('/nuevo', [UsersController::class, 'create'])->name('create');
+        Route::get('/', [UsersController::class, 'index'])->name('index');
         Route::post('/', [UsersController::class, 'store'])->name('store');
         Route::put('/{user}', [UsersController::class, 'update'])->name('update');
+        Route::post('/{user}/desactivar', [UsersController::class, 'deactivate'])->name('deactivate');
     });
 });
 

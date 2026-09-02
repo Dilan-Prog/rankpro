@@ -6,9 +6,8 @@ use App\Enums\FaseSeo;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\SeoCampana;
-use App\Models\SeoFaseAuditoria;
-use App\Models\Servicio;
-use Illuminate\Http\RedirectResponse;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -17,75 +16,33 @@ class SeoController extends Controller
 {
     public function index(): View
     {
-        $campanas = SeoCampana::with('cliente', 'faseAuditoria', 'reporteActual')
-            ->orderBy('created_at', 'desc')
+        $clientes = Cliente::whereHas('servicios', fn ($q) => $q->where('tipo', 'seo'))
+            ->with([
+                'servicios' => fn ($q) => $q->where('tipo', 'seo'),
+                'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
+            ])
+            ->orderBy('nombre')
             ->get()
-            ->map(fn (SeoCampana $c) => [
-                'id' => $c->id,
-                'nombre' => $c->nombre,
-                'cliente' => $c->cliente?->nombre ?? '—',
-                'url_sitio' => $c->url_sitio,
-                'estado' => $c->estado->value,
-                'fase_actual' => $c->fase_actual->value,
-                'ciclo_actual' => $c->ciclo_actual,
-                'seo_score' => $c->faseAuditoria?->seo_score,
-                'trafico_actual' => $c->reporteActual?->trafico_actual,
-            ]);
+            ->map(fn (Cliente $cliente) => $this->toClienteRow($cliente));
+
+        $scores = $clientes->pluck('seo_score')->filter(fn ($s) => $s !== null);
+        $trafico = $clientes->pluck('trafico_actual')->filter(fn ($t) => $t !== null);
 
         return view('admin.seo.index', [
             'pageTitle' => 'Módulo SEO',
-            'campanas' => $campanas,
-            'enProceso' => $campanas->count(),
+            'clientes' => $clientes,
+            'clientesConSeo' => $clientes->count(),
+            'campanasActivas' => $clientes->where('estado', 'activa')->count(),
+            'scorePromedio' => $scores->isNotEmpty() ? round($scores->avg(), 1) : null,
+            'traficoTotal' => (int) $trafico->sum(),
         ]);
     }
 
-    public function create(): View
+    public function store(Request $request): JsonResponse
     {
-        return view('admin.seo.create', [
-            'pageTitle' => 'Nueva Campaña SEO',
-            'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
-            'checklistAuditoria' => SeoFaseAuditoria::CHECKLIST,
-        ]);
-    }
+        $data = $this->validated($request, forUpdate: false);
 
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'url_sitio' => ['nullable', 'string', 'max:255'],
-            'fecha_inicio' => ['nullable', 'date'],
-
-            'seo_score' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'velocidad_mobile' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'velocidad_desktop' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'lcp_mobile' => ['nullable', 'numeric', 'min:0'],
-            'fid_mobile' => ['nullable', 'numeric', 'min:0'],
-            'cls_mobile' => ['nullable', 'numeric', 'min:0'],
-            'lcp_desktop' => ['nullable', 'numeric', 'min:0'],
-            'fid_desktop' => ['nullable', 'numeric', 'min:0'],
-            'cls_desktop' => ['nullable', 'numeric', 'min:0'],
-            'errores_tecnicos' => ['nullable', 'integer', 'min:0'],
-            'indexacion_ok' => ['nullable', 'boolean'],
-            'sitemap_ok' => ['nullable', 'boolean'],
-            'robots_ok' => ['nullable', 'boolean'],
-            'errores_404' => ['nullable', 'integer', 'min:0'],
-            'redirecciones_incorrectas' => ['nullable', 'integer', 'min:0'],
-            'duplicidad_contenido' => ['nullable', 'boolean'],
-            'canonical_ok' => ['nullable', 'boolean'],
-            'schema_ok' => ['nullable', 'boolean'],
-            'herramienta' => ['nullable', 'in:semrush,ahrefs,screaming_frog,google_search_console,otro'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-
-            'checklist' => ['nullable', 'array'],
-            'checklist.*' => ['boolean'],
-        ]);
-
-        $checklistKeys = array_keys(SeoFaseAuditoria::CHECKLIST);
-        $checklist = collect($checklistKeys)->mapWithKeys(fn ($key) => [$key => (bool) ($data['checklist'][$key] ?? false)])->all();
-
-        $campana = DB::transaction(function () use ($request, $data, $checklist) {
+        $campana = DB::transaction(function () use ($data) {
             $campana = SeoCampana::create([
                 'cliente_id' => $data['cliente_id'],
                 'servicio_id' => $data['servicio_id'],
@@ -97,31 +54,11 @@ class SeoController extends Controller
                 'fecha_inicio' => $data['fecha_inicio'] ?? null,
             ]);
 
-            $campana->auditorias()->create([
-                'ciclo' => 1,
-                'seo_score' => $data['seo_score'] ?? null,
-                'velocidad_mobile' => $data['velocidad_mobile'] ?? null,
-                'velocidad_desktop' => $data['velocidad_desktop'] ?? null,
-                'lcp_mobile' => $data['lcp_mobile'] ?? null,
-                'fid_mobile' => $data['fid_mobile'] ?? null,
-                'cls_mobile' => $data['cls_mobile'] ?? null,
-                'lcp_desktop' => $data['lcp_desktop'] ?? null,
-                'fid_desktop' => $data['fid_desktop'] ?? null,
-                'cls_desktop' => $data['cls_desktop'] ?? null,
-                'errores_tecnicos' => $data['errores_tecnicos'] ?? null,
-                'indexacion_ok' => $request->boolean('indexacion_ok'),
-                'sitemap_ok' => $request->boolean('sitemap_ok'),
-                'robots_ok' => $request->boolean('robots_ok'),
-                'errores_404' => $data['errores_404'] ?? null,
-                'redirecciones_incorrectas' => $data['redirecciones_incorrectas'] ?? null,
-                'duplicidad_contenido' => $request->boolean('duplicidad_contenido'),
-                'canonical_ok' => $request->boolean('canonical_ok'),
-                'schema_ok' => $request->boolean('schema_ok'),
-                'herramienta' => $data['herramienta'] ?? null,
-                'notas' => $data['notas'] ?? null,
-                'checklist' => $checklist,
-            ]);
-
+            // Empty ciclo-1 rows for every phase — identical shape to what
+            // SeoFaseController::nuevoCiclo() creates for a fresh cycle, so a
+            // brand-new campaign lands on the same "empty phase panel, fill
+            // it in from here" starting point as any later cycle does.
+            $campana->auditorias()->create(['ciclo' => 1, 'checklist' => []]);
             $campana->estrategias()->create(['ciclo' => 1, 'checklist' => []]);
             $campana->ejecuciones()->create(['ciclo' => 1, 'checklist' => []]);
             $campana->reportes()->create(['ciclo' => 1, 'checklist' => []]);
@@ -129,7 +66,7 @@ class SeoController extends Controller
             return $campana;
         });
 
-        return redirect()->route('admin.seo.show', $campana)->with('status', "Campaña \"{$campana->nombre}\" creada. Comienza en fase de Auditoría.");
+        return response()->json(['show_url' => route('admin.seo.show', $campana->id)], 201);
     }
 
     public function show(SeoCampana $campana): View
@@ -146,42 +83,91 @@ class SeoController extends Controller
                 'reportes',
                 'posiciones',
                 'backlinks',
-                'contenido'
+                'contenido',
+                'onPageAcciones.responsable',
+                'metricasMensuales'
             ),
+            'usuarios' => User::where('is_active', true)->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 
-    public function edit(SeoCampana $campana): View
+    public function update(Request $request, SeoCampana $campana): JsonResponse
     {
-        return view('admin.seo.edit', [
-            'pageTitle' => 'Editar Campaña SEO',
-            'campana' => $campana,
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
-            'serviciosSeo' => Servicio::where('cliente_id', $campana->cliente_id)->where('tipo', 'seo')->get(),
-        ]);
+        $data = $this->validated($request, forUpdate: true);
+
+        $campana->update($data);
+
+        $cliente = Cliente::with([
+            'servicios' => fn ($q) => $q->where('tipo', 'seo'),
+            'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
+        ])->findOrFail($campana->cliente_id);
+
+        return response()->json($this->toClienteRow($cliente));
     }
 
-    public function update(Request $request, SeoCampana $campana): RedirectResponse
+    public function destroy(SeoCampana $campana): JsonResponse
     {
-        $data = $request->validate([
+        $clienteId = $campana->cliente_id;
+        $campana->delete();
+
+        $cliente = Cliente::with([
+            'servicios' => fn ($q) => $q->where('tipo', 'seo'),
+            'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
+        ])->findOrFail($clienteId);
+
+        return response()->json($this->toClienteRow($cliente));
+    }
+
+    /**
+     * Shared shape for index()'s client-picker cards and store()/update()/
+     * destroy()'s AJAX responses. One row per client-with-an-SEO-servicio;
+     * 'campana_*' fields are null when that client has no SeoCampana yet
+     * (renders as an empty "Crear campaña" card). When a client has more
+     * than one campaign (e.g. a closed one plus a fresh restart), only the
+     * most recently created is surfaced here — older campaigns stay in the
+     * database but aren't reachable from this picker, mirroring the
+     * reference's one-entity-per-client model.
+     */
+    private function toClienteRow(Cliente $cliente): array
+    {
+        $campana = $cliente->seoCampanas->first();
+
+        return [
+            'cliente_id' => $cliente->id,
+            'cliente' => $cliente->nombre,
+            'contacto' => $cliente->contacto_nombre,
+            'mrr' => (float) $cliente->servicios->sum('precio_mensual'),
+            'servicios_seo' => $cliente->servicios->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre])->values(),
+            'campana_id' => $campana?->id,
+            'campana_nombre' => $campana?->nombre,
+            'url_sitio' => $campana?->url_sitio,
+            'servicio_id' => $campana?->servicio_id,
+            'estado' => $campana?->estado->value,
+            'fase_actual' => $campana?->fase_actual->value,
+            'ciclo_actual' => $campana?->ciclo_actual,
+            'fecha_inicio' => $campana?->fecha_inicio?->format('Y-m-d'),
+            'notas' => $campana?->notas,
+            'seo_score' => $campana?->faseAuditoria?->seo_score,
+            'trafico_actual' => $campana?->reporteActual?->trafico_actual,
+            'show_url' => $campana ? route('admin.seo.show', $campana->id) : null,
+        ];
+    }
+
+    private function validated(Request $request, bool $forUpdate): array
+    {
+        $rules = [
             'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
             'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
             'nombre' => ['required', 'string', 'max:255'],
             'url_sitio' => ['nullable', 'string', 'max:255'],
-            'estado' => ['required', 'in:activa,pausada,finalizada'],
             'fecha_inicio' => ['nullable', 'date'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        ];
 
-        $campana->update($data);
+        if ($forUpdate) {
+            $rules['estado'] = ['required', 'in:activa,pausada,finalizada'];
+            $rules['notas'] = ['nullable', 'string', 'max:2000'];
+        }
 
-        return redirect()->route('admin.seo.show', $campana)->with('status', "Campaña \"{$campana->nombre}\" actualizada correctamente.");
-    }
-
-    public function destroy(SeoCampana $campana): RedirectResponse
-    {
-        $campana->delete();
-
-        return redirect()->route('admin.seo.index')->with('status', 'Campaña SEO eliminada.');
+        return $request->validate($rules);
     }
 }

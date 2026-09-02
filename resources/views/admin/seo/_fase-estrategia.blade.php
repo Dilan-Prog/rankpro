@@ -16,7 +16,7 @@
         <h3 class="fase-form__section-title">Keywords objetivo</h3>
         @if ($keywordsBanco->isEmpty())
             <p class="field__hint" style="margin-bottom: var(--space-4);">
-                Este cliente no tiene keywords en el <a href="{{ route('admin.keywords.create') }}" style="text-decoration:underline;">banco de keywords</a> todavía.
+                Este cliente no tiene keywords en el <a href="{{ route('admin.keywords.index') }}" style="text-decoration:underline;">banco de keywords</a> todavía.
             </p>
         @else
             <div class="field" style="margin-bottom: var(--space-5);">
