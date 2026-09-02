@@ -1,23 +1,32 @@
 {{--
     Parcial SEO: datos estructurados (JSON-LD, schema.org) globales del sitio.
-    Se emite un solo @graph con ProfessionalService + WebSite (+ WebPage en la portada).
+    Se emite un solo @graph con Organization + WebSite (+ WebPage en la portada).
 
     Las páginas individuales pueden inyectar su propio schema con:
         @push('jsonld')
             <script type="application/ld+json">...</script>
         @endpush
 
-    POR QUÉ ProfessionalService Y NO LocalBusiness CON DIRECCIÓN:
-    ProfessionalService es un subtipo de LocalBusiness que NO exige PostalAddress,
-    así que da entidad de negocio sin fingir una presencia local que no existe.
-    Decisión de negocio tomada: el SEO local se salta el año 1. Mientras no haya
-    dirección física verificable NO se añaden address, geo, openingHours ni
-    Google Business Profile. Tampoco se emiten aggregateRating ni review: no hay
-    reseñas reales y publicarlas inventadas es motivo de acción manual de Google.
+    POR QUÉ Organization Y NO ProfessionalService:
+    Aquí hubo ProfessionalService bajo la premisa de que "no exige PostalAddress".
+    Es falsa: Google trata CUALQUIER subtipo de LocalBusiness -ProfessionalService
+    incluido- como negocio local y exige address. Search Console lo reportó como
+    "Local Business / Se requiere un valor para el campo address" (sep-2026).
 
-    Cuando exista dirección verificable, añadir aquí "address" (PostalAddress con
-    streetAddress, addressLocality, addressRegion, postalCode, addressCountry "MX"),
-    "geo" y "openingHoursSpecification" sobre este mismo nodo, conservando el @id.
+    Como no hay dirección física verificable, el tipo correcto es Organization,
+    que no la exige. No se pierde nada: la decisión de negocio ya era saltarse el
+    SEO local el año 1, así que la elegibilidad para el pack local no aplicaba.
+
+    Por eso tampoco se emiten aggregateRating ni review: no hay reseñas reales y
+    publicarlas inventadas es motivo de acción manual de Google.
+
+    CUANDO HAYA DIRECCIÓN VERIFICABLE, para recuperar el SEO local hay que hacer
+    las dos cosas a la vez, no una:
+      1. Volver el @type a ProfessionalService (o LocalBusiness).
+      2. Añadir "address" (PostalAddress con streetAddress, addressLocality,
+         addressRegion, postalCode, addressCountry "MX"), y opcionalmente "geo",
+         "openingHoursSpecification", "priceRange" y "currenciesAccepted", que
+         son propiedades de LocalBusiness y por eso se retiraron de aquí.
 
     El @id (url('/#organization')) NO cambia aunque cambie el @type: contacto,
     nosotros y las landings de servicio ya lo referencian.
@@ -53,7 +62,7 @@
     ));
 
     $seoBusiness = [
-        '@type' => 'ProfessionalService',
+        '@type' => 'Organization',
         '@id' => $seoOrganizationId,
         'name' => 'RankPro',
         'alternateName' => 'RankPro Solutions',
@@ -68,8 +77,6 @@
         'slogan' => 'Marketing digital medible para empresas en México.',
         'email' => 'administracion@rankprosolutions.com.mx',
         'telephone' => '+527341036410',
-        'priceRange' => '$$',
-        'currenciesAccepted' => 'MXN',
         'knowsAbout' => $seoKnowsAbout,
         'areaServed' => [
             '@type' => 'Country',
