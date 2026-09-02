@@ -23,9 +23,22 @@
     <table class="w">
         <tr>
             <td>
-                {{-- Ruta de disco, no URL: dompdf no tiene habilitado el acceso
-                     remoto y resolverla por HTTP dejaria la portada sin logo. --}}
-                <img class="cv-logo" src="{{ public_path('images/rankpro-logo-black.png') }}" alt="RankPro Solutions">
+                {{-- El logo va incrustado en base64 y no por ruta ni por URL.
+                     Una ruta de disco la lee dompdf pero no el navegador, y la
+                     vista previa mostraba la imagen rota; una URL la lee el
+                     navegador pero no dompdf, que no tiene habilitado el acceso
+                     remoto. El base64 vale para ambos y son 11 KB. --}}
+                @php
+                    $rutaLogo = public_path('images/rankpro-logo-black.png');
+                    $logo = is_file($rutaLogo)
+                        ? 'data:image/png;base64,'.base64_encode(file_get_contents($rutaLogo))
+                        : null;
+                @endphp
+                @if ($logo)
+                    <img class="cv-logo" src="{{ $logo }}" alt="RankPro Solutions">
+                @else
+                    <div class="cv-brand">RANKPRO</div>
+                @endif
                 <div class="cv-brand-sub">RANKPROSOLUTIONS.COM.MX</div>
             </td>
             <td class="cv-folio">@if ($reporte['numero']) FOLIO {{ mb_strtoupper($reporte['numero']) }} @endif</td>

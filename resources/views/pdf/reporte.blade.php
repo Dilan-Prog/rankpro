@@ -57,6 +57,8 @@
         /* El logo va a 180px de ancho; el original es 493x160, asi que dompdf lo
            escala a 58px de alto manteniendo la proporcion. */
         .cv-logo { width: 180px; height: 58px; }
+        /* Respaldo tipográfico si el fichero del logo no está en el servidor. */
+        .cv-brand { font-size: 13px; font-weight: bold; letter-spacing: 3px; color: #1A2332; }
         .cv-brand-sub { font-size: 10px; letter-spacing: 2.2px; color: #64748B; padding-top: 6px; }
         .cv-folio { text-align: right; font-size: 10px; letter-spacing: 1.6px; color: #64748B; }
         .cv-kicker { font-size: 12px; font-weight: bold; letter-spacing: 3.4px; color: #0F9D6E; }
