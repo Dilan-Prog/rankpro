@@ -60,7 +60,7 @@
                     </p>
                     <div class="page-hero__actions">
                         <a href="{{ route('contacto') }}" class="btn btn-primary">Solicitar diagnóstico</a>
-                        <a href="https://wa.me/527341036410" class="btn btn-outline" rel="noopener">Escribir por WhatsApp</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-outline" rel="noopener nofollow">Escribir por WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -140,7 +140,7 @@
                     </p>
                     <div class="page-cta__actions">
                         <a href="{{ route('contacto') }}" class="btn btn-light">Ir a contacto</a>
-                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener">WhatsApp +52 734 103 6410</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener nofollow">WhatsApp +52 734 103 6410</a>
                     </div>
                 </div>
             </div>

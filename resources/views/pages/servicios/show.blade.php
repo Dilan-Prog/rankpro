@@ -38,7 +38,7 @@
 
                     <div class="page-hero__actions">
                         <a href="{{ route('contacto') }}" class="btn btn-primary">Solicitar propuesta</a>
-                        <a href="https://wa.me/527341036410" class="btn btn-outline" rel="noopener">WhatsApp directo</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-outline" rel="noopener nofollow">WhatsApp directo</a>
                     </div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                     </p>
                     <div class="page-cta__actions">
                         <a href="{{ route('contacto') }}" class="btn btn-light">Solicitar propuesta</a>
-                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener">WhatsApp +52 734 103 6410</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener nofollow">WhatsApp +52 734 103 6410</a>
                     </div>
                 </div>
             </div>

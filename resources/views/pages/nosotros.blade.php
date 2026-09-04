@@ -238,7 +238,7 @@
                     </p>
                     <div class="page-cta__actions">
                         <a href="{{ route('contacto') }}" class="btn btn-light">Ir a contacto</a>
-                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener">WhatsApp +52 734 103 6410</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-ghost" rel="noopener nofollow">WhatsApp +52 734 103 6410</a>
                     </div>
                 </div>
             </div>

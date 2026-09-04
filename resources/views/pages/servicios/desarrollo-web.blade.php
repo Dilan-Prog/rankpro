@@ -137,7 +137,7 @@
 
                         <div class="cv-actions">
                             <a href="#configurador" class="cv-btn cv-btn--primary">Armar mi cotización {!! $ico($icoFlecha, 17) !!}</a>
-                            <a href="{{ $waGenerico }}" class="cv-btn cv-btn--ghost" target="_blank" rel="noopener">{!! $ico($icoWa, 16) !!} Tengo un caso raro</a>
+                            <a href="{{ $waGenerico }}" class="cv-btn cv-btn--ghost" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 16) !!} Tengo un caso raro</a>
                         </div>
 
                         <div class="cv-trust">
@@ -288,7 +288,7 @@
                             </ul>
 
                             {{-- El CTA arrastra la configuracion al mensaje de WhatsApp. --}}
-                            <a href="{{ $waGenerico }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.75rem;" target="_blank" rel="noopener" data-cta-wa>Recibir propuesta detallada {!! $ico($icoFlecha, 16) !!}</a>
+                            <a href="{{ $waGenerico }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.75rem;" target="_blank" rel="noopener nofollow" data-cta-wa>Recibir propuesta detallada {!! $ico($icoFlecha, 16) !!}</a>
                             <p class="cv-resumen__pie">Te llega con alcance, cronograma y supuestos. Sin compromiso. También puedes escribirnos a <a href="mailto:{{ $correo }}" style="color:var(--brand-light);">{{ $correo }}</a>.</p>
                         </div>
                     </div>
@@ -436,7 +436,7 @@
 
     <div class="cv-bar">
         <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
-        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener">{!! $ico($icoWa, 18) !!}</a>
+        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
         <a href="#configurador" class="cv-btn cv-btn--primary cv-bar__cta">Cotizar ahora {!! $ico($icoFlecha, 16) !!}</a>
     </div>
 

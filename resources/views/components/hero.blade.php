@@ -92,7 +92,7 @@
                     Agendar Consultoría Gratuita
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                 </button>
-                <a href="https://wa.me/527341036410" class="btn btn-outline">
+                <a href="https://wa.me/527341036410" rel="noopener nofollow" class="btn btn-outline">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
                     Escríbenos por WhatsApp
                 </a>

@@ -75,7 +75,7 @@
     <div class="container site-footer__bottom">
         <p class="site-footer__copy">© {{ date('Y') }} RankPro. Todos los derechos reservados.</p>
         <div class="site-footer__bottom-links">
-            <a href="https://wa.me/527341036410" target="_blank" rel="noopener">WhatsApp</a>
+            <a href="https://wa.me/527341036410" target="_blank" rel="noopener nofollow">WhatsApp</a>
             <a href="mailto:administracion@rankprosolutions.com.mx">administracion@rankprosolutions.com.mx</a>
         </div>
     </div>

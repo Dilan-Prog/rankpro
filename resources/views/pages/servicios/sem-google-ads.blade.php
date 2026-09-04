@@ -116,7 +116,7 @@
                         </ul>
 
                         <div class="cv-actions">
-                            <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener">Auditar mi cuenta gratis {!! $ico($icoFlecha, 17) !!}</a>
+                            <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Auditar mi cuenta gratis {!! $ico($icoFlecha, 17) !!}</a>
                             <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría de Google Ads') }}" class="cv-btn cv-btn--ghost">Escribir por correo</a>
                         </div>
 
@@ -150,7 +150,7 @@
                             </ul>
 
                             <div class="cv-card__actions">
-                                <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--wa cv-btn--block" target="_blank" rel="noopener">{!! $ico($icoWa, 16) !!} Pedirla por WhatsApp</a>
+                                <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--wa cv-btn--block" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 16) !!} Pedirla por WhatsApp</a>
                                 <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría de Google Ads') }}" class="cv-btn cv-btn--ghost cv-btn--block">{{ $correo }}</a>
                             </div>
 
@@ -212,7 +212,7 @@
                             <div class="cv-calc__total-label">Ingreso proyectado mensual</div>
                             <div class="cv-calc__total-value" data-out-ingresos>$624,000</div>
                         </div>
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white cv-btn--block" style="margin-top:1.5rem;" target="_blank" rel="noopener">Validar estos números con un experto {!! $ico($icoFlecha, 16) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white cv-btn--block" style="margin-top:1.5rem;" target="_blank" rel="noopener nofollow">Validar estos números con un experto {!! $ico($icoFlecha, 16) !!}</a>
                         <p class="cv-calc__disclaimer">Estimación referencial. En la auditoría ajustamos el modelo con el CPC real de tu industria.</p>
                     </div>
                 </div>
@@ -228,7 +228,7 @@
                         <h2 class="cv-calc__title">Qué recibes en la auditoría gratuita</h2>
                         <p class="cv-card__text">Un documento de 12 a 18 páginas con hallazgos concretos de tu cuenta y el plan de los primeros 90 días. Te lo presentamos en una llamada de 30 minutos.</p>
                         <div class="cv-actions">
-                            <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener">Reclamar mi auditoría {!! $ico($icoFlecha, 16) !!}</a>
+                            <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Reclamar mi auditoría {!! $ico($icoFlecha, 16) !!}</a>
                         </div>
                     </div>
                     <ul class="cv-numbered">
@@ -313,7 +313,7 @@
 
                         <p class="cv-chart__note">En promedio, <strong>66% del presupuesto</strong> se va en clics que jamás iban a comprar. Ese es el primer dinero que recuperamos.</p>
 
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.25rem;" target="_blank" rel="noopener">Ver mi desperdicio real {!! $ico($icoFlecha, 15) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.25rem;" target="_blank" rel="noopener nofollow">Ver mi desperdicio real {!! $ico($icoFlecha, 15) !!}</a>
                     </div>
                 </div>
             </div>
@@ -354,7 +354,7 @@
                 </div>
 
                 <div class="cv-actions" style="justify-content:center;margin-top:2.5rem;">
-                    <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener">Resolver mi caso con un estratega {!! $ico($icoFlecha, 17) !!}</a>
+                    <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Resolver mi caso con un estratega {!! $ico($icoFlecha, 17) !!}</a>
                 </div>
             </div>
         </section>
@@ -366,7 +366,7 @@
                     <h2>Tu competencia ya está pujando por tus clientes</h2>
                     <p>Cada auditoría toma 48 horas y no te compromete a nada.</p>
                     <div class="cv-actions">
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener">Reclamar mi auditoría gratis {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Reclamar mi auditoría gratis {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
                 </div>
@@ -416,8 +416,8 @@
     {{-- Barra fija de contacto en móvil. --}}
     <div class="cv-bar">
         <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
-        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener">{!! $ico($icoWa, 18) !!}</a>
-        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener">Auditoría gratis {!! $ico($icoFlecha, 16) !!}</a>
+        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
+        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener nofollow">Auditoría gratis {!! $ico($icoFlecha, 16) !!}</a>
     </div>
 
     @include('components.footer')

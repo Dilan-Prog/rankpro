@@ -93,7 +93,7 @@
 
                         <ul class="contact-channels" style="margin-top: 1.5rem;">
                             <li>
-                                <a class="contact-channel" href="https://wa.me/527341036410" rel="noopener">
+                                <a class="contact-channel" href="https://wa.me/527341036410" rel="noopener nofollow">
                                     <span class="contact-channel__icon" aria-hidden="true">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
                                     </span>
@@ -160,7 +160,7 @@
                     <h2>Escríbenos ahora por WhatsApp</h2>
                     <p>Es el canal más rápido y el que sí está funcionando el día de hoy.</p>
                     <div class="page-cta__actions">
-                        <a href="https://wa.me/527341036410" class="btn btn-light" rel="noopener">WhatsApp +52 734 103 6410</a>
+                        <a href="https://wa.me/527341036410" class="btn btn-light" rel="noopener nofollow">WhatsApp +52 734 103 6410</a>
                         <a href="mailto:administracion@rankprosolutions.com.mx" class="btn btn-ghost">Enviar correo</a>
                     </div>
                 </div>

@@ -120,7 +120,7 @@
                     <p class="cv-lead cv-lead--light">Auditoría técnica, de contenido y de enlaces sobre tu sitio real. Primero el diagnóstico, después decides si trabajamos juntos.</p>
 
                     <div class="cv-actions">
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener">Pedir mi auditoría {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Pedir mi auditoría {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría SEO') }}" class="cv-btn cv-btn--outline-light">Escribir por correo</a>
                     </div>
 
@@ -266,7 +266,7 @@
                     <h2>Empieza por saber dónde estás parado</h2>
                     <p>Buena parte de los sitios que revisamos pierde tráfico por contenido y problemas técnicos, no por presupuesto.</p>
                     <div class="cv-actions">
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
                 </div>
@@ -315,8 +315,8 @@
 
     <div class="cv-bar">
         <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
-        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener">{!! $ico($icoWa, 18) !!}</a>
-        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener">Auditoría SEO {!! $ico($icoFlecha, 16) !!}</a>
+        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
+        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener nofollow">Auditoría SEO {!! $ico($icoFlecha, 16) !!}</a>
     </div>
 
     @include('components.footer')

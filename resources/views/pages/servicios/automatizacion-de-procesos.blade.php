@@ -118,7 +118,7 @@
                         <p class="cv-auto-lead">Conectamos marketing, ventas y operaciones con automatización inteligente: los leads llegan solos al CRM, tu equipo se entera al instante y los reportes se arman sin nadie.</p>
 
                         <div class="cv-actions">
-                            <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--acento" target="_blank" rel="noopener">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
+                            <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--acento" target="_blank" rel="noopener nofollow">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
                             <a href="#solucion" class="cv-btn cv-btn--linea">Ver qué automatizamos</a>
                         </div>
 
@@ -272,7 +272,7 @@
                         <h2>¿Listo para automatizar? Hablemos.</h2>
                         <p>En 45 minutos te decimos qué se puede automatizar hoy, qué ahorro representa y qué no vale la pena tocar todavía.</p>
                     </div>
-                    <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--oscuro" target="_blank" rel="noopener">Agendar diagnóstico {!! $ico($icoFlecha, 17) !!}</a>
+                    <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--oscuro" target="_blank" rel="noopener nofollow">Agendar diagnóstico {!! $ico($icoFlecha, 17) !!}</a>
                 </div>
             </div>
         </section>
@@ -317,7 +317,7 @@
                     {{-- El prototipo tenia aqui un formulario que no enviaba nada.
                          Estos canales si funcionan hoy. --}}
                     <div class="cv-auto-canales">
-                        <a class="cv-auto-canal" href="{{ $waDiagnostico }}" target="_blank" rel="noopener">
+                        <a class="cv-auto-canal" href="{{ $waDiagnostico }}" target="_blank" rel="noopener nofollow">
                             <span class="cv-auto-canal__icon cv-auto-canal__icon--wa">{!! $ico($icoWa, 20) !!}</span>
                             <span>
                                 <span class="cv-auto-canal__label">Escríbenos por WhatsApp</span>
@@ -383,8 +383,8 @@
 
     <div class="cv-bar">
         <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
-        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener">{!! $ico($icoWa, 18) !!}</a>
-        <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--acento cv-bar__cta" target="_blank" rel="noopener">Diagnóstico gratis {!! $ico($icoFlecha, 16) !!}</a>
+        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
+        <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--acento cv-bar__cta" target="_blank" rel="noopener nofollow">Diagnóstico gratis {!! $ico($icoFlecha, 16) !!}</a>
     </div>
 
     @include('components.footer')
