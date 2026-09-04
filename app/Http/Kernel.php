@@ -16,6 +16,9 @@ class Kernel extends HttpKernel
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
+        // Debe ir antes que nada: si la peticion llega por /public/ se corta
+        // aqui con un 301 y no se ejecuta el resto del ciclo.
+        \App\Http\Middleware\RedirigirDesdePublic::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
