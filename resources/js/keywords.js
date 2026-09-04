@@ -14,6 +14,11 @@
  * This mirrors the exact sum/count formulas in KeywordLista::toRow() (nulls
  * treated as 0 in the sum, divided by the full row count) so the numbers
  * never drift from what a fresh page load would show.
+ *
+ * El histórico de posiciones (sección "Histórico de posiciones" más abajo) es
+ * la excepción a ese patrón: su unidad es la RONDA (una lista + una fecha, con
+ * todas sus keywords), la matriz se pide bajo demanda al servidor en vez de
+ * derivarse de las filas, y el POST sí devuelve la lista entera ya recalculada.
  */
 (function () {
   "use strict";
@@ -208,15 +213,22 @@
       <div style="padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-3);">
           <div class="record-modal__section-label" style="margin:0;">Keywords de esta lista</div>
-          <div style="display:flex; gap:var(--space-2);">
+          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+            <button type="button" class="btn btn--secondary btn--sm" data-toggle-historial="${l.id}" aria-expanded="false" aria-controls="listaHistorial${l.id}">
+              <i class="fa-solid fa-clock-rotate-left"></i> Historial
+            </button>
             <button type="button" class="btn btn--secondary btn--sm" data-open-import-modal="${l.id}">
               <i class="fa-solid fa-file-import"></i> Importar keywords
+            </button>
+            <button type="button" class="btn btn--secondary btn--sm" data-open-medicion-modal="${l.id}">
+              <i class="fa-solid fa-crosshairs"></i> Nueva medición
             </button>
             <button type="button" class="btn btn--primary btn--sm" data-add-keyword-to-lista="${l.id}" data-add-keyword-cliente="${l.cliente_id}">
               <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
             </button>
           </div>
         </div>
+        <div class="kw-hist" id="listaHistorial${l.id}" data-historial-panel="${l.id}" hidden></div>
         <div class="empty-state" data-lista-keywords-empty="${l.id}" style="padding: var(--space-6);" ${hasKeywords ? "hidden" : ""}>
           <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords.</p>
         </div>
@@ -957,6 +969,512 @@
     });
   }
 
+  // ---------- Histórico de posiciones ----------
+  //
+  // La unidad de captura es la RONDA (una lista + una fecha), no la keyword
+  // suelta: el equipo mide toda la lista de una sentada una vez al mes y anota,
+  // keyword a keyword, qué se hizo para moverla. Esa nota es el motivo de la
+  // pantalla, no un campo secundario.
+  //
+  // La matriz se pide bajo demanda (initHistorial) y se cachea por lista en
+  // historialCache; openHistorialIds recuerda qué paneles estaban abiertos para
+  // poder repintarlos después de que upsertListaRow() reconstruya el sub-row.
+
+  const historialCache = new Map();
+  const openHistorialIds = new Set();
+
+  function medicionTemplates() {
+    const table = document.querySelector("[data-listas-table]");
+    return {
+      index: table?.dataset.medicionesIndexTemplate || "",
+      store: table?.dataset.medicionesStoreTemplate || "",
+      update: table?.dataset.medicionUpdateTemplate || "",
+    };
+  }
+
+  /** GET helper — request() always serializes a body, which a GET can't carry. */
+  function getJson(url) {
+    return fetch(url, { method: "GET", headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken } }).then((res) => {
+      if (!res.ok) {
+        const err = new Error("request_failed");
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    });
+  }
+
+  /** dd/mm/yyyy a partir de un "YYYY-MM-DD" plano — sin new Date(), que desplazaría la fecha por zona horaria. */
+  function fmtFecha(iso) {
+    const parts = String(iso || "").split("-");
+    if (parts.length !== 3) return String(iso || "");
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+
+  function todayIso() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  function listaFromRow(listaId) {
+    const row = document.querySelector(`[data-lista-row][data-lista-id="${listaId}"]`);
+    return row ? JSON.parse(row.dataset.lista) : null;
+  }
+
+  /**
+   * Variación respecto de la ronda anterior con el mismo criterio que el resto
+   * del módulo: mejorar es SUBIR en el ranking, o sea un número más bajo, así
+   * que delta = anterior - actual y un delta positivo se pinta en verde.
+   */
+  function deltaHtml(delta) {
+    if (delta == null || delta === 0) return "";
+    const color = delta > 0 ? "var(--text-success)" : "var(--text-danger)";
+    const icon = delta > 0 ? "fa-arrow-up" : "fa-arrow-down";
+    return ` <span class="kw-hist__delta" style="color:${color};"><i class="fa-solid ${icon}"></i>${Math.abs(delta)}</span>`;
+  }
+
+  function historialCellHtml(medicion, delta) {
+    // Tres estados bien distintos: sin medición (esa keyword no se midió esa
+    // ronda), medida sin posición (posicion === null: "no rankea / sin dato"),
+    // y medida con posición.
+    if (!medicion) {
+      return `<td class="kw-hist__cell kw-hist__cell--vacia" data-historial-cell data-medicion-estado="sin-medicion" title="No se midió en esta ronda"></td>`;
+    }
+
+    const tieneNota = !!(medicion.nota && String(medicion.nota).trim());
+    const posLabel = medicion.posicion != null ? `#${medicion.posicion}` : '<span class="kw-hist__nd">n/d</span>';
+    const notaIndicador = tieneNota
+      ? '<i class="fa-solid fa-note-sticky kw-hist__nota-dot" aria-hidden="true"></i><span class="u-visually-hidden">Con nota</span>'
+      : "";
+    const titulo = tieneNota ? String(medicion.nota) : "Sin nota — pulsa para escribir qué se hizo";
+
+    return `
+      <td class="kw-hist__cell ${medicion.posicion == null ? "kw-hist__cell--nd" : ""} ${tieneNota ? "kw-hist__cell--con-nota" : ""}"
+          data-historial-cell data-medicion-estado="${medicion.posicion == null ? "sin-posicion" : "medida"}" data-medicion-id="${medicion.id}">
+        <button type="button" class="kw-hist__btn" data-open-medicion-nota="${medicion.id}" title="${escapeHtml(titulo)}">
+          <span class="kw-hist__pos u-mono">${posLabel}${deltaHtml(delta)}</span>
+          ${notaIndicador}
+        </button>
+      </td>`;
+  }
+
+  function historialHtml(listaId, data) {
+    const fechas = data.fechas || [];
+    const keywords = data.keywords || [];
+
+    if (!fechas.length) {
+      return `
+        <div class="kw-hist__empty">
+          <p class="kw-hist__empty-text">Esta lista aún no tiene mediciones registradas.</p>
+          <button type="button" class="btn btn--primary btn--sm" data-open-medicion-modal="${listaId}">
+            <i class="fa-solid fa-crosshairs"></i> Registrar la primera medición
+          </button>
+        </div>`;
+    }
+
+    const headHtml = fechas.map((f) => `<th class="kw-hist__col-fecha" data-historial-fecha="${escapeHtml(f)}">${fmtFecha(f)}</th>`).join("");
+
+    const bodyHtml = keywords
+      .map((row) => {
+        const mediciones = row.mediciones || {};
+        let previa = null;
+        const celdas = fechas
+          .map((f) => {
+            const m = mediciones[f] || null;
+            let delta = null;
+            if (m && m.posicion != null) {
+              if (previa != null) delta = previa - m.posicion;
+              previa = m.posicion;
+            }
+            return historialCellHtml(m, delta);
+          })
+          .join("");
+
+        return `
+          <tr data-historial-row data-keyword-id="${row.keyword_id}">
+            <th scope="row" class="kw-hist__keyword">
+              <span class="kw-hist__keyword-text">${escapeHtml(row.keyword)}</span>
+              ${row.url_asignada ? `<span class="kw-hist__keyword-url u-mono">${escapeHtml(row.url_asignada)}</span>` : ""}
+            </th>
+            ${celdas}
+          </tr>`;
+      })
+      .join("");
+
+    // Fila de cierre: la posición media de la lista por ronda, que es la cifra
+    // que enseña el avance de un vistazo.
+    const promedios = data.promedios || {};
+    let previaProm = null;
+    const promHtml = fechas
+      .map((f) => {
+        const valor = promedios[f];
+        let delta = null;
+        if (valor != null) {
+          if (previaProm != null) delta = Math.round((previaProm - valor) * 10) / 10;
+          previaProm = valor;
+        }
+        const label = valor != null ? `#${valor}` : '<span class="kw-hist__nd">n/d</span>';
+        return `<td class="kw-hist__cell kw-hist__cell--promedio" data-historial-promedio="${escapeHtml(f)}"><span class="kw-hist__pos u-mono">${label}${deltaHtml(delta)}</span></td>`;
+      })
+      .join("");
+
+    return `
+      <div class="kw-hist__scroll" data-historial-scroll>
+        <table class="table kw-hist__table" data-historial-table="${listaId}">
+          <thead>
+            <tr><th class="kw-hist__keyword kw-hist__keyword--head">Palabra clave</th>${headHtml}</tr>
+          </thead>
+          <tbody>${bodyHtml}</tbody>
+          <tfoot>
+            <tr data-historial-promedios>
+              <th scope="row" class="kw-hist__keyword kw-hist__keyword--prom">Posición media de la lista</th>
+              ${promHtml}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="kw-hist__leyenda">
+        <span class="kw-hist__leyenda-item"><i class="fa-solid fa-note-sticky kw-hist__nota-dot"></i> tiene nota de qué se hizo — pulsa la celda para leerla o editarla</span>
+        <span class="kw-hist__leyenda-item"><span class="kw-hist__leyenda-vacia"></span> no se midió esa ronda</span>
+        <span class="kw-hist__leyenda-item"><span class="kw-hist__nd">n/d</span> medida, pero no rankea</span>
+      </p>`;
+  }
+
+  function renderHistorial(listaId) {
+    const panel = document.querySelector(`[data-historial-panel="${listaId}"]`);
+    const data = historialCache.get(String(listaId));
+    if (!panel || !data) return;
+    panel.innerHTML = historialHtml(listaId, data);
+  }
+
+  function loadHistorial(listaId, force) {
+    const key = String(listaId);
+    const panel = document.querySelector(`[data-historial-panel="${key}"]`);
+    if (!panel) return Promise.resolve();
+
+    if (!force && historialCache.has(key)) {
+      renderHistorial(key);
+      return Promise.resolve();
+    }
+
+    panel.innerHTML = '<p class="kw-hist__loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando histórico…</p>';
+
+    return getJson(medicionTemplates().index.replace("__ID__", key))
+      .then((data) => {
+        historialCache.set(key, data);
+        renderHistorial(key);
+      })
+      .catch(() => {
+        panel.innerHTML = '<p class="kw-hist__loading">No se pudo cargar el histórico.</p>';
+        toast("No se pudo cargar el histórico de posiciones.", "error");
+      });
+  }
+
+  function setHistorialOpen(listaId, open) {
+    const key = String(listaId);
+    const panel = document.querySelector(`[data-historial-panel="${key}"]`);
+    const btn = document.querySelector(`[data-toggle-historial="${key}"]`);
+    if (!panel) return;
+    panel.hidden = !open;
+    btn?.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      openHistorialIds.add(key);
+      loadHistorial(key, false);
+    } else {
+      openHistorialIds.delete(key);
+    }
+  }
+
+  function initHistorial() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-toggle-historial]");
+      if (!btn) return;
+      const id = btn.dataset.toggleHistorial;
+      const panel = document.querySelector(`[data-historial-panel="${id}"]`);
+      setHistorialOpen(id, panel ? panel.hidden : true);
+    });
+  }
+
+  // ---------- Nueva medición (la ronda) ----------
+
+  function medicionRowElement(k) {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-medicion-row", "");
+    tr.dataset.keywordId = String(k.id);
+    tr.innerHTML = `
+      <td class="kw-medicion__kw-cell">
+        <div class="kw-medicion__kw"></div>
+        <div class="kw-medicion__url u-mono"></div>
+      </td>
+      <td>
+        <input class="input kw-medicion__pos-input" type="number" min="1" max="1000" inputmode="numeric" placeholder="—"
+               data-medicion-posicion aria-label="Posición">
+      </td>
+      <td>
+        <textarea class="textarea kw-medicion__nota-input" rows="2" data-medicion-nota aria-label="Qué se hizo"
+                  placeholder="Ej. Reescritura del title y del H1, tres enlaces internos desde el blog."></textarea>
+        <input type="hidden" data-medicion-url>
+      </td>`;
+    tr.querySelector(".kw-medicion__kw").textContent = k.keyword;
+    tr.querySelector(".kw-medicion__url").textContent = k.url_asignada || "— sin URL asignada —";
+    tr.querySelector("[data-medicion-url]").value = k.url_asignada || "";
+    return tr;
+  }
+
+  function renderMedicionRows(l) {
+    const tbody = document.querySelector("[data-medicion-rows]");
+    const table = document.querySelector("[data-medicion-table]");
+    const empty = document.querySelector("[data-medicion-empty]");
+    const submit = document.getElementById("medicionFormSubmit");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+    const keywords = (l && l.keywords) || [];
+    keywords.forEach((k) => tbody.appendChild(medicionRowElement(k)));
+
+    if (table) table.hidden = keywords.length === 0;
+    if (empty) empty.hidden = keywords.length > 0;
+    if (submit) submit.disabled = keywords.length === 0;
+  }
+
+  /**
+   * Precarga los valores de la ronda de esa fecha si ya existe: reenviar la
+   * misma fecha corrige la ronda en vez de duplicarla, así que corregir tiene
+   * que ser tan natural como crear.
+   */
+  function prefillMedicionRonda(listaId, fecha) {
+    const estado = document.querySelector("[data-medicion-estado]");
+    const rows = Array.from(document.querySelectorAll("[data-medicion-row]"));
+    const aplicar = (data) => {
+      const existentes = new Map();
+      (data.keywords || []).forEach((row) => {
+        const m = (row.mediciones || {})[fecha];
+        if (m) existentes.set(String(row.keyword_id), m);
+      });
+
+      rows.forEach((tr) => {
+        const m = existentes.get(tr.dataset.keywordId);
+        const pos = tr.querySelector("[data-medicion-posicion]");
+        const nota = tr.querySelector("[data-medicion-nota]");
+        const url = tr.querySelector("[data-medicion-url]");
+        pos.value = m && m.posicion != null ? String(m.posicion) : "";
+        nota.value = m && m.nota ? m.nota : "";
+        if (m && m.url) url.value = m.url;
+      });
+
+      if (estado) {
+        estado.textContent = existentes.size
+          ? `Ya hay una ronda registrada el ${fmtFecha(fecha)} (${existentes.size} keyword(s)). Al guardar la corriges, no se duplica.`
+          : "Ronda nueva: aún no hay mediciones con esta fecha.";
+        estado.dataset.medicionEstadoTipo = existentes.size ? "correccion" : "nueva";
+      }
+    };
+
+    const key = String(listaId);
+    if (historialCache.has(key)) {
+      aplicar(historialCache.get(key));
+      return Promise.resolve();
+    }
+    return getJson(medicionTemplates().index.replace("__ID__", key))
+      .then((data) => {
+        historialCache.set(key, data);
+        aplicar(data);
+      })
+      .catch(() => {
+        if (estado) estado.textContent = "";
+      });
+  }
+
+  function openMedicionModal(listaId) {
+    const form = document.getElementById("medicionForm");
+    const fechaInput = document.querySelector("[data-medicion-fecha]");
+    const l = listaFromRow(listaId);
+    if (!form || !fechaInput || !l) return;
+
+    clearFieldErrors(form);
+    form.dataset.listaId = String(listaId);
+    document.getElementById("medicionFormTitle").textContent = `Nueva medición — ${l.nombre}`;
+    fechaInput.value = todayIso();
+    renderMedicionRows(l);
+    prefillMedicionRonda(listaId, fechaInput.value);
+
+    window.AgencyOS.openModal("medicionFormModal");
+  }
+
+  function initOpenMedicionModalButtons() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-open-medicion-modal]");
+      if (!btn) return;
+      openMedicionModal(btn.dataset.openMedicionModal);
+    });
+  }
+
+  function initMedicionFechaChange() {
+    const fechaInput = document.querySelector("[data-medicion-fecha]");
+    const form = document.getElementById("medicionForm");
+    if (!fechaInput || !form) return;
+    fechaInput.addEventListener("change", () => {
+      if (!fechaInput.value || !form.dataset.listaId) return;
+      prefillMedicionRonda(form.dataset.listaId, fechaInput.value);
+    });
+  }
+
+  function collectMediciones() {
+    return Array.from(document.querySelectorAll("[data-medicion-row]")).map((tr) => {
+      const pos = tr.querySelector("[data-medicion-posicion]").value.trim();
+      const nota = tr.querySelector("[data-medicion-nota]").value.trim();
+      const url = tr.querySelector("[data-medicion-url]").value.trim();
+      return {
+        keyword_id: Number(tr.dataset.keywordId),
+        posicion: pos === "" ? null : Number(pos),
+        url: url === "" ? null : url,
+        nota: nota === "" ? null : nota,
+      };
+    });
+  }
+
+  /** Vuelve a pintar la fila de la lista con el toRow() recién devuelto y repinta el histórico si estaba abierto (upsertListaRow reconstruye el sub-row entero). */
+  function afterRondaGuardada(listaId, lista) {
+    const key = String(listaId);
+    const estabaAbierto = openHistorialIds.has(key);
+    historialCache.delete(key);
+
+    if (lista) {
+      upsertListaRow(lista);
+      const subrow = document.querySelector(`[data-lista-subrow="${lista.id}"]`);
+      if (subrow) subrow.hidden = false;
+      document.querySelector(`[data-lista-row][data-lista-id="${lista.id}"] .lista-toggle__chevron`)?.classList.add("is-open");
+    }
+
+    if (estabaAbierto) setHistorialOpen(key, true);
+  }
+
+  function initMedicionForm() {
+    const form = document.getElementById("medicionForm");
+    if (!form) return;
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const listaId = form.dataset.listaId;
+      const fecha = document.querySelector("[data-medicion-fecha]").value;
+      const mediciones = collectMediciones();
+      if (!listaId || !mediciones.length) return;
+
+      const submit = document.getElementById("medicionFormSubmit");
+      submit.disabled = true;
+      clearFieldErrors(form);
+
+      request(medicionTemplates().store.replace("__ID__", listaId), "POST", { fecha, mediciones })
+        .then((data) => {
+          submit.disabled = false;
+          afterRondaGuardada(listaId, data.lista);
+          window.AgencyOS.closeModal("medicionFormModal");
+          toast(`Medición del ${fmtFecha(data.fecha)} guardada.`, "success");
+        })
+        .catch((err) => {
+          submit.disabled = false;
+          if (err.message === "validation_failed") {
+            renderFieldErrors(form, err.data.errors || {});
+            toast(err.data.message || "Revisa los campos marcados.", "error");
+          } else {
+            toast("No se pudo guardar la medición.", "error");
+          }
+        });
+    });
+  }
+
+  // ---------- Corrección de una medición suelta (la nota) ----------
+
+  /** Busca una medición dentro del histórico cacheado por su id, devolviendo también su keyword y fecha para la cabecera del modal. */
+  function findMedicionEnCache(medicionId) {
+    let hallada = null;
+    historialCache.forEach((data, listaId) => {
+      if (hallada) return;
+      (data.keywords || []).forEach((row) => {
+        if (hallada) return;
+        Object.keys(row.mediciones || {}).forEach((fecha) => {
+          const m = row.mediciones[fecha];
+          if (!hallada && m && String(m.id) === String(medicionId)) {
+            hallada = { medicion: m, keyword: row.keyword, fecha, listaId };
+          }
+        });
+      });
+    });
+    return hallada;
+  }
+
+  function openMedicionNotaModal(medicionId) {
+    const form = document.getElementById("medicionNotaForm");
+    const found = findMedicionEnCache(medicionId);
+    if (!form || !found) return;
+
+    clearFieldErrors(form);
+    form.dataset.medicionId = String(medicionId);
+    form.dataset.listaId = String(found.listaId);
+
+    document.getElementById("medicionNotaTitle").textContent = found.keyword;
+    document.getElementById("medicionNotaSubtitle").textContent = `Medición del ${fmtFecha(found.fecha)}`;
+    document.getElementById("kmn_posicion").value = found.medicion.posicion != null ? String(found.medicion.posicion) : "";
+    document.getElementById("kmn_url").value = found.medicion.url || "";
+    document.getElementById("kmn_nota").value = found.medicion.nota || "";
+    document.getElementById("medicionNotaAutor").textContent = found.medicion.registrado_por ? `Registrada por ${found.medicion.registrado_por}` : "";
+
+    window.AgencyOS.openModal("medicionNotaModal");
+  }
+
+  function initMedicionNota() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-open-medicion-nota]");
+      if (!btn) return;
+      openMedicionNotaModal(btn.dataset.openMedicionNota);
+    });
+
+    const form = document.getElementById("medicionNotaForm");
+    if (!form) return;
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const medicionId = form.dataset.medicionId;
+      const listaId = form.dataset.listaId;
+      if (!medicionId) return;
+
+      const pos = document.getElementById("kmn_posicion").value.trim();
+      const url = document.getElementById("kmn_url").value.trim();
+      const nota = document.getElementById("kmn_nota").value.trim();
+
+      const submit = document.getElementById("medicionNotaSubmit");
+      submit.disabled = true;
+      clearFieldErrors(form);
+
+      request(medicionTemplates().update.replace("__ID__", medicionId), "PUT", {
+        posicion: pos === "" ? null : Number(pos),
+        url: url === "" ? null : url,
+        nota: nota === "" ? null : nota,
+      })
+        .then((data) => {
+          submit.disabled = false;
+          window.AgencyOS.closeModal("medicionNotaModal");
+          toast("Medición actualizada.", "success");
+          // La fila del banco tambien cambia: corregir una medicion puede mover
+          // la posicion de la keyword y la media de la lista.
+          if (data && data.lista) upsertListaRow(data.lista);
+          // Recarga en vez de parchear la caché: el promedio de la ronda lo
+          // calcula el servidor y cambiaría con la posición corregida.
+          if (listaId) loadHistorial(listaId, true);
+        })
+        .catch((err) => {
+          submit.disabled = false;
+          if (err.message === "validation_failed") {
+            renderFieldErrors(form, err.data.errors || {});
+            toast("Revisa los campos marcados.", "error");
+          } else {
+            toast("No se pudo guardar la medición.", "error");
+          }
+        });
+    });
+  }
+
   document.addEventListener("shell:ready", () => {
     initFilters();
     initExpandCollapse();
@@ -972,5 +1490,10 @@
     initKeywordDelete();
     initOpenImportModalButtons();
     initImportForm();
+    initHistorial();
+    initOpenMedicionModalButtons();
+    initMedicionFechaChange();
+    initMedicionForm();
+    initMedicionNota();
   });
 })();

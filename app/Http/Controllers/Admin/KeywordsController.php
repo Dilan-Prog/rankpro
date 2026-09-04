@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\Keyword;
 use App\Models\KeywordLista;
+use App\Models\KeywordMedicion;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -39,7 +42,32 @@ class KeywordsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $keyword = Keyword::create($this->validated($request));
+        $data = $this->validated($request);
+        $posicion = $data['posicion_actual'] ?? null;
+        unset($data['posicion_actual'], $data['posicion_anterior']);
+
+        $keyword = DB::transaction(function () use ($data, $posicion) {
+            $keyword = Keyword::create($data);
+
+            // Una keyword que nace con posición nace con su primera medición:
+            // si sólo se escribiera la columna, esa posición quedaría fuera del
+            // histórico y el primer avance que se midiera no tendría contra qué
+            // compararse.
+            if ($posicion) {
+                KeywordMedicion::create([
+                    'keyword_id' => $keyword->id,
+                    'lista_id' => $keyword->lista_id,
+                    'fecha' => now()->toDateString(),
+                    'posicion' => $posicion,
+                    'url' => $keyword->url_asignada,
+                    'registrado_por' => Auth::id(),
+                ]);
+
+                $keyword->sincronizarPosiciones();
+            }
+
+            return $keyword;
+        });
 
         return response()->json($keyword->fresh(['cliente', 'lista'])->toRow(), 201);
     }
@@ -48,12 +76,39 @@ class KeywordsController extends Controller
     {
         $data = $this->validated($request, $keyword);
 
-        // posicion_anterior is server-only — only advanced when posicion_actual genuinely changed.
-        if (array_key_exists('posicion_actual', $data) && (int) ($data['posicion_actual'] ?? 0) !== (int) ($keyword->posicion_actual ?? 0)) {
-            $data['posicion_anterior'] = $keyword->posicion_actual;
-        }
+        // Editar la posición desde la ficha registra una medición con fecha de
+        // hoy en vez de escribir la columna a mano. `posicion_actual` y
+        // `posicion_anterior` pasaron a ser una caché de las dos últimas
+        // mediciones (ver Keyword::sincronizarPosiciones), así que tocarlas
+        // directamente dejaría la tabla del banco contando una cosa y el
+        // histórico otra.
+        $cambiaPosicion = array_key_exists('posicion_actual', $data)
+            && (int) ($data['posicion_actual'] ?? 0) !== (int) ($keyword->posicion_actual ?? 0);
 
-        $keyword->update($data);
+        $posicion = $data['posicion_actual'] ?? null;
+        unset($data['posicion_actual'], $data['posicion_anterior']);
+
+        DB::transaction(function () use ($keyword, $data, $cambiaPosicion, $posicion) {
+            $keyword->update($data);
+
+            if (! $cambiaPosicion) {
+                return;
+            }
+
+            KeywordMedicion::updateOrCreate(
+                ['keyword_id' => $keyword->id, 'fecha' => now()->toDateString()],
+                [
+                    'lista_id' => $keyword->lista_id,
+                    // El banco admitía 0 como "sin dato"; en el histórico eso es
+                    // null, que es lo que significa.
+                    'posicion' => $posicion ?: null,
+                    'url' => $keyword->url_asignada,
+                    'registrado_por' => Auth::id(),
+                ]
+            );
+
+            $keyword->sincronizarPosiciones();
+        });
 
         return response()->json($keyword->fresh(['cliente', 'lista'])->toRow());
     }

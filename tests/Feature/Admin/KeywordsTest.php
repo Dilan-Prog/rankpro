@@ -5,7 +5,9 @@ namespace Tests\Feature\Admin;
 use App\Models\Cliente;
 use App\Models\Keyword;
 use App\Models\KeywordLista;
+use App\Models\KeywordMedicion;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -193,11 +195,25 @@ class KeywordsTest extends TestCase
         ]);
     }
 
-    public function test_update_advances_posicion_anterior_only_when_posicion_actual_genuinely_changes(): void
+    /**
+     * `posicion_anterior` cambio de significado al aparecer el historico
+     * (keyword_mediciones): ya no es "el valor de antes de tu ultima edicion",
+     * sino "la posicion en la ronda de medicion anterior". Las dos columnas del
+     * banco son ahora una cache de las dos ultimas mediciones por fecha.
+     *
+     * Por eso dos ediciones el mismo dia NO producen delta: son correcciones de
+     * la misma medicion, no dos mediciones. Es el comportamiento que quiere un
+     * reporte mensual, donde "#5 (-5)" debe leerse "cinco puestos mejor que el
+     * mes pasado" y no "cinco puestos mejor que hace tres minutos".
+     */
+    public function test_posicion_anterior_comes_from_the_previous_measurement_round(): void
     {
         $user = User::factory()->create();
         $cliente = Cliente::factory()->create();
-        $keyword = Keyword::create([
+
+        Carbon::setTestNow('2026-07-15 10:00:00');
+
+        $crear = $this->actingAs($user)->postJson(route('admin.keywords.store'), [
             'cliente_id' => $cliente->id,
             'keyword' => 'keyword posicion',
             'tipo' => 'principal',
@@ -205,36 +221,64 @@ class KeywordsTest extends TestCase
             'posicion_actual' => 10,
         ]);
 
-        // First update: posicion_actual genuinely changes 10 -> 7.
-        $response = $this->actingAs($user)->putJson(route('admin.keywords.update', $keyword), [
+        $crear->assertCreated();
+        $keyword = Keyword::firstWhere('keyword', 'keyword posicion');
+
+        // Nacer con posicion crea ya su primera medicion: sin ella, el primer
+        // avance que se midiera no tendria contra que compararse.
+        $this->assertSame(10, $keyword->posicion_actual);
+        $this->assertNull($keyword->posicion_anterior);
+        $this->assertDatabaseHas('keyword_mediciones', [
+            'keyword_id' => $keyword->id,
+            'fecha' => '2026-07-15',
+            'posicion' => 10,
+        ]);
+
+        // Correccion el mismo dia: sigue siendo una sola medicion, sin delta.
+        $this->actingAs($user)->putJson(route('admin.keywords.update', $keyword), [
             'cliente_id' => $cliente->id,
             'keyword' => 'keyword posicion',
             'tipo' => 'principal',
             'estado' => 'en_uso',
-            'posicion_actual' => 7,
-        ]);
-
-        $response->assertOk();
+            'posicion_actual' => 9,
+        ])->assertOk();
 
         $fresh = $keyword->fresh();
-        $this->assertSame(7, $fresh->posicion_actual);
-        $this->assertSame(10, $fresh->posicion_anterior);
+        $this->assertSame(9, $fresh->posicion_actual);
+        $this->assertNull($fresh->posicion_anterior);
+        $this->assertSame(1, KeywordMedicion::where('keyword_id', $keyword->id)->count());
 
-        // Second update: posicion_actual sent again as 7 — no real change, so
-        // posicion_anterior must NOT be overwritten to 7.
-        $response2 = $this->actingAs($user)->putJson(route('admin.keywords.update', $keyword), [
+        // Ronda del mes siguiente: ahora si hay contra que comparar.
+        Carbon::setTestNow('2026-08-15 10:00:00');
+
+        $this->actingAs($user)->putJson(route('admin.keywords.update', $keyword), [
             'cliente_id' => $cliente->id,
             'keyword' => 'keyword posicion',
             'tipo' => 'principal',
             'estado' => 'en_uso',
-            'posicion_actual' => 7,
-        ]);
+            'posicion_actual' => 4,
+        ])->assertOk();
 
-        $response2->assertOk();
+        $siguiente = $keyword->fresh();
+        $this->assertSame(4, $siguiente->posicion_actual);
+        $this->assertSame(9, $siguiente->posicion_anterior);
+        $this->assertSame(2, KeywordMedicion::where('keyword_id', $keyword->id)->count());
 
-        $freshAgain = $keyword->fresh();
-        $this->assertSame(7, $freshAgain->posicion_actual);
-        $this->assertSame(10, $freshAgain->posicion_anterior);
+        // Reenviar la misma posicion no inventa una medicion nueva.
+        $this->actingAs($user)->putJson(route('admin.keywords.update', $keyword), [
+            'cliente_id' => $cliente->id,
+            'keyword' => 'keyword posicion',
+            'tipo' => 'principal',
+            'estado' => 'en_uso',
+            'posicion_actual' => 4,
+        ])->assertOk();
+
+        $igual = $keyword->fresh();
+        $this->assertSame(4, $igual->posicion_actual);
+        $this->assertSame(9, $igual->posicion_anterior);
+        $this->assertSame(2, KeywordMedicion::where('keyword_id', $keyword->id)->count());
+
+        Carbon::setTestNow();
     }
 
     // --- destroy ---------------------------------------------------------

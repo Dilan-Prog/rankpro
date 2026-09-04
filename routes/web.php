@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\DocumentosController;
 use App\Http\Controllers\Admin\FinanzasController;
 use App\Http\Controllers\Admin\IntegracionesController;
 use App\Http\Controllers\Admin\KeywordImportController;
+use App\Http\Controllers\Admin\KeywordMedicionController;
 use App\Http\Controllers\Admin\KeywordListasController;
 use App\Http\Controllers\Admin\KeywordsController;
 use App\Http\Controllers\Admin\ProyectoFaseController;
@@ -233,6 +234,13 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             Route::delete('/{lista}', [KeywordListasController::class, 'destroy'])->name('destroy');
             Route::post('/bulk-descartar', [KeywordListasController::class, 'bulkDescartar'])->name('bulk-descartar');
             Route::post('/{lista}/importar', [KeywordImportController::class, 'store'])->name('importar');
+
+            // Histórico de posiciones: la ronda mensual de la lista, y la
+            // corrección de una medición suelta.
+            Route::get('/{lista}/mediciones', [KeywordMedicionController::class, 'index'])->name('mediciones.index');
+            Route::post('/{lista}/mediciones', [KeywordMedicionController::class, 'store'])->name('mediciones.store');
+            Route::put('/mediciones/{medicion}', [KeywordMedicionController::class, 'update'])->name('mediciones.update');
+            Route::delete('/mediciones/{medicion}', [KeywordMedicionController::class, 'destroy'])->name('mediciones.destroy');
         });
     });
 

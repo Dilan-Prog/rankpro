@@ -6,6 +6,7 @@ use App\Enums\EstadoKeyword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Keyword extends Model
 {
@@ -54,6 +55,28 @@ class Keyword extends Model
     }
 
     /** Shared shape for admin.keywords index rows and the store()/update() AJAX responses. */
+    /** Histórico de posiciones, de la más reciente a la más antigua. */
+    public function mediciones(): HasMany
+    {
+        return $this->hasMany(KeywordMedicion::class, 'keyword_id')->orderByDesc('fecha');
+    }
+
+    /**
+     * Recalcula `posicion_actual` y `posicion_anterior` desde las dos últimas
+     * mediciones. Las dos columnas pasan a ser una caché derivada del histórico
+     * y no un dato propio: así la tabla del banco y el histórico no pueden
+     * contar cosas distintas.
+     */
+    public function sincronizarPosiciones(): void
+    {
+        $ultimas = $this->mediciones()->take(2)->get();
+
+        $this->forceFill([
+            'posicion_actual' => $ultimas[0]->posicion ?? null,
+            'posicion_anterior' => $ultimas[1]->posicion ?? null,
+        ])->save();
+    }
+
     public function toRow(): array
     {
         return [

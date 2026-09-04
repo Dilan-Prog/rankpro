@@ -43,6 +43,16 @@ class KeywordLista extends Model
     }
 
     /**
+     * Mediciones que se tomaron estando la keyword en esta lista. Es trazabilidad:
+     * la matriz del histórico NO sale de aquí, sino de las keywords que la lista
+     * tiene ahora (ver KeywordMedicionController::index).
+     */
+    public function mediciones(): HasMany
+    {
+        return $this->hasMany(KeywordMedicion::class, 'lista_id');
+    }
+
+    /**
      * Deleting a list must not delete its keywords, only detach them — this
      * runs on soft delete too, unlike the FK's nullOnDelete which only fires
      * on a physical row removal.

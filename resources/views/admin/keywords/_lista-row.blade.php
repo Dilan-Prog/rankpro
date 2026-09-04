@@ -58,15 +58,33 @@
         <div style="padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-3);">
                 <div class="record-modal__section-label" style="margin:0;">Keywords de esta lista</div>
-                <div style="display:flex; gap:var(--space-2);">
+                <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                    <button type="button" class="btn btn--secondary btn--sm" data-toggle-historial="{{ $l['id'] }}"
+                        aria-expanded="false" aria-controls="listaHistorial{{ $l['id'] }}">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Historial
+                    </button>
                     <button type="button" class="btn btn--secondary btn--sm" data-open-import-modal="{{ $l['id'] }}">
                         <i class="fa-solid fa-file-import"></i> Importar keywords
+                    </button>
+                    <button type="button" class="btn btn--secondary btn--sm" data-open-medicion-modal="{{ $l['id'] }}">
+                        <i class="fa-solid fa-crosshairs"></i> Nueva medición
                     </button>
                     <button type="button" class="btn btn--primary btn--sm" data-add-keyword-to-lista="{{ $l['id'] }}" data-add-keyword-cliente="{{ $l['cliente_id'] }}">
                         <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
                     </button>
                 </div>
             </div>
+
+            {{--
+                Histórico de posiciones de la lista. Se queda vacío a propósito:
+                la matriz se pide bajo demanda (GET mediciones.index) al pulsar
+                "Historial", no al desplegar la lista — el índice pinta todas las
+                listas de todos los clientes y arrastrar cada histórico lo haría
+                lento sin que nadie lo esté mirando. Ver initHistorial() en
+                keywords.js; el mismo bloque se reconstruye en
+                listaSubrowShellHtml() tras un upsert AJAX.
+            --}}
+            <div class="kw-hist" id="listaHistorial{{ $l['id'] }}" data-historial-panel="{{ $l['id'] }}" hidden></div>
 
             <div class="empty-state" data-lista-keywords-empty="{{ $l['id'] }}" style="padding: var(--space-6);" {{ empty($l['keywords']) ? '' : 'hidden' }}>
                 <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords.</p>

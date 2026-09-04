@@ -53,7 +53,10 @@
             'Lista', 'Cliente', 'Estado', 'Keywords', 'Volumen', 'KD prom.', 'CPC prom.', 'Posición prom.', 'Fuentes', '',
         ];
     @endphp
-    <x-data-table :headers="$listaHeaders" data-paginate="15" data-listas-table>
+    <x-data-table :headers="$listaHeaders" data-paginate="15" data-listas-table
+        data-mediciones-index-template="{{ route('admin.keywords.listas.mediciones.index', ['lista' => '__ID__']) }}"
+        data-mediciones-store-template="{{ route('admin.keywords.listas.mediciones.store', ['lista' => '__ID__']) }}"
+        data-medicion-update-template="{{ route('admin.keywords.listas.mediciones.update', ['medicion' => '__ID__']) }}">
         @forelse ($listas as $l)
             @include('admin.keywords._lista-row', ['l' => $l])
         @empty
@@ -245,6 +248,91 @@
             <div class="form-actions">
                 <button type="submit" class="btn btn--primary" id="keywordImportSubmit"><i class="fa-solid fa-file-import"></i> Importar</button>
                 <button type="button" class="btn btn--secondary" data-modal-close="keywordImportModal">Cerrar</button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{--
+        Captura de una RONDA completa: una lista + una fecha, todas sus keywords
+        de una sentada. Las filas se construyen en cliente desde el data-lista
+        JSON de la fila de la lista (keywords.js → renderMedicionRows), así que
+        aquí sólo va el armazón. Reenviar una fecha ya registrada corrige esa
+        ronda en vez de duplicarla, por eso al cambiar la fecha se precargan sus
+        valores.
+    --}}
+    <x-modal id="medicionFormModal" size="lg">
+        <x-slot:header>
+            <h2 id="medicionFormTitle" style="margin-bottom:6px;">Nueva medición</h2>
+            <p style="font-size:var(--text-xs); color:var(--color-muted-foreground); margin:0;">
+                Anota la posición de cada keyword y, sobre todo, <strong>qué se hizo</strong> para moverla.
+                Deja la posición vacía si la keyword no rankea.
+            </p>
+        </x-slot:header>
+        <form id="medicionForm" novalidate data-medicion-form>
+            @csrf
+            <div class="kw-medicion__head">
+                <div class="field kw-medicion__fecha-field">
+                    <label class="field__label" for="km_fecha">Fecha de la ronda</label>
+                    <input class="input" type="date" name="fecha" id="km_fecha" required data-medicion-fecha>
+                    <span class="field__error" data-error-for="fecha"></span>
+                </div>
+                <p class="kw-medicion__estado" data-medicion-estado></p>
+            </div>
+
+            <div class="empty-state" data-medicion-empty hidden style="padding: var(--space-6);">
+                <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords que medir.</p>
+            </div>
+
+            <div class="table-wrap kw-medicion__table" data-medicion-table>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Palabra clave</th>
+                            <th class="kw-medicion__col-pos">Posición</th>
+                            <th>¿Qué se hizo este mes?</th>
+                        </tr>
+                    </thead>
+                    <tbody data-medicion-rows></tbody>
+                </table>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary" id="medicionFormSubmit"><i class="fa-solid fa-check"></i> Guardar medición</button>
+                <button type="button" class="btn btn--secondary" data-modal-close="medicionFormModal">Cancelar</button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{-- Corrección de una medición suelta (PUT mediciones.update), abierta al pulsar una celda del historial. --}}
+    <x-modal id="medicionNotaModal">
+        <x-slot:header>
+            <h2 id="medicionNotaTitle" style="margin-bottom:6px;">Medición</h2>
+            <p id="medicionNotaSubtitle" style="font-size:var(--text-xs); color:var(--color-muted-foreground); margin:0;"></p>
+        </x-slot:header>
+        <form id="medicionNotaForm" novalidate data-medicion-nota-form>
+            @csrf
+            <div class="form-grid form-grid--2">
+                <div class="field">
+                    <label class="field__label" for="kmn_posicion">Posición</label>
+                    <input class="input" type="number" min="1" max="1000" name="posicion" id="kmn_posicion" placeholder="Vacío = no rankea">
+                    <span class="field__error" data-error-for="posicion"></span>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="kmn_url">URL medida</label>
+                    <input class="input" type="text" name="url" id="kmn_url" placeholder="/pagina-destino">
+                    <span class="field__error" data-error-for="url"></span>
+                </div>
+            </div>
+            <div class="field" style="margin-top: var(--space-4);">
+                <label class="field__label" for="kmn_nota">¿Qué se hizo este mes?</label>
+                <textarea class="textarea kw-hist__nota-input" name="nota" id="kmn_nota" rows="7"
+                    placeholder="Ej. Reescritura del title y del H1, tres enlaces internos desde el blog."></textarea>
+                <span class="field__error" data-error-for="nota"></span>
+            </div>
+            <p id="medicionNotaAutor" class="kw-hist__autor"></p>
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary" id="medicionNotaSubmit"><i class="fa-solid fa-check"></i> Guardar cambios</button>
+                <button type="button" class="btn btn--secondary" data-modal-close="medicionNotaModal">Cancelar</button>
             </div>
         </form>
     </x-modal>
