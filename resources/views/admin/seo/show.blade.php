@@ -8,6 +8,19 @@
     @php
         $fases = ['auditoria', 'estrategia', 'ejecucion', 'reporte'];
         $ordenActual = $campana->fase_actual->orden();
+
+        // Real keyword bank for this client — powers the "Agregar Posición"
+        // modal's datalist + auto-fill (see initPosiciones() in seo.js),
+        // same source query _fase-estrategia.blade.php already uses for its
+        // own "Keywords objetivo" multi-select.
+        $keywordsBancoPosiciones = \App\Models\Keyword::where('cliente_id', $campana->cliente_id)->orderBy('keyword')->get();
+        $keywordsBancoPosicionesMap = $keywordsBancoPosiciones->mapWithKeys(fn ($kw) => [
+            mb_strtolower($kw->keyword) => [
+                'volumen_busqueda' => $kw->volumen_busqueda,
+                'dificultad' => $kw->dificultad,
+                'url_asignada' => $kw->url_asignada,
+            ],
+        ]);
     @endphp
 
     <div class="page-header">
@@ -315,10 +328,20 @@
     {{-- ---------- Modales ---------- --}}
     <x-modal id="posicionModal">
         <x-slot:header><h2>Agregar Posición</h2></x-slot:header>
-        <form id="posicionForm" data-action="{{ route('admin.seo.posiciones.store', $campana) }}">
+        <form id="posicionForm" data-action="{{ route('admin.seo.posiciones.store', $campana) }}" data-keyword-bank="{{ $keywordsBancoPosicionesMap->toJson() }}">
             <div class="field">
                 <label class="field__label" for="pos_keyword">Keyword</label>
-                <input class="input" type="text" name="keyword" id="pos_keyword" required>
+                <input class="input" type="text" name="keyword" id="pos_keyword" list="pos_keyword_bank" autocomplete="off" required>
+                @if ($keywordsBancoPosiciones->isNotEmpty())
+                    <datalist id="pos_keyword_bank">
+                        @foreach ($keywordsBancoPosiciones as $kw)
+                            <option value="{{ $kw->keyword }}"></option>
+                        @endforeach
+                    </datalist>
+                    <span class="field__hint">Sugerencias del banco de keywords de este cliente — también puedes escribir una nueva.</span>
+                @else
+                    <span class="field__hint">Este cliente no tiene keywords en el <a href="{{ route('admin.keywords.index') }}" target="_blank" rel="noopener" style="text-decoration:underline;">banco de keywords</a> todavía.</span>
+                @endif
             </div>
             <div class="field" style="margin-top: var(--space-3);">
                 <label class="field__label" for="pos_url">URL de la página</label>
@@ -420,7 +443,10 @@
             <div class="form-grid form-grid--2" style="margin-top: var(--space-3);">
                 <div class="field">
                     <label class="field__label" for="ct_keyword">Keyword objetivo</label>
-                    <input class="input" type="text" name="keyword_objetivo" id="ct_keyword">
+                    <input class="input" type="text" name="keyword_objetivo" id="ct_keyword" list="pos_keyword_bank" autocomplete="off">
+                    @if ($keywordsBancoPosiciones->isNotEmpty())
+                        <span class="field__hint">Sugerencias del banco de keywords de este cliente.</span>
+                    @endif
                 </div>
                 <div class="field">
                     <label class="field__label" for="ct_url">URL</label>

@@ -52,6 +52,43 @@
     });
   }
 
+  /**
+   * Real keyword-bank lookup (keyword name, lowercased -> {volumen_busqueda,
+   * dificultad, url_asignada}), embedded once by show.blade.php on
+   * #posicionForm's data-keyword-bank attribute. Shared by both Posiciones
+   * and Contenido's "Agregar" modals — each has a keyword field that should
+   * suggest (via the shared #pos_keyword_bank <datalist>) and auto-fill from
+   * this same client's bank, instead of asking the user to retype data the
+   * bank already has every time they log a new record.
+   */
+  let keywordBankCache = null;
+  function getKeywordBank() {
+    if (keywordBankCache) return keywordBankCache;
+    const source = document.getElementById("posicionForm");
+    try {
+      keywordBankCache = JSON.parse(source?.dataset.keywordBank || "{}");
+    } catch (e) {
+      keywordBankCache = {};
+    }
+    return keywordBankCache;
+  }
+
+  /** Wires a keyword <input> to auto-fill sibling fields from the bank on match — never overwrites a field the user already filled in. */
+  function wireKeywordBankAutofill(keywordInput, fieldMap) {
+    if (!keywordInput) return;
+    keywordInput.addEventListener("input", () => {
+      const match = getKeywordBank()[keywordInput.value.trim().toLowerCase()];
+      if (!match) return;
+
+      Object.keys(fieldMap).forEach((bankKey) => {
+        const field = document.getElementById(fieldMap[bankKey]);
+        if (field && !field.value && match[bankKey] != null && match[bankKey] !== "") {
+          field.value = match[bankKey];
+        }
+      });
+    });
+  }
+
   /** Filters the create form's "Servicio" select to the chosen client's SEO services (all options pre-rendered with data-cliente, hidden client-side). */
   function initServicioCascade() {
     const clienteSelect = document.getElementById("cliente_id");
@@ -191,6 +228,12 @@
     const rowsBody = document.querySelector("[data-posiciones-rows]");
     if (!form || !rowsBody) return;
 
+    wireKeywordBankAutofill(document.getElementById("pos_keyword"), {
+      volumen_busqueda: "pos_volumen",
+      dificultad: "pos_dificultad",
+      url_asignada: "pos_url",
+    });
+
     function rowHtml(p) {
       const actual = p.posicion_actual;
       const color = actual == null ? "inherit" : actual <= 3 ? "var(--text-success)" : actual <= 10 ? "var(--text-warning)" : "inherit";
@@ -294,6 +337,8 @@
 
     const modalTitle = document.querySelector("[data-contenido-modal-title]");
     const submitLabel = document.querySelector("[data-contenido-submit-label]");
+
+    wireKeywordBankAutofill(document.getElementById("ct_keyword"), { url_asignada: "ct_url" });
 
     function rowHtml(ct) {
       return `<tr data-contenido-id="${ct.id}" data-contenido-titulo="${escapeHtml(ct.titulo)}" data-contenido-keyword-objetivo="${escapeHtml(ct.keyword_objetivo || "")}" data-contenido-url="${escapeHtml(ct.url || "")}" data-contenido-trafico-generado="${ct.trafico_generado ?? ""}" data-contenido-estado="${ct.estado}">
