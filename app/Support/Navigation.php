@@ -28,6 +28,7 @@ class Navigation
                 ['route' => 'admin.automatizaciones.index', 'active' => 'admin.automatizaciones.*', 'icon' => 'fa-robot', 'label' => 'Automatizaciones'],
                 ['route' => 'admin.conversiones.index', 'active' => 'admin.conversiones.*', 'icon' => 'fa-filter', 'label' => 'Conversiones'],
                 ['route' => 'admin.reportes.index', 'active' => 'admin.reportes.*', 'icon' => 'fa-file-lines', 'label' => 'Reportes'],
+                ['route' => 'admin.propuestas.index', 'active' => 'admin.propuestas.*', 'icon' => 'fa-file-signature', 'label' => 'Propuestas'],
                 ['route' => 'admin.desarrollo.index', 'active' => 'admin.desarrollo.*', 'icon' => 'fa-code', 'label' => 'Desarrollo'],
             ],
             'Administración' => [

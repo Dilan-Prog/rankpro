@@ -59,6 +59,11 @@
     "src": "resources/css/admin/keywords.css",
     "isEntry": true
   },
+  "resources/css/admin/propuestas.css": {
+    "file": "assets/propuestas-C6exyDYQ.css",
+    "src": "resources/css/admin/propuestas.css",
+    "isEntry": true
+  },
   "resources/css/admin/reportes.css": {
     "file": "assets/reportes-t8-1MPpu.css",
     "src": "resources/css/admin/reportes.css",
@@ -203,6 +208,12 @@
     "file": "assets/keywords-DQvDpx5b.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
+    "isEntry": true
+  },
+  "resources/js/propuestas.js": {
+    "file": "assets/propuestas-CoLHxR80.js",
+    "name": "propuestas",
+    "src": "resources/js/propuestas.js",
     "isEntry": true
   },
   "resources/js/reportes.js": {

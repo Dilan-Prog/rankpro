@@ -97,6 +97,11 @@
         'listo'         => ['Listo',         'badge--info'],
         'entregado'     => ['Entregado',     'badge--success'],
 
+        // Spanish (propuestas — App\Enums\EstadoPropuesta; 'borrador' ya existe arriba con el mismo color)
+        'enviada'       => ['Enviada',       'badge--info'],
+        'aprobada'      => ['Aprobada',      'badge--success'],
+        'rechazada'     => ['Rechazada',     'badge--danger'],
+
         // Spanish (seo_contenido — estado)
         'borrador'      => ['Borrador',      'badge--neutral'],
         'publicado'     => ['Publicado',     'badge--success'],

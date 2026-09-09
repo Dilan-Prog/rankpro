@@ -1,10 +1,15 @@
 {{--
-    Shared preview shell for both DocumentosController::previewContrato and
-    previewPropuesta. $documentoHtml is the rendered pdf.contrato/pdf.propuesta
-    view (same template DomPDF will use), shown isolated in an iframe so its
-    print-oriented CSS doesn't clash with the admin panel's own styles.
+    Shared preview shell for DocumentosController::previewContrato/previewPropuesta
+    and PropuestaController::preview (Propuestas de Continuidad SEO).
+    $documentoHtml is the rendered pdf.* view (same template DomPDF will use),
+    shown isolated in an iframe so its print-oriented CSS doesn't clash with
+    the admin panel's own styles.
     $hidden carries the already-validated form data forward so "Descargar PDF"
-    can resubmit it straight to the real store endpoint.
+    can resubmit it straight to the real store endpoint — Documentos' contratos
+    and propuestas always populate cliente_id/servicios/condiciones this way.
+    Propuestas de Continuidad SEO instead POSTs to a route that regenerates the
+    PDF from the already-persisted Propuesta row (no body needed), so it passes
+    $hidden = [] and every hidden input below is conditional on the key existing.
 --}}
 @extends('layouts.admin')
 
@@ -26,8 +31,10 @@
     <div class="card card--padded">
         <form method="POST" action="{{ $formAction }}">
             @csrf
-            <input type="hidden" name="cliente_id" value="{{ $hidden['cliente_id'] }}">
-            @foreach ($hidden['servicios'] as $servicioId)
+            @if (array_key_exists('cliente_id', $hidden))
+                <input type="hidden" name="cliente_id" value="{{ $hidden['cliente_id'] }}">
+            @endif
+            @foreach ($hidden['servicios'] ?? [] as $servicioId)
                 <input type="hidden" name="servicios[]" value="{{ $servicioId }}">
             @endforeach
             @if (array_key_exists('fecha_inicio', $hidden))
@@ -37,7 +44,9 @@
             @if (array_key_exists('validez_dias', $hidden))
                 <input type="hidden" name="validez_dias" value="{{ $hidden['validez_dias'] }}">
             @endif
-            <input type="hidden" name="condiciones" value="{{ $hidden['condiciones'] }}">
+            @if (array_key_exists('condiciones', $hidden))
+                <input type="hidden" name="condiciones" value="{{ $hidden['condiciones'] }}">
+            @endif
 
             <p style="font-size:var(--text-sm); color:var(--color-muted-foreground); margin-bottom:var(--space-4);">
                 ¿Todo se ve correcto? Descarga el PDF final o vuelve a editar los datos.

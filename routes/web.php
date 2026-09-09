@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\ProyectoFaseController;
 use App\Http\Controllers\Admin\QaController;
 use App\Http\Controllers\Admin\ReporteGeneracionController;
 use App\Http\Controllers\Admin\ReporteSeccionController;
+use App\Http\Controllers\Admin\PropuestaController;
 use App\Http\Controllers\Admin\ReportesController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SeoBacklinkController;
@@ -282,6 +283,22 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         // traga cualquier ruta literal declarada después (/secciones/... se
         // resolvería como un reporte llamado "secciones").
         Route::get('/{reporte}', [ReportesController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('propuestas')->name('propuestas.')->group(function () {
+        Route::get('/', [PropuestaController::class, 'index'])->name('index');
+        Route::post('/', [PropuestaController::class, 'store'])->name('store');
+        Route::put('/{propuesta}', [PropuestaController::class, 'update'])->name('update');
+        Route::delete('/{propuesta}', [PropuestaController::class, 'destroy'])->name('destroy');
+
+        Route::patch('/{propuesta}/secciones/{seccion}', [PropuestaController::class, 'actualizarSeccion'])->name('secciones.actualizar');
+        Route::post('/{propuesta}/sugerir-consultas', [PropuestaController::class, 'sugerirConsultas'])->name('sugerir-consultas');
+        Route::get('/{propuesta}/preview', [PropuestaController::class, 'preview'])->name('preview');
+        Route::post('/{propuesta}/pdf', [PropuestaController::class, 'generarPdf'])->name('pdf');
+
+        // Al final del grupo, como en reportes/seo: el comodín {propuesta} se
+        // traga cualquier ruta literal declarada después.
+        Route::get('/{propuesta}', [PropuestaController::class, 'show'])->name('show');
     });
 
     Route::prefix('ads')->name('ads.')->group(function () {

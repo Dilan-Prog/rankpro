@@ -56,6 +56,8 @@ export default defineConfig({
                 'resources/js/automatizaciones.js',
                 'resources/css/admin/reportes.css',
                 'resources/js/reportes.js',
+                'resources/css/admin/propuestas.css',
+                'resources/js/propuestas.js',
             ],
             refresh: true,
         }),
