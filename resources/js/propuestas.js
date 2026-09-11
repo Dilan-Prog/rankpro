@@ -630,6 +630,104 @@
     });
   }
 
+  // ==========================================================================
+  // Editor — visibilidad por elemento en el PDF
+  // ==========================================================================
+
+  /**
+   * Interruptores [data-visible="clave"]: deciden qué se imprime en el PDF sin
+   * borrar el dato. Van aparte del autosave de contenido (collectPanelPayload
+   * lee field.value, que en un checkbox sería "on"): cada cambio manda un PATCH
+   * inmediato a la ruta de la sección 'visibilidad' con {visibilidad: {clave: bool}};
+   * el servidor fusiona y devuelve el mapa completo.
+   *
+   * Las claves sin punto (situacion, contexto, plan, condiciones) son la sección
+   * entera: al apagarlas, los interruptores de sus bloques (clave "seccion.xxx")
+   * se atenúan con .is-oculto para reflejar que el PDF no los imprimirá aunque
+   * sigan marcados. La portada no tiene interruptor de sección.
+   */
+  function initVisibilidad(root) {
+    const switches = Array.from(root.querySelectorAll("[data-visible]"));
+    if (!switches.length) return;
+
+    const url = root.dataset.visibilidadUrl;
+
+    function seccionDe(clave) {
+      const i = clave.indexOf(".");
+      return i === -1 ? null : clave.slice(0, i);
+    }
+
+    /** Nombre legible para el toast: "Esta sección", el rótulo del campo o el título de la tarjeta. */
+    function nombreDe(el) {
+      const clave = el.dataset.visible;
+      if (seccionDe(clave) === null) return "Esta sección";
+      const fieldHead = el.closest(".prop-field-head");
+      const th = el.closest("th");
+      const card = el.closest(".card");
+      const fuente =
+        (fieldHead && fieldHead.querySelector(".field__label")) ||
+        (th && th.querySelector(".prop-th-switch")) ||
+        (card && card.querySelector(".card__header-title"));
+      const texto = fuente ? fuente.firstChild && fuente.firstChild.textContent : "";
+      return (texto || clave).trim() || clave;
+    }
+
+    function switchesDeSeccion(seccion) {
+      return switches.filter((el) => seccionDe(el.dataset.visible) === seccion);
+    }
+
+    /** Aplica el estado de la sección a sus bloques (label atenuado + título accesible). */
+    function reflejarSeccion(seccionSwitch) {
+      const seccion = seccionSwitch.dataset.visible;
+      const apagada = !seccionSwitch.checked;
+      switchesDeSeccion(seccion).forEach((el) => {
+        const label = el.closest(".prop-switch") || el;
+        label.classList.toggle("is-oculto", apagada);
+      });
+      const panel = seccionSwitch.closest("[data-tab-panel]");
+      if (panel) panel.classList.toggle("is-seccion-oculta", apagada);
+    }
+
+    function aplicarMapa(mapa) {
+      if (!mapa || typeof mapa !== "object") return;
+      switches.forEach((el) => {
+        const clave = el.dataset.visible;
+        if (Object.prototype.hasOwnProperty.call(mapa, clave)) el.checked = !!mapa[clave];
+      });
+      switches.filter((el) => seccionDe(el.dataset.visible) === null).forEach(reflejarSeccion);
+    }
+
+    switches.forEach((el) => {
+      el.addEventListener("change", () => {
+        const clave = el.dataset.visible;
+        const valor = el.checked;
+        const esSeccion = seccionDe(clave) === null;
+
+        if (esSeccion) reflejarSeccion(el);
+        el.disabled = true;
+
+        request(url, "PATCH", { visibilidad: { [clave]: valor } })
+          .then((data) => {
+            aplicarMapa(data && data.visibilidad);
+            // toast() escribe con textContent, así que el nombre va sin escapar.
+            toast(`${nombreDe(el)}: ${valor ? "se imprimirá" : "no se imprimirá"} en el PDF. El dato se conserva.`, "success");
+          })
+          .catch((error) => {
+            el.checked = !valor;
+            if (esSeccion) reflejarSeccion(el);
+            const message = (error.body && error.body.message) || "No se pudo guardar la visibilidad en el PDF.";
+            toast(message, "error");
+          })
+          .finally(() => {
+            el.disabled = false;
+          });
+      });
+    });
+
+    // Estado inicial: atenuar los bloques de las secciones que ya vienen apagadas.
+    switches.filter((el) => seccionDe(el.dataset.visible) === null).forEach(reflejarSeccion);
+  }
+
   document.addEventListener("shell:ready", () => {
     initPropuestaFiltros();
     initPropuestaModal();
@@ -644,6 +742,7 @@
     initEstadoSelect(root);
     initSubtotales(root);
     initSugerirKeywords(root);
+    initVisibilidad(root);
     initNavFlush(root);
   });
 })();

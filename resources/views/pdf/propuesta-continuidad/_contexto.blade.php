@@ -1,12 +1,13 @@
-{{-- Página 3 — "2. ¿Por qué un Plan de Continuidad ahora?" --}}
+{{-- Página 3 — "2. ¿Por qué un Plan de Continuidad ahora?".
+     Cada bloque sale si está visible ($visible, catálogo `contexto.*`) Y tiene contenido. --}}
 <div class="sec">
     <div class="sec-titulo">2. ¿Por qué un Plan de Continuidad ahora?</div>
-    @if (!empty($contexto['intro_texto']))
+    @if ($visible('contexto.intro') && !empty($contexto['intro_texto']))
         <div class="sec-intro">{{ $contexto['intro_texto'] }}</div>
     @endif
 
     @php $riesgos = $contexto['tabla_riesgos'] ?? []; @endphp
-    @if (!empty($riesgos))
+    @if ($visible('contexto.riesgos') && !empty($riesgos))
         <table class="t" style="margin-top: 16px;">
             <thead><tr>
                 <td style="width: 36%;">RIESGO</td>
@@ -24,7 +25,7 @@
     @endif
 
     @php $protege = $contexto['checklist_protege'] ?? []; @endphp
-    @if (!empty($protege))
+    @if ($visible('contexto.protege') && !empty($protege))
         <div class="sec-heading">Lo que el Plan Continuidad sí protege</div>
         <table class="w check">
             @foreach ($protege as $fila)
@@ -37,7 +38,7 @@
         </table>
     @endif
 
-    @if (!empty($contexto['logica_negocio_texto']))
+    @if ($visible('contexto.logica') && !empty($contexto['logica_negocio_texto']))
         <table class="w callout callout-amber"><tr>
             <td class="cal-filete"></td>
             <td class="cal-cuerpo">

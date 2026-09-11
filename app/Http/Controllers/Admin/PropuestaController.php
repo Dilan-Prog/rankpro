@@ -11,12 +11,14 @@ use App\Models\Propuesta;
 use App\Models\SeoCampana;
 use App\Support\Propuestas\Calculos;
 use App\Support\Propuestas\Plantilla;
+use App\Support\Propuestas\Visibilidad;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -193,8 +195,49 @@ class PropuestaController extends Controller
                 'tabla_proyeccion.*.proyeccion' => ['nullable', 'string', 'max:40'],
                 'tabla_proyeccion.*.escenario' => ['nullable', 'string', 'max:60'],
             ]),
+            'visibilidad' => $this->guardarVisibilidad($request, $propuesta),
             default => abort(404),
         };
+    }
+
+    /**
+     * Interruptores de "¿se imprime en el PDF?" (catálogo en Visibilidad).
+     *
+     * A diferencia de guardarColumna(), aquí NO se reemplaza la columna entera:
+     * cada interruptor del editor manda solo su clave al cambiar, así que un
+     * update con el payload tal cual borraría lo que decidieron los demás. Se
+     * fusiona sobre lo guardado y el recibido gana.
+     */
+    private function guardarVisibilidad(Request $request, Propuesta $propuesta): JsonResponse
+    {
+        $data = $request->validate([
+            'visibilidad' => ['required', 'array'],
+            'visibilidad.*' => ['boolean'],
+        ]);
+
+        // Las claves del array no las cubre `visibilidad.*` (eso valida valores),
+        // así que se contrastan a mano contra el catálogo y se reporta bajo el
+        // mismo campo para que el editor pinte el error donde corresponde.
+        $desconocidas = array_diff(array_keys($data['visibilidad']), Visibilidad::claves());
+
+        if ($desconocidas !== []) {
+            throw ValidationException::withMessages([
+                'visibilidad' => 'Elemento desconocido: '.implode(', ', $desconocidas).'.',
+            ]);
+        }
+
+        // La regla `boolean` acepta, además de true/false, los enteros 0/1 y
+        // las cadenas "0"/"1" (un form clásico las manda así; fetch + JSON ya
+        // manda bool). Sin normalizar, "0" se guardaría como cadena y no como
+        // false. Las cadenas "true"/"false" NO pasan la regla: dan 422 antes
+        // de llegar aquí, así que filter_var no tiene que defenderse de ellas.
+        $recibido = array_map(fn ($v) => filter_var($v, FILTER_VALIDATE_BOOLEAN), $data['visibilidad']);
+
+        $propuesta->update([
+            'visibilidad' => array_merge($propuesta->visibilidad ?? [], $recibido),
+        ]);
+
+        return response()->json(['visibilidad' => $propuesta->fresh()->visibilidad]);
     }
 
     /**
@@ -352,6 +395,10 @@ class PropuestaController extends Controller
             'contexto' => $contexto,
             'plan' => $plan,
             'condiciones' => $condiciones,
+            // Las plantillas preguntan `$visible('plan.meses')` antes de imprimir
+            // cada bloque; la regla (ausente = visible, sección apagada oculta a
+            // sus bloques) vive en el modelo, aquí solo se expone.
+            'visible' => fn (string $clave) => $propuesta->visible($clave),
         ];
     }
 }

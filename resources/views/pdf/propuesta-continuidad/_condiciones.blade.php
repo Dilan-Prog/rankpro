@@ -1,9 +1,10 @@
-{{-- Página 5 — "4. Condiciones y renegociación al mes 3" --}}
+{{-- Página 5 — "4. Condiciones y renegociación al mes 3".
+     Cada bloque sale si está visible ($visible, catálogo `condiciones.*`) Y tiene contenido. --}}
 <div class="sec">
     <div class="sec-titulo">4. Condiciones y renegociación al mes 3</div>
 
     @php $filas = $condiciones['condiciones'] ?? []; @endphp
-    @if (!empty($filas))
+    @if ($visible('condiciones.tabla') && !empty($filas))
         <table class="w pares" style="margin-top: 14px;">
             @foreach ($filas as $fila)
                 @if (trim((string) ($fila['etiqueta'] ?? '')) !== '' || trim((string) ($fila['valor'] ?? '')) !== '')
@@ -17,7 +18,7 @@
     @endif
 
     @php $reneg = array_values(array_filter($condiciones['opciones_renegociacion'] ?? [], fn ($o) => trim((string) ($o['nombre'] ?? '')) !== '' || trim((string) ($o['descripcion'] ?? '')) !== '')); @endphp
-    @if (!empty($reneg))
+    @if ($visible('condiciones.renegociacion') && !empty($reneg))
         <div class="sec-heading">Renegociación al mes 3</div>
         <table class="w reneg">
             <tr>
@@ -33,7 +34,7 @@
     @endif
 
     @php $proyeccion = $condiciones['tabla_proyeccion'] ?? []; @endphp
-    @if (!empty($proyeccion))
+    @if ($visible('condiciones.proyeccion') && !empty($proyeccion))
         @php $baseLabel = $situacion['periodo_comparacion']['label_2'] ?? 'periodo base'; @endphp
         <div class="sec-heading">Proyección de resultados esperados</div>
         <table class="t">
@@ -59,14 +60,17 @@
         </div>
     @endif
 
-    <table class="w callout callout-teal" style="margin-top: 18px;"><tr>
-        <td class="cal-filete"></td>
-        <td class="cal-cuerpo">
-            <div class="cal-titulo">Para confirmar esta propuesta</div>
-            <div class="cal-texto">
-                Responde este documento por correo o escribe directamente al equipo.<br>
-                Ing. Dilan Yovani · contacto@rankprosolutions.com.mx · rankprosolutions.com.mx
-            </div>
-        </td>
-    </tr></table>
+    {{-- Texto fijo (no editable), así que aquí solo manda el interruptor. --}}
+    @if ($visible('condiciones.contacto'))
+        <table class="w callout callout-teal" style="margin-top: 18px;"><tr>
+            <td class="cal-filete"></td>
+            <td class="cal-cuerpo">
+                <div class="cal-titulo">Para confirmar esta propuesta</div>
+                <div class="cal-texto">
+                    Responde este documento por correo o escribe directamente al equipo.<br>
+                    Ing. Dilan Yovani · contacto@rankprosolutions.com.mx · rankprosolutions.com.mx
+                </div>
+            </td>
+        </tr></table>
+    @endif
 </div>

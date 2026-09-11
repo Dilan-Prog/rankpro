@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EstadoPropuesta;
+use App\Support\Propuestas\Visibilidad;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +34,7 @@ class Propuesta extends Model
         'contexto_continuidad',
         'plan_detalle',
         'condiciones_proyeccion',
+        'visibilidad',
         'creado_por',
     ];
 
@@ -47,7 +49,33 @@ class Propuesta extends Model
         'contexto_continuidad' => 'array',
         'plan_detalle' => 'array',
         'condiciones_proyeccion' => 'array',
+        'visibilidad' => 'array',
     ];
+
+    /**
+     * ¿Se imprime este elemento en el PDF? Las claves salen del catálogo de
+     * App\Support\Propuestas\Visibilidad.
+     *
+     * Ausente = visible: así las propuestas anteriores a la columna salen tal
+     * como salían, y un interruptor que nunca se tocó no oculta nada.
+     *
+     * Una sección apagada oculta a todos sus bloques aunque el bloque siga en
+     * true: `visible('plan.meses')` es false si `plan` es false. Es la regla
+     * que espera quien apaga una página entera, y evita tener que apagar sus
+     * bloques uno a uno.
+     */
+    public function visible(string $clave): bool
+    {
+        $mapa = $this->visibilidad ?? [];
+
+        $seccion = Visibilidad::seccionDe($clave);
+
+        if ($seccion !== null && array_key_exists($seccion, $mapa) && ! $mapa[$seccion]) {
+            return false;
+        }
+
+        return array_key_exists($clave, $mapa) ? (bool) $mapa[$clave] : true;
+    }
 
     public function cliente(): BelongsTo
     {

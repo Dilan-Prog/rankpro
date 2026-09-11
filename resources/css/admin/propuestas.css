@@ -68,6 +68,115 @@
   flex-wrap: wrap;
 }
 
+/* Título + interruptor de visibilidad + botón de alta, alineados a la derecha
+   de .propuesta-card-head. */
+.prop-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Rótulo de campo con su interruptor de visibilidad a la derecha. */
+.prop-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.prop-field-head .field__label {
+  margin-bottom: 0;
+}
+
+/* ---------- Interruptores «Visible en el PDF» (mismo patrón que .rep-switch de Reportes) ---------- */
+
+.prop-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.prop-switch input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.prop-switch input:disabled {
+  cursor: progress;
+}
+
+/* Variante compacta para encabezados de tabla (columna Hrs). */
+.prop-switch--compact {
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.prop-th-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Bloque cuya sección está apagada: el PDF no lo imprimirá aunque siga marcado. */
+.prop-switch.is-oculto {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/* ---------- Barra de sección: interruptor de la sección entera ---------- */
+
+.prop-seccion-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-muted);
+}
+
+.prop-switch--seccion {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
+}
+
+.prop-switch--seccion input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.prop-seccion-bar__hint {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+/* Toda la pestaña con la sección apagada: la barra avisa en rojo suave y las tarjetas se atenúan. */
+[data-tab-panel].is-seccion-oculta .prop-seccion-bar {
+  border-color: var(--text-danger);
+}
+
+[data-tab-panel].is-seccion-oculta .prop-seccion-bar__hint {
+  color: var(--text-danger);
+}
+
+[data-tab-panel].is-seccion-oculta > .card,
+[data-tab-panel].is-seccion-oculta > .form-grid > .card {
+  opacity: 0.7;
+}
+
 /* ---------- Valores de solo lectura (cliente, campaña, subtotal) ---------- */
 
 .propuesta-readonly {

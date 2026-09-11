@@ -1,12 +1,13 @@
-{{-- Página 2 — "1. Situación actual del sitio" --}}
+{{-- Página 2 — "1. Situación actual del sitio".
+     Cada bloque sale si está visible ($visible, catálogo `situacion.*`) Y tiene contenido. --}}
 <div class="sec">
     <div class="sec-titulo">1. Situación actual del sitio</div>
-    @if (!empty($situacion['resumen_texto']))
+    @if ($visible('situacion.intro') && !empty($situacion['resumen_texto']))
         <div class="sec-intro">{{ $situacion['resumen_texto'] }}</div>
     @endif
 
     @php $kpis = $situacion['kpis'] ?? []; @endphp
-    @if (!empty($kpis))
+    @if ($visible('situacion.kpis') && !empty($kpis))
         <table class="w kpi-row" style="margin-top: 14px;">
             <tr>
                 @foreach ($kpis as $kpi)
@@ -19,7 +20,7 @@
         </table>
     @endif
 
-    @if (!empty($tablaComparacion))
+    @if ($visible('situacion.comparacion') && !empty($tablaComparacion))
         <div class="sec-heading">
             Comparación de periodos
             @php $periodo = $situacion['periodo_comparacion'] ?? []; @endphp
@@ -50,7 +51,7 @@
     @endif
 
     @php $consultas = $situacion['tabla_consultas'] ?? []; @endphp
-    @if (!empty($consultas))
+    @if ($visible('situacion.consultas') && !empty($consultas))
         <div class="sec-heading">Posiciones destacadas y oportunidades inmediatas</div>
         <table class="t">
             <thead><tr>
@@ -75,7 +76,7 @@
         </table>
     @endif
 
-    @if (!empty($situacion['insight_texto']))
+    @if ($visible('situacion.insight') && !empty($situacion['insight_texto']))
         <table class="w callout callout-teal"><tr>
             <td class="cal-filete"></td>
             <td class="cal-cuerpo">

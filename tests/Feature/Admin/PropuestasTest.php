@@ -11,7 +11,9 @@ use App\Models\Propuesta;
 use App\Models\SeoCampana;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Support\LogoPdf;
 use App\Support\Propuestas\Plantilla;
+use App\Support\Propuestas\Visibilidad;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -120,6 +122,8 @@ class PropuestasTest extends TestCase
         $this->assertNotNull($propuesta->resumen);
         $this->assertNotNull($propuesta->contexto_continuidad);
         $this->assertNotNull($propuesta->plan_detalle);
+        // `visibilidad` no se siembra: null = todo visible (sin backfill).
+        $this->assertNull($propuesta->visibilidad);
     }
 
     public function test_store_rejects_seo_campana_belonging_to_a_different_cliente(): void
@@ -864,5 +868,406 @@ class PropuestasTest extends TestCase
         $response = $this->actingAs(User::factory()->create())->get(route('admin.propuestas.index'));
 
         $this->assertFalse($response->viewData('propuestas')->pluck('id')->contains($propuesta->id));
+    }
+
+    // --- visibilidad -------------------------------------------------------------------
+
+    /**
+     * Propuesta con precio, horas y tarifa puestos: es la que imprime el desglose
+     * «40 horas × $37/hr» en la portada y «40 hrs × $37/hr» en la barra del plan.
+     * El precio va entero (1500) para que number_format(…, 0) no redondee.
+     */
+    private function propuestaConDesglose(Cliente $cliente, array $overrides = []): Propuesta
+    {
+        return $this->propuesta($cliente, array_merge([
+            'precio_mensual' => 1500,
+            'horas_mensuales' => 40,
+            'tarifa_hora' => 37,
+        ], $overrides));
+    }
+
+    private function preview(Propuesta $propuesta)
+    {
+        return $this->actingAs(User::factory()->create())
+            ->get(route('admin.propuestas.preview', $propuesta))
+            ->assertOk();
+    }
+
+    private function patchVisibilidad(Propuesta $propuesta, array $visibilidad)
+    {
+        return $this->actingAs(User::factory()->create())->patchJson(
+            route('admin.propuestas.secciones.actualizar', [$propuesta, 'visibilidad']),
+            ['visibilidad' => $visibilidad]
+        );
+    }
+
+    // Compatibilidad
+
+    public function test_preview_with_null_visibilidad_prints_everything(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente);
+
+        $this->assertNull($propuesta->visibilidad);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertSee('40 horas × $37/hr');
+        $response->assertSee('$1,500 MXN/mes');
+        $response->assertSee('1. Situación actual del sitio');
+        $response->assertSee('2. ¿Por qué un Plan de Continuidad ahora?');
+        $response->assertSee('3. El Plan Continuidad en detalle');
+        $response->assertSee('4. Condiciones y renegociación al mes 3');
+    }
+
+    public function test_visible_returns_true_for_any_catalog_key_when_visibilidad_is_null(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, ['visibilidad' => null]);
+
+        foreach (Visibilidad::claves() as $clave) {
+            $this->assertTrue($propuesta->visible($clave), "Se esperaba visible('$clave') = true con visibilidad null");
+        }
+    }
+
+    // El ejemplo del usuario: ocultar la tarifa por hora sin tocar el precio ni los datos
+
+    public function test_hiding_portada_desglose_removes_horas_x_tarifa_but_keeps_the_price_and_the_data(): void
+    {
+        $cliente = Cliente::factory()->create();
+        // `plan` apagado para que el único precio de la página sea el de la portada.
+        $propuesta = $this->propuestaConDesglose($cliente, [
+            'visibilidad' => ['portada.desglose' => false, 'plan' => false],
+        ]);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertDontSee('horas ×');
+        $response->assertSee('$1,500 MXN/mes');
+
+        $propuesta->refresh();
+        $this->assertSame(40, $propuesta->horas_mensuales);
+        $this->assertSame(37.0, (float) $propuesta->tarifa_hora);
+        $this->assertSame(1500.0, (float) $propuesta->precio_mensual);
+    }
+
+    public function test_hiding_portada_precio_also_hides_the_desglose_inside_the_price_box(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente, [
+            'visibilidad' => ['portada.precio' => false, 'plan' => false],
+        ]);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertDontSee('$1,500 MXN/mes');
+        $response->assertDontSee('horas ×');
+        // El resto de la portada sigue.
+        $response->assertSee('Propuesta de Continuidad SEO');
+    }
+
+    // Precedencia: sección apagada gana a bloque encendido
+
+    public function test_visible_returns_false_for_a_block_when_its_section_is_off_even_if_the_block_is_on(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, [
+            'visibilidad' => ['plan' => false, 'plan.meses' => true],
+        ]);
+
+        $this->assertFalse($propuesta->visible('plan'));
+        $this->assertFalse($propuesta->visible('plan.meses'));
+        $this->assertFalse($propuesta->visible('plan.barra_precio'));
+        // Otras secciones no se ven afectadas.
+        $this->assertTrue($propuesta->visible('situacion'));
+        $this->assertTrue($propuesta->visible('situacion.kpis'));
+    }
+
+    public function test_visible_respects_a_block_switched_off_while_its_section_is_on(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, [
+            'visibilidad' => ['plan' => true, 'plan.meses' => false],
+        ]);
+
+        $this->assertTrue($propuesta->visible('plan'));
+        $this->assertFalse($propuesta->visible('plan.meses'));
+        $this->assertTrue($propuesta->visible('plan.barra_precio'));
+    }
+
+    public function test_preview_hides_the_whole_plan_section_when_plan_is_off_even_if_plan_meses_is_on(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente, [
+            'visibilidad' => ['plan' => false, 'plan.meses' => true],
+        ]);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertDontSee('3. El Plan Continuidad en detalle');
+        $response->assertDontSee('Plan de ejecución mes a mes');
+        $response->assertDontSee('ACTIVIDADES CLAVE');
+        // Las otras secciones siguen.
+        $response->assertSee('1. Situación actual del sitio');
+        $response->assertSee('4. Condiciones y renegociación al mes 3');
+    }
+
+    public function test_preview_hides_the_hrs_column_but_keeps_the_meses_table_when_plan_meses_horas_is_off(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente, [
+            'visibilidad' => ['plan.meses_horas' => false],
+        ]);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertSee('Plan de ejecución mes a mes');
+        $response->assertSee('ACTIVIDADES CLAVE');
+        $response->assertDontSee('HRS');
+    }
+
+    public function test_preview_with_everything_on_prints_the_hrs_column(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente);
+
+        $this->preview($propuesta)->assertSee('HRS');
+    }
+
+    public function test_preview_hides_hrs_x_tarifa_in_the_plan_bar_but_keeps_its_price_when_plan_barra_desglose_is_off(): void
+    {
+        $cliente = Cliente::factory()->create();
+        // `portada.precio` apagado para que el único precio de la página sea el de la barra del plan.
+        $propuesta = $this->propuestaConDesglose($cliente, [
+            'visibilidad' => ['plan.barra_desglose' => false, 'portada.precio' => false],
+        ]);
+
+        $response = $this->preview($propuesta);
+
+        $response->assertDontSee('hrs ×');
+        $response->assertSee('$1,500 MXN/mes');
+    }
+
+    public function test_preview_with_everything_on_prints_hrs_x_tarifa_in_the_plan_bar(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuestaConDesglose($cliente);
+
+        $this->preview($propuesta)->assertSee('40 hrs × $37/hr');
+    }
+
+    // Endpoint PATCH /secciones/visibilidad
+
+    public function test_actualizar_seccion_visibilidad_merges_with_the_saved_map_instead_of_replacing_it(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        $this->patchVisibilidad($propuesta, ['portada.desglose' => false])->assertOk();
+        $this->patchVisibilidad($propuesta, ['situacion' => false])->assertOk();
+
+        $mapa = $propuesta->refresh()->visibilidad;
+
+        $this->assertArrayHasKey('portada.desglose', $mapa);
+        $this->assertArrayHasKey('situacion', $mapa);
+        $this->assertFalse($mapa['portada.desglose']);
+        $this->assertFalse($mapa['situacion']);
+    }
+
+    public function test_actualizar_seccion_visibilidad_received_value_wins_over_the_saved_one(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, ['visibilidad' => ['plan.meses' => false]]);
+
+        $this->patchVisibilidad($propuesta, ['plan.meses' => true])->assertOk();
+
+        $this->assertTrue($propuesta->refresh()->visibilidad['plan.meses']);
+    }
+
+    public function test_actualizar_seccion_visibilidad_rejects_unknown_keys_and_changes_nothing(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, ['visibilidad' => ['portada.desglose' => false]]);
+
+        $response = $this->patchVisibilidad($propuesta, [
+            'portada.desglose' => true,
+            'portada.inventada' => false,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('visibilidad');
+
+        $this->assertSame(['portada.desglose' => false], $propuesta->refresh()->visibilidad);
+    }
+
+    public function test_actualizar_seccion_visibilidad_rejects_non_boolean_values(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        $response = $this->patchVisibilidad($propuesta, ['portada.desglose' => 'quizá']);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('visibilidad.portada.desglose');
+        $this->assertNull($propuesta->refresh()->visibilidad);
+    }
+
+    public function test_actualizar_seccion_visibilidad_requires_the_visibilidad_array(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        $response = $this->actingAs(User::factory()->create())
+            ->patchJson(route('admin.propuestas.secciones.actualizar', [$propuesta, 'visibilidad']), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('visibilidad');
+    }
+
+    public function test_actualizar_seccion_visibilidad_never_stores_the_string_false_as_true(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        // Regresión: (bool) "false" es true. La regla `boolean` de Laravel no
+        // acepta la cadena "false" (solo 0/1, "0"/"1", false/true), así que el
+        // endpoint la rechaza; lo que no puede pasar nunca es que se guarde
+        // como true.
+        $response = $this->patchVisibilidad($propuesta, ['portada.desglose' => 'false']);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('visibilidad.portada.desglose');
+        $this->assertNull($propuesta->refresh()->visibilidad);
+        $this->assertTrue($propuesta->visible('portada.desglose'));
+    }
+
+    public function test_actualizar_seccion_visibilidad_normalizes_string_zero_and_one_to_real_booleans(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        // Un form clásico manda "0"/"1" como strings; en el JSON deben quedar
+        // booleanos reales, no "0"/"1".
+        $this->patchVisibilidad($propuesta, [
+            'portada.desglose' => '0',
+            'plan.meses' => '1',
+        ])->assertOk();
+
+        $mapa = $propuesta->refresh()->visibilidad;
+
+        $this->assertFalse($mapa['portada.desglose']);
+        $this->assertTrue($mapa['plan.meses']);
+        $this->assertFalse($propuesta->visible('portada.desglose'));
+        $this->assertTrue($propuesta->visible('plan.meses'));
+    }
+
+    public function test_actualizar_seccion_visibilidad_response_returns_the_full_merged_map(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente, ['visibilidad' => ['portada.desglose' => false]]);
+
+        $response = $this->patchVisibilidad($propuesta, ['situacion' => false]);
+
+        $response->assertOk();
+        $response->assertExactJson([
+            'visibilidad' => ['portada.desglose' => false, 'situacion' => false],
+        ]);
+    }
+
+    public function test_actualizar_seccion_visibilidad_requires_authentication(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        $response = $this->patchJson(
+            route('admin.propuestas.secciones.actualizar', [$propuesta, 'visibilidad']),
+            ['visibilidad' => ['portada.desglose' => false]]
+        );
+
+        $response->assertStatus(401);
+        $this->assertNull($propuesta->refresh()->visibilidad);
+    }
+
+    // Logotipo
+
+    public function test_preview_embeds_the_logo_as_a_base64_data_uri(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $propuesta = $this->propuesta($cliente);
+
+        $this->preview($propuesta)->assertSee('data:image/png;base64,');
+    }
+
+    public function test_logo_pdf_data_uri_returns_the_png_when_the_file_exists(): void
+    {
+        $uri = LogoPdf::dataUri();
+
+        $this->assertNotNull($uri);
+        $this->assertStringStartsWith('data:image/png;base64,', $uri);
+        // Firma PNG (\x89PNG) tras decodificar.
+        $this->assertStringStartsWith("\x89PNG", base64_decode(substr($uri, strlen('data:image/png;base64,'))));
+    }
+
+    public function test_logo_pdf_data_uri_returns_null_when_the_file_does_not_exist(): void
+    {
+        // Sin tocar public/: se apunta public_path() a un directorio sin el logo.
+        $sinLogo = sys_get_temp_dir();
+        $this->assertFileDoesNotExist($sinLogo.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'rankpro-logo-black.png');
+
+        $this->app->usePublicPath($sinLogo);
+
+        $this->assertNull(LogoPdf::dataUri());
+    }
+
+    // Catálogo
+
+    public function test_visibilidad_seccion_de_returns_the_section_for_a_block_key(): void
+    {
+        $this->assertSame('plan', Visibilidad::seccionDe('plan.meses'));
+        $this->assertSame('situacion', Visibilidad::seccionDe('situacion.kpis'));
+        $this->assertSame('contexto', Visibilidad::seccionDe('contexto.riesgos'));
+        $this->assertSame('condiciones', Visibilidad::seccionDe('condiciones.contacto'));
+    }
+
+    public function test_visibilidad_seccion_de_returns_null_for_portada_blocks_and_for_sections(): void
+    {
+        $this->assertNull(Visibilidad::seccionDe('portada.precio'));
+        $this->assertNull(Visibilidad::seccionDe('plan'));
+        $this->assertNull(Visibilidad::seccionDe('situacion'));
+    }
+
+    public function test_visibilidad_catalog_entries_have_etiqueta_and_one_of_the_five_pestanas(): void
+    {
+        $pestanas = ['resumen', 'situacion', 'contexto', 'plan', 'condiciones'];
+        $elementos = Visibilidad::elementos();
+
+        $this->assertNotEmpty($elementos);
+
+        foreach ($elementos as $clave => $elemento) {
+            $this->assertIsString($clave);
+            $this->assertArrayHasKey('etiqueta', $elemento, "$clave sin etiqueta");
+            $this->assertNotSame('', $elemento['etiqueta'], "$clave con etiqueta vacía");
+            $this->assertArrayHasKey('pestana', $elemento, "$clave sin pestaña");
+            $this->assertContains($elemento['pestana'], $pestanas, "$clave con pestaña desconocida");
+        }
+
+        $this->assertSame(array_keys($elementos), Visibilidad::claves());
+        $this->assertSame($pestanas, array_values(array_unique(array_column($elementos, 'pestana'))));
+    }
+
+    public function test_visibilidad_de_pestana_returns_only_the_keys_of_that_tab(): void
+    {
+        $plan = Visibilidad::dePestana('plan');
+
+        $this->assertNotEmpty($plan);
+        $this->assertArrayHasKey('plan', $plan);
+        $this->assertArrayHasKey('plan.meses', $plan);
+        $this->assertArrayNotHasKey('portada.precio', $plan);
+
+        foreach ($plan as $elemento) {
+            $this->assertSame('plan', $elemento['pestana']);
+        }
+
+        $this->assertSame([], Visibilidad::dePestana('inexistente'));
     }
 }

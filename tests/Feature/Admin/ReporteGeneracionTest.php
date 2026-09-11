@@ -824,4 +824,17 @@ class ReporteGeneracionTest extends TestCase
         $this->assertSame(0, ReporteEntrega::count());
         $this->assertNull($reporte->refresh()->numero);
     }
+
+    // --- logotipo en la vista previa -----------------------------------------------
+
+    public function test_preview_embeds_the_logo_as_a_base64_data_uri(): void
+    {
+        $reporte = $this->reporteConSecciones();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('admin.reportes.preview', $reporte));
+
+        $response->assertOk();
+        $response->assertSee('data:image/png;base64,');
+    }
 }

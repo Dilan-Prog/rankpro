@@ -37,6 +37,7 @@
         .cv-page { background: #0E1B2A; padding: 0 0 0 10px; }
         .cv-rule { width: 10px; background: #0FA37F; font-size: 1px; line-height: 1px; }
         .cv-body { padding: 56px 64px 0; }
+        .cv-logo { width: 180px; height: 58px; }
         .cv-brand { font-size: 24px; font-weight: bold; color: #0FA37F; }
         .cv-brand-sub { font-size: 11px; letter-spacing: 1.4px; color: #FFFFFF; padding-top: 4px; }
         .cv-brand-url { text-align: right; font-size: 10px; color: #7E8FA0; }
@@ -147,10 +148,20 @@
     </tr></table>
 </div>
 
-@include('pdf.propuesta-continuidad._situacion')
-@include('pdf.propuesta-continuidad._contexto')
-@include('pdf.propuesta-continuidad._plan')
-@include('pdf.propuesta-continuidad._condiciones')
+{{-- Cada sección tiene su interruptor en el editor (ver Visibilidad); la
+     portada, el header y el footer no: siempre se imprimen. --}}
+@if ($visible('situacion'))
+    @include('pdf.propuesta-continuidad._situacion')
+@endif
+@if ($visible('contexto'))
+    @include('pdf.propuesta-continuidad._contexto')
+@endif
+@if ($visible('plan'))
+    @include('pdf.propuesta-continuidad._plan')
+@endif
+@if ($visible('condiciones'))
+    @include('pdf.propuesta-continuidad._condiciones')
+@endif
 
 </body>
 </html>

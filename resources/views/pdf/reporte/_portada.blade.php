@@ -23,17 +23,9 @@
     <table class="w">
         <tr>
             <td>
-                {{-- El logo va incrustado en base64 y no por ruta ni por URL.
-                     Una ruta de disco la lee dompdf pero no el navegador, y la
-                     vista previa mostraba la imagen rota; una URL la lee el
-                     navegador pero no dompdf, que no tiene habilitado el acceso
-                     remoto. El base64 vale para ambos y son 11 KB. --}}
-                @php
-                    $rutaLogo = public_path('images/rankpro-logo-black.png');
-                    $logo = is_file($rutaLogo)
-                        ? 'data:image/png;base64,'.base64_encode(file_get_contents($rutaLogo))
-                        : null;
-                @endphp
+                {{-- Logo en base64 (el porqué está en App\Support\LogoPdf),
+                     compartido con el PDF de propuestas. --}}
+                @php $logo = \App\Support\LogoPdf::dataUri(); @endphp
                 @if ($logo)
                     <img class="cv-logo" src="{{ $logo }}" alt="RankPro Solutions">
                 @else
