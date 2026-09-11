@@ -18,12 +18,25 @@ namespace App\Support;
  */
 class LogoPdf
 {
-    private const RUTA = 'images/rankpro-logo-black.png';
+    /**
+     * Dos versiones porque los documentos no comparten fondo: la portada de
+     * Reportes es blanca y la de Propuestas es azul marino. El logo negro sobre
+     * el marino desaparece —el texto es casi del mismo tono que el fondo—, que
+     * es exactamente lo que pasó la primera vez.
+     */
+    private const RUTAS = [
+        'negro' => 'images/rankpro-logo-black.png',
+        'blanco' => 'images/rankpro-logo-white.png',
+    ];
 
-    /** Data URI del logo, o null si el fichero no está en el servidor. */
-    public static function dataUri(): ?string
+    /**
+     * Data URI del logo, o null si el fichero no está en el servidor.
+     *
+     * @param  'negro'|'blanco'  $variante  negro para fondos claros, blanco para oscuros
+     */
+    public static function dataUri(string $variante = 'negro'): ?string
     {
-        $ruta = public_path(self::RUTA);
+        $ruta = public_path(self::RUTAS[$variante] ?? self::RUTAS['negro']);
 
         if (! is_file($ruta)) {
             return null;

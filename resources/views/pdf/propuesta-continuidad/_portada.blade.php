@@ -10,7 +10,8 @@
     contenido, por eso los @if de contenido se conservan debajo de los de
     visibilidad.
 --}}
-@php $logo = \App\Support\LogoPdf::dataUri(); @endphp
+{{-- Portada azul marino: va la version blanca del logo. --}}
+@php $logo = \App\Support\LogoPdf::dataUri('blanco'); @endphp
 <table class="w" style="height: 1056px;">
     <tr>
         <td class="cv-rule"></td>
