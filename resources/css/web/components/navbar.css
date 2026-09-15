@@ -46,6 +46,9 @@
 }
 
 .navbar__link {
+    /* "Casos de éxito" es la primera entrada con espacio: sin esto se partía
+       en dos líneas y desalineaba el resto del menú. */
+    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 0.25rem;
