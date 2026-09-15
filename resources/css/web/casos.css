@@ -1391,3 +1391,14 @@
 .cs-otro__logo[hidden] {
     display: none;
 }
+
+/* Icono dentro del badge de servicio en "La solucion". */
+.cs-servicio__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.cs-servicio__badge svg {
+    flex-shrink: 0;
+}

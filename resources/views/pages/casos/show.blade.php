@@ -240,16 +240,28 @@
                     <div><span class="cs-kicker">{{ $numero('solucion') }} · La solución</span></div>
                     <div class="cs-bloque__cuerpo">
                         <h2 id="solucion">Qué hicimos, servicio por servicio</h2>
+                        @php
+                            // Un icono por servicio. Trazos de 24x24 al estilo del resto del
+                            // sitio. El de automatizacion es un grafo de nodos: evoca n8n sin
+                            // reproducir su logotipo, que es marca de un tercero.
+                            $icoServicio = [
+                                'desarrollo' => '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+                                'seo' => '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+                                'ads' => '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+                                'automatizacion' => '<circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9"/><path d="m6.5 8.2 4.3 7.6"/><path d="m17.5 8.2-4.3 7.6"/>',
+                            ];
+                            $svgServicio = fn (string $clave) => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.($icoServicio[$clave] ?? '').'</svg>';
+                        @endphp
                         <div class="cs-servicios">
                             @foreach ($solucion as $clave => $bullets)
                                 @if ($bullets === null)
                                     <div class="cs-servicio cs-servicio--no">
-                                        <span class="cs-servicio__badge">{{ $serviciosCat[$clave] }}</span>
+                                        <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
                                         <p class="cs-servicio__no">No formó parte de este proyecto.</p>
                                     </div>
                                 @else
                                     <div class="cs-servicio">
-                                        <span class="cs-servicio__badge">{{ $serviciosCat[$clave] }}</span>
+                                        <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
                                         <ul class="cs-servicio__lista">
                                             @foreach ($bullets as $b)
                                                 <li>{{ $b }}</li>
