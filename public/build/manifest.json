@@ -104,13 +104,18 @@
     "src": "resources/css/web/blog.css",
     "isEntry": true
   },
+  "resources/css/web/casos.css": {
+    "file": "assets/casos-Be_Ur3up.css",
+    "src": "resources/css/web/casos.css",
+    "isEntry": true
+  },
   "resources/css/web/pages.css": {
     "file": "assets/pages-Cz8GdPfT.css",
     "src": "resources/css/web/pages.css",
     "isEntry": true
   },
   "resources/css/web/servicios-conversion.css": {
-    "file": "assets/servicios-conversion-Sylp4QZx.css",
+    "file": "assets/servicios-conversion-B93ZwPkS.css",
     "src": "resources/css/web/servicios-conversion.css",
     "isEntry": true
   },

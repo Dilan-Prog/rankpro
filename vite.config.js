@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/js/servicios-conversion.js',
                 'resources/css/web/blog.css',
                 'resources/js/blog-publico.js',
+                'resources/css/web/casos.css',
                 // Admin panel — shared
                 'resources/css/admin/global.css',
                 'resources/css/admin/sidebar.css',

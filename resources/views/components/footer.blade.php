@@ -1,6 +1,6 @@
 @php
-    // NOTA SEO: "Casos de éxito" y "Promociones" siguen fuera porque no existen como
-    // página ni como sección con id propio. Vuelve a añadirlos aquí cuando tengan URL real.
+    // NOTA SEO: "Promociones" sigue fuera porque no existe como página ni como
+    // sección con id propio. Vuelve a añadirlo aquí cuando tenga URL real.
     $footerColumns = [
         [
             'title' => 'Servicios',
@@ -30,6 +30,7 @@
             'links' => [
                 ['label' => 'Nosotros', 'url' => route('nosotros')],
                 ['label' => 'Servicios', 'url' => route('servicios.index')],
+                ['label' => 'Casos de éxito', 'url' => route('casos.index')],
                 ['label' => 'Contacto', 'url' => route('contacto')],
             ],
         ],

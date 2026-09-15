@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Articulo;
+use App\Support\CasosExito;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Http\Response;
@@ -45,6 +46,17 @@ class LlmsTxtController extends Controller
             $l[] = sprintf('- [%s](%s): %s', $s['nombre'], $s['url'], $s['resumen']);
         }
         $l[] = sprintf('- [Todos los servicios](%s): indice de las siete areas de trabajo.', route('servicios.index'));
+        $l[] = '';
+
+        // --- Casos de exito --------------------------------------------
+        // Se listan uno a uno porque son pocos y cada uno lleva cifras con
+        // fuente: es justo lo que un asistente deberia citar en vez de inventar.
+        $l[] = '## Casos de exito';
+        $l[] = '';
+        foreach (CasosExito::todos() as $caso) {
+            $l[] = sprintf('- [%s](%s): %s', $caso['titulo'], route('casos.show', $caso['slug']), $caso['resumen']);
+        }
+        $l[] = sprintf('- [Todos los casos](%s): resultados verificables por sector y servicio.', route('casos.index'));
         $l[] = '';
 
         // --- Blog por tema ---------------------------------------------

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Articulo;
+use App\Support\CasosExito;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Database\Eloquent\Collection;
@@ -96,6 +97,33 @@ class PaginasController extends Controller
             })
             ->limit(3)
             ->get();
+    }
+
+    /**
+     * Listado de casos de exito. Los conteos por sector y servicio viajan
+     * precalculados para que los filtros del listado digan la verdad ("0")
+     * sin recorrer los casos otra vez en la vista.
+     */
+    public function casosIndex(): View
+    {
+        return view('pages.casos.index', [
+            'casos' => CasosExito::todos(),
+            'conteos' => CasosExito::conteos(),
+        ]);
+    }
+
+    public function casosShow(string $slug): View
+    {
+        $caso = CasosExito::porSlug($slug);
+
+        // Mismo criterio que serviciosShow: un slug desconocido es un 404 real,
+        // nunca una pagina vacia con estado 200 (soft 404).
+        abort_if($caso === null, 404);
+
+        return view('pages.casos.show', [
+            'caso' => $caso,
+            'otros' => CasosExito::otros($slug),
+        ]);
     }
 
     public function contacto(): View

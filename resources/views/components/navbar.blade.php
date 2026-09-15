@@ -35,6 +35,9 @@
             'aside_text' => 'Te damos un diagnóstico sin costo y te decimos con honestidad si podemos ayudarte.',
             'aside_link' => ['label' => 'Ver todos los servicios', 'url' => route('servicios.index')],
         ],
+        // Sin hijos: son tres casos y el listado ya filtra por sector y servicio.
+        // 'casos.*' cubre el listado y el detalle para el estado activo.
+        ['label' => 'Casos de éxito', 'url' => route('casos.index'), 'route' => 'casos.*'],
         [
             'label' => 'Blog',
             'url' => route('blog.index'),

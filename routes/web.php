@@ -82,6 +82,14 @@ Route::get('/contacto', [PaginasController::class, 'contacto'])->name('contacto'
 Route::get('/servicios', [PaginasController::class, 'serviciosIndex'])->name('servicios.index');
 Route::get('/servicios/{slug}', [PaginasController::class, 'serviciosShow'])->name('servicios.show');
 
+// Casos de exito: prueba social con cifras verificables (App\Support\CasosExito).
+// Se restringe el slug para que una URL con mayusculas o caracteres raros no
+// llegue al controlador y se resuelva como 404 desde el router.
+Route::get('/casos-de-exito', [PaginasController::class, 'casosIndex'])->name('casos.index');
+Route::get('/casos-de-exito/{slug}', [PaginasController::class, 'casosShow'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('casos.show');
+
 Route::get('/terminos-y-condiciones', [PaginasController::class, 'terminos'])->name('legal.terminos');
 Route::get('/aviso-de-privacidad', [PaginasController::class, 'privacidad'])->name('legal.privacidad');
 Route::get('/politica-de-cookies', [PaginasController::class, 'cookies'])->name('legal.cookies');

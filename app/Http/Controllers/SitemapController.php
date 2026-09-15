@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Articulo;
+use App\Support\CasosExito;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Http\Response;
@@ -29,7 +30,8 @@ class SitemapController extends Controller
         '/'                                  => ['weekly',  '1.0', 'pages.index'],
         '/nosotros'                          => ['monthly', '0.7', 'pages.nosotros'],
         '/servicios'                         => ['monthly', '0.9', 'pages.servicios.index'],
-        '/contacto'                          => ['monthly', '0.7', 'pages.contacto'],
+        '/casos-de-exito'                    => ['monthly', '0.8', 'pages.casos.index'],
+        '/contacto'                        => ['monthly', '0.7', 'pages.contacto'],
         '/terminos-y-condiciones'            => ['yearly',  '0.3', 'pages.legal.terminos'],
         '/aviso-de-privacidad'               => ['yearly',  '0.3', 'pages.legal.privacidad'],
         '/politica-de-cookies'               => ['yearly',  '0.3', 'pages.legal.cookies'],
@@ -83,9 +85,10 @@ class SitemapController extends Controller
     /**
      * Paginas estaticas, servicios del catalogo y todo el blog publicado.
      *
-     * Las URLs de servicio se derivan de App\Support\Servicios y las del blog de
-     * la base de datos, para que dar de alta un servicio o publicar un articulo
-     * no obligue a tocar tambien este archivo.
+     * Las URLs de servicio se derivan de App\Support\Servicios, las de casos de
+     * exito de App\Support\CasosExito y las del blog de la base de datos, para
+     * que dar de alta un servicio o un caso, o publicar un articulo, no obligue
+     * a tocar tambien este archivo.
      *
      * @return array<string, array{0: string, 1: string, 2: string|null, 3?: string|null}>
      */
@@ -101,6 +104,14 @@ class SitemapController extends Controller
                 foreach (Servicios::todos() as $servicio) {
                     $slug = $servicio['slug'];
                     $paginas["/servicios/{$slug}"] = ['monthly', '0.8', $this->vistaDeServicio($slug)];
+                }
+            }
+
+            // Los detalles de caso van justo despues de su listado. Todos usan
+            // la misma plantilla, asi que el lastmod sale de ese unico blade.
+            if ($path === '/casos-de-exito') {
+                foreach (CasosExito::todos() as $caso) {
+                    $paginas["/casos-de-exito/{$caso['slug']}"] = ['monthly', '0.7', 'pages.casos.show'];
                 }
             }
         }

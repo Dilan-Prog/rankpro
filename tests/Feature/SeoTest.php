@@ -25,6 +25,7 @@ class SeoTest extends TestCase
     {
         $urls = [
             '/', '/nosotros', '/contacto', '/servicios',
+            '/casos-de-exito', '/casos-de-exito/hotel-fratelli',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 
