@@ -129,6 +129,9 @@
             </div>
         </section>
 
+        {{-- Prueba social de apoyo: sectores con caso publicado (ver CasosExito). --}}
+        @include('pages.servicios._casos-strip')
+
         {{-- --------------------------------------------------------- pasos --}}
         <section class="cv-section cv-section--tight">
             <div class="container">
@@ -209,6 +212,9 @@
                 </div>
             </div>
         </section>
+
+        {{-- Casos de exito con datos reales (ver App\Support\CasosExito). --}}
+        @include('pages.servicios._casos-exito')
 
         {{-- ------------------------------------------------ vista previa SERP --}}
         <section class="cv-section cv-section--tight">

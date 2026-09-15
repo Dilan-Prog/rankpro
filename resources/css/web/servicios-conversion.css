@@ -2430,3 +2430,239 @@
 .cv-section {
     overflow-x: clip;
 }
+
+/* ------------------------------------------------------- casos de exito */
+/* Strip de sectores bajo el hero: apoyo, no protagonista. Sin fondo propio
+   para no anadir otra banda entre el hero oscuro y los pasos. */
+
+.cv-casos-strip {
+    padding-top: 1.75rem;
+    padding-bottom: 0.5rem;
+}
+
+.cv-casos-strip__label {
+    margin: 0 0 0.75rem;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.cv-casos-strip__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cv-casos-strip__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.cv-casos-strip__pill svg { flex-shrink: 0; }
+.cv-casos-strip__pill--teal svg { color: #0d9488; }
+.cv-casos-strip__pill--ink svg { color: var(--ink); }
+.cv-casos-strip__pill--brand svg { color: var(--brand); }
+
+/* Seccion de casos */
+
+.cv-casos__head {
+    max-width: 40rem;
+    margin-bottom: 2rem;
+}
+
+.cv-casos__title {
+    margin: 0.75rem 0 0.5rem;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.cv-casos__lead {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.cv-casos__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .cv-casos__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.cv-caso {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    /* Evita que una tarjeta con mas texto descuadre a las otras dos. */
+    min-width: 0;
+}
+
+.cv-caso__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.cv-caso__sector {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Un tono por sector, para que se distingan de un vistazo. */
+.cv-caso__sector--teal  { background: #ccfbf1; color: #0f766e; }
+.cv-caso__sector--ink   { background: #e5e7eb; color: var(--ink); }
+.cv-caso__sector--brand { background: #ecfdf5; color: var(--brand-dark); }
+
+.cv-caso__nombre {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--brand-dark);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(5, 150, 105, 0.35);
+}
+
+.cv-caso__nombre:hover { border-bottom-color: var(--brand-dark); }
+
+.cv-caso__titulo {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
+}
+
+.cv-caso__estrella {
+    padding: 1rem 1.125rem;
+    border-radius: 0.75rem;
+    background: var(--surface);
+}
+
+.cv-caso__estrella-valor {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--brand-dark);
+    /* "10 % -> 50 %" no debe partirse en dos lineas a 320px. */
+    white-space: nowrap;
+}
+
+.cv-caso__estrella-label {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--muted);
+}
+
+.cv-caso__metricas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+@media (min-width: 400px) {
+    .cv-caso__metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.cv-caso__metricas li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.cv-caso__metricas strong {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+}
+
+.cv-caso__metricas span {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--muted);
+}
+
+.cv-caso__desc {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #374151;
+}
+
+.cv-caso__cita {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.875rem 1rem;
+    border-left: 3px solid var(--brand);
+    background: #f9fafb;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.cv-caso__cita svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--brand);
+}
+
+.cv-caso__cita p {
+    margin: 0;
+    font-size: 0.875rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink);
+}
+
+.cv-caso__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: auto 0 0;
+    padding: 0.25rem 0 0;
+    list-style: none;
+}
+
+.cv-caso__tag {
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 157, 110, 0.3);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-dark);
+}
