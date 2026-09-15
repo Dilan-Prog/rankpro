@@ -75,8 +75,8 @@ class CasosExito
                 'ubicacion' => null,
                 'duracion' => '3 años',
                 'titulo' => 'De cero presencia digital a la mayoría de clientes nuevos por Google',
-                'resumen' => 'Comercializadora industrial B2B que empezó sin ningún cliente desde internet. Tres años de SEO y Google Ads con presupuesto creciente sujeto a resultados.',
-                'servicios' => ['seo', 'ads'],
+                'resumen' => 'Comercializadora industrial B2B que empezó sin ningún cliente desde internet. Ecommerce, automatizaciones, SEO y Google Ads durante tres años.',
+                'servicios' => ['desarrollo', 'seo', 'ads', 'automatizacion'],
                 'kpis' => [
                     ['valor' => '10x', 'label' => 'Retorno sobre la inversión', 'fuente' => 'cliente'],
                     ['valor' => '$3 M', 'label' => 'MXN generados con $300 mil invertidos', 'fuente' => 'cliente'],
@@ -91,9 +91,19 @@ class CasosExito
                 // Las tácticas concretas por servicio no vienen documentadas por el
                 // cliente: se omiten hasta tenerlas. `null` = no formó parte.
                 'solucion' => [
-                    'seo' => [],
-                    'ads' => [],
-                    'desarrollo' => null,
+                    'desarrollo' => [
+                        'Elaboración de su ecommerce, con el catálogo industrial estructurado por línea de producto.',
+                        'Toda la plataforma construida con una estructura correcta para SEO y para los motores de respuesta con IA (AEO).',
+                    ],
+                    'seo' => [
+                        'Trabajo sostenido durante tres años: el sector industrial tarda en mover posiciones.',
+                    ],
+                    'ads' => [
+                        'Campañas de Google Ads con inversión creciente, sujeta a los resultados medidos.',
+                    ],
+                    'automatizacion' => [
+                        'Automatizaciones de procesos conectadas a la operación del ecommerce.',
+                    ],
                 ],
                 'resultados' => [
                     'titulo' => 'Hoy la mayoría de sus clientes nuevos llegan por Google',

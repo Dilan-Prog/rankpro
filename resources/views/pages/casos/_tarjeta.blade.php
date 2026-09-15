@@ -20,7 +20,7 @@
     <div class="cs-card__banda {{ $anonimo ? 'cs-card__banda--anon' : 'cs-card__banda--'.$sector['tono'] }}">
         <div class="cs-card__cliente">
             @if ($anonimo)
-                <span class="cs-logo cs-logo--anon" aria-hidden="true"></span>
+                <span class="cs-logo cs-logo--anon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg></span>
                 <div>
                     <div class="cs-card__nombre">Cliente anonimizado</div>
                     <div class="cs-card__sub">Publicado por sector</div>

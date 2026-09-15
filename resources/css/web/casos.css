@@ -141,12 +141,18 @@
     border: 1.5px dashed rgba(255, 255, 255, 0.4);
 }
 
-.cs-logo--anon::before {
-    content: "";
-    width: 40%;
-    height: 40%;
-    border-radius: 4px;
-    background: rgba(52, 211, 153, 0.35);
+/* Icono del sector (fabrica) en lugar del cuadrado punteado: el anonimato es
+   una decision editorial, y un icono lo dice mejor que un hueco. */
+.cs-logo--anon svg {
+    width: 55%;
+    height: 55%;
+    color: var(--brand-light);
+}
+
+.cs-otro__logo--anon svg {
+    width: 55%;
+    height: 55%;
+    color: var(--brand-light);
 }
 
 .cs-logo--grande {
