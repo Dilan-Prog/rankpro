@@ -117,7 +117,7 @@ class CasosExito
                 'duracion' => null,
                 'titulo' => 'De ocupar 1 de cada 10 habitaciones a ocupar 5',
                 'resumen' => 'Hotel independiente en Aguascalientes que partía de una ocupación del 10 % y sin visibilidad digital.',
-                'servicios' => ['seo', 'ads'],
+                'servicios' => ['desarrollo', 'seo', 'ads'],
                 'kpis' => [
                     ['valor' => '10 % → 50 %', 'label' => 'Ocupación sostenida', 'fuente' => 'cliente'],
                     ['valor' => '1,330', 'label' => 'Impresiones en búsqueda', 'fuente' => 'gsc'],
@@ -132,7 +132,7 @@ class CasosExito
                 'solucion' => [
                     'seo' => [],
                     'ads' => [],
-                    'desarrollo' => null,
+                    'desarrollo' => [],
                 ],
                 'resultados' => [
                     'titulo' => 'Cinco de cada diez habitaciones, y se mantiene',
@@ -162,7 +162,7 @@ class CasosExito
                 'duracion' => null,
                 'titulo' => 'Contactos de empresas que antes no la encontraban, con inversión controlada',
                 'resumen' => 'Comercializadora de productos industriales y hoteleros en crecimiento, adoptando el canal digital de forma progresiva y con presupuesto conservador.',
-                'servicios' => ['seo', 'ads'],
+                'servicios' => ['desarrollo', 'seo', 'ads'],
                 'kpis' => [
                     ['valor' => '6,950', 'label' => 'Impresiones acumuladas', 'fuente' => 'gsc'],
                     ['valor' => '211', 'label' => 'Clics orgánicos, con curva ascendente', 'fuente' => 'gsc'],
@@ -177,7 +177,7 @@ class CasosExito
                 'solucion' => [
                     'seo' => [],
                     'ads' => [],
-                    'desarrollo' => null,
+                    'desarrollo' => [],
                 ],
                 'resultados' => [
                     'titulo' => 'Crecimiento sostenido, mes a mes',
