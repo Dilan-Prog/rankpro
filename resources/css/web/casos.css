@@ -1402,3 +1402,33 @@
 .cs-servicio__badge svg {
     flex-shrink: 0;
 }
+
+/* Columna izquierda de cada servicio en "La solucion": el badge arriba y,
+   debajo, el mismo icono en grande ocupando el hueco que antes quedaba en
+   blanco. Tono suave para que no compita con las vinetas. */
+.cs-servicio__cab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.cs-servicio__icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1rem;
+    background: #ecfdf5;
+    color: var(--brand);
+}
+
+.cs-servicio__icono svg {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+@media (max-width: 639px) {
+    .cs-servicio__icono { display: none; }
+}

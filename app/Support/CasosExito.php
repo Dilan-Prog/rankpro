@@ -123,7 +123,7 @@ class CasosExito
                 'ubicacion' => 'Aguascalientes, México',
                 'duracion' => null,
                 'titulo' => 'De ocupar 1 de cada 10 habitaciones a ocupar 5',
-                'resumen' => 'Hotel independiente en Aguascalientes que partía de una ocupación del 10 % y sin visibilidad digital.',
+                'resumen' => 'Hotel independiente en Aguascalientes que partía de una ocupación del 10 %. Digitalizamos su operación con un PMS y combinamos SEO con Google Ads.',
                 'servicios' => ['desarrollo', 'seo', 'ads'],
                 'kpis' => [
                     ['valor' => '10 % → 50 %', 'label' => 'Ocupación sostenida', 'fuente' => 'cliente'],
@@ -137,15 +137,25 @@ class CasosExito
                     ],
                 ],
                 'solucion' => [
-                    'seo' => [],
-                    'ads' => [],
-                    'desarrollo' => [],
+                    'desarrollo' => [
+                        'Digitalización de los datos del hotel con un PMS (sistema de gestión hotelera): reservas, habitaciones y huéspedes en un solo sistema.',
+                        'Fichas de habitación por tipo, con precio visible, sobre el sitio del hotel.',
+                    ],
+                    'seo' => [
+                        'Landing de hoteles en Aguascalientes y página propia para la demanda de la Feria de San Marcos, la mayor intención de búsqueda sin explotar.',
+                        'Presencia en las funciones de IA generativa de Google: 64 impresiones en el periodo medido.',
+                    ],
+                    'ads' => [
+                        'Estrategia de anuncios de pago en Google para atraer tráfico inmediato y calificado mientras el posicionamiento orgánico maduraba.',
+                    ],
                 ],
                 'resultados' => [
                     'titulo' => 'Cinco de cada diez habitaciones, y se mantiene',
                     'parrafo' => 'La ocupación subió del 10 % al 50 % y se sostiene constante. En búsqueda orgánica, el hotel pasó de no aparecer a 1,330 impresiones con un CTR del 3.1 % en el periodo medido.',
                     'puntos' => [
                         ['titulo' => 'Ocupación estable en 50 %', 'texto' => 'y constante desde que se alcanzó.'],
+                        ['titulo' => 'Operación digitalizada:', 'texto' => 'el PMS centraliza reservas y huéspedes; el sitio y los anuncios le traen la demanda.'],
+                        ['titulo' => '64 impresiones en IA generativa:', 'texto' => 'el hotel ya aparece en las respuestas con IA de Google.'],
                     ],
                 ],
                 'evolucion' => [],
@@ -195,7 +205,10 @@ class CasosExito
                     ],
                     'ads' => [],
                     'automatizacion' => [
-                        'Procesos automatizados con n8n conectados a la operación del sitio.',
+                        'Automatización de procesos administrativos con n8n, conectada al panel y al sitio.',
+                        'Envíos automáticos de correos y mensajes: confirmaciones, seguimiento de cotizaciones y avisos internos.',
+                        'Generación y envío de reportes sin intervención manual.',
+                        'Orquestación de procesos digitales complejos, con varios pasos y sistemas encadenados.',
                     ],
                 ],
                 'resultados' => [

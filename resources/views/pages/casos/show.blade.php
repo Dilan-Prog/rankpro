@@ -256,12 +256,18 @@
                             @foreach ($solucion as $clave => $bullets)
                                 @if ($bullets === null)
                                     <div class="cs-servicio cs-servicio--no">
-                                        <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
+                                        <div class="cs-servicio__cab">
+                                            <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
+                                            <span class="cs-servicio__icono" aria-hidden="true">{!! $svgServicio($clave) !!}</span>
+                                        </div>
                                         <p class="cs-servicio__no">No formó parte de este proyecto.</p>
                                     </div>
                                 @else
                                     <div class="cs-servicio">
-                                        <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
+                                        <div class="cs-servicio__cab">
+                                            <span class="cs-servicio__badge">{!! $svgServicio($clave) !!}{{ $serviciosCat[$clave] }}</span>
+                                            <span class="cs-servicio__icono" aria-hidden="true">{!! $svgServicio($clave) !!}</span>
+                                        </div>
                                         <ul class="cs-servicio__lista">
                                             @foreach ($bullets as $b)
                                                 <li>{{ $b }}</li>
