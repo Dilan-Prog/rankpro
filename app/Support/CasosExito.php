@@ -46,7 +46,7 @@ class CasosExito
     /**
      * Forma de cada caso:
      *
-     *   slug, nombre (?), url (?), iniciales (?), sector, ubicacion (?),
+     *   slug, nombre (?), url (?), iniciales (?), logo (?), sector, ubicacion (?),
      *   duracion (?), titulo, resumen, servicios[],
      *   kpis[3]: {valor, label, fuente},
      *   reto: {titulo, parrafos[]} | null,
@@ -110,8 +110,12 @@ class CasosExito
             [
                 'slug' => 'hotel-fratelli',
                 'nombre' => 'Hotel Fratelli',
-                'url' => 'https://hotelfratelli.com.mx/',
+                'url' => 'https://hotelfratelli.com.mx/hoteles-en-aguascalientes',
                 'iniciales' => 'HF',
+                // Se enlaza desde el servidor del cliente, sin copia local, por
+                // decision del equipo. Si el hotel renombra el fichero, aqui se
+                // cae al recuadro de iniciales (onerror en la vista).
+                'logo' => 'https://hotelfratelli.com.mx/images/logotipo/hotel-fratelli-logo-blanco-color.png',
                 'sector' => 'hotelero',
                 'ubicacion' => 'Aguascalientes, México',
                 'duracion' => null,

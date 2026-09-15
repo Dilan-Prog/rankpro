@@ -106,6 +106,26 @@
     letter-spacing: -0.01em;
 }
 
+/* Logo real del cliente: sin caja blanca (los logos que enlazamos son
+   blancos, hechos para fondo oscuro) y con el alto de la caja que sustituye. */
+/* `.cs-logo` es display:flex y eso gana al [hidden] del navegador: sin esta
+   regla, el recuadro de iniciales de respaldo se ve junto al logo. */
+.cs-logo[hidden] {
+    display: none;
+}
+
+.cs-logo--img {
+    width: auto;
+    max-width: 6.5rem;
+    background: transparent;
+    border-radius: 0;
+    object-fit: contain;
+}
+
+.cs-logo--img.cs-logo--grande {
+    max-width: 8rem;
+}
+
 .cs-logo--anon {
     background: transparent;
     border: 1.5px dashed rgba(255, 255, 255, 0.4);

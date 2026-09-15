@@ -26,7 +26,14 @@
                     <div class="cs-card__sub">Publicado por sector</div>
                 </div>
             @else
-                <span class="cs-logo" aria-hidden="true">{{ $caso['iniciales'] }}</span>
+                @if (!empty($caso['logo']))
+                    {{-- El logo del cliente es blanco: va sobre el verde, sin caja. Si no
+                         carga, se muestra el recuadro de iniciales que va detras. --}}
+                    <img class="cs-logo cs-logo--img" src="{{ $caso['logo'] }}" alt="" width="125" height="84" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                    <span class="cs-logo" aria-hidden="true" hidden>{{ $caso['iniciales'] }}</span>
+                @else
+                    <span class="cs-logo" aria-hidden="true">{{ $caso['iniciales'] }}</span>
+                @endif
                 <div>
                     <div class="cs-card__nombre">{{ $caso['nombre'] }}</div>
                     @if ($caso['ubicacion'])

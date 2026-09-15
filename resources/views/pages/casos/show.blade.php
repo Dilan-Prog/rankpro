@@ -144,7 +144,12 @@
                                     <div class="cs-hero__meta">Cliente anonimizado · publicado por sector</div>
                                 </div>
                             @else
-                                <span class="cs-logo cs-logo--grande" aria-hidden="true">{{ $caso['iniciales'] }}</span>
+                                @if (!empty($caso['logo']))
+                                    <img class="cs-logo cs-logo--grande cs-logo--img" src="{{ $caso['logo'] }}" alt="" width="125" height="84" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                                    <span class="cs-logo cs-logo--grande" aria-hidden="true" hidden>{{ $caso['iniciales'] }}</span>
+                                @else
+                                    <span class="cs-logo cs-logo--grande" aria-hidden="true">{{ $caso['iniciales'] }}</span>
+                                @endif
                                 <div>
                                     <div class="cs-hero__nombre">{{ $caso['nombre'] }}</div>
                                     <div class="cs-hero__meta">{{ $sector['label'] }}@if ($caso['ubicacion']) · {{ $caso['ubicacion'] }}@endif</div>
