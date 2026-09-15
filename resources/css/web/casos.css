@@ -116,14 +116,24 @@
 
 .cs-logo--img {
     width: auto;
-    max-width: 6.5rem;
-    background: transparent;
-    border-radius: 0;
+    max-width: 7rem;
+    height: 2.75rem;
+    padding: 0.35rem 0.6rem;
+    /* Caja oscura detras del logo: los logos blancos se perdian sobre el
+       verde del hero. El degradado a marino es el mismo tono oscuro que usa
+       el hero anonimizado, para que no parezca un parche. */
+    background: linear-gradient(135deg, #1A2332 0%, #0E1B2A 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 11px;
+    box-shadow: 0 6px 18px rgba(14, 27, 42, 0.25);
     object-fit: contain;
 }
 
 .cs-logo--img.cs-logo--grande {
-    max-width: 8rem;
+    max-width: 9rem;
+    height: 3.75rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 14px;
 }
 
 .cs-logo--anon {
