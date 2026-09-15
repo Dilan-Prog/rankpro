@@ -64,7 +64,7 @@
     }
 
     // Enlace secundario del CTA: la landing del primer servicio del caso.
-    $landing = ['seo' => 'seo-organico', 'ads' => 'sem-google-ads', 'desarrollo' => 'desarrollo-web'];
+    $landing = ['seo' => 'seo-organico', 'ads' => 'sem-google-ads', 'desarrollo' => 'desarrollo-web', 'automatizacion' => 'automatizacion-de-procesos'];
     $servicioPrincipal = $caso['servicios'][0] ?? null;
     $urlServicio = $servicioPrincipal && isset($landing[$servicioPrincipal]) && isset(\App\Support\Servicios::todos()[$landing[$servicioPrincipal]])
         ? route('servicios.show', $landing[$servicioPrincipal])
@@ -187,7 +187,7 @@
                                 @if ($caso['ubicacion'])
                                     <div class="cs-ficha__fila"><dt>Ubicación</dt><dd>{{ $caso['ubicacion'] }}</dd></div>
                                 @endif
-                                <div class="cs-ficha__fila"><dt>Servicios</dt><dd>{{ implode(' + ', array_map(fn ($s) => ['seo' => 'SEO', 'ads' => 'Ads', 'desarrollo' => 'Web'][$s] ?? $s, $caso['servicios'])) }}</dd></div>
+                                <div class="cs-ficha__fila"><dt>Servicios</dt><dd>{{ implode(' + ', array_map(fn ($s) => ['seo' => 'SEO', 'ads' => 'Ads', 'desarrollo' => 'Web', 'automatizacion' => 'Automatización'][$s] ?? $s, $caso['servicios'])) }}</dd></div>
                                 @if ($caso['duracion'])
                                     <div class="cs-ficha__fila"><dt>Duración</dt><dd>{{ $caso['duracion'] }}</dd></div>
                                 @endif
@@ -358,7 +358,7 @@
                     <div class="cs-cta__acciones">
                         <a href="{{ route('contacto') }}" class="cv-btn {{ $anonimo ? 'cs-btn--brand' : 'cs-btn--blanco' }}">Agendar diagnóstico</a>
                         @if ($urlServicio)
-                            <a href="{{ $urlServicio }}" class="cv-btn cs-btn--linea">Ver servicios de {{ ['seo' => 'SEO', 'ads' => 'Google Ads', 'desarrollo' => 'desarrollo web'][$servicioPrincipal] }}</a>
+                            <a href="{{ $urlServicio }}" class="cv-btn cs-btn--linea">Ver servicios de {{ ['seo' => 'SEO', 'ads' => 'Google Ads', 'desarrollo' => 'desarrollo web', 'automatizacion' => 'automatización'][$servicioPrincipal] ?? 'servicios' }}</a>
                         @else
                             <a href="{{ route('casos.index') }}" class="cv-btn cs-btn--linea">Ver otros casos</a>
                         @endif

@@ -29,6 +29,7 @@ class CasosExito
         'desarrollo' => 'Desarrollo web',
         'seo' => 'SEO orgánico',
         'ads' => 'Google Ads',
+        'automatizacion' => 'Automatización',
     ];
 
     public const SECTORES = [
@@ -41,6 +42,8 @@ class CasosExito
         'gsc' => 'Google Search Console',
         'ads' => 'Google Ads',
         'cliente' => 'datos del cliente',
+        // Lo que construyó RankPro y puede enseñar: módulos, tablas, flujos.
+        'rankpro' => 'proyecto RankPro',
     ];
 
     /**
@@ -164,29 +167,44 @@ class CasosExito
                 'sector' => 'mixto',
                 'ubicacion' => null,
                 'duracion' => null,
-                'titulo' => 'Contactos de empresas que antes no la encontraban, con inversión controlada',
-                'resumen' => 'Comercializadora de productos industriales y hoteleros en crecimiento, adoptando el canal digital de forma progresiva y con presupuesto conservador.',
-                'servicios' => ['desarrollo', 'seo', 'ads'],
+                'titulo' => 'Un sitio hecho a la medida que en tres meses multiplicó por nueve sus clics',
+                'resumen' => 'Comercializadora de calderas, calentadores y tratamiento de agua. Sitio y panel a la medida, SEO preparado para la IA de Google y automatizaciones.',
+                'servicios' => ['desarrollo', 'seo', 'ads', 'automatizacion'],
                 'kpis' => [
-                    ['valor' => '6,950', 'label' => 'Impresiones acumuladas', 'fuente' => 'gsc'],
-                    ['valor' => '211', 'label' => 'Clics orgánicos, con curva ascendente', 'fuente' => 'gsc'],
-                    ['valor' => 'mes a mes', 'label' => 'Crecimiento en clientes potenciales', 'fuente' => 'cliente'],
+                    ['valor' => '+790 %', 'label' => 'Clics en los últimos 3 meses', 'fuente' => 'gsc'],
+                    ['valor' => '+1,156 %', 'label' => 'Impresiones en los últimos 3 meses', 'fuente' => 'gsc'],
+                    ['valor' => '889', 'label' => 'Impresiones en funciones de IA generativa de Google', 'fuente' => 'gsc'],
                 ],
                 'reto' => [
                     'titulo' => 'Crecer en digital sin comprometer el presupuesto',
                     'parrafos' => [
-                        'Empresa en expansión que quería empezar a recibir contactos desde internet con una inversión conservadora, avanzando de forma progresiva.',
+                        'Empresa en expansión, con productos y servicios industriales y hoteleros, que quería empezar a recibir contactos desde internet con una inversión conservadora y avanzando de forma progresiva.',
+                        'No bastaba con una página: necesitaba una plataforma que sostuviera la operación —cotizaciones, catálogo, servicios— y que además estuviera bien construida para que Google, y ahora la IA de Google, la entendieran.',
                     ],
                 ],
                 'solucion' => [
-                    'seo' => [],
+                    'desarrollo' => [
+                        'Sitio y panel de administración a la medida: más de 30 módulos y más de 160 tablas, con ecommerce, servicios, ERP, administración y estadísticas.',
+                        'Gestión de cotizaciones integrada, con folio, estado y vigencia por cliente.',
+                        'Estructura de datos y marcado preparados para SEO y para los motores de respuesta con IA (AEO), y medición lista para campañas de Google Ads.',
+                    ],
+                    'seo' => [
+                        'Páginas de servicio por línea de producto: calderas, calentadores y tratamiento de agua, incluido el mantenimiento como página propia.',
+                        'Presencia en las funciones de IA generativa de Google: 889 impresiones en el periodo medido.',
+                    ],
                     'ads' => [],
-                    'desarrollo' => [],
+                    'automatizacion' => [
+                        'Procesos automatizados con n8n conectados a la operación del sitio.',
+                    ],
                 ],
                 'resultados' => [
-                    'titulo' => 'Crecimiento sostenido, mes a mes',
-                    'parrafo' => 'Tráfico orgánico y clientes potenciales crecen mes a mes. En búsqueda, 6,950 impresiones y 211 clics acumulados desde el inicio, con una curva ascendente clara en ambos.',
-                    'puntos' => [],
+                    'titulo' => 'Crecimiento sostenido, con la curva hacia arriba',
+                    'parrafo' => 'En los últimos tres meses los clics crecieron un 790 % y las impresiones un 1,156 %. Desde el inicio acumula 6,950 impresiones y 211 clics, con una curva ascendente clara en ambos, y ya aparece en las respuestas con IA de Google. Los contactos de empresas que antes no la encontraban llegan mes a mes.',
+                    'puntos' => [
+                        ['titulo' => '+30 módulos y +160 tablas', 'texto' => 'de plataforma propia sosteniendo la operación, no solo la web.'],
+                        ['titulo' => '889 impresiones en IA generativa:', 'texto' => 'la estructura del sitio ya la entienden los motores de respuesta.'],
+                        ['titulo' => 'Página de mantenimiento de calderas', 'texto' => 'entre las de mayor crecimiento en clics (+200 % en el periodo).'],
+                    ],
                 ],
                 'evolucion' => [],
                 'cita' => [
@@ -195,8 +213,8 @@ class CasosExito
                     'cargo' => null,
                 ],
                 'cta' => [
-                    'titulo' => '¿Quieres empezar en digital sin apostar todo el presupuesto?',
-                    'texto' => 'Te proponemos un arranque conservador con métricas claras desde el primer mes.',
+                    'titulo' => '¿Necesitas más que una página web?',
+                    'texto' => 'Si tu operación pide cotizaciones, catálogo y procesos, construimos la plataforma y la hacemos visible en Google y en su IA.',
                 ],
             ],
         ];
