@@ -1374,3 +1374,20 @@
 }
 
 .cs-btn--linea:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+
+/* Logo real en "Otros casos": mismo tratamiento que en el hero, caja oscura
+   con el alto del avatar que sustituye. */
+.cs-otro__logo--img {
+    width: auto;
+    max-width: 6rem;
+    height: 2.75rem;
+    padding: 0.35rem 0.6rem;
+    background: linear-gradient(135deg, #1A2332 0%, #0E1B2A 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 11px;
+    object-fit: contain;
+}
+
+.cs-otro__logo[hidden] {
+    display: none;
+}

@@ -383,7 +383,12 @@
                             @endphp
                             <li>
                                 <a class="cs-otro" href="{{ route('casos.show', $otro['slug']) }}">
-                                    <span class="cs-otro__logo {{ $otroAnon ? 'cs-otro__logo--anon' : 'cs-otro__logo--'.$otroSector['tono'] }}" aria-hidden="true">{{ $otroAnon ? '' : $otro['iniciales'] }}</span>
+                                    @if (!$otroAnon && !empty($otro['logo']))
+                                        <img class="cs-otro__logo cs-otro__logo--img" src="{{ $otro['logo'] }}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                                        <span class="cs-otro__logo cs-otro__logo--{{ $otroSector['tono'] }}" aria-hidden="true" hidden>{{ $otro['iniciales'] }}</span>
+                                    @else
+                                        <span class="cs-otro__logo {{ $otroAnon ? 'cs-otro__logo--anon' : 'cs-otro__logo--'.$otroSector['tono'] }}" aria-hidden="true">{{ $otroAnon ? '' : $otro['iniciales'] }}</span>
+                                    @endif
                                     <span class="cs-otro__cuerpo">
                                         <span class="cs-sector cs-sector--{{ $otroSector['tono'] }}">{{ $otroSector['label'] }}</span>
                                         <span class="cs-otro__titulo" style="display:block;">{{ $otro['titulo'] }}</span>

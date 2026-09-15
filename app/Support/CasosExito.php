@@ -164,6 +164,7 @@ class CasosExito
                 'nombre' => 'Equiterm Industries',
                 'url' => 'https://equitermindustries.com.mx/',
                 'iniciales' => 'EQ',
+                'logo' => 'https://equitermindustries.com.mx/images/logo/equiterm-logo-blanco-color-3x.png',
                 'sector' => 'mixto',
                 'ubicacion' => null,
                 'duracion' => null,
