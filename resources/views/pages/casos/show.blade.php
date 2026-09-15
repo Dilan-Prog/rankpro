@@ -368,7 +368,7 @@
                 <div class="container">
                     <div class="cs-otros__head">
                         <h2 id="otros">Otros casos</h2>
-                        <a class="cs-enlace" href="{{ route('casos.index') }}">Ver {{ count($otros) + 1 === 3 ? 'los tres casos' : 'todos los casos' }} →</a>
+                        <a class="cs-enlace" href="{{ route('casos.index') }}">Ver todos los casos →</a>
                     </div>
                     <ul class="cs-otros__grid">
                         @foreach ($otros as $otro)

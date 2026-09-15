@@ -7,7 +7,7 @@
     ocultos seguidos (hermanos ~) de la barra de filtros y de la rejilla.
     Las reglas que dependen de los ids (ocultar tarjetas, pintar el pill
     activo, mostrar el estado vacio) se generan aqui abajo con los datos
-    reales, para que sin JavaScript la pagina siga mostrando los tres casos.
+    reales, para que sin JavaScript la pagina siga mostrando todos los casos.
 
     Los contadores dicen la verdad ("Desarrollo web 0"): el diseno lo pide
     asi en vez de esconder los filtros vacios.
@@ -116,7 +116,7 @@
             <div class="container cs-cabecera__inner">
                 <div class="cs-cabecera__texto">
                     <span class="cv-badge">Casos de éxito</span>
-                    <h1>{{ $total === 3 ? 'Tres clientes, tres formas' : 'Clientes reales, distintas formas' }} de crecer con Google</h1>
+                    <h1>Lo que nuestros clientes han logrado con Google</h1>
                     <p class="cs-cabecera__lead">Publicamos pocos casos y los publicamos completos. Cada cifra que verás aquí tiene una fuente indicada: Google Search Console, la plataforma de anuncios o datos entregados por el propio cliente.</p>
                 </div>
                 <aside class="cs-cabecera__nota">Solo nombramos y enlazamos a clientes que dieron su consentimiento. Los demás se publican por sector, sin nombre ni logo.</aside>
@@ -174,7 +174,7 @@
                     <div class="cs-cierre">
                         <div class="cs-cierre__texto">
                             <p class="cs-cierre__titulo">Publicamos un caso cuando el cliente lo autoriza y las cifras se pueden sostener</p>
-                            <p class="cs-cierre__p">Por eso verás {{ $total === 3 ? 'tres' : $total }} y no treinta. Si quieres revisar resultados de un sector que aún no está aquí, los mostramos en una llamada con las capturas de Search Console a la vista.</p>
+                            <p class="cs-cierre__p">Por eso no verás decenas de casos, sino los que podemos sostener. Si quieres revisar resultados de un sector que aún no está aquí, los mostramos en una llamada con las capturas de Search Console a la vista.</p>
                         </div>
                         <a href="{{ route('contacto') }}" class="cv-btn cs-btn--ink">Agendar diagnóstico</a>
                     </div>

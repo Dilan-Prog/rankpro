@@ -25,7 +25,7 @@
                 <h2 id="casos-titulo" class="cv-casos__title">Lo que este servicio ya logró</h2>
                 <p class="cv-casos__lead">Cifras de Google Search Console y de los propios clientes, cada una con su fuente. Donde hay nombre es porque el cliente autorizó publicarlo.</p>
             </div>
-            <a class="cv-casos__todos" href="{{ route('casos.index') }}">Ver {{ $totalTeaser === 3 ? 'los tres casos' : 'todos los casos' }} →</a>
+            <a class="cv-casos__todos" href="{{ route('casos.index') }}">Ver todos los casos →</a>
         </div>
 
         <div class="cv-casos__grid">
