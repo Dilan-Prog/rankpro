@@ -18,6 +18,9 @@ use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BugController;
 use App\Http\Controllers\Admin\ClientesController;
 use App\Http\Controllers\Admin\ComunicacionController;
+use App\Http\Controllers\Admin\CorreoEnviosController;
+use App\Http\Controllers\Admin\CorreoPlantillasController;
+use App\Http\Controllers\CorreoTrackingController;
 use App\Http\Controllers\Admin\ConversionesController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DesarrolloController;
@@ -118,6 +121,23 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 // Se sirve desde una ruta y no como archivo estatico para que no se desactualice
 // cuando se da de alta un servicio o se publica un articulo.
 Route::get('/llms.txt', [LlmsTxtController::class, 'index'])->name('llms');
+
+/*
+|--------------------------------------------------------------------------
+| Medición de correo (píxel de apertura y redirección de clics)
+|--------------------------------------------------------------------------
+|
+| Las descarga el cliente de correo del destinatario: sin sesión, sin CSRF.
+| El token identifica al destinatario; el clic va firmado para que el
+| redirector no sirva de puerta a URLs ajenas. Límite por IP como en
+| api/tracking.
+|
+*/
+
+Route::prefix('correo')->name('correo.')->middleware('throttle:correo-public')->group(function () {
+    Route::get('/a/{token}.gif', [CorreoTrackingController::class, 'abierto'])->name('abierto');
+    Route::get('/c/{token}', [CorreoTrackingController::class, 'clic'])->middleware('signed')->name('clic');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -307,6 +327,33 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         // Al final del grupo, como en reportes/seo: el comodín {propuesta} se
         // traga cualquier ruta literal declarada después.
         Route::get('/{propuesta}', [PropuestaController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('correo')->name('correo.')->group(function () {
+        Route::prefix('plantillas')->name('plantillas.')->group(function () {
+            Route::get('/', [CorreoPlantillasController::class, 'index'])->name('index');
+            Route::post('/', [CorreoPlantillasController::class, 'store'])->name('store');
+            Route::post('/preview', [CorreoPlantillasController::class, 'preview'])->name('preview');
+            Route::put('/{plantilla}', [CorreoPlantillasController::class, 'update'])->name('update');
+            Route::delete('/{plantilla}', [CorreoPlantillasController::class, 'destroy'])->name('destroy');
+            Route::post('/{plantilla}/duplicar', [CorreoPlantillasController::class, 'duplicar'])->name('duplicar');
+            // Al final: el comodín se traga las rutas literales posteriores.
+            Route::get('/{plantilla}', [CorreoPlantillasController::class, 'show'])->name('show');
+        });
+
+        Route::prefix('envios')->name('envios.')->group(function () {
+            Route::get('/', [CorreoEnviosController::class, 'index'])->name('index');
+            Route::get('/redactar', [CorreoEnviosController::class, 'create'])->name('create');
+            Route::post('/', [CorreoEnviosController::class, 'store'])->name('store');
+            Route::post('/prueba', [CorreoEnviosController::class, 'prueba'])->name('prueba');
+            Route::put('/{envio}', [CorreoEnviosController::class, 'update'])->name('update');
+            Route::delete('/{envio}', [CorreoEnviosController::class, 'destroy'])->name('destroy');
+            Route::post('/{envio}/enviar', [CorreoEnviosController::class, 'enviar'])->name('enviar');
+            Route::post('/{envio}/programar', [CorreoEnviosController::class, 'programar'])->name('programar');
+            Route::post('/{envio}/cancelar', [CorreoEnviosController::class, 'cancelar'])->name('cancelar');
+            Route::get('/{envio}/editar', [CorreoEnviosController::class, 'edit'])->name('edit');
+            Route::get('/{envio}', [CorreoEnviosController::class, 'show'])->name('show');
+        });
     });
 
     Route::prefix('ads')->name('ads.')->group(function () {

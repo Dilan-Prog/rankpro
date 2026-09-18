@@ -20,6 +20,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'keywords', 'label' => 'Keywords', 'module' => 'keywords'],
             ['name' => 'ads', 'label' => 'Módulo Ads', 'module' => 'ads'],
             ['name' => 'reportes', 'label' => 'Reportes', 'module' => 'reportes'],
+            ['name' => 'correo', 'label' => 'Correo', 'module' => 'correo'],
             ['name' => 'desarrollo', 'label' => 'Desarrollo', 'module' => 'desarrollo'],
             ['name' => 'finanzas', 'label' => 'Finanzas', 'module' => 'finanzas'],
             ['name' => 'archivos', 'label' => 'Archivos', 'module' => 'archivos'],

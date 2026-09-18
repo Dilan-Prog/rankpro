@@ -111,6 +111,14 @@
         // publicado ya estan arriba con los mismos colores)
         'archivado'     => ['Archivado',     'badge--neutral'],
 
+        // Spanish (correo — App\Enums\EstadoEnvioCorreo, EstadoDestinatarioCorreo,
+        // estado de plantilla; borrador/cancelado/activa/pendiente ya existen arriba)
+        'programado'    => ['Programado',    'badge--info'],
+        'enviando'      => ['Enviando',      'badge--primary'],
+        'enviado'       => ['Enviado',       'badge--success'],
+        'fallido'       => ['Fallido',       'badge--danger'],
+        'archivada'     => ['Archivada',     'badge--neutral'],
+
         // Spanish (ads_campanas — fase_actual; briefing/lanzamiento ya existen arriba con otros colores aceptables)
         'configuracion' => ['Configuración', 'badge--primary'],
 
