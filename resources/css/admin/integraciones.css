@@ -239,3 +239,92 @@
 
 /* .kanban* styles moved to global.css (shared with Desarrollo's
    Tareas/Bugs/proyecto-fase boards). */
+
+/* ---------- Guía de instalación del tracking (página por cliente).
+   Pasos en <details> para que la página no se haga eterna: los dos primeros
+   abiertos porque son los que todo cliente necesita; el resto plegado. ---------- */
+.tracking-guia__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--space-2);
+}
+
+.tracking-guia__intro {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-4);
+}
+
+.tracking-guia__tipos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.tracking-guia__tipos-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.tracking-guia__paso {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.tracking-guia__paso summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.tracking-guia__paso summary::-webkit-details-marker {
+  display: none;
+}
+
+.tracking-guia__paso p,
+.tracking-guia__lista {
+  font-size: var(--text-sm);
+  margin: var(--space-3) 0 0;
+}
+
+.tracking-guia__lista {
+  padding-left: var(--space-5);
+}
+
+.tracking-guia__lista li + li {
+  margin-top: var(--space-2);
+}
+
+.tracking-guia__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground, #fff);
+  font-size: var(--text-xs);
+}
+
+.tracking-guia__code {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-muted);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}

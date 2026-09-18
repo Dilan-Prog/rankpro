@@ -6,7 +6,28 @@
       "Read(//c/laragon/www/rankpro/resources/views/**)",
       "Read(//c/laragon/www/rankpro/routes/**)",
       "Bash(ls -la /c/laragon/www/rankpro/resources/views/)",
-      "Read(//c/laragon/www/rankpro/resources/views//**)"
+      "Read(//c/laragon/www/rankpro/resources/views//**)",
+      "Read(//g/My Drive/Emprendimiento/RankPro/Documentos/Documentacion - Obsidian/**)",
+      "Edit(//g/My Drive/Emprendimiento/RankPro/Documentos/Documentacion - Obsidian/**)",
+      "Write(//g/My Drive/Emprendimiento/RankPro/Documentos/Documentacion - Obsidian/**)"
+    ],
+    "additionalDirectories": [
+      "G:\\My Drive\\Emprendimiento\\RankPro\\Documentos\\Documentacion - Obsidian\\RankPro Solutions"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php",
+            "args": ["scripts/claude-contexto-obsidian.php"],
+            "timeout": 15,
+            "statusMessage": "Cargando documentación de Obsidian"
+          }
+        ]
+      }
     ]
   }
 }
