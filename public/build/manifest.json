@@ -29,6 +29,16 @@
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
+  "resources/css/admin/correo-envios.css": {
+    "file": "assets/correo-envios-BnFlSV6w.css",
+    "src": "resources/css/admin/correo-envios.css",
+    "isEntry": true
+  },
+  "resources/css/admin/correo-plantillas.css": {
+    "file": "assets/correo-plantillas-CcmPxq7h.css",
+    "src": "resources/css/admin/correo-plantillas.css",
+    "isEntry": true
+  },
   "resources/css/admin/dashboard.css": {
     "file": "assets/dashboard-D8Uw3uYv.css",
     "src": "resources/css/admin/dashboard.css",
@@ -50,7 +60,7 @@
     "isEntry": true
   },
   "resources/css/admin/integraciones.css": {
-    "file": "assets/integraciones-Cu5ugLwi.css",
+    "file": "assets/integraciones-Cu4pDhbi.css",
     "src": "resources/css/admin/integraciones.css",
     "isEntry": true
   },
@@ -177,6 +187,18 @@
     "file": "assets/conversiones-DwKnJrZi.js",
     "name": "conversiones",
     "src": "resources/js/conversiones.js",
+    "isEntry": true
+  },
+  "resources/js/correo-envios.js": {
+    "file": "assets/correo-envios-DnNV6lhf.js",
+    "name": "correo-envios",
+    "src": "resources/js/correo-envios.js",
+    "isEntry": true
+  },
+  "resources/js/correo-plantillas.js": {
+    "file": "assets/correo-plantillas-BqKMylB1.js",
+    "name": "correo-plantillas",
+    "src": "resources/js/correo-plantillas.js",
     "isEntry": true
   },
   "resources/js/dashboard.js": {

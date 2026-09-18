@@ -33,6 +33,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->ip());
         });
 
+        // Píxel y clics de correo: mismo criterio, por IP.
+        RateLimiter::for('correo-public', function (Request $request) {
+            return Limit::perMinute(120)->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

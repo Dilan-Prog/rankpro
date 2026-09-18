@@ -29,6 +29,8 @@ class Navigation
                 ['route' => 'admin.conversiones.index', 'active' => 'admin.conversiones.*', 'icon' => 'fa-filter', 'label' => 'Conversiones'],
                 ['route' => 'admin.reportes.index', 'active' => 'admin.reportes.*', 'icon' => 'fa-file-lines', 'label' => 'Reportes'],
                 ['route' => 'admin.propuestas.index', 'active' => 'admin.propuestas.*', 'icon' => 'fa-file-signature', 'label' => 'Propuestas'],
+                ['route' => 'admin.correo.plantillas.index', 'active' => 'admin.correo.plantillas.*', 'icon' => 'fa-envelope-open-text', 'label' => 'Plantillas de correo'],
+                ['route' => 'admin.correo.envios.index', 'active' => 'admin.correo.envios.*', 'icon' => 'fa-paper-plane', 'label' => 'Enviar correo'],
                 ['route' => 'admin.desarrollo.index', 'active' => 'admin.desarrollo.*', 'icon' => 'fa-code', 'label' => 'Desarrollo'],
             ],
             'Administración' => [
