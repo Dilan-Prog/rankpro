@@ -1435,11 +1435,24 @@
       // de un setTimeout(0) tras asignar srcdoc, que sería una señal más floja
       // (no garantiza que el documento ya haya terminado de parsear).
       el.previaFrame.addEventListener("load", engancharEdicionPrevia);
-      window.addEventListener("scroll", reposicionarFlotActiva);
+      // Los "+" de los extremos son position:fixed y se calculan a mano (no
+      // siguen el layout por CSS): sin este listener se quedan pegados en el
+      // píxel donde se calcularon la última vez y "flotan" sueltos sobre el
+      // contenido al hacer scroll de la página.
+      window.addEventListener("scroll", () => {
+        reposicionarFlotActiva();
+        posicionarExtremos();
+      });
       window.addEventListener("resize", () => {
         reposicionarFlotActiva();
         posicionarExtremos();
       });
+      // El mouse puede salir del iframe sin disparar pointerout/mouseout
+      // DENTRO del iframe (comportamiento inconsistente entre navegadores al
+      // cruzar el borde de un iframe): escuchar la salida sobre el propio
+      // elemento <iframe>, en el documento padre, sí es fiable siempre y
+      // evita que la barra de controles se quede "pegada" visible.
+      el.previaFrame.addEventListener("pointerleave", () => programarOcultarFlot());
     }
 
     if (el.personalizarHtmlToggle) {
