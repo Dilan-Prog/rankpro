@@ -700,3 +700,39 @@
   border-color: var(--color-primary);
   color: var(--color-primary-foreground);
 }
+
+/* ---------- Personalizar contenido del correo (dentro del paso 1) ---------- */
+
+.correo-personalizar {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--color-border);
+}
+
+.correo-personalizar__panel {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------- Variables personalizadas (paso 4) ---------- */
+
+.correo-variables-personalizadas {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--color-border);
+}
+
+.correo-variables-personalizadas__alta {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .correo-variables-personalizadas__alta {
+    grid-template-columns: 1fr;
+  }
+}

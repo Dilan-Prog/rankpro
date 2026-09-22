@@ -205,11 +205,24 @@ class CorreoEnviosTest extends TestCase
         $response->assertJsonValidationErrors('destinatarios.0.email');
     }
 
-    public function test_store_rejects_unknown_variable_keys(): void
+    /** Un nombre bien formado (minúsculas y guiones bajos) es una variable personalizada válida, no del catálogo. */
+    public function test_store_accepts_a_well_formed_custom_variable(): void
     {
         $response = $this->actingAs(User::factory()->create())->postJson(
             route('admin.correo.envios.store'),
-            $this->payloadStore($this->plantilla(), ['variables' => ['inventada' => 'x']])
+            $this->payloadStore($this->plantilla(), ['variables' => ['numero_de_pedido' => 'PED-123']])
+        );
+
+        $response->assertStatus(200);
+        $envio = CorreoEnvio::latest('id')->first();
+        $this->assertSame('PED-123', $envio->variables['numero_de_pedido']);
+    }
+
+    public function test_store_rejects_malformed_variable_keys(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(
+            route('admin.correo.envios.store'),
+            $this->payloadStore($this->plantilla(), ['variables' => ['Con Espacio Y Mayúscula' => 'x']])
         );
 
         $response->assertStatus(422);
@@ -521,17 +534,32 @@ class CorreoEnviosTest extends TestCase
         $this->assertDatabaseCount('correo_destinatarios', 0);
     }
 
-    public function test_prueba_rejects_unknown_variable_keys(): void
+    public function test_prueba_rejects_malformed_variable_keys(): void
     {
         $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.envios.prueba'), [
             'plantilla_id' => $this->plantilla()->id,
             'asunto' => 'X',
-            'variables' => ['inventada' => 'x'],
+            'variables' => ['123numero' => 'x'],
         ]);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('variables');
         Mail::assertNothingSent();
+    }
+
+    /** Una variable personalizada bien formada sí se acepta en la prueba. */
+    public function test_prueba_accepts_a_well_formed_custom_variable(): void
+    {
+        Mail::fake();
+
+        $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.envios.prueba'), [
+            'plantilla_id' => $this->plantilla()->id,
+            'asunto' => 'X',
+            'variables' => ['numero_de_pedido' => 'PED-123'],
+        ]);
+
+        $response->assertStatus(200);
+        Mail::assertSent(CorreoPlantillaMail::class);
     }
 
     // --- enviar / programar / cancelar sobre un envío existente ------------------
@@ -710,5 +738,122 @@ class CorreoEnviosTest extends TestCase
         $this->assertSame(1, $kpis['abiertos']);
         $this->assertSame(2, $kpis['no_abiertos']);
         $this->assertSame(33, $kpis['apertura']);
+    }
+
+    // --- Personalización del contenido por envío ------------------------------
+
+    private function bloquesPersonalizados(): array
+    {
+        return [
+            ['tipo' => 'heading', 'texto' => 'Encabezado propio de este envío'],
+            ['tipo' => 'text', 'texto' => 'Cuerpo distinto al de la plantilla, hola {{contacto}}.'],
+            ['tipo' => 'button', 'texto' => 'Botón propio', 'url' => 'https://otrositio.com/promo'],
+            ['tipo' => 'footer', 'texto' => 'Pie personalizado del envío.'],
+        ];
+    }
+
+    public function test_store_con_personalizar_guarda_bloques_y_marca_propios(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(
+            route('admin.correo.envios.store'),
+            $this->payloadStore($this->plantilla(), [
+                'personalizar' => true,
+                'bloques' => $this->bloquesPersonalizados(),
+                'marca' => ['color' => '#0F9D6E'],
+            ])
+        );
+
+        $response->assertStatus(200);
+        $envio = CorreoEnvio::latest('id')->first();
+        $this->assertTrue($envio->personalizado());
+        $this->assertCount(4, $envio->bloques);
+        $this->assertSame('Botón propio', $envio->bloques[2]['texto']);
+    }
+
+    public function test_store_sin_personalizar_no_guarda_contenido_propio(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(
+            route('admin.correo.envios.store'),
+            $this->payloadStore($this->plantilla(), [
+                'personalizar' => false,
+                'bloques' => $this->bloquesPersonalizados(),
+            ])
+        );
+
+        $response->assertStatus(200);
+        $envio = CorreoEnvio::latest('id')->first();
+        $this->assertFalse($envio->personalizado());
+        $this->assertNull($envio->bloques);
+    }
+
+    public function test_enviar_usa_el_contenido_personalizado_en_vez_de_la_plantilla(): void
+    {
+        $envio = $this->envioConDestinatarios(1, [
+            'bloques' => $this->bloquesPersonalizados(),
+            'marca' => ['color' => '#0F9D6E'],
+        ]);
+
+        app(EnviadorCorreo::class)->enviar($envio);
+
+        Mail::assertSent(CorreoPlantillaMail::class, function (CorreoPlantillaMail $mail) {
+            return str_contains($mail->html, 'Encabezado propio de este envío')
+                && ! str_contains($mail->html, 'Resultados de'); // encabezado de la plantilla original
+        });
+
+        $this->assertStringContainsString('Encabezado propio de este envío', $envio->fresh()->html_congelado);
+    }
+
+    public function test_html_personalizado_del_envio_manda_sobre_los_bloques_de_la_plantilla(): void
+    {
+        $envio = $this->envioConDestinatarios(1, [
+            'html_personalizado' => '<html><body>HTML totalmente propio del envío, hola {{contacto}}.</body></html>',
+        ]);
+
+        app(EnviadorCorreo::class)->enviar($envio);
+
+        Mail::assertSent(CorreoPlantillaMail::class, fn (CorreoPlantillaMail $mail) => str_contains($mail->html, 'HTML totalmente propio del envío'));
+    }
+
+    public function test_prueba_con_personalizar_usa_el_contenido_enviado_no_la_plantilla(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.envios.prueba'), [
+            'plantilla_id' => $this->plantilla()->id,
+            'asunto' => 'Prueba',
+            'personalizar' => true,
+            'bloques' => $this->bloquesPersonalizados(),
+        ]);
+
+        $response->assertStatus(200);
+        Mail::assertSent(CorreoPlantillaMail::class, fn (CorreoPlantillaMail $mail) => str_contains($mail->html, 'Encabezado propio de este envío'));
+    }
+
+    public function test_update_puede_revertir_la_personalizacion(): void
+    {
+        $plantilla = $this->plantilla();
+        $envio = CorreoEnvio::factory()->create([
+            'plantilla_id' => $plantilla->id,
+            'bloques' => $this->bloquesPersonalizados(),
+            'estado' => 'borrador',
+        ]);
+
+        $response = $this->actingAs(User::factory()->create())->putJson(
+            route('admin.correo.envios.update', $envio),
+            $this->payloadStore($plantilla, ['personalizar' => false])
+        );
+
+        $response->assertStatus(200);
+        $this->assertFalse($envio->fresh()->personalizado());
+    }
+
+    public function test_contenido_efectivo_cae_a_la_plantilla_cuando_no_hay_personalizacion(): void
+    {
+        $plantilla = $this->plantilla();
+        $envio = CorreoEnvio::factory()->create(['plantilla_id' => $plantilla->id]);
+
+        $contenido = $envio->contenidoEfectivo();
+
+        // assertEquals, no assertSame: la columna JSON de MySQL puede reordenar
+        // las claves de cada objeto de bloque al ir y volver de la BD.
+        $this->assertEquals($plantilla->bloques, $contenido['bloques']);
     }
 }

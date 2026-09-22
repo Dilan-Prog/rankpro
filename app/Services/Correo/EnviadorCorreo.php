@@ -37,19 +37,23 @@ class EnviadorCorreo
         }
 
         $envio->loadMissing('plantilla');
-        $plantilla = $envio->plantilla;
-        if (! $plantilla instanceof CorreoPlantilla) {
+
+        // Un envío personalizado (bloques/marca/HTML propios) no necesita
+        // plantilla al momento de mandar; uno sin personalizar sí.
+        if (! $envio->personalizado() && ! $envio->plantilla instanceof CorreoPlantilla) {
             throw new RuntimeException("El envío #{$envio->id} no tiene plantilla.");
         }
 
+        $contenido = $envio->contenidoEfectivo();
         $variablesEnvio = self::limpiar($envio->variables);
 
         // El HTML congelado es el "genérico" del envío: sin píxel ni token, con
         // las variables del envío y huecos donde falten las de persona. Es lo
-        // que se enseña en el detalle aunque la plantilla cambie después.
+        // que se enseña en el detalle aunque la plantilla (o la personalización)
+        // cambien después.
         $envio->forceFill([
             'estado' => EstadoEnvioCorreo::Enviando,
-            'html_congelado' => RenderizadorCorreo::renderPlantilla($plantilla, $variablesEnvio),
+            'html_congelado' => RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $variablesEnvio, ['html_libre' => $contenido['html_libre']]),
         ])->save();
 
         $salieron = 0;
@@ -58,8 +62,8 @@ class EnviadorCorreo
             ->where('estado', EstadoDestinatarioCorreo::Pendiente)
             ->with('cliente')
             ->get()
-            ->each(function (CorreoDestinatario $destinatario) use ($envio, $plantilla, $variablesEnvio, &$salieron) {
-                if ($this->enviarA($destinatario, $envio, $plantilla, $variablesEnvio)) {
+            ->each(function (CorreoDestinatario $destinatario) use ($envio, $contenido, $variablesEnvio, &$salieron) {
+                if ($this->enviarA($destinatario, $envio, $contenido, $variablesEnvio)) {
                     $salieron++;
                 }
             });
@@ -76,13 +80,19 @@ class EnviadorCorreo
      * Correo de prueba al usuario que redacta: sin envío, sin píxel ni enlaces
      * firmados; lo que falte se rellena con los ejemplos del catálogo.
      *
+     * $contenido es lo que devuelve CorreoEnvio::contenidoEfectivo() (o su
+     * equivalente armado a mano desde el controlador si el envío ni siquiera
+     * se ha guardado todavía: se puede probar el redactor antes del primer
+     * "Guardar borrador").
+     *
+     * @param  array{bloques: array, marca: array, html_libre: ?string}  $contenido
      * @param  array<string, mixed>  $variables
      */
-    public function prueba(CorreoPlantilla $plantilla, string $asunto, array $variables, string $email, ?string $remitenteNombre = null, ?string $remitenteEmail = null): void
+    public function prueba(array $contenido, string $asunto, array $variables, string $email, ?string $remitenteNombre = null, ?string $remitenteEmail = null): void
     {
         $variables = array_replace(RenderizadorCorreo::variablesEjemplo(), self::limpiar($variables));
 
-        $html = RenderizadorCorreo::renderPlantilla($plantilla, $variables);
+        $html = RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $variables, ['html_libre' => $contenido['html_libre'] ?? null]);
         $asunto = '[Prueba] '.Variables::sustituir($asunto, $variables);
 
         Mail::to($email)->send(new CorreoPlantillaMail($asunto, $html, $remitenteNombre ?: null, $remitenteEmail ?: null));
@@ -91,9 +101,10 @@ class EnviadorCorreo
     /**
      * Un destinatario: true si salió. Nunca lanza; el error queda en la fila.
      *
+     * @param  array{bloques: array, marca: array, html_libre: ?string}  $contenido
      * @param  array<string, string>  $variablesEnvio
      */
-    private function enviarA(CorreoDestinatario $destinatario, CorreoEnvio $envio, CorreoPlantilla $plantilla, array $variablesEnvio): bool
+    private function enviarA(CorreoDestinatario $destinatario, CorreoEnvio $envio, array $contenido, array $variablesEnvio): bool
     {
         $email = trim((string) $destinatario->email);
 
@@ -114,9 +125,10 @@ class EnviadorCorreo
         );
 
         try {
-            $html = RenderizadorCorreo::renderPlantilla($plantilla, $variables, [
+            $html = RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $variables, [
                 'pixel_url' => RenderizadorCorreo::pixelUrl($destinatario->token),
                 'token' => $destinatario->token,
+                'html_libre' => $contenido['html_libre'] ?? null,
             ]);
             $asunto = Variables::sustituir($envio->asunto, $variables);
 

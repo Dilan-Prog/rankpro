@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EstadoDestinatarioCorreo;
 use App\Enums\EstadoEnvioCorreo;
+use App\Support\Correo\Bloques;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Un envío: una plantilla (o HTML congelado) mandada a N destinatarios en un
  * momento. Ver la migración para el porqué de `html_congelado`.
+ *
+ * `bloques`/`marca`/`html_personalizado` son la personalización propia del
+ * envío (opcional): nulos = usa la plantilla tal cual; con contenido = el
+ * envío manda sobre la plantilla al renderizar (ver contenidoEfectivo()).
  */
 class CorreoEnvio extends Model
 {
@@ -21,7 +26,8 @@ class CorreoEnvio extends Model
 
     protected $fillable = [
         'plantilla_id', 'asunto', 'remitente_nombre', 'remitente_email', 'estado',
-        'programado_para', 'enviado_en', 'variables', 'html_congelado', 'creado_por',
+        'programado_para', 'enviado_en', 'variables', 'bloques', 'marca',
+        'html_personalizado', 'html_congelado', 'creado_por',
     ];
 
     protected $casts = [
@@ -29,6 +35,8 @@ class CorreoEnvio extends Model
         'programado_para' => 'datetime',
         'enviado_en' => 'datetime',
         'variables' => 'array',
+        'bloques' => 'array',
+        'marca' => 'array',
     ];
 
     public function plantilla(): BelongsTo
@@ -44,6 +52,41 @@ class CorreoEnvio extends Model
     public function destinatarios(): HasMany
     {
         return $this->hasMany(CorreoDestinatario::class, 'envio_id');
+    }
+
+    /** True si el envío tiene contenido propio en vez de usar la plantilla tal cual. */
+    public function personalizado(): bool
+    {
+        return $this->bloques !== null || $this->marca !== null || trim((string) $this->html_personalizado) !== '';
+    }
+
+    /**
+     * Contenido con el que se renderiza este envío: el suyo propio si está
+     * personalizado, si no el de la plantilla asociada. Único punto de
+     * verdad que consumen EnviadorCorreo, el show() del panel y la previa.
+     *
+     * @return array{bloques: array<int, array<string, mixed>>, marca: array<string, mixed>, html_libre: ?string}
+     */
+    public function contenidoEfectivo(): array
+    {
+        if ($this->personalizado()) {
+            return [
+                'bloques' => $this->bloques ?? [],
+                'marca' => array_replace(Bloques::marcaPorDefecto(), array_filter($this->marca ?? [], fn ($v) => $v !== null)),
+                'html_libre' => trim((string) $this->html_personalizado) !== '' ? $this->html_personalizado : null,
+            ];
+        }
+
+        $plantilla = $this->plantilla;
+        if (! $plantilla) {
+            return ['bloques' => [], 'marca' => Bloques::marcaPorDefecto(), 'html_libre' => null];
+        }
+
+        return [
+            'bloques' => $plantilla->bloques ?? [],
+            'marca' => $plantilla->marcaCompleta(),
+            'html_libre' => $plantilla->esHtmlLibre() ? $plantilla->html_personalizado : null,
+        ];
     }
 
     /** Envíos programados cuya hora ya venció: lo que consume el scheduler. */
@@ -76,6 +119,7 @@ class CorreoEnvio extends Model
             'estado' => $this->estado->value,
             'estado_label' => $this->estado->label(),
             'editable' => $this->estado->editable(),
+            'personalizado' => $this->personalizado(),
             'destinatarios' => $total,
             'enviados' => $enviados,
             'fallidos' => $dest->where('estado', EstadoDestinatarioCorreo::Fallido)->count(),

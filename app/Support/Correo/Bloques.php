@@ -111,4 +111,17 @@ class Bloques
             'marca.redes.*.url' => ['required_with:marca.redes', 'string', 'max:2000'],
         ];
     }
+
+    /**
+     * Como reglas() pero con `bloques` opcional en vez de obligatorio: para
+     * el contenido personalizado de un envío, que puede no tocarse (usa la
+     * plantilla tal cual) en vez de ser siempre el registro completo de una
+     * plantilla.
+     *
+     * @return array<string, mixed>
+     */
+    public static function reglasPersonalizacion(): array
+    {
+        return ['bloques' => ['nullable', 'array', 'max:40']] + array_diff_key(self::reglas(), ['bloques' => true]);
+    }
 }

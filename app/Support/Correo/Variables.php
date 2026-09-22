@@ -37,6 +37,16 @@ class Variables
     }
 
     /**
+     * Nombre válido para una variable personalizada (además de las del
+     * catálogo): mismo patrón que reconoce sustituir()/usadasEn(), para que
+     * cualquier variable que se pueda declarar también se pueda sustituir.
+     */
+    public static function nombreValido(string $clave): bool
+    {
+        return (bool) preg_match('/^[a-z_]+$/', $clave) && strlen($clave) <= 60;
+    }
+
+    /**
      * Variables de ámbito persona resueltas desde un cliente del CRM.
      *
      * @return array<string, string>

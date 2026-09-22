@@ -11,13 +11,13 @@ use App\Services\Correo\EnviadorCorreo;
 use App\Support\Api\ConsultaOpciones;
 use App\Support\Api\Respuesta;
 use App\Support\Api\Serializador;
+use App\Support\Correo\Bloques;
 use App\Support\Correo\Variables;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -159,18 +159,23 @@ class CorreoEnviosApiController extends ControladorApi
         $data = $request->validate([
             'plantilla_id' => ['required', 'integer', 'exists:correo_plantillas,id'],
             'asunto' => ['required', 'string', 'max:255'],
-            'variables' => ['nullable', 'array'],
+            'variables' => ['nullable', 'array', 'max:30'],
             'variables.*' => ['nullable', 'string', 'max:2000'],
             'email' => ['required', 'email', 'max:255'],
             'remitente_nombre' => ['nullable', 'string', 'max:255'],
             'remitente_email' => ['nullable', 'email', 'max:255'],
-        ]);
+            'personalizar' => ['nullable', 'boolean'],
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
+        ] + Bloques::reglasPersonalizacion());
 
         $this->validarClavesVariables($data['variables'] ?? [], 'variables');
 
+        $plantilla = CorreoPlantilla::findOrFail($data['plantilla_id']);
+        $contenido = $this->contenidoDesdePayload($plantilla, $data);
+
         try {
             app(EnviadorCorreo::class)->prueba(
-                CorreoPlantilla::findOrFail($data['plantilla_id']),
+                $contenido,
                 $data['asunto'],
                 $this->limpiarVariables($data['variables'] ?? []),
                 $data['email'],
@@ -201,7 +206,7 @@ class CorreoEnviosApiController extends ControladorApi
             'asunto' => ['required', 'string', 'max:255'],
             'remitente_nombre' => ['nullable', 'string', 'max:255'],
             'remitente_email' => ['nullable', 'email', 'max:255'],
-            'variables' => ['nullable', 'array'],
+            'variables' => ['nullable', 'array', 'max:30'],
             'variables.*' => ['nullable', 'string', 'max:2000'],
             'destinatarios' => $accion === 'borrador' ? ['nullable', 'array'] : ['required', 'array', 'min:1'],
             'destinatarios.*.cliente_id' => ['nullable', 'integer', 'exists:clientes,id'],
@@ -211,7 +216,9 @@ class CorreoEnviosApiController extends ControladorApi
             'destinatarios.*.variables.*' => ['nullable', 'string', 'max:500'],
             'accion' => ['required', Rule::in($acciones)],
             'programado_para' => ['required_if:accion,programar', 'nullable', 'date_format:Y-m-d H:i', 'after:now'],
-        ], [
+            'personalizar' => ['nullable', 'boolean'],
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
+        ] + Bloques::reglasPersonalizacion(), [
             'destinatarios.required' => 'Agrega al menos un destinatario.',
             'destinatarios.min' => 'Agrega al menos un destinatario.',
             'programado_para.required_if' => 'Indica la fecha y hora del envío.',
@@ -242,17 +249,24 @@ class CorreoEnviosApiController extends ControladorApi
         }
     }
 
+    /**
+     * Sin `$permitidas` (variables del envío): catálogo O cualquier nombre
+     * válido (personalizada). Con `$permitidas` (por destinatario): solo esa
+     * lista exacta.
+     */
     private function validarClavesVariables(array $variables, string $campo, ?array $permitidas = null): void
     {
-        $validador = Validator::make(
-            ['claves' => array_keys($variables)],
-            ['claves.*' => [Rule::in($permitidas ?? Variables::claves())]],
-        );
+        $desconocidas = array_filter(array_keys($variables), function ($clave) use ($permitidas) {
+            if ($permitidas !== null) {
+                return ! in_array($clave, $permitidas, true);
+            }
 
-        if ($validador->fails()) {
-            $desconocidas = array_diff(array_keys($variables), $permitidas ?? Variables::claves());
+            return ! in_array($clave, Variables::claves(), true) && ! Variables::nombreValido($clave);
+        });
+
+        if ($desconocidas) {
             throw ValidationException::withMessages([
-                $campo => 'Variable desconocida: '.implode(', ', $desconocidas).'.',
+                $campo => 'Variable inválida: '.implode(', ', $desconocidas).'. Usa solo minúsculas y guiones bajos.',
             ]);
         }
     }
@@ -260,12 +274,45 @@ class CorreoEnviosApiController extends ControladorApi
     /** @return array<string, mixed> */
     private function atributos(array $data): array
     {
+        $personalizar = (bool) ($data['personalizar'] ?? false);
+
         return [
             'plantilla_id' => $data['plantilla_id'],
             'asunto' => $data['asunto'],
             'remitente_nombre' => $data['remitente_nombre'] ?? null,
             'remitente_email' => $data['remitente_email'] ?? null,
             'variables' => $this->limpiarVariables($data['variables'] ?? []),
+            'bloques' => $personalizar ? ($data['bloques'] ?? []) : null,
+            'marca' => $personalizar ? ($data['marca'] ?? []) : null,
+            'html_personalizado' => $personalizar && trim((string) ($data['html_personalizado'] ?? '')) !== ''
+                ? $data['html_personalizado']
+                : null,
+        ];
+    }
+
+    /**
+     * Contenido con el que probar/renderizar antes de guardar (p. ej. una
+     * prueba desde un envío que aún no existe): mismo criterio que
+     * CorreoEnvio::contenidoEfectivo(), armado desde el payload en vez de
+     * desde un registro guardado.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{bloques: array, marca: array, html_libre: ?string}
+     */
+    private function contenidoDesdePayload(CorreoPlantilla $plantilla, array $data): array
+    {
+        if (! empty($data['personalizar'])) {
+            return [
+                'bloques' => $data['bloques'] ?? [],
+                'marca' => array_replace(Bloques::marcaPorDefecto(), array_filter($data['marca'] ?? [], fn ($v) => $v !== null)),
+                'html_libre' => trim((string) ($data['html_personalizado'] ?? '')) !== '' ? $data['html_personalizado'] : null,
+            ];
+        }
+
+        return [
+            'bloques' => $plantilla->bloques ?? [],
+            'marca' => $plantilla->marcaCompleta(),
+            'html_libre' => $plantilla->esHtmlLibre() ? $plantilla->html_personalizado : null,
         ];
     }
 

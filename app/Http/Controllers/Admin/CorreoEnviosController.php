@@ -11,6 +11,7 @@ use App\Models\CorreoDestinatario;
 use App\Models\CorreoEnvio;
 use App\Models\CorreoPlantilla;
 use App\Services\Correo\EnviadorCorreo;
+use App\Support\Correo\Bloques;
 use App\Support\Correo\RenderizadorCorreo;
 use App\Support\Correo\Variables;
 use Carbon\Carbon;
@@ -19,7 +20,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -172,11 +172,13 @@ class CorreoEnviosController extends Controller
             ];
         })->values();
 
-        // Antes de enviar no hay HTML congelado: se enseña la plantilla con las
-        // variables del envío (las de persona quedan vacías, es una previa).
+        // Antes de enviar no hay HTML congelado: se enseña la plantilla (o la
+        // personalización propia del envío) con las variables del envío (las
+        // de persona quedan vacías, es una previa).
         $html = $envio->html_congelado;
-        if ($html === null && $envio->plantilla) {
-            $html = RenderizadorCorreo::renderPlantilla($envio->plantilla, $envio->variables ?? []);
+        if ($html === null) {
+            $contenido = $envio->contenidoEfectivo();
+            $html = RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $envio->variables ?? [], ['html_libre' => $contenido['html_libre']]);
         }
 
         return view('admin.correo.envios.show', [
@@ -266,11 +268,13 @@ class CorreoEnviosController extends Controller
         $data = $request->validate([
             'plantilla_id' => ['required', 'integer', 'exists:correo_plantillas,id'],
             'asunto' => ['required', 'string', 'max:255'],
-            'variables' => ['nullable', 'array'],
+            'variables' => ['nullable', 'array', 'max:30'],
             'variables.*' => ['nullable', 'string', 'max:2000'],
             'remitente_nombre' => ['nullable', 'string', 'max:255'],
             'remitente_email' => ['nullable', 'email', 'max:255'],
-        ]);
+            'personalizar' => ['nullable', 'boolean'],
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
+        ] + Bloques::reglasPersonalizacion());
 
         $this->validarClavesVariables($data['variables'] ?? [], 'variables');
 
@@ -279,9 +283,23 @@ class CorreoEnviosController extends Controller
             return response()->json(['message' => 'Tu usuario no tiene correo al que mandar la prueba.'], 422);
         }
 
+        $plantilla = CorreoPlantilla::findOrFail($data['plantilla_id']);
+        $personalizar = (bool) ($data['personalizar'] ?? false);
+        $contenido = $personalizar
+            ? [
+                'bloques' => $data['bloques'] ?? [],
+                'marca' => array_replace(Bloques::marcaPorDefecto(), array_filter($data['marca'] ?? [], fn ($v) => $v !== null)),
+                'html_libre' => trim((string) ($data['html_personalizado'] ?? '')) !== '' ? $data['html_personalizado'] : null,
+            ]
+            : [
+                'bloques' => $plantilla->bloques ?? [],
+                'marca' => $plantilla->marcaCompleta(),
+                'html_libre' => $plantilla->esHtmlLibre() ? $plantilla->html_personalizado : null,
+            ];
+
         try {
             app(EnviadorCorreo::class)->prueba(
-                CorreoPlantilla::findOrFail($data['plantilla_id']),
+                $contenido,
                 $data['asunto'],
                 $this->limpiarVariables($data['variables'] ?? []),
                 $email,
@@ -309,6 +327,7 @@ class CorreoEnviosController extends Controller
     private function datosRedactar(?CorreoEnvio $envio): array
     {
         $catalogo = Variables::catalogo();
+        $bloques = Bloques::catalogo();
 
         $plantillas = CorreoPlantilla::where('estado', 'activa')
             ->orderBy('nombre')
@@ -359,6 +378,10 @@ class CorreoEnviosController extends Controller
                 'remitente_email' => $envio->remitente_email,
                 'estado' => $envio->estado->value,
                 'variables' => $envio->variables ?? [],
+                'personalizado' => $envio->personalizado(),
+                'bloques' => $envio->bloques,
+                'marca' => $envio->marca,
+                'html_personalizado' => $envio->html_personalizado,
                 'programado_para' => $envio->programado_para?->format('Y-m-d\TH:i'),
                 'destinatarios' => $envio->destinatarios->map(fn (CorreoDestinatario $d) => [
                     'cliente_id' => $d->cliente_id,
@@ -378,6 +401,11 @@ class CorreoEnviosController extends Controller
                 'plantillas' => $plantillas,
                 'clientes' => $clientes,
                 'catalogo' => $catalogo,
+                // Para el editor de contenido personalizado (mismo motor que Plantillas).
+                'catalogoBloques' => $bloques,
+                'tiposBloque' => array_keys($bloques),
+                'colores' => Bloques::COLORES,
+                'logos' => Bloques::LOGOS,
                 'remitente' => [
                     'nombre' => (string) config('mail.from.name'),
                     'email' => (string) config('mail.from.address'),
@@ -412,7 +440,7 @@ class CorreoEnviosController extends Controller
             'asunto' => ['required', 'string', 'max:255'],
             'remitente_nombre' => ['nullable', 'string', 'max:255'],
             'remitente_email' => ['nullable', 'email', 'max:255'],
-            'variables' => ['nullable', 'array'],
+            'variables' => ['nullable', 'array', 'max:30'],
             'variables.*' => ['nullable', 'string', 'max:2000'],
             // Un borrador puede guardarse sin nadie; enviar o programar, no.
             'destinatarios' => $accion === 'borrador' ? ['nullable', 'array'] : ['required', 'array', 'min:1'],
@@ -423,7 +451,10 @@ class CorreoEnviosController extends Controller
             'destinatarios.*.variables.*' => ['nullable', 'string', 'max:500'],
             'accion' => ['required', Rule::in($acciones)],
             'programado_para' => ['required_if:accion,programar', 'nullable', 'date_format:Y-m-d H:i', 'after:now'],
-        ], [
+            // Contenido propio del envío (opcional): ver Bloques::reglasPersonalizacion().
+            'personalizar' => ['nullable', 'boolean'],
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
+        ] + Bloques::reglasPersonalizacion(), [
             'destinatarios.required' => 'Agrega al menos un destinatario.',
             'destinatarios.min' => 'Agrega al menos un destinatario.',
             'destinatarios.*.email.required' => 'Falta el correo de un destinatario.',
@@ -463,22 +494,26 @@ class CorreoEnviosController extends Controller
 
     /**
      * Las claves de un array no las cubre `variables.*` (eso valida valores),
-     * así que se contrastan aparte contra el catálogo con Rule::in.
+     * así que se contrastan aparte.
      *
-     * @param  array<string, mixed>  $variables
-     * @param  array<int, string>|null  $permitidas  null = todas las del catálogo
+     * Sin `$permitidas` (las variables del envío, campo 4 del redactor):
+     * acepta el catálogo O cualquier nombre válido, para poder declarar
+     * variables personalizadas. Con `$permitidas` (variables por
+     * destinatario): solo esa lista exacta, como hasta ahora.
      */
     private function validarClavesVariables(array $variables, string $campo, ?array $permitidas = null): void
     {
-        $validador = Validator::make(
-            ['claves' => array_keys($variables)],
-            ['claves.*' => [Rule::in($permitidas ?? Variables::claves())]],
-        );
+        $desconocidas = array_filter(array_keys($variables), function ($clave) use ($permitidas) {
+            if ($permitidas !== null) {
+                return ! in_array($clave, $permitidas, true);
+            }
 
-        if ($validador->fails()) {
-            $desconocidas = array_diff(array_keys($variables), $permitidas ?? Variables::claves());
+            return ! in_array($clave, Variables::claves(), true) && ! Variables::nombreValido($clave);
+        });
+
+        if ($desconocidas) {
             throw ValidationException::withMessages([
-                $campo => 'Variable desconocida: '.implode(', ', $desconocidas).'.',
+                $campo => 'Variable inválida: '.implode(', ', $desconocidas).'. Usa solo minúsculas y guiones bajos.',
             ]);
         }
     }
@@ -491,12 +526,21 @@ class CorreoEnviosController extends Controller
      */
     private function atributos(array $data): array
     {
+        // "personalizar" en false (o ausente) borra cualquier personalización
+        // previa: el envío vuelve a usar la plantilla tal cual.
+        $personalizar = (bool) ($data['personalizar'] ?? false);
+
         return [
             'plantilla_id' => $data['plantilla_id'],
             'asunto' => $data['asunto'],
             'remitente_nombre' => $data['remitente_nombre'] ?? null,
             'remitente_email' => $data['remitente_email'] ?? null,
             'variables' => $this->limpiarVariables($data['variables'] ?? []),
+            'bloques' => $personalizar ? ($data['bloques'] ?? []) : null,
+            'marca' => $personalizar ? ($data['marca'] ?? []) : null,
+            'html_personalizado' => $personalizar && trim((string) ($data['html_personalizado'] ?? '')) !== ''
+                ? $data['html_personalizado']
+                : null,
         ];
     }
 

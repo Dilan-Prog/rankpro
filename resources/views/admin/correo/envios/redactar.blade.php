@@ -2,6 +2,10 @@
 
 @section('styles')
     @vite('resources/css/admin/correo-envios.css')
+    {{-- El editor de "Personalizar contenido" reutiliza las clases cp-* del
+         editor de Plantillas (bloques, marca, HTML propio): mismo motor, misma
+         apariencia, sin duplicar CSS. --}}
+    @vite('resources/css/admin/correo-plantillas.css')
 @endsection
 
 {{--
@@ -51,6 +55,106 @@
                     No hay plantillas activas. <a href="{{ route('admin.correo.plantillas.index') }}">Crea una primero</a>.
                 </p>
                 <span class="field__error" data-error-for="plantilla_id"></span>
+
+                {{-- ---------- Personalizar contenido de este envío ---------- --}}
+                <div class="correo-personalizar">
+                    <label class="cp-switch">
+                        <input type="checkbox" data-personalizar-toggle>
+                        <span class="cp-switch__pista"></span>
+                        <span class="cp-switch__texto">Personalizar el contenido de este correo</span>
+                        <span class="field__hint">Edita el cuerpo, botones, enlaces y pie solo para este envío, sin tocar la plantilla.</span>
+                    </label>
+
+                    <div class="correo-personalizar__panel" data-personalizar-panel hidden>
+                        <div class="cp-aviso">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <div>
+                                Estos cambios son <strong>solo de este envío</strong>. La plantilla original no se modifica.
+                                <button type="button" class="cp-link" data-personalizar-reiniciar>Reiniciar al contenido de la plantilla</button>
+                            </div>
+                        </div>
+
+                        <div class="cp-variables">
+                            <div class="cp-variables__titulo">Variables · clic para insertarlas en el campo activo</div>
+                            <div class="cp-chips" data-personalizar-variables></div>
+                        </div>
+
+                        {{-- HTML propio --}}
+                        <div class="cp-seccion" style="margin-top: var(--space-4);">
+                            <label class="cp-switch">
+                                <input type="checkbox" data-personalizar-html-toggle>
+                                <span class="cp-switch__pista"></span>
+                                <span class="cp-switch__texto">HTML propio</span>
+                                <span class="field__hint">Pega tu propio código en lugar de usar los bloques.</span>
+                            </label>
+                            <div class="cp-html" data-personalizar-html-panel hidden>
+                                <textarea class="textarea cp-html__codigo" data-personalizar-html-codigo data-var-target rows="12" spellcheck="false" placeholder="<!doctype html>&#10;<html>…</html>"></textarea>
+                                <div class="cp-html__pie">
+                                    <span class="u-mono" data-personalizar-html-longitud></span>
+                                    <button type="button" class="cp-link" data-personalizar-html-descartar>Descartar el HTML y volver a los bloques</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Marca --}}
+                        <section class="cp-seccion" data-personalizar-seccion-bloques>
+                            <h3 class="cp-seccion__titulo">Marca de este correo</h3>
+                            <div class="card cp-tarjeta">
+                                <div class="field">
+                                    <span class="field__label">Color de marca</span>
+                                    <div class="cp-colores" data-personalizar-colores>
+                                        @foreach ($datos['colores'] as $hex => $label)
+                                            <button type="button" class="cp-color" data-color="{{ $hex }}" title="{{ $label }} {{ $hex }}">
+                                                <span class="cp-color__muestra" style="background: {{ $hex }}"><i class="fa-solid fa-check"></i></span>
+                                                {{ $label }}
+                                            </button>
+                                        @endforeach
+                                        <label class="cp-color cp-color--libre" title="Otro color">
+                                            <input type="color" data-personalizar-color-libre aria-label="Color libre">
+                                            <span class="u-mono" data-personalizar-color-hex></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-grid form-grid--2">
+                                    <div class="field">
+                                        <label class="field__label" for="ev_personalizar_logo">Logotipo en la cabecera</label>
+                                        <select class="select" id="ev_personalizar_logo" data-personalizar-marca="logo">
+                                            @foreach ($datos['logos'] as $logo)
+                                                <option value="{{ $logo }}">{{ ['wordmark' => 'Wordmark (RankPro)', 'monograma' => 'Monograma (RP)', 'apilado' => 'Apilado con bajada', 'imagen' => 'Imagen propia', 'ninguno' => 'Sin logotipo'][$logo] ?? ucfirst($logo) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="field__label" for="ev_personalizar_tagline">Bajada bajo el nombre</label>
+                                        <input class="input" type="text" id="ev_personalizar_tagline" data-personalizar-marca="tagline" maxlength="120">
+                                    </div>
+                                </div>
+                                <div class="field" data-personalizar-logo-url-campo hidden>
+                                    <label class="field__label" for="ev_personalizar_logo_url">URL del logotipo (PNG o SVG, alto 28px)</label>
+                                    <input class="input u-mono" type="url" id="ev_personalizar_logo_url" data-personalizar-marca="logo_url" placeholder="https://rankprosolutions.com.mx/logo.png">
+                                </div>
+                                <div class="field">
+                                    <div class="cp-fila-titulo">
+                                        <span class="field__label">Redes y enlaces en el pie</span>
+                                        <button type="button" class="cp-link" data-personalizar-red-agregar>+ Añadir enlace</button>
+                                    </div>
+                                    <div class="cp-redes" data-personalizar-redes></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {{-- Bloques --}}
+                        <section class="cp-seccion" data-personalizar-seccion-bloques>
+                            <h3 class="cp-seccion__titulo">Bloques del correo</h3>
+                            <div class="cp-bloques" data-personalizar-bloques></div>
+                            <p class="cp-bloques__vacio" data-personalizar-bloques-vacio hidden>Sin bloques. Añade uno abajo para empezar.</p>
+                            <div class="cp-paleta">
+                                <div class="cp-seccion__titulo">Añadir bloque</div>
+                                <div class="cp-paleta__grid" data-personalizar-paleta></div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </section>
 
             {{-- 2 · Asunto y remitente --}}
@@ -136,6 +240,16 @@
                     <i class="fa-solid fa-user"></i>
                     <span data-variables-persona-texto></span> se resuelven por destinatario: desde el cliente del CRM o desde el nombre del correo suelto.
                 </p>
+
+                <div class="correo-variables-personalizadas">
+                    <div class="form-grid form-grid--2" data-variables-personalizadas-lista></div>
+                    <div class="correo-variables-personalizadas__alta">
+                        <input type="text" class="input u-mono" data-variable-nueva-clave placeholder="nombre_de_variable" maxlength="60">
+                        <input type="text" class="input" data-variable-nueva-valor placeholder="Valor">
+                        <button type="button" class="btn btn--secondary btn--sm" data-variable-agregar><i class="fa-solid fa-plus"></i> Añadir variable</button>
+                    </div>
+                    <p class="field__hint">Solo minúsculas y guiones bajos, p. ej. <code class="u-mono">numero_de_pedido</code>. Se usa en el correo como <code>@{{numero_de_pedido}}</code>.</p>
+                </div>
                 <span class="field__error" data-error-for="variables"></span>
             </section>
 
