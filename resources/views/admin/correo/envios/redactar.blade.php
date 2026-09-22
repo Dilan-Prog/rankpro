@@ -74,9 +74,13 @@
                             </div>
                         </div>
 
-                        <p class="cp-ayuda-edicion">
+                        <p class="cp-ayuda-edicion" data-cp-ayuda-bloques>
                             <i class="fa-solid fa-arrow-pointer"></i>
                             Haz clic en el texto del correo (en la vista previa) para editarlo directamente. Pasa el mouse sobre un bloque para moverlo, duplicarlo o borrarlo.
+                        </p>
+                        <p class="cp-ayuda-edicion" data-cp-ayuda-html-libre hidden>
+                            <i class="fa-solid fa-arrow-pointer"></i>
+                            Este envío usa HTML propio: haz clic en cualquier texto de la vista previa para editarlo directamente, sin tocar el código.
                         </p>
 
                         <div class="cp-variables">

@@ -751,6 +751,10 @@
   font-size: var(--text-xs);
 }
 
+.cp-ayuda-edicion[hidden] {
+  display: none;
+}
+
 .cp-ayuda-edicion i {
   margin-top: 1px;
   color: var(--color-primary);

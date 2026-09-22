@@ -327,4 +327,41 @@ class RenderizadorCorreoTest extends TestCase
         $this->assertSame(1, preg_match_all('/data-rp-texto/', $html));
         $this->assertStringContainsString("RankPro Solutions<br>\nAguascalientes", $html);
     }
+
+    /**
+     * Si el modo editor sustituyera las variables, la primera vez que alguien
+     * editara el texto de un bloque se "hornearía" el valor de ejemplo sobre
+     * el marcador real, perdiéndolo para siempre. El editor visual nunca debe
+     * sustituir: el marcador se queda literal en heading/text/list/kpi/footer.
+     */
+    public function test_editor_option_leaves_variable_markers_untouched_instead_of_substituting(): void
+    {
+        $html = $this->render([
+            ['tipo' => 'heading', 'texto' => 'Hola {{contacto}}'],
+            ['tipo' => 'text', 'texto' => 'De {{cliente}}'],
+            ['tipo' => 'list', 'items' => ['{{servicio}}']],
+            ['tipo' => 'kpi', 'items' => [['label' => '{{mes}}', 'valor' => '{{monto}}'], ['label' => 'B', 'valor' => '2']]],
+            ['tipo' => 'footer', 'texto' => 'Firma {{responsable}}'],
+        ], ['contacto' => 'María', 'cliente' => 'Hotel Fratelli', 'servicio' => 'SEO', 'mes' => 'agosto', 'monto' => '$1', 'responsable' => 'Dilan'], ['editor' => true]);
+
+        foreach (['{{contacto}}', '{{servicio}}', '{{mes}}', '{{monto}}', '{{responsable}}'] as $marcador) {
+            $this->assertStringContainsString($marcador, $html, "El marcador {$marcador} no debería sustituirse en modo editor.");
+        }
+        // Dos excepciones a propósito, ninguna es texto editable en la previa:
+        // el <title> del documento (no es visible) y el aviso legal fijo del
+        // pie ("Recibes este correo porque X tiene servicios...").
+        $this->assertStringContainsString('<title>Hola María</title>', $html);
+        $this->assertStringContainsString('Recibes este correo porque Hotel Fratelli tiene servicios', $html);
+    }
+
+    /** Mismo criterio que con bloques: el HTML libre en modo editor no sustituye. */
+    public function test_editor_option_on_html_libre_leaves_variable_markers_untouched(): void
+    {
+        $html = RenderizadorCorreo::render([], Bloques::marcaPorDefecto(), ['contacto' => 'María'], [
+            'html_libre' => '<p>Hola {{contacto}}</p>',
+            'editor' => true,
+        ]);
+
+        $this->assertSame('<p>Hola {{contacto}}</p>', $html);
+    }
 }

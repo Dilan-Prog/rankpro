@@ -275,6 +275,8 @@
       personalizarColorHex: root.querySelector("[data-personalizar-color-hex]"),
       personalizarLogoUrlCampo: root.querySelector("[data-personalizar-logo-url-campo]"),
       personalizarSeccionesBloques: Array.from(root.querySelectorAll("[data-personalizar-seccion-bloques]")),
+      ayudaBloques: root.querySelector("[data-cp-ayuda-bloques]"),
+      ayudaHtmlLibre: root.querySelector("[data-cp-ayuda-html-libre]"),
       variablesPersonalizadasLista: root.querySelector("[data-variables-personalizadas-lista]"),
       variableNuevaClave: root.querySelector("[data-variable-nueva-clave]"),
       variableNuevaValor: root.querySelector("[data-variable-nueva-valor]"),
@@ -725,6 +727,8 @@
       const activo = state.htmlPersonalizado.trim() !== "";
       if (el.personalizarHtmlLongitud) el.personalizarHtmlLongitud.textContent = `${state.htmlPersonalizado.length.toLocaleString("es-MX")} caracteres`;
       el.personalizarSeccionesBloques.forEach((s) => s.classList.toggle("is-atenuado", activo));
+      if (el.ayudaBloques) el.ayudaBloques.hidden = activo;
+      if (el.ayudaHtmlLibre) el.ayudaHtmlLibre.hidden = !activo;
     }
 
     function pintarPersonalizarPanel() {
@@ -1102,7 +1106,9 @@
     }
 
     function posicionarExtremos() {
-      if (!state.personalizar) {
+      // En HTML propio no hay bloques que mover/añadir: los "+" de los
+      // extremos no aplican (ver engancharEdicionHtmlLibre).
+      if (!state.personalizar || state.htmlPersonalizado.trim() !== "") {
         if (elExtremoInicio) elExtremoInicio.hidden = true;
         if (elExtremoFin) elExtremoFin.hidden = true;
         return;
@@ -1212,6 +1218,25 @@
       nodo.setAttribute("aria-label", etiqueta);
     }
 
+    /**
+     * Contorno punteado sobre todo lo editable, para que se note sin necesidad
+     * de pasar el mouse encima. Va como <style> dentro del propio documento
+     * del iframe (srcdoc es un documento aparte: el CSS de este archivo no le
+     * llega) y se limpia solo en cada refresco porque srcdoc reemplaza el
+     * documento entero.
+     */
+    function inyectarEstilosEdicion(iframeDoc) {
+      if (!iframeDoc.head || iframeDoc.getElementById("cp-editor-estilos")) return;
+      const estilo = iframeDoc.createElement("style");
+      estilo.id = "cp-editor-estilos";
+      estilo.textContent = `
+        [contenteditable="true"] { cursor: text; outline: 1px dashed rgba(15,157,110,.4); outline-offset: 2px; border-radius: 2px; transition: outline-color .12s ease, background-color .12s ease; }
+        [contenteditable="true"]:hover { outline-color: rgba(15,157,110,.8); background-color: rgba(15,157,110,.06); }
+        [contenteditable="true"]:focus { outline: 2px solid rgba(15,157,110,.9); background-color: rgba(15,157,110,.08); }
+      `;
+      iframeDoc.head.appendChild(estilo);
+    }
+
     function indiceDeBloque(nodoBloque, iframeDoc) {
       const bloques = Array.from(iframeDoc.querySelectorAll("[data-rp-bloque]"));
       return bloques.indexOf(nodoBloque);
@@ -1306,6 +1331,96 @@
       abrirPopover(i, tipo, nodoBloque);
     }
 
+    // ---- Edición de texto genérica para HTML propio ---------------------------
+    // Cuando el envío usa HTML propio (state.htmlPersonalizado), el backend no
+    // envuelve nada en data-rp-bloque (RenderizadorCorreo::render() solo lo
+    // hace para el árbol de bloques, ver documento()/bloque()): el HTML es el
+    // que pegó el usuario, de estructura arbitraria. En vez de un editor de
+    // bloques, se hace contenteditable cada nodo "hoja de texto" (sin hijos
+    // elemento, o solo hijos de formato en línea) y, al editar, se recaptura
+    // el documento completo de vuelta a state.htmlPersonalizado. Esto es
+    // seguro solo porque editor:true hace que el backend deje los {{marcador}}
+    // literales en vez de sustituirlos (ver RenderizadorCorreo::texto()): el
+    // round-trip nunca puede hornear un valor de ejemplo sobre un marcador.
+
+    const CP_ETIQUETAS_INLINE = new Set(["SPAN", "STRONG", "B", "EM", "I", "A", "U", "BR", "SMALL", "SUP", "SUB", "MARK", "Q", "ABBR", "CODE", "FONT"]);
+    const CP_ETIQUETAS_NO_EDITABLES = new Set(["SCRIPT", "STYLE", "HEAD", "TITLE", "IMG", "BR", "HR", "INPUT", "BUTTON", "SELECT", "TEXTAREA", "IFRAME", "SVG", "META", "LINK", "VIDEO", "AUDIO", "CANVAS"]);
+
+    function esNodoTextoHojaHtmlLibre(nodo) {
+      if (!nodo || nodo.nodeType !== 1 || CP_ETIQUETAS_NO_EDITABLES.has(nodo.tagName)) return false;
+      const hijos = Array.from(nodo.children);
+      if (hijos.length === 0) return nodo.textContent.trim() !== "";
+      return hijos.every((h) => CP_ETIQUETAS_INLINE.has(h.tagName)) && nodo.textContent.trim() !== "";
+    }
+
+    /** Recorre el árbol marcando el primer nodo-hoja de texto que encuentra en cada rama (no desciende más allá). */
+    function marcarEditablesHtmlLibre(nodo) {
+      if (!nodo || nodo.nodeType !== 1 || nodo.tagName === "SCRIPT" || nodo.tagName === "STYLE" || nodo.tagName === "HEAD") return;
+      if (esNodoTextoHojaHtmlLibre(nodo)) {
+        marcarEditable(nodo, "Texto del correo");
+        return;
+      }
+      Array.from(nodo.children).forEach(marcarEditablesHtmlLibre);
+    }
+
+    /** Evita que un <a> navegue el iframe al hacer clic para editar el texto que contiene. */
+    function manejarClickEnlaceHtmlLibre(e) {
+      const a = e.target.closest && e.target.closest("a");
+      if (a) e.preventDefault();
+    }
+
+    /** Recorta contenteditable/role/aria-label (los puso marcarEditablesHtmlLibre, no son parte del correo) antes de guardar. */
+    function capturarHtmlDesdeIframe(iframeDoc) {
+      const clon = iframeDoc.documentElement.cloneNode(true);
+      clon.querySelectorAll("[contenteditable]").forEach((n) => {
+        n.removeAttribute("contenteditable");
+        n.removeAttribute("role");
+        n.removeAttribute("aria-label");
+      });
+      return "<!doctype html>\n" + clon.outerHTML;
+    }
+
+    function capturarYProgramarHtmlLibre() {
+      let iframeDoc;
+      try {
+        iframeDoc = el.previaFrame.contentDocument;
+      } catch (e) {
+        return;
+      }
+      if (!iframeDoc || !iframeDoc.documentElement) return;
+      state.htmlPersonalizado = capturarHtmlDesdeIframe(iframeDoc);
+      state.previaDesincronizada = false;
+      if (el.personalizarHtmlCodigo) el.personalizarHtmlCodigo.value = state.htmlPersonalizado;
+      reflejarHtmlPersonalizado();
+      programarPrevia();
+    }
+
+    function manejarInputHtmlLibre(e) {
+      const t = e.target;
+      if (!t.hasAttribute || !t.hasAttribute("contenteditable")) return;
+      state.previaDesincronizada = true;
+      clearTimeout(escrituraTimer);
+      // Mismo debounce de 1500ms que la edición por bloques: por si el usuario
+      // escribe un párrafo largo sin salir del campo.
+      escrituraTimer = setTimeout(() => {
+        if (state.previaDesincronizada) capturarYProgramarHtmlLibre();
+      }, 1500);
+    }
+
+    function manejarBlurHtmlLibre(e) {
+      const t = e.target;
+      if (!t.hasAttribute || !t.hasAttribute("contenteditable")) return;
+      if (state.previaDesincronizada) capturarYProgramarHtmlLibre();
+    }
+
+    function engancharEdicionHtmlLibre(iframeDoc) {
+      marcarEditablesHtmlLibre(iframeDoc.body);
+      iframeDoc.body.addEventListener("input", manejarInputHtmlLibre);
+      iframeDoc.body.addEventListener("focusout", manejarBlurHtmlLibre);
+      iframeDoc.body.addEventListener("click", manejarClickEnlaceHtmlLibre);
+      iframeDoc.addEventListener("selectionchange", () => manejarCambioSeleccionEdicion(iframeDoc));
+    }
+
     /**
      * Recuerda dónde estaba el cursor dentro de un nodo editable de la previa,
      * para que un clic en un chip de variable (que vive en el documento padre
@@ -1384,6 +1499,17 @@
       // El click en botón/imagen abre el popover incluso en previa de solo
       // lectura sería confuso; solo se activa si se está personalizando.
       if (!state.personalizar) {
+        posicionarExtremos();
+        return;
+      }
+
+      inyectarEstilosEdicion(iframeDoc);
+
+      // HTML propio: no hay data-rp-bloque (el backend no envuelve el html
+      // libre), así que se usa el motor de edición de texto genérico en vez
+      // del de bloques.
+      if (state.htmlPersonalizado.trim() !== "") {
+        engancharEdicionHtmlLibre(iframeDoc);
         posicionarExtremos();
         return;
       }

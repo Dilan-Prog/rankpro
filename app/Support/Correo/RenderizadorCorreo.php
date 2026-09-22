@@ -44,7 +44,10 @@ final class RenderizadorCorreo
         $editor = (bool) ($opciones['editor'] ?? false);
 
         if ($htmlLibre !== '') {
-            $html = Variables::sustituir($htmlLibre, $variables);
+            // En modo editor no se sustituye: el marcador {{clave}} se queda
+            // visible tal cual, para que editar el texto alrededor nunca borre
+            // el marcador (ver envolverEditor() y el docblock de la clase).
+            $html = $editor ? $htmlLibre : Variables::sustituir($htmlLibre, $variables);
         } else {
             $html = self::documento($bloques, array_replace(Bloques::marcaPorDefecto(), $marca), $variables, $editor);
         }
@@ -103,17 +106,20 @@ final class RenderizadorCorreo
     private static function documento(array $bloques, array $marca, array $variables, bool $editor = false): string
     {
         $color = self::colorSeguro($marca['color'] ?? null);
-        $logo = self::cabeceraMarca($marca, $color, $variables);
+        $logo = self::cabeceraMarca($marca, $color, $variables, $editor);
         $cuerpo = implode("\n", array_filter(array_map(
             fn ($b, $i) => self::bloque(is_array($b) ? $b : [], $color, $variables, $i, $editor),
             $bloques,
             array_keys($bloques)
         )));
         $tituloBloque = collect($bloques)->first(fn ($b) => is_array($b) && ($b['tipo'] ?? '') === 'heading');
+        // El <title> del documento no se edita en vivo (no es visible en la
+        // previa), así que siempre lleva el valor sustituido, aunque $editor sea true.
         $titulo = self::texto((string) ($tituloBloque['texto'] ?? 'RankPro'), $variables);
         $paddingCabecera = $logo !== '' ? '22px' : '14px';
-        $redes = self::redes($marca, $color, $variables);
+        $redes = self::redes($marca, $color, $variables, $editor);
         // Aviso legal del pie: si no hay {{cliente}} en el envío, no dejamos un hueco.
+        // Siempre sustituido (no es un texto editable, es un aviso fijo del sistema).
         $cliente = self::texto('{{cliente}}', $variables);
         $clienteLegal = $cliente !== '' ? $cliente : 'tu empresa';
         $FONDO = self::FONDO;
@@ -163,10 +169,10 @@ HTML;
      * @param  array<string, mixed>  $marca
      * @param  array<string, mixed>  $variables
      */
-    private static function cabeceraMarca(array $marca, string $color, array $variables): string
+    private static function cabeceraMarca(array $marca, string $color, array $variables, bool $editor = false): string
     {
         $fuente = self::FUENTE;
-        $tagline = self::texto((string) ($marca['tagline'] ?? ''), $variables);
+        $tagline = self::texto((string) ($marca['tagline'] ?? ''), $variables, $editor);
         $taglineHtml = $tagline !== ''
             ? "<div style=\"font-family:{$fuente};font-size:11px;line-height:1.4;color:rgba(255,255,255,.8);letter-spacing:.04em\">{$tagline}</div>"
             : '';
@@ -183,6 +189,8 @@ HTML;
                     .$taglineHtml;
 
             case 'imagen':
+                // La URL del logo (atributo src) nunca se deja "en editor": no es
+                // texto visible que se pueda escribir encima, así que siempre va sustituida.
                 $url = self::url((string) ($marca['logo_url'] ?? ''), $variables);
                 if ($url === '') {
                     return '';
@@ -208,14 +216,16 @@ HTML;
      * @param  array<string, mixed>  $marca
      * @param  array<string, mixed>  $variables
      */
-    private static function redes(array $marca, string $color, array $variables): string
+    private static function redes(array $marca, string $color, array $variables, bool $editor = false): string
     {
         $items = [];
         foreach ((array) ($marca['redes'] ?? []) as $red) {
             if (! is_array($red)) {
                 continue;
             }
-            $nombre = self::texto((string) ($red['nombre'] ?? ''), $variables);
+            $nombre = self::texto((string) ($red['nombre'] ?? ''), $variables, $editor);
+            // La URL del enlace nunca queda "en editor": no hay forma de escribir
+            // encima de un href visible en la previa.
             $url = self::url((string) ($red['url'] ?? ''), $variables);
             if ($nombre === '' || $url === '') {
                 continue;
@@ -252,13 +262,13 @@ HTML;
         switch ($tipo) {
             case 'heading':
                 $alineacion = ($b['alineacion'] ?? 'izquierda') === 'centro' ? 'center' : 'left';
-                $texto = self::texto((string) ($b['texto'] ?? ''), $variables);
+                $texto = self::texto((string) ($b['texto'] ?? ''), $variables, $editor);
                 $contenido = "<h1 style=\"margin:0;font-family:{$fuente};font-size:24px;line-height:1.3;font-weight:700;color:{$tinta};text-align:{$alineacion}\">{$texto}</h1>";
 
                 return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '0 32px 14px');
 
             case 'text':
-                $parrafos = preg_split('/\r\n|\r|\n/', self::texto((string) ($b['texto'] ?? ''), $variables)) ?: [];
+                $parrafos = preg_split('/\r\n|\r|\n/', self::texto((string) ($b['texto'] ?? ''), $variables, $editor)) ?: [];
                 $html = '';
                 foreach ($parrafos as $p) {
                     if (trim($p) === '') {
@@ -276,7 +286,7 @@ HTML;
             case 'list':
                 $items = '';
                 foreach ((array) ($b['items'] ?? []) as $item) {
-                    $texto = self::texto((string) $item, $variables);
+                    $texto = self::texto((string) $item, $variables, $editor);
                     if ($texto === '') {
                         continue;
                     }
@@ -300,8 +310,8 @@ HTML;
                 }
                 $celdas = [];
                 foreach ($items as $i => $item) {
-                    $valor = self::texto((string) ($item['valor'] ?? ''), $variables);
-                    $label = self::texto((string) ($item['label'] ?? ''), $variables);
+                    $valor = self::texto((string) ($item['valor'] ?? ''), $variables, $editor);
+                    $label = self::texto((string) ($item['label'] ?? ''), $variables, $editor);
                     if ($i > 0) {
                         $celdas[] = '<td class="rp-gap" width="10" style="width:10px;font-size:0;line-height:0">&nbsp;</td>';
                     }
@@ -344,7 +354,7 @@ HTML;
                 return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '8px 32px 20px');
 
             case 'footer':
-                $texto = nl2br(self::texto((string) ($b['texto'] ?? ''), $variables), false);
+                $texto = nl2br(self::texto((string) ($b['texto'] ?? ''), $variables, $editor), false);
                 if (trim($texto) === '') {
                     return '';
                 }
@@ -385,11 +395,15 @@ HTML;
     /**
      * Sustituye variables y escapa: el orden importa (ver docblock de clase).
      *
+     * En modo `$editor` NO se sustituye: el marcador `{{clave}}` se deja tal
+     * cual (solo escapado), para que el editor visual nunca pueda "hornear"
+     * un valor de ejemplo sobre el marcador real al editar el texto alrededor.
+     *
      * @param  array<string, mixed>  $variables
      */
-    private static function texto(string $texto, array $variables): string
+    private static function texto(string $texto, array $variables, bool $editor = false): string
     {
-        return e(Variables::sustituir($texto, $variables));
+        return e($editor ? $texto : Variables::sustituir($texto, $variables));
     }
 
     /**
