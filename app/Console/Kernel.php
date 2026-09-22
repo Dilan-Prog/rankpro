@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('correo:procesar-programados')->everyMinute()->withoutOverlapping();
+        $schedule->command('webhooks:reintentar')->everyMinute()->withoutOverlapping();
     }
 
     /**

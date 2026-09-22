@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EstadoCampana;
 use App\Enums\FaseAutomatizacion;
+use App\Exceptions\ErrorDeFase;
 use App\Http\Controllers\Controller;
-use App\Models\AutomatizacionFaseDiagnostico;
-use App\Models\AutomatizacionFaseDiseno;
-use App\Models\AutomatizacionFaseImplementacion;
 use App\Models\AutomatizacionProyecto;
-use App\Models\AutomatizacionReporte;
+use App\Services\Fases\MaquinaAutomatizacion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class AutomatizacionFaseController extends Controller
 {
+    public function __construct(private MaquinaAutomatizacion $maquina)
+    {
+    }
+
     /**
      * Autosave endpoint for the current phase's panel. Every phase row is
      * cycle-scoped (automatizacion_proyectos.ciclo_actual), y las relaciones
@@ -76,13 +77,10 @@ class AutomatizacionFaseController extends Controller
             ]),
         };
 
-        $registro = $this->registroFase($proyecto, $fase);
+        $registro = $this->maquina->registro($proyecto, $fase);
 
         if (array_key_exists('checklist', $data)) {
-            $keys = $this->checklistKeys($fase);
-            $data['checklist'] = collect($keys)
-                ->mapWithKeys(fn ($label, $key) => [$key => (bool) ($data['checklist'][$key] ?? $registro->checklist[$key] ?? false)])
-                ->all();
+            $data['checklist'] = $this->maquina->fusionarChecklist($registro, $fase, $data['checklist']);
         }
 
         // Los campos booleanos solo llegan en $data cuando el checkbox está marcado (HTML omite los desmarcados), así que necesitan un fallback explícito a false vía $request->boolean().
@@ -94,127 +92,63 @@ class AutomatizacionFaseController extends Controller
 
         return response()->json([
             'checklist' => $registro->fresh()->checklist,
-            'completo' => $this->checklistCompleto($registro->fresh(), $fase),
+            'completo' => $this->maquina->checklistCompleto($registro->fresh(), $fase),
         ]);
     }
 
     public function aprobar(AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        $fase = $proyecto->fase_actual;
-
-        if ($fase === FaseAutomatizacion::Cerrada) {
-            return back()->withErrors(['fase' => 'Este proyecto está cerrado.']);
+        try {
+            $r = $this->maquina->aprobar($proyecto);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $registro = $this->registroFase($proyecto, $fase);
-
-        if (! $this->checklistCompleto($registro, $fase)) {
-            return back()->withErrors(['checklist' => 'Completa todo el checklist antes de aprobar esta fase.']);
-        }
-
-        $registro->update(['aprobado' => true, 'fecha_aprobacion' => now()]);
-
-        $siguiente = $fase->siguiente();
-
-        if ($siguiente === null) {
-            // Reporte aprobado: se queda en "reporte" hasta que se elija Nuevo Ciclo / Cerrar / Pausar.
-            return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', 'Reporte aprobado. Elige cómo continuar el proyecto.');
-        }
-
-        $proyecto->fase_actual = $siguiente;
-        $proyecto->save();
-
-        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', 'Fase aprobada. El proyecto avanzó a la siguiente etapa.');
+        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', $r->mensaje);
     }
 
     public function retroceder(AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        $fase = $proyecto->fase_actual;
-        $anterior = $fase->anterior();
-
-        if ($anterior === null) {
-            return back()->withErrors(['fase' => 'El proyecto ya está en la primera fase o está cerrado.']);
+        try {
+            $r = $this->maquina->retroceder($proyecto);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $this->registroFase($proyecto, $anterior)->update(['aprobado' => false, 'fecha_aprobacion' => null]);
-
-        $proyecto->fase_actual = $anterior;
-        $proyecto->save();
-
-        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', 'El proyecto retrocedió a la fase anterior.');
+        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', $r->mensaje);
     }
 
-    /** Archiva el ciclo actual y arranca uno nuevo desde Fase 1 — el historial queda consultable vía proyecto->diagnosticos()/disenos()/implementaciones()/reportes(). */
     public function nuevoCiclo(AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($proyecto)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de iniciar uno nuevo.']);
+        try {
+            $r = $this->maquina->nuevoCiclo($proyecto);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $nuevo = $proyecto->ciclo_actual + 1;
-
-        $proyecto->diagnosticos()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $proyecto->disenos()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $proyecto->implementaciones()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $proyecto->reportes()->create(['ciclo' => $nuevo, 'checklist' => []]);
-
-        $proyecto->fase_actual = FaseAutomatizacion::Diagnostico;
-        $proyecto->ciclo_actual = $nuevo;
-        $proyecto->save();
-
-        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', "Ciclo {$nuevo} iniciado. El proyecto volvió a fase de Diagnóstico.");
+        return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', $r->mensaje.' El proyecto volvió a fase de Diagnóstico.');
     }
 
     public function cerrar(AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($proyecto)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de cerrar el proyecto.']);
+        try {
+            $this->maquina->cerrar($proyecto);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
-
-        $proyecto->fase_actual = FaseAutomatizacion::Cerrada;
-        $proyecto->estado = EstadoCampana::Finalizada;
-        $proyecto->save();
 
         return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', 'Proyecto cerrado.');
     }
 
     public function pausar(AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($proyecto)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de pausar el proyecto.']);
+        try {
+            $this->maquina->pausar($proyecto);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $proyecto->estado = EstadoCampana::Pausada;
-        $proyecto->save();
-
         return redirect()->route('admin.automatizaciones.show', $proyecto)->with('status', 'Proyecto pausado.');
-    }
-
-    private function reporteListoParaCerrarCiclo(AutomatizacionProyecto $proyecto): bool
-    {
-        return $proyecto->fase_actual === FaseAutomatizacion::Reporte && (bool) $proyecto->reporteActual?->aprobado;
-    }
-
-    private function registroFase(AutomatizacionProyecto $proyecto, FaseAutomatizacion $fase)
-    {
-        return match ($fase) {
-            FaseAutomatizacion::Diagnostico => $proyecto->faseDiagnostico ?? $proyecto->diagnosticos()->create(['ciclo' => $proyecto->ciclo_actual, 'checklist' => []]),
-            FaseAutomatizacion::DisenoFlujo => $proyecto->faseDiseno ?? $proyecto->disenos()->create(['ciclo' => $proyecto->ciclo_actual, 'checklist' => []]),
-            FaseAutomatizacion::Implementacion => $proyecto->faseImplementacion ?? $proyecto->implementaciones()->create(['ciclo' => $proyecto->ciclo_actual, 'checklist' => []]),
-            FaseAutomatizacion::Reporte => $proyecto->reporteActual ?? $proyecto->reportes()->create(['ciclo' => $proyecto->ciclo_actual, 'checklist' => []]),
-            FaseAutomatizacion::Cerrada => throw new \InvalidArgumentException('El proyecto está cerrado.'),
-        };
-    }
-
-    private function checklistKeys(FaseAutomatizacion $fase): array
-    {
-        return match ($fase) {
-            FaseAutomatizacion::Diagnostico => AutomatizacionFaseDiagnostico::CHECKLIST,
-            FaseAutomatizacion::DisenoFlujo => AutomatizacionFaseDiseno::CHECKLIST,
-            FaseAutomatizacion::Implementacion => AutomatizacionFaseImplementacion::CHECKLIST,
-            FaseAutomatizacion::Reporte => AutomatizacionReporte::CHECKLIST,
-            FaseAutomatizacion::Cerrada => [],
-        };
     }
 
     private function booleanFields(FaseAutomatizacion $fase): array
@@ -225,19 +159,5 @@ class AutomatizacionFaseController extends Controller
             FaseAutomatizacion::Reporte => ['continua_proyecto'],
             default => [],
         };
-    }
-
-    private function checklistCompleto($registro, FaseAutomatizacion $fase): bool
-    {
-        $keys = array_keys($this->checklistKeys($fase));
-        $checklist = $registro->checklist ?? [];
-
-        foreach ($keys as $key) {
-            if (empty($checklist[$key])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

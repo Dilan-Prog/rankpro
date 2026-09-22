@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EstadoClienteServicio;
-use App\Enums\FormaPago;
-use App\Enums\MetodoPago;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
+use App\Support\Reglas\Clientes as ReglasClientes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClientesController extends Controller
@@ -81,18 +78,6 @@ class ClientesController extends Controller
 
     private function validated(Request $request, ?Cliente $cliente = null): array
     {
-        return $request->validate([
-            'nombre' => ['required', 'string', 'max:255'],
-            'empresa' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('clientes', 'email')->ignore($cliente?->id)->where(fn ($q) => $q->whereNull('deleted_at'))],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'contacto_nombre' => ['nullable', 'string', 'max:255'],
-            'estado' => ['required', Rule::enum(EstadoClienteServicio::class)],
-            'fecha_inicio_contrato' => ['nullable', 'date'],
-            'fecha_renovacion_contrato' => ['nullable', 'date'],
-            'forma_pago' => ['nullable', Rule::enum(FormaPago::class)],
-            'metodo_pago' => ['nullable', Rule::enum(MetodoPago::class)],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        return $request->validate(ReglasClientes::guardar($cliente));
     }
 }

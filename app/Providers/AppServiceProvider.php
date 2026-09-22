@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Webhooks\Despachador;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -13,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Singleton: acumula las entregas pendientes de la petición en curso y
+        // las vacía una sola vez en app()->terminating() (ver Despachador::emitir).
+        $this->app->singleton(Despachador::class);
     }
 
     /**

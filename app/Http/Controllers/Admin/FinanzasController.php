@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\Finanza;
 use App\Models\Servicio;
 use App\Support\FinanzasMetrics;
+use App\Support\Reglas\Finanzas as ReglasFinanzas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -175,19 +176,6 @@ class FinanzasController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['nullable', 'integer', 'exists:servicios,id'],
-            'concepto' => ['required', 'string', 'max:255'],
-            'tipo' => ['required', 'in:ingreso,gasto'],
-            'monto' => ['required', 'numeric', 'min:0'],
-            'estado' => ['required', 'in:pagado,pendiente,vencido'],
-            'fecha_emision' => ['nullable', 'date'],
-            'fecha_vencimiento' => ['nullable', 'date'],
-            'fecha_pago' => ['nullable', 'date'],
-            'mes' => ['required', 'integer', 'min:1', 'max:12'],
-            'anio' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        return $request->validate(ReglasFinanzas::guardar());
     }
 }

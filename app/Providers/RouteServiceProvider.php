@@ -24,8 +24,13 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Por token de Sanctum cuando lo hay (API v1: cada token de n8n tiene su
+        // propio límite), si no por usuario o IP (la ruta /api/user de ejemplo).
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            $token = $request->user()?->currentAccessToken();
+            $llave = $token ? 'token:'.$token->id : ($request->user()?->id ?: $request->ip());
+
+            return Limit::perMinute((int) config('api.rate_limit', 120))->by($llave);
         });
 
         // El token del snippet no es un límite de confidencialidad (el JS que lo porta es público en el sitio del cliente), solo de atribución — el límite es por IP.

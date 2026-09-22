@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\TipoConversion;
 use App\Http\Controllers\Controller;
-use App\Models\AdsCampana;
-use App\Models\AdsClic;
 use App\Models\Cliente;
+use App\Support\Conversiones\RegistradorConversion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,11 +31,10 @@ class TrackingController extends Controller
             'referrer' => ['nullable', 'string', 'max:2048'],
         ]);
 
-        $data['ads_campana_id'] = $this->matchCampana($cliente, $data['utm_campaign'] ?? null);
         $data['user_agent'] = $request->userAgent();
         $data['ip_address'] = $request->ip();
 
-        $cliente->adsClics()->create($data);
+        RegistradorConversion::registrarClic($cliente, $data);
 
         return response()->json(['ok' => true], 201);
     }
@@ -56,18 +54,7 @@ class TrackingController extends Controller
             'metadata' => ['nullable', 'array'],
         ]);
 
-        $clic = $cliente->adsClics()->where('visitor_id', $data['visitor_id'])->latest('created_at')->first();
-
-        // Respaldo server-side: si el navegador no traía el gclid (localStorage limpiado), se copia del último clic conocido de ese visitor_id.
-        foreach (['gclid', 'gbraid', 'wbraid'] as $campo) {
-            if (empty($data[$campo]) && $clic) {
-                $data[$campo] = $clic->{$campo};
-            }
-        }
-
-        $data['ads_clic_id'] = $clic?->id;
-
-        $cliente->adsConversiones()->create($data);
+        RegistradorConversion::registrarConversion($cliente, $data);
 
         return response()->json(['ok' => true], 201);
     }
@@ -85,22 +72,5 @@ class TrackingController extends Controller
         return response($js, 200)
             ->header('Content-Type', 'application/javascript; charset=utf-8')
             ->header('Cache-Control', 'public, max-age=300');
-    }
-
-    /**
-     * Match best-effort por nombre de campaña — solo si hay coincidencia
-     * única, nunca adivina entre varias.
-     */
-    private function matchCampana(Cliente $cliente, ?string $utmCampaign): ?int
-    {
-        if (blank($utmCampaign)) {
-            return null;
-        }
-
-        $campanas = AdsCampana::where('cliente_id', $cliente->id)
-            ->whereRaw('LOWER(nombre) = ?', [strtolower($utmCampaign)])
-            ->pluck('id');
-
-        return $campanas->count() === 1 ? $campanas->first() : null;
     }
 }

@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EstadoCampana;
 use App\Enums\FaseAds;
+use App\Exceptions\ErrorDeFase;
 use App\Http\Controllers\Controller;
-use App\Models\AdsBriefing;
 use App\Models\AdsCampana;
-use App\Models\AdsConfiguracion;
-use App\Models\AdsLanzamiento;
-use App\Models\AdsReporte;
+use App\Services\Fases\MaquinaAds;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class AdsFaseController extends Controller
 {
+    public function __construct(private MaquinaAds $maquina)
+    {
+    }
+
     /**
      * Autosave endpoint for the current phase's panel. Every phase row is
      * cycle-scoped; the singular relations on AdsCampana (ofMany 'ciclo',
@@ -81,13 +82,10 @@ class AdsFaseController extends Controller
             ]),
         };
 
-        $registro = $this->registroFase($campana, $fase);
+        $registro = $this->maquina->registro($campana, $fase);
 
         if (array_key_exists('checklist', $data)) {
-            $keys = $this->checklistKeys($fase);
-            $data['checklist'] = collect($keys)
-                ->mapWithKeys(fn ($label, $key) => [$key => (bool) ($data['checklist'][$key] ?? $registro->checklist[$key] ?? false)])
-                ->all();
+            $data['checklist'] = $this->maquina->fusionarChecklist($registro, $fase, $data['checklist']);
         }
 
         // HTML checkboxes omit unchecked fields, so booleans need an explicit false fallback.
@@ -99,125 +97,63 @@ class AdsFaseController extends Controller
 
         return response()->json([
             'checklist' => $registro->fresh()->checklist,
-            'completo' => $this->checklistCompleto($registro->fresh(), $fase),
+            'completo' => $this->maquina->checklistCompleto($registro->fresh(), $fase),
         ]);
     }
 
     public function aprobar(AdsCampana $campana): RedirectResponse
     {
-        $fase = $campana->fase_actual;
-
-        if ($fase === FaseAds::Cerrada) {
-            return back()->withErrors(['fase' => 'Esta campaña está cerrada.']);
+        try {
+            $r = $this->maquina->aprobar($campana);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $registro = $this->registroFase($campana, $fase);
-
-        if (! $this->checklistCompleto($registro, $fase)) {
-            return back()->withErrors(['checklist' => 'Completa todo el checklist antes de aprobar esta fase.']);
-        }
-
-        $registro->update(['aprobado' => true, 'fecha_aprobacion' => now()]);
-
-        $siguiente = $fase->siguiente();
-
-        if ($siguiente === null) {
-            return redirect()->route('admin.ads.show', $campana)->with('status', 'Reporte aprobado. Elige cómo continuar la campaña.');
-        }
-
-        $campana->fase_actual = $siguiente;
-        $campana->save();
-
-        return redirect()->route('admin.ads.show', $campana)->with('status', 'Fase aprobada. La campaña avanzó a la siguiente etapa.');
+        return redirect()->route('admin.ads.show', $campana)->with('status', $r->mensaje);
     }
 
     public function retroceder(AdsCampana $campana): RedirectResponse
     {
-        $anterior = $campana->fase_actual->anterior();
-
-        if ($anterior === null) {
-            return back()->withErrors(['fase' => 'La campaña ya está en la primera fase o está cerrada.']);
+        try {
+            $r = $this->maquina->retroceder($campana);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $this->registroFase($campana, $anterior)->update(['aprobado' => false, 'fecha_aprobacion' => null]);
-
-        $campana->fase_actual = $anterior;
-        $campana->save();
-
-        return redirect()->route('admin.ads.show', $campana)->with('status', 'La campaña retrocedió a la fase anterior.');
+        return redirect()->route('admin.ads.show', $campana)->with('status', $r->mensaje);
     }
 
-    /** Archives the current cycle and restarts from Briefing — history stays via briefings()/configuraciones()/lanzamientos()/reportes(). */
     public function nuevoCiclo(AdsCampana $campana): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($campana)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de iniciar uno nuevo.']);
+        try {
+            $r = $this->maquina->nuevoCiclo($campana);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $nuevo = $campana->ciclo_actual + 1;
-
-        $campana->briefings()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $campana->configuraciones()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $campana->lanzamientos()->create(['ciclo' => $nuevo, 'checklist' => []]);
-        $campana->reportes()->create(['ciclo' => $nuevo, 'checklist' => []]);
-
-        $campana->fase_actual = FaseAds::Briefing;
-        $campana->ciclo_actual = $nuevo;
-        $campana->save();
-
-        return redirect()->route('admin.ads.show', $campana)->with('status', "Ciclo {$nuevo} iniciado. La campaña volvió a fase de Briefing.");
+        return redirect()->route('admin.ads.show', $campana)->with('status', $r->mensaje.' La campaña volvió a fase de Briefing.');
     }
 
     public function cerrar(AdsCampana $campana): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($campana)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de cerrar la campaña.']);
+        try {
+            $this->maquina->cerrar($campana);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
-
-        $campana->fase_actual = FaseAds::Cerrada;
-        $campana->estado = EstadoCampana::Finalizada;
-        $campana->save();
 
         return redirect()->route('admin.ads.show', $campana)->with('status', 'Campaña cerrada.');
     }
 
     public function pausar(AdsCampana $campana): RedirectResponse
     {
-        if (! $this->reporteListoParaCerrarCiclo($campana)) {
-            return back()->withErrors(['fase' => 'Aprueba el reporte del ciclo actual antes de pausar la campaña.']);
+        try {
+            $this->maquina->pausar($campana);
+        } catch (ErrorDeFase $e) {
+            return back()->withErrors([$e->campo => $e->getMessage()]);
         }
 
-        $campana->estado = EstadoCampana::Pausada;
-        $campana->save();
-
         return redirect()->route('admin.ads.show', $campana)->with('status', 'Campaña pausada.');
-    }
-
-    private function reporteListoParaCerrarCiclo(AdsCampana $campana): bool
-    {
-        return $campana->fase_actual === FaseAds::Reporte && (bool) $campana->reporteActual?->aprobado;
-    }
-
-    private function registroFase(AdsCampana $campana, FaseAds $fase)
-    {
-        return match ($fase) {
-            FaseAds::Briefing => $campana->briefing ?? $campana->briefings()->create(['ciclo' => $campana->ciclo_actual, 'checklist' => []]),
-            FaseAds::Configuracion => $campana->configuracion ?? $campana->configuraciones()->create(['ciclo' => $campana->ciclo_actual, 'checklist' => []]),
-            FaseAds::Lanzamiento => $campana->lanzamiento ?? $campana->lanzamientos()->create(['ciclo' => $campana->ciclo_actual, 'checklist' => []]),
-            FaseAds::Reporte => $campana->reporteActual ?? $campana->reportes()->create(['ciclo' => $campana->ciclo_actual, 'checklist' => []]),
-            FaseAds::Cerrada => throw new \InvalidArgumentException('La campaña está cerrada.'),
-        };
-    }
-
-    private function checklistKeys(FaseAds $fase): array
-    {
-        return match ($fase) {
-            FaseAds::Briefing => AdsBriefing::CHECKLIST,
-            FaseAds::Configuracion => AdsConfiguracion::CHECKLIST,
-            FaseAds::Lanzamiento => AdsLanzamiento::CHECKLIST,
-            FaseAds::Reporte => AdsReporte::CHECKLIST,
-            FaseAds::Cerrada => [],
-        };
     }
 
     private function booleanFields(FaseAds $fase): array
@@ -227,19 +163,5 @@ class AdsFaseController extends Controller
             FaseAds::Reporte => ['continua_campana'],
             default => [],
         };
-    }
-
-    private function checklistCompleto($registro, FaseAds $fase): bool
-    {
-        $keys = array_keys($this->checklistKeys($fase));
-        $checklist = $registro->checklist ?? [];
-
-        foreach ($keys as $key) {
-            if (empty($checklist[$key])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

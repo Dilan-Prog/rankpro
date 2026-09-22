@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EstadoClienteServicio;
-use App\Enums\TipoServicio;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\Servicio;
 use App\Models\ServicioEvento;
 use App\Models\User;
+use App\Support\Reglas\Servicios as ReglasServicios;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ServiciosController extends Controller
@@ -108,16 +106,6 @@ class ServiciosController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'responsable_id' => ['nullable', 'integer', 'exists:users,id'],
-            'tipo' => ['required', Rule::enum(TipoServicio::class)],
-            'nombre' => ['required', 'string', 'max:255'],
-            'descripcion' => ['nullable', 'string', 'max:2000'],
-            'precio_mensual' => ['required', 'numeric', 'min:0'],
-            'estado' => ['required', Rule::enum(EstadoClienteServicio::class)],
-            'fecha_inicio' => ['nullable', 'date', 'required_with:fecha_fin'],
-            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
-        ]);
+        return $request->validate(ReglasServicios::guardar());
     }
 }

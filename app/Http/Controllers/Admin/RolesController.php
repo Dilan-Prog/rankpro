@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Support\Reglas\Roles as ReglasRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class RolesController extends Controller
@@ -83,17 +83,6 @@ class RolesController extends Controller
 
     private function validated(Request $request, ?Role $role = null): array
     {
-        return $request->validate([
-            'name' => [
-                'required', 'string', 'max:100', 'regex:/^[a-z0-9_]+$/',
-                $role ? Rule::unique('roles', 'name')->ignore($role->id) : Rule::unique('roles', 'name'),
-            ],
-            'label' => ['required', 'string', 'max:150'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'permissions' => ['array'],
-            'permissions.*' => ['integer', 'exists:permissions,id'],
-        ], [
-            'name.regex' => 'El identificador solo puede tener minúsculas, números y guion bajo.',
-        ]);
+        return $request->validate(ReglasRoles::guardar($role), ReglasRoles::mensajes());
     }
 }

@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DesarrolloController;
 use App\Http\Controllers\Admin\DocumentosController;
 use App\Http\Controllers\Admin\FinanzasController;
+use App\Http\Controllers\Admin\IntegracionesApiController;
 use App\Http\Controllers\Admin\IntegracionesController;
 use App\Http\Controllers\Admin\KeywordImportController;
 use App\Http\Controllers\Admin\KeywordMedicionController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Admin\SeoPosicionController;
 use App\Http\Controllers\Admin\ServiciosController;
 use App\Http\Controllers\Admin\TareaController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\WebhooksController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PaginasController;
 use App\Http\Controllers\LlmsTxtController;
@@ -447,6 +449,24 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     });
 
     Route::get('/integraciones', [IntegracionesController::class, 'index'])->name('integraciones.index');
+
+    Route::prefix('integraciones/api')->name('integraciones.api.')->group(function () {
+        Route::get('/', [IntegracionesApiController::class, 'index'])->name('index');
+        Route::post('/tokens', [IntegracionesApiController::class, 'store'])->name('tokens.store');
+        Route::delete('/tokens/{token}', [IntegracionesApiController::class, 'destroy'])->name('tokens.destroy');
+        Route::get('/docs', [IntegracionesApiController::class, 'docs'])->name('docs');
+    });
+
+    Route::prefix('integraciones/webhooks')->name('integraciones.webhooks.')->group(function () {
+        Route::get('/', [WebhooksController::class, 'index'])->name('index');
+        Route::post('/', [WebhooksController::class, 'store'])->name('store');
+        Route::put('/{webhook}', [WebhooksController::class, 'update'])->name('update');
+        Route::delete('/{webhook}', [WebhooksController::class, 'destroy'])->name('destroy');
+        Route::post('/{webhook}/probar', [WebhooksController::class, 'probar'])->name('probar');
+        Route::post('/{webhook}/regenerar-secreto', [WebhooksController::class, 'regenerarSecreto'])->name('regenerar-secreto');
+        Route::get('/{webhook}/entregas', [WebhooksController::class, 'entregas'])->name('entregas');
+        Route::post('/entregas/{entrega}/reintentar', [WebhooksController::class, 'reintentar'])->name('entregas.reintentar');
+    });
 
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RolesController::class, 'index'])->name('index');

@@ -7,11 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Archivo;
 use App\Models\Cliente;
 use App\Support\Labels;
+use App\Support\Reglas\Archivos as ReglasArchivos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -45,15 +45,7 @@ class ArchivosController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'tipo' => ['required', Rule::enum(TipoArchivo::class)],
-            'nombre' => ['nullable', 'string', 'max:255'],
-            // 100 MB app-level cap — the practical ceiling on a given deployment
-            // is also bound by php.ini's upload_max_filesize/post_max_size,
-            // which this validation rule has no control over.
-            'archivo' => ['required', 'file', 'max:102400', 'mimes:pdf,zip,rar,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpg,jpeg,gif,svg,fig,txt'],
-        ]);
+        $data = $request->validate(ReglasArchivos::multipart());
 
         $file = $request->file('archivo');
         $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));

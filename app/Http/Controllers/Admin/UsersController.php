@@ -8,10 +8,9 @@ use App\Models\Role;
 use App\Models\Servicio;
 use App\Models\User;
 use App\Support\Labels;
+use App\Support\Reglas\Usuarios as ReglasUsuarios;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class UsersController extends Controller
@@ -34,15 +33,7 @@ class UsersController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
-            'area' => ['nullable', Rule::enum(AreaUsuario::class)],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validate(array_merge(ReglasUsuarios::datos(), ReglasUsuarios::passwordConfirmada()));
 
         $user = User::create([
             'name' => $data['name'],
@@ -59,14 +50,7 @@ class UsersController extends Controller
 
     public function update(Request $request, User $user): JsonResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
-            'area' => ['nullable', Rule::enum(AreaUsuario::class)],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validate(ReglasUsuarios::datos($user));
 
         if ($user->id === $request->user()->id && ! $request->boolean('is_active')) {
             return response()->json([

@@ -8,6 +8,7 @@ use App\Models\AutomatizacionFaseDiagnostico;
 use App\Models\AutomatizacionProyecto;
 use App\Models\Cliente;
 use App\Models\Servicio;
+use App\Support\Reglas\Automatizaciones as ReglasAutomatizaciones;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,27 +50,10 @@ class AutomatizacionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'fecha_inicio' => ['nullable', 'date'],
+        $data = $request->validate(ReglasAutomatizaciones::crear());
+        $data['viable'] = $request->boolean('viable');
 
-            'objetivo_cliente' => ['nullable', 'string', 'max:5000'],
-            'procesos_actuales' => ['nullable', 'string', 'max:5000'],
-            'herramientas_actuales' => ['nullable', 'string', 'max:255'],
-            'volumen_mensual_estimado' => ['nullable', 'integer', 'min:0'],
-            'viable' => ['nullable', 'boolean'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-
-            'checklist' => ['nullable', 'array'],
-            'checklist.*' => ['boolean'],
-        ]);
-
-        $checklistKeys = array_keys(AutomatizacionFaseDiagnostico::CHECKLIST);
-        $checklist = collect($checklistKeys)->mapWithKeys(fn ($key) => [$key => (bool) ($data['checklist'][$key] ?? false)])->all();
-
-        $proyecto = DB::transaction(function () use ($request, $data, $checklist) {
+        $proyecto = DB::transaction(function () use ($data) {
             $proyecto = AutomatizacionProyecto::create([
                 'cliente_id' => $data['cliente_id'],
                 'servicio_id' => $data['servicio_id'],
@@ -80,20 +64,7 @@ class AutomatizacionController extends Controller
                 'fecha_inicio' => $data['fecha_inicio'] ?? null,
             ]);
 
-            $proyecto->diagnosticos()->create([
-                'ciclo' => 1,
-                'objetivo_cliente' => $data['objetivo_cliente'] ?? null,
-                'procesos_actuales' => $data['procesos_actuales'] ?? null,
-                'herramientas_actuales' => $data['herramientas_actuales'] ?? null,
-                'volumen_mensual_estimado' => $data['volumen_mensual_estimado'] ?? null,
-                'viable' => $request->boolean('viable'),
-                'notas' => $data['notas'] ?? null,
-                'checklist' => $checklist,
-            ]);
-
-            $proyecto->disenos()->create(['ciclo' => 1, 'checklist' => []]);
-            $proyecto->implementaciones()->create(['ciclo' => 1, 'checklist' => []]);
-            $proyecto->reportes()->create(['ciclo' => 1, 'checklist' => []]);
+            ReglasAutomatizaciones::guardar($proyecto, $data);
 
             return $proyecto;
         });
@@ -130,14 +101,7 @@ class AutomatizacionController extends Controller
 
     public function update(Request $request, AutomatizacionProyecto $proyecto): RedirectResponse
     {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'estado' => ['required', 'in:activa,pausada,finalizada'],
-            'fecha_inicio' => ['nullable', 'date'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        $data = $request->validate(ReglasAutomatizaciones::actualizar());
 
         $proyecto->update($data);
 

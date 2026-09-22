@@ -10,6 +10,7 @@ use App\Models\AdsClic;
 use App\Models\AdsConversion;
 use App\Models\AdsKeywordColumna;
 use App\Models\Cliente;
+use App\Support\Reglas\Ads as ReglasAds;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,15 +34,7 @@ class AdsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'plataforma' => ['required', 'in:google_ads,meta_ads,tiktok_ads'],
-            'objetivo' => ['required', 'in:leads,ventas,trafico,branding'],
-            'presupuesto_mensual' => ['required', 'numeric', 'min:0'],
-            'fecha_inicio' => ['nullable', 'date'],
-        ]);
+        $data = $request->validate(ReglasAds::campana());
 
         $campana = DB::transaction(function () use ($data) {
             $campana = AdsCampana::create([
@@ -113,18 +106,7 @@ class AdsController extends Controller
 
     public function update(Request $request, AdsCampana $campana): JsonResponse
     {
-        $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'plataforma' => ['required', 'in:google_ads,meta_ads,tiktok_ads'],
-            'objetivo' => ['required', 'in:leads,ventas,trafico,branding'],
-            'presupuesto_mensual' => ['required', 'numeric', 'min:0'],
-            'estado' => ['required', 'in:activa,pausada,finalizada'],
-            'fecha_inicio' => ['nullable', 'date'],
-            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        $data = $request->validate(ReglasAds::campana($campana));
 
         $campana->update($data);
 

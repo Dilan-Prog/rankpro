@@ -29,6 +29,11 @@ class Cliente extends Model
         'notas',
     ];
 
+    // El token del snippet de tracking no debe filtrarse en ninguna serialización
+    // (vistas, API); se expone explícitamente solo donde hace falta (regenerarToken,
+    // la vista de integraciones vía acceso directo a la propiedad).
+    protected $hidden = ['api_token', 'api_token_regenerated_at'];
+
     protected $casts = [
         'estado' => EstadoClienteServicio::class,
         'forma_pago' => FormaPago::class,

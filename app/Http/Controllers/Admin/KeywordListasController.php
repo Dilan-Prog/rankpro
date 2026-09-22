@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\EstadoKeyword;
 use App\Http\Controllers\Controller;
 use App\Models\KeywordLista;
+use App\Support\Reglas\KeywordListas as ReglasKeywordListas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class KeywordListasController extends Controller
 {
@@ -49,12 +49,6 @@ class KeywordListasController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'responsable_id' => ['nullable', 'integer', 'exists:users,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'canal' => ['nullable', 'string', 'max:100'],
-            'estado' => ['required', Rule::enum(EstadoKeyword::class)],
-        ]);
+        return $request->validate(ReglasKeywordListas::guardar());
     }
 }

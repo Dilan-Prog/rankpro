@@ -10,6 +10,10 @@
             <h1 class="page-header__title">Integraciones</h1>
             <p class="page-header__subtitle">{{ $clientesConectados }} de {{ $clientesTotal }} clientes con tracking activo</p>
         </div>
+        <div class="page-header__actions">
+            <a href="{{ route('admin.integraciones.api.index') }}" class="btn btn--ghost"><i class="fa-solid fa-key"></i> API y tokens</a>
+            <a href="{{ route('admin.integraciones.webhooks.index') }}" class="btn btn--ghost"><i class="fa-solid fa-bolt"></i> Webhooks</a>
+        </div>
     </div>
 
     {{-- ---------- KPIs (real, computed from tracking-pixel data) ---------- --}}

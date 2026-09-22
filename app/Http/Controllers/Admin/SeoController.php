@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\SeoCampana;
 use App\Models\User;
+use App\Support\Reglas\SeoCampanas as ReglasSeoCampanas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -155,18 +156,7 @@ class SeoController extends Controller
 
     private function validated(Request $request, bool $forUpdate): array
     {
-        $rules = [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
-            'nombre' => ['required', 'string', 'max:255'],
-            'url_sitio' => ['nullable', 'string', 'max:255'],
-            'fecha_inicio' => ['nullable', 'date'],
-        ];
-
-        if ($forUpdate) {
-            $rules['estado'] = ['required', 'in:activa,pausada,finalizada'];
-            $rules['notas'] = ['nullable', 'string', 'max:2000'];
-        }
+        $rules = $forUpdate ? ReglasSeoCampanas::actualizar() : ReglasSeoCampanas::crear();
 
         return $request->validate($rules);
     }
