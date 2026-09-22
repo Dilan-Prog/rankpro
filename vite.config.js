@@ -50,6 +50,8 @@ export default defineConfig({
                 'resources/css/admin/integraciones.css',
                 'resources/css/admin/roles.css',
                 'resources/js/roles.js',
+                'resources/css/admin/configuracion.css',
+                'resources/js/configuracion.js',
                 'resources/js/documentos.js',
                 'resources/js/conversiones.js',
                 'resources/js/conversiones-embudo.js',

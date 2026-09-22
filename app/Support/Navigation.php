@@ -39,6 +39,7 @@ class Navigation
                 ['route' => 'admin.usuarios.index', 'active' => 'admin.usuarios.*', 'icon' => 'fa-users-gear', 'label' => 'Usuarios'],
                 ['route' => 'admin.roles.index', 'active' => 'admin.roles.*', 'icon' => 'fa-user-shield', 'label' => 'Roles'],
                 ['route' => 'admin.integraciones.index', 'active' => 'admin.integraciones.*', 'icon' => 'fa-plug', 'label' => 'Integraciones'],
+                ['route' => 'admin.configuracion.smtp.edit', 'active' => 'admin.configuracion.*', 'icon' => 'fa-server', 'label' => 'Configuración de correo'],
             ],
         ];
     }

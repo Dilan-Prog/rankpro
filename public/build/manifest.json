@@ -29,6 +29,11 @@
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
+  "resources/css/admin/configuracion.css": {
+    "file": "assets/configuracion-Cgxwgy8a.css",
+    "src": "resources/css/admin/configuracion.css",
+    "isEntry": true
+  },
   "resources/css/admin/correo-envios.css": {
     "file": "assets/correo-envios-ByGV5N2Q.css",
     "src": "resources/css/admin/correo-envios.css",
@@ -175,6 +180,12 @@
     "file": "assets/clientes-B362Zilk.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
+    "isEntry": true
+  },
+  "resources/js/configuracion.js": {
+    "file": "assets/configuracion-CLd-DsQi.js",
+    "name": "configuracion",
+    "src": "resources/js/configuracion.js",
     "isEntry": true
   },
   "resources/js/conversiones-embudo.js": {

@@ -1,0 +1,101 @@
+/*
+ * Módulo Configuración — hoy solo "Configuración de correo" (SMTP).
+ * Reutiliza el sistema visual global (card, field, input, select, btn,
+ * form-status) de global.css; aquí solo va lo propio: el switch de
+ * activar/desactivar y el bloque de contraseña/prueba.
+ */
+
+.cfg-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.cfg-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cfg-switch__pista {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.cfg-switch__pista::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-muted-foreground);
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.cfg-switch input:checked + .cfg-switch__pista {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.cfg-switch input:checked + .cfg-switch__pista::after {
+  transform: translateX(14px);
+  background: #fff;
+}
+
+.cfg-switch input:focus-visible + .cfg-switch__pista {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.cfg-switch__texto {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+}
+
+.cfg-smtp {
+  max-width: 640px;
+}
+
+.cfg-smtp__password {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.cfg-smtp__password .input {
+  flex: 1 1 auto;
+}
+
+.cfg-smtp__acciones {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.cfg-smtp__prueba {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.cfg-smtp__prueba-fila {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.cfg-smtp__prueba-fila .input {
+  flex: 1 1 auto;
+}

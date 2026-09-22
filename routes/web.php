@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\CorreoPlantillasController;
 use App\Http\Controllers\CorreoTrackingController;
 use App\Http\Controllers\Admin\ConversionesController;
 use App\Http\Controllers\Admin\CorreoAdjuntosController;
+use App\Http\Controllers\Admin\ConfiguracionSmtpController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DesarrolloController;
 use App\Http\Controllers\Admin\DocumentosController;
@@ -488,6 +489,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/', [UsersController::class, 'store'])->name('store');
         Route::put('/{user}', [UsersController::class, 'update'])->name('update');
         Route::post('/{user}/desactivar', [UsersController::class, 'deactivate'])->name('deactivate');
+    });
+
+    Route::prefix('configuracion')->name('configuracion.')->group(function () {
+        Route::get('/smtp', [ConfiguracionSmtpController::class, 'edit'])->name('smtp.edit');
+        Route::put('/smtp', [ConfiguracionSmtpController::class, 'update'])->name('smtp.update');
+        Route::post('/smtp/probar', [ConfiguracionSmtpController::class, 'probar'])->name('smtp.probar');
     });
 });
 
