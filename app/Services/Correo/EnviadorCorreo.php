@@ -46,6 +46,7 @@ class EnviadorCorreo
 
         $contenido = $envio->contenidoEfectivo();
         $variablesEnvio = self::limpiar($envio->variables);
+        $adjuntos = $envio->adjuntos->map(fn ($a) => ['disco' => $a->disco, 'ruta' => $a->ruta, 'nombre' => $a->nombre])->all();
 
         // El HTML congelado es el "genérico" del envío: sin píxel ni token, con
         // las variables del envío y huecos donde falten las de persona. Es lo
@@ -62,8 +63,8 @@ class EnviadorCorreo
             ->where('estado', EstadoDestinatarioCorreo::Pendiente)
             ->with('cliente')
             ->get()
-            ->each(function (CorreoDestinatario $destinatario) use ($envio, $contenido, $variablesEnvio, &$salieron) {
-                if ($this->enviarA($destinatario, $envio, $contenido, $variablesEnvio)) {
+            ->each(function (CorreoDestinatario $destinatario) use ($envio, $contenido, $variablesEnvio, $adjuntos, &$salieron) {
+                if ($this->enviarA($destinatario, $envio, $contenido, $variablesEnvio, $adjuntos)) {
                     $salieron++;
                 }
             });
@@ -103,8 +104,9 @@ class EnviadorCorreo
      *
      * @param  array{bloques: array, marca: array, html_libre: ?string}  $contenido
      * @param  array<string, string>  $variablesEnvio
+     * @param  array<int, array{disco: string, ruta: string, nombre: string}>  $adjuntos
      */
-    private function enviarA(CorreoDestinatario $destinatario, CorreoEnvio $envio, array $contenido, array $variablesEnvio): bool
+    private function enviarA(CorreoDestinatario $destinatario, CorreoEnvio $envio, array $contenido, array $variablesEnvio, array $adjuntos = []): bool
     {
         $email = trim((string) $destinatario->email);
 
@@ -133,7 +135,7 @@ class EnviadorCorreo
             $asunto = Variables::sustituir($envio->asunto, $variables);
 
             Mail::to($email, $destinatario->nombre ?: null)
-                ->send(new CorreoPlantillaMail($asunto, $html, $envio->remitente_nombre, $envio->remitente_email));
+                ->send(new CorreoPlantillaMail($asunto, $html, $envio->remitente_nombre, $envio->remitente_email, $adjuntos));
 
             $destinatario->forceFill([
                 'estado' => EstadoDestinatarioCorreo::Enviado,

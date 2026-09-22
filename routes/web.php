@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\CorreoEnviosController;
 use App\Http\Controllers\Admin\CorreoPlantillasController;
 use App\Http\Controllers\CorreoTrackingController;
 use App\Http\Controllers\Admin\ConversionesController;
+use App\Http\Controllers\Admin\CorreoAdjuntosController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DesarrolloController;
 use App\Http\Controllers\Admin\DocumentosController;
@@ -354,6 +355,13 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             Route::post('/{envio}/programar', [CorreoEnviosController::class, 'programar'])->name('programar');
             Route::post('/{envio}/cancelar', [CorreoEnviosController::class, 'cancelar'])->name('cancelar');
             Route::get('/{envio}/editar', [CorreoEnviosController::class, 'edit'])->name('edit');
+
+            Route::post('/{envio}/adjuntos', [CorreoAdjuntosController::class, 'store'])->name('adjuntos.store');
+            Route::post('/{envio}/adjuntos/desde-archivo', [CorreoAdjuntosController::class, 'desdeArchivo'])->name('adjuntos.desde-archivo');
+            Route::get('/{envio}/adjuntos/disponibles', [CorreoAdjuntosController::class, 'disponibles'])->name('adjuntos.disponibles');
+            Route::get('/{envio}/adjuntos/{adjunto}/descargar', [CorreoAdjuntosController::class, 'descargar'])->name('adjuntos.descargar');
+            Route::delete('/{envio}/adjuntos/{adjunto}', [CorreoAdjuntosController::class, 'destroy'])->name('adjuntos.destroy');
+
             Route::get('/{envio}', [CorreoEnviosController::class, 'show'])->name('show');
         });
     });

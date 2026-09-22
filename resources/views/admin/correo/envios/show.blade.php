@@ -38,7 +38,11 @@
              data-cancelar-url="{{ route('admin.correo.envios.cancelar', $envio) }}"
              data-destroy-url="{{ route('admin.correo.envios.destroy', $envio) }}"
              data-index-url="{{ route('admin.correo.envios.index') }}"
-             data-destinatarios="{{ $row['destinatarios'] }}">
+             data-destinatarios="{{ $row['destinatarios'] }}"
+             data-adjuntos-store-url="{{ route('admin.correo.envios.adjuntos.store', $envio) }}"
+             data-adjuntos-desde-archivo-url="{{ route('admin.correo.envios.adjuntos.desde-archivo', $envio) }}"
+             data-adjuntos-disponibles-url="{{ route('admin.correo.envios.adjuntos.disponibles', $envio) }}"
+             data-adjuntos-destroy-url-template="{{ route('admin.correo.envios.adjuntos.destroy', [$envio, '__ID__']) }}">
             <x-badge :status="$estado" data-estado-badge />
             @if ($editable)
                 <a href="{{ route('admin.correo.envios.edit', $envio) }}" class="btn btn--secondary">
@@ -98,13 +102,87 @@
                     <h4 class="correo-ficha__sub">Variables del envío</h4>
                     <dl class="correo-ficha">
                         @foreach ($variables as $clave => $valor)
-                            @php($marcador = sprintf('{{%s}}', $clave))
+                            @php
+                                $marcador = sprintf('{{%s}}', $clave);
+                            @endphp
                             <dt><code>{{ $marcador }}</code> {{ $catalogo[$clave]['label'] ?? '' }}</dt>
                             <dd>{{ $valor }}</dd>
                         @endforeach
                     </dl>
                 @endif
             </div>
+
+            {{-- Adjuntos --}}
+            @php
+                $tieneAdjuntos = $envio->adjuntos->isNotEmpty();
+            @endphp
+            @if ($editable || $tieneAdjuntos)
+                <div class="card card--padded">
+                    <h3 class="card__header-title">Adjuntos</h3>
+                    @if (! $editable && $tieneAdjuntos)
+                        <p class="field__hint" style="margin-top:2px;">Adjuntos que se mandaron con este correo.</p>
+                    @endif
+
+                    <ul class="correo-adjuntos" data-adjuntos-lista>
+                        @forelse ($envio->adjuntos as $adjunto)
+                            @php
+                                $extension = strtolower(pathinfo($adjunto->nombre, PATHINFO_EXTENSION));
+                                $icono = match ($extension) {
+                                    'pdf' => 'fa-file-pdf',
+                                    'doc', 'docx' => 'fa-file-word',
+                                    'xls', 'xlsx', 'csv' => 'fa-file-excel',
+                                    'ppt', 'pptx' => 'fa-file-powerpoint',
+                                    'png', 'jpg', 'jpeg' => 'fa-file-image',
+                                    'zip' => 'fa-file-zipper',
+                                    'txt' => 'fa-file-lines',
+                                    default => 'fa-file',
+                                };
+                                $bytes = (int) $adjunto->tamano;
+                                $tamanoLegible = $bytes >= 1048576
+                                    ? number_format($bytes / 1048576, 1).' MB'
+                                    : ceil($bytes / 1024).' KB';
+                            @endphp
+                            <li class="correo-adjunto" data-adjunto-item="{{ $adjunto->id }}">
+                                <i class="fa-solid {{ $icono }} correo-adjunto__icono"></i>
+                                <span class="correo-adjunto__nombre" title="{{ $adjunto->nombre }}">{{ $adjunto->nombre }}</span>
+                                <span class="correo-adjunto__tamano u-mono">{{ $tamanoLegible }}</span>
+                                <span class="correo-adjunto__acciones">
+                                    <a href="{{ route('admin.correo.envios.adjuntos.descargar', [$envio, $adjunto]) }}" class="btn--icon" title="Descargar">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                    @if ($editable)
+                                        <button type="button" class="btn--icon cp-accion-danger" data-adjunto-quitar="{{ $adjunto->id }}" title="Quitar">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    @endif
+                                </span>
+                            </li>
+                        @empty
+                            <p class="correo-vacio">Sin adjuntos.</p>
+                        @endforelse
+                    </ul>
+
+                    @if ($editable)
+                        <div class="correo-adjuntos__acciones">
+                            <button type="button" class="btn btn--secondary btn--sm" data-adjunto-subir>
+                                <i class="fa-solid fa-paperclip"></i> Subir archivo
+                            </button>
+                            <input type="file" hidden data-adjunto-input
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg,.zip,.txt">
+                            <button type="button" class="btn btn--secondary btn--sm" data-adjunto-existente-toggle>
+                                <i class="fa-solid fa-folder-open"></i> Usar uno existente
+                            </button>
+                        </div>
+
+                        <div class="correo-adjuntos__panel" data-adjunto-existente-panel hidden>
+                            <input type="search" class="input" data-adjunto-buscar placeholder="Buscar archivo por nombre o cliente…">
+                            <div class="correo-adjuntos__resultados" data-adjuntos-resultados>
+                                <span class="correo-buscador__vacio">Escribe para buscar, o mira los más recientes.</span>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             {{-- Destinatarios --}}
             <div class="card">

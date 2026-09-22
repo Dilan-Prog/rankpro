@@ -20,11 +20,15 @@ class CorreoPlantillaMail extends Mailable
      *
      * @param  string  $html
      */
+    /**
+     * @param  array<int, array{disco: string, ruta: string, nombre: string}>  $adjuntos
+     */
     public function __construct(
         public string $asunto,
         public $html,
         public ?string $remitenteNombre = null,
         public ?string $remitenteEmail = null,
+        public array $adjuntos = [],
     ) {
     }
 
@@ -47,5 +51,13 @@ class CorreoPlantillaMail extends Mailable
     public function content(): Content
     {
         return new Content(htmlString: $this->html);
+    }
+
+    public function attachments(): array
+    {
+        return array_map(
+            fn (array $a) => \Illuminate\Mail\Mailables\Attachment::fromStorageDisk($a['disco'], $a['ruta'])->as($a['nombre']),
+            $this->adjuntos
+        );
     }
 }

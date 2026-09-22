@@ -160,7 +160,7 @@ class CorreoEnviosController extends Controller
 
     public function show(CorreoEnvio $envio): View
     {
-        $envio->load(['plantilla', 'creador', 'destinatarios.cliente', 'destinatarios.eventos']);
+        $envio->load(['plantilla', 'creador', 'destinatarios.cliente', 'destinatarios.eventos', 'adjuntos']);
 
         $destinatarios = $envio->destinatarios->map(function (CorreoDestinatario $d) {
             return $d->toRow() + [
@@ -186,6 +186,7 @@ class CorreoEnviosController extends Controller
             'envio' => $envio,
             'row' => $envio->toRow(),
             'destinatarios' => $destinatarios,
+            'adjuntos' => $envio->adjuntos,
             'html' => $html,
             'variables' => $envio->variables ?? [],
             'catalogo' => Variables::catalogo(),

@@ -188,7 +188,152 @@
         });
     });
 
+    initAdjuntos(root);
     initPreviaAncho(document);
+  }
+
+  /**
+   * Adjuntos del envío: subir un archivo nuevo (multipart), usar uno ya
+   * existente del módulo Archivos (buscador con debounce) o quitar uno. Tras
+   * cualquier cambio se recarga la página (patrón ya usado en esta pantalla
+   * para enviar/cancelar/eliminar): la lista de adjuntos no es tan grande
+   * como para justificar un re-render manual.
+   */
+  function initAdjuntos(root) {
+    // La tarjeta de Adjuntos vive en el cuerpo de la página, no dentro de
+    // [data-correo-envio-show] (que es solo la barra de acciones del
+    // encabezado): los nodos se buscan en `document`, `root` solo aporta las
+    // URLs (root.dataset.adjuntos*Url) que sí trae consigo.
+    const input = document.querySelector("[data-adjunto-input]");
+    const btnSubir = document.querySelector("[data-adjunto-subir]");
+    const btnToggleExistente = document.querySelector("[data-adjunto-existente-toggle]");
+    const panelExistente = document.querySelector("[data-adjunto-existente-panel]");
+    const buscarInput = document.querySelector("[data-adjunto-buscar]");
+    const resultados = document.querySelector("[data-adjuntos-resultados]");
+
+    if (btnSubir && input) {
+      btnSubir.addEventListener("click", () => input.click());
+      input.addEventListener("change", () => {
+        const archivo = input.files && input.files[0];
+        if (!archivo) return;
+        subirAdjunto(root, btnSubir, archivo);
+        input.value = "";
+      });
+    }
+
+    if (btnToggleExistente && panelExistente) {
+      btnToggleExistente.addEventListener("click", () => {
+        panelExistente.hidden = !panelExistente.hidden;
+        if (!panelExistente.hidden) {
+          buscarInput?.focus();
+          buscarAdjuntosDisponibles(root, resultados, "");
+        }
+      });
+    }
+
+    if (buscarInput && resultados) {
+      buscarInput.addEventListener(
+        "input",
+        debounce(() => buscarAdjuntosDisponibles(root, resultados, buscarInput.value.trim()), 300)
+      );
+    }
+
+    if (resultados) {
+      resultados.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-adjunto-usar]");
+        if (!btn) return;
+        const archivoId = Number(btn.dataset.adjuntoUsar);
+        btn.disabled = true;
+        request(root.dataset.adjuntosDesdeArchivoUrl, "POST", { archivo_id: archivoId })
+          .then(() => {
+            toast("Adjunto agregado.", "success");
+            window.location.reload();
+          })
+          .catch((err) => {
+            btn.disabled = false;
+            toast(mensajeDe(err, "No se pudo adjuntar el archivo."), "error");
+          });
+      });
+    }
+
+    document.querySelector("[data-adjuntos-lista]")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-adjunto-quitar]");
+      if (!btn) return;
+      if (!window.confirm("¿Quitar este adjunto?")) return;
+      const id = btn.dataset.adjuntoQuitar;
+      btn.disabled = true;
+      request(urlTemplate(root.dataset.adjuntosDestroyUrlTemplate, id), "DELETE")
+        .then(() => {
+          toast("Adjunto quitado.", "success");
+          window.location.reload();
+        })
+        .catch((err) => {
+          btn.disabled = false;
+          toast(mensajeDe(err, "No se pudo quitar el adjunto."), "error");
+        });
+    });
+  }
+
+  /** Subida multipart: no usa request() porque ese fuerza JSON; aquí el navegador debe poner el boundary. */
+  function subirAdjunto(root, btnSubir, archivo) {
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+    btnSubir.disabled = true;
+    fetch(root.dataset.adjuntosStoreUrl, {
+      method: "POST",
+      headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+      body: formData,
+    })
+      .then((res) =>
+        res
+          .json()
+          .catch(() => ({}))
+          .then((body) => {
+            if (!res.ok) {
+              const error = new Error("request_failed");
+              error.status = res.status;
+              error.body = body;
+              throw error;
+            }
+            return body;
+          })
+      )
+      .then(() => {
+        toast("Adjunto agregado.", "success");
+        window.location.reload();
+      })
+      .catch((err) => {
+        btnSubir.disabled = false;
+        toast(mensajeDe(err, "No se pudo subir el archivo."), "error");
+      });
+  }
+
+  function buscarAdjuntosDisponibles(root, resultados, termino) {
+    if (!resultados) return;
+    resultados.innerHTML = '<span class="correo-buscador__vacio">Buscando…</span>';
+    const url = new URL(root.dataset.adjuntosDisponiblesUrl, window.location.origin);
+    if (termino) url.searchParams.set("buscar", termino);
+    fetch(url.toString(), { headers: { Accept: "application/json" } })
+      .then((res) => res.json())
+      .then((data) => {
+        const archivos = (data && data.archivos) || [];
+        if (!archivos.length) {
+          resultados.innerHTML = '<span class="correo-buscador__vacio">Sin archivos que coincidan.</span>';
+          return;
+        }
+        resultados.innerHTML = archivos
+          .map(
+            (a) => `
+            <button type="button" class="correo-buscador__item" data-adjunto-usar="${a.id}">
+              <span class="correo-buscador__principal">${escapeHtml(a.nombre)}</span>
+              <span class="correo-buscador__email">${escapeHtml(a.cliente || "Sin cliente")} · ${escapeHtml(a.tamano_legible)} · ${escapeHtml(a.extension)}</span>
+            </button>`
+          )
+          .join("");
+      })
+      .catch(() => {
+        resultados.innerHTML = '<span class="correo-buscador__vacio">No se pudo cargar la lista.</span>';
+      });
   }
 
   /** Botones escritorio/móvil de la previa: solo cambian el ancho del iframe. */

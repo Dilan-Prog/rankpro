@@ -54,6 +54,11 @@ class CorreoEnvio extends Model
         return $this->hasMany(CorreoDestinatario::class, 'envio_id');
     }
 
+    public function adjuntos(): HasMany
+    {
+        return $this->hasMany(CorreoAdjunto::class, 'envio_id')->orderBy('created_at');
+    }
+
     /** True si el envío tiene contenido propio en vez de usar la plantilla tal cual. */
     public function personalizado(): bool
     {
