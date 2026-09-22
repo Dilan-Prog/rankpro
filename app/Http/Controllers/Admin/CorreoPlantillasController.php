@@ -247,7 +247,11 @@ class CorreoPlantillasController extends Controller
             'categoria' => ['required', Rule::in(array_column(CategoriaPlantillaCorreo::cases(), 'value'))],
             'estado' => ['required', Rule::in(self::ESTADOS)],
             'asunto' => ['required', 'string', 'max:255'],
-            'html_personalizado' => ['nullable', 'string', 'max:200000'],
+            // 2,000,000: HTML con imágenes incrustadas en base64 (data:image/...)
+            // fácilmente pasa de los 200,000 caracteres con una sola imagen. La
+            // columna es LONGTEXT (ver migración 2026_09_28_...), así que no hay
+            // riesgo de truncado silencioso al subir este límite.
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
         ] + Bloques::reglas();
 
         $data = $request->validate($reglas, [

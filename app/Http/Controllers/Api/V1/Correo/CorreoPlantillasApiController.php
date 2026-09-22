@@ -113,7 +113,9 @@ class CorreoPlantillasApiController extends ControladorApi
             'categoria' => ['required', Rule::in(array_column(CategoriaPlantillaCorreo::cases(), 'value'))],
             'estado' => ['required', Rule::in(CorreoPlantillasController::ESTADOS)],
             'asunto' => ['required', 'string', 'max:255'],
-            'html_personalizado' => ['nullable', 'string', 'max:200000'],
+            // Mismo límite que el controlador web (ver su comentario): la columna
+            // es LONGTEXT, así que 2,000,000 de caracteres no truncan nada.
+            'html_personalizado' => ['nullable', 'string', 'max:2000000'],
         ] + Bloques::reglas();
 
         $data = $request->validate($reglas);
