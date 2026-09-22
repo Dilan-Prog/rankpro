@@ -268,9 +268,7 @@
       personalizarHtmlPanel: root.querySelector("[data-personalizar-html-panel]"),
       personalizarHtmlCodigo: root.querySelector("[data-personalizar-html-codigo]"),
       personalizarHtmlLongitud: root.querySelector("[data-personalizar-html-longitud]"),
-      personalizarBloques: root.querySelector("[data-personalizar-bloques]"),
-      personalizarBloquesVacio: root.querySelector("[data-personalizar-bloques-vacio]"),
-      personalizarPaleta: root.querySelector("[data-personalizar-paleta]"),
+      detallesAvanzado: root.querySelector("[data-personalizar-html-panel-detalles]"),
       personalizarRedes: root.querySelector("[data-personalizar-redes]"),
       personalizarColores: root.querySelector("[data-personalizar-colores]"),
       personalizarColorLibre: root.querySelector("[data-personalizar-color-libre]"),
@@ -281,6 +279,9 @@
       variableNuevaClave: root.querySelector("[data-variable-nueva-clave]"),
       variableNuevaValor: root.querySelector("[data-variable-nueva-valor]"),
       variableAgregar: root.querySelector("[data-variable-agregar]"),
+      // Motor de edición en vivo sobre la previa (ver "---- Editor en vivo ----").
+      cpFlot: root.querySelector("[data-cp-flot]"),
+      cpPopover: root.querySelector("[data-cp-popover]"),
     };
 
     // ---- Estado ------------------------------------------------------------
@@ -308,6 +309,10 @@
       bloques: envio && envio.personalizado ? envio.bloques || [] : [],
       marca: Object.assign(marcaVacia(), envio && envio.personalizado ? envio.marca || {} : {}),
       htmlPersonalizado: envio && envio.personalizado ? envio.html_personalizado || "" : "",
+      // true cuando un contentEditable de la previa cambió y aún no se refrescó
+      // el iframe (ver engancharEdicionPrevia): evita refrescar en cada tecla,
+      // que perdería el foco al reemplazar el srcdoc.
+      previaDesincronizada: false,
     };
     if (!Array.isArray(state.marca.redes)) state.marca.redes = [];
 
@@ -658,11 +663,12 @@
       });
     }
 
-    // ---- Personalizar contenido (bloques, marca, HTML propio) ----------------
-    // Mismo motor que el editor de Plantillas (resources/js/correo-plantillas.js):
-    // aquí no hay autosave por campo, solo se mantiene `state.bloques/marca/
-    // htmlPersonalizado` al día y se dispara la previa; el guardado real va en
-    // el payload de guardar()/prueba junto con todo lo demás.
+    // ---- Personalizar contenido (marca, HTML propio, edición en vivo) --------
+    // El contenido (bloques) ya no se edita en un panel de formularios: se
+    // edita directo sobre la previa (ver "Editor en vivo sobre la previa" más
+    // abajo). Aquí solo queda lo que sigue siendo formulario: marca y HTML
+    // propio. No hay autosave por campo; el guardado real va en el payload de
+    // guardar()/prueba junto con todo lo demás.
 
     const ICONOS_BLOQUE = {
       heading: "fa-heading",
@@ -674,110 +680,6 @@
       divider: "fa-minus",
       footer: "fa-signature",
     };
-    const MAX_KPI = 4;
-    const MIN_KPI = 2;
-    const MAX_ITEMS = 12;
-
-    function campoBloqueHtml(i, campo, valor, opciones) {
-      const o = opciones || {};
-      const extra = o.mono ? " u-mono" : "";
-      const attrs = `data-personalizar-bloque="${i}" data-personalizar-campo-bloque="${campo}" data-var-target${o.placeholder ? ` placeholder="${escapeHtml(o.placeholder)}"` : ""}${o.label ? ` aria-label="${escapeHtml(o.label)}"` : ""}`;
-      if (o.textarea) return `<textarea class="textarea${extra}" rows="${o.rows || 4}" ${attrs}>${escapeHtml(valor)}</textarea>`;
-      return `<input class="input${extra}" type="text" value="${escapeHtml(valor)}" ${attrs}>`;
-    }
-
-    function cuerpoBloquePersonalizado(b, i) {
-      switch (b.tipo) {
-        case "heading":
-          return `
-            ${campoBloqueHtml(i, "texto", b.texto, { label: "Texto del encabezado" })}
-            <div class="cp-segmento cp-segmento--inline" role="group" aria-label="Alineación">
-              <button type="button" class="cp-segmento__btn ${b.alineacion !== "centro" ? "is-active" : ""}" data-personalizar-bloque="${i}" data-personalizar-alineacion="izquierda">Izquierda</button>
-              <button type="button" class="cp-segmento__btn ${b.alineacion === "centro" ? "is-active" : ""}" data-personalizar-bloque="${i}" data-personalizar-alineacion="centro">Centrado</button>
-            </div>`;
-        case "text":
-          return campoBloqueHtml(i, "texto", b.texto, { textarea: true, rows: 4, label: "Texto del párrafo", placeholder: "Cada salto de línea es un párrafo." });
-        case "footer":
-          return campoBloqueHtml(i, "texto", b.texto, { textarea: true, rows: 3, label: "Texto del pie" });
-        case "list": {
-          const items = Array.isArray(b.items) ? b.items : [];
-          const filas = items
-            .map(
-              (it, k) => `
-              <div class="cp-item">
-                <input class="input" type="text" value="${escapeHtml(it)}" data-personalizar-bloque="${i}" data-personalizar-item="${k}" data-var-target aria-label="Punto ${k + 1}">
-                <button type="button" class="btn--icon cp-accion-danger" data-personalizar-bloque="${i}" data-personalizar-item-quitar="${k}" title="Quitar punto"><i class="fa-solid fa-xmark"></i></button>
-              </div>`
-            )
-            .join("");
-          return `${filas}${items.length < MAX_ITEMS ? `<button type="button" class="cp-link" data-personalizar-bloque="${i}" data-personalizar-item-agregar>+ Añadir punto</button>` : ""}`;
-        }
-        case "kpi": {
-          const items = Array.isArray(b.items) ? b.items : [];
-          const filas = items
-            .map(
-              (it, k) => `
-              <div class="cp-item cp-item--kpi">
-                <input class="input" type="text" placeholder="Etiqueta" value="${escapeHtml(it && it.label)}" data-personalizar-bloque="${i}" data-personalizar-item="${k}" data-personalizar-sub="label" data-var-target aria-label="Etiqueta ${k + 1}">
-                <input class="input u-mono" type="text" placeholder="Valor" value="${escapeHtml(it && it.valor)}" data-personalizar-bloque="${i}" data-personalizar-item="${k}" data-personalizar-sub="valor" data-var-target aria-label="Valor ${k + 1}">
-                <button type="button" class="btn--icon cp-accion-danger" data-personalizar-bloque="${i}" data-personalizar-item-quitar="${k}" title="Quitar cifra" ${items.length <= MIN_KPI ? "disabled" : ""}><i class="fa-solid fa-xmark"></i></button>
-              </div>`
-            )
-            .join("");
-          return `${filas}${items.length < MAX_KPI ? `<button type="button" class="cp-link" data-personalizar-bloque="${i}" data-personalizar-item-agregar>+ Añadir cifra</button>` : `<p class="field__hint">Máximo ${MAX_KPI} cifras.</p>`}`;
-        }
-        case "button":
-          return `
-            <div class="field"><span class="field__label">Texto del botón</span>${campoBloqueHtml(i, "texto", b.texto, { label: "Texto del botón" })}</div>
-            <div class="field"><span class="field__label">Enlace</span>${campoBloqueHtml(i, "url", b.url, { mono: true, label: "Enlace del botón", placeholder: "https://… o {{enlace_reporte}}" })}</div>`;
-        case "image":
-          return `
-            <div class="field"><span class="field__label">URL de la imagen</span>${campoBloqueHtml(i, "url", b.url, { mono: true, label: "URL de la imagen", placeholder: "https://…" })}</div>
-            <div class="field"><span class="field__label">Texto alternativo</span>${campoBloqueHtml(i, "alt", b.alt, { label: "Texto alternativo" })}</div>`;
-        case "divider":
-          return '<p class="field__hint">Línea divisoria de 1px, sin opciones.</p>';
-        default:
-          return `<p class="field__hint">Tipo de bloque desconocido: ${escapeHtml(b.tipo)}.</p>`;
-      }
-    }
-
-    function pintarBloquesPersonalizados() {
-      if (!el.personalizarBloques) return;
-      const total = state.bloques.length;
-      el.personalizarBloques.innerHTML = state.bloques
-        .map((b, i) => {
-          const label = (catalogoBloques[b.tipo] && catalogoBloques[b.tipo].label) || b.tipo;
-          return `
-          <div class="card cp-bloque" data-personalizar-bloque-card="${i}">
-            <div class="cp-bloque__cabecera">
-              <div class="cp-bloque__titulo">
-                <i class="fa-solid ${ICONOS_BLOQUE[b.tipo] || "fa-square"} cp-bloque__icono"></i>
-                <span>${escapeHtml(label)}</span>
-                <span class="u-mono cp-muted">#${i + 1}</span>
-              </div>
-              <div class="cp-bloque__acciones">
-                <button type="button" class="btn--icon" data-personalizar-bloque="${i}" data-personalizar-mover="-1" title="Subir" ${i === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up"></i></button>
-                <button type="button" class="btn--icon" data-personalizar-bloque="${i}" data-personalizar-mover="1" title="Bajar" ${i === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down"></i></button>
-                <button type="button" class="btn--icon" data-personalizar-bloque="${i}" data-personalizar-duplicar-bloque title="Duplicar bloque"><i class="fa-solid fa-copy"></i></button>
-                <button type="button" class="btn--icon cp-accion-danger" data-personalizar-bloque="${i}" data-personalizar-quitar-bloque title="Eliminar bloque"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="cp-bloque__cuerpo">${cuerpoBloquePersonalizado(b, i)}</div>
-          </div>`;
-        })
-        .join("");
-      if (el.personalizarBloquesVacio) el.personalizarBloquesVacio.hidden = total !== 0;
-    }
-
-    function pintarPaletaPersonalizada() {
-      if (!el.personalizarPaleta) return;
-      el.personalizarPaleta.innerHTML = tiposBloque
-        .map((tipo) => {
-          const label = (catalogoBloques[tipo] && catalogoBloques[tipo].label) || tipo;
-          return `<button type="button" class="cp-paleta__btn" data-personalizar-agregar="${escapeHtml(tipo)}"><i class="fa-solid ${ICONOS_BLOQUE[tipo] || "fa-square"}"></i>${escapeHtml(label)}</button>`;
-        })
-        .join("");
-    }
 
     function pintarRedesPersonalizadas() {
       if (!el.personalizarRedes) return;
@@ -826,7 +728,6 @@
     }
 
     function pintarPersonalizarPanel() {
-      pintarBloquesPersonalizados();
       pintarRedesPersonalizadas();
       reflejarColorPersonalizado();
       reflejarLogoPersonalizado();
@@ -848,6 +749,11 @@
           sincronizarContenidoConPlantilla();
           state.personalizar = true;
           pintarPersonalizarPanel();
+        }
+        if (!state.personalizar) {
+          // Se apaga: nada que enganchar en el próximo refresco (previa de solo lectura).
+          ocultarFlot();
+          ocultarPopover();
         }
         programarPrevia();
       });
@@ -904,88 +810,6 @@
         programarPrevia();
         return;
       }
-
-      const agregar = t.closest("[data-personalizar-agregar]");
-      if (agregar) {
-        if (state.bloques.length >= 40) {
-          toast("Un correo admite como máximo 40 bloques.", "warning");
-          return;
-        }
-        const nuevo = nuevoBloquePersonalizado(agregar.dataset.personalizarAgregar);
-        const ultimo = state.bloques[state.bloques.length - 1];
-        if (nuevo.tipo !== "footer" && ultimo && ultimo.tipo === "footer") {
-          state.bloques.splice(state.bloques.length - 1, 0, nuevo);
-        } else {
-          state.bloques.push(nuevo);
-        }
-        pintarBloquesPersonalizados();
-        const idx = state.bloques.indexOf(nuevo);
-        const card = el.personalizarBloques.querySelector(`[data-personalizar-bloque-card="${idx}"]`);
-        if (card) {
-          card.scrollIntoView({ behavior: "smooth", block: "center" });
-          const primerCampo = card.querySelector("input, textarea");
-          if (primerCampo) primerCampo.focus();
-        }
-        programarPrevia();
-        return;
-      }
-
-      const conBloque = t.closest("[data-personalizar-bloque]");
-      if (!conBloque || conBloque.dataset.personalizarBloque === undefined) return;
-      const i = Number(conBloque.dataset.personalizarBloque);
-      const b = state.bloques[i];
-      if (!b) return;
-
-      if (conBloque.hasAttribute("data-personalizar-mover")) {
-        const dir = Number(conBloque.dataset.personalizarMover);
-        const j = i + dir;
-        if (j < 0 || j >= state.bloques.length) return;
-        const copia = state.bloques.slice();
-        [copia[i], copia[j]] = [copia[j], copia[i]];
-        state.bloques = copia;
-        pintarBloquesPersonalizados();
-        programarPrevia();
-        return;
-      }
-      if (conBloque.hasAttribute("data-personalizar-duplicar-bloque")) {
-        if (state.bloques.length >= 40) return;
-        state.bloques.splice(i + 1, 0, clonar(b));
-        pintarBloquesPersonalizados();
-        programarPrevia();
-        return;
-      }
-      if (conBloque.hasAttribute("data-personalizar-quitar-bloque")) {
-        state.bloques.splice(i, 1);
-        pintarBloquesPersonalizados();
-        programarPrevia();
-        return;
-      }
-      if (conBloque.dataset.personalizarAlineacion) {
-        b.alineacion = conBloque.dataset.personalizarAlineacion;
-        conBloque.parentElement.querySelectorAll("[data-personalizar-alineacion]").forEach((x) => x.classList.toggle("is-active", x === conBloque));
-        programarPrevia();
-        return;
-      }
-      if (conBloque.hasAttribute("data-personalizar-item-agregar")) {
-        if (!Array.isArray(b.items)) b.items = [];
-        if (b.tipo === "kpi") {
-          if (b.items.length >= MAX_KPI) return;
-          b.items.push({ label: "Métrica", valor: "0" });
-        } else {
-          if (b.items.length >= MAX_ITEMS) return;
-          b.items.push("Nuevo punto");
-        }
-        pintarBloquesPersonalizados();
-        programarPrevia();
-        return;
-      }
-      if (conBloque.hasAttribute("data-personalizar-item-quitar")) {
-        if (!Array.isArray(b.items)) return;
-        if (b.tipo === "kpi" && b.items.length <= MIN_KPI) return;
-        b.items.splice(Number(conBloque.dataset.personalizarItemQuitar), 1);
-        pintarBloquesPersonalizados();
-        programarPrevia();
-      }
     });
 
     root.addEventListener("input", (e) => {
@@ -1018,25 +842,605 @@
         programarPrevia();
         return;
       }
-
-      if (t.dataset && t.dataset.personalizarBloque !== undefined) {
-        const b = state.bloques[Number(t.dataset.personalizarBloque)];
-        if (!b) return;
-        if (t.dataset.personalizarCampoBloque) {
-          b[t.dataset.personalizarCampoBloque] = t.value;
-        } else if (t.dataset.personalizarItem !== undefined) {
-          if (!Array.isArray(b.items)) b.items = [];
-          const k = Number(t.dataset.personalizarItem);
-          if (t.dataset.personalizarSub) {
-            if (!b.items[k] || typeof b.items[k] !== "object") b.items[k] = { label: "", valor: "" };
-            b.items[k][t.dataset.personalizarSub] = t.value;
-          } else {
-            b.items[k] = t.value;
-          }
-        }
-        programarPrevia();
-      }
     });
+
+    // ---- Editor en vivo sobre la previa ---------------------------------------
+    // Sustituye al panel de formularios de bloques: la edición ocurre
+    // directamente sobre el <iframe> de la previa, que el backend anota con
+    // data-rp-bloque/data-rp-tipo/data-rp-texto cuando se le pide editor:true
+    // (ver contrato en CorreoPlantillasController::preview() y
+    // RenderizadorCorreo). Aquí solo se leen/escriben esos atributos; el HTML
+    // en sí siempre lo genera el servidor.
+
+    let bloqueHoverIndice = null;
+    let ocultarFlotTimer = null;
+    let escrituraTimer = null;
+    let popoverBloqueIndice = null;
+    let elExtremoInicio = null;
+    let elExtremoFin = null;
+    let elOutlineDivisor = null;
+    // Último nodo/rango con foco dentro de un bloque editable de la previa:
+    // permite que los chips de variables inserten ahí aunque el clic en el
+    // chip (que vive en el documento padre) le quite el foco al iframe antes
+    // de que se procese el click.
+    let nodoEditableActivoIframe = null;
+    let rangoActivoIframe = null;
+
+    function bloquesIframe() {
+      try {
+        return Array.from(el.previaFrame.contentDocument.querySelectorAll("[data-rp-bloque]"));
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function ocultarFlot() {
+      if (el.cpFlot) {
+        el.cpFlot.hidden = true;
+        el.cpFlot.innerHTML = "";
+        delete el.cpFlot.dataset.cpFlotIndice;
+        delete el.cpFlot.dataset.cpFlotModo;
+      }
+      bloqueHoverIndice = null;
+      if (elOutlineDivisor) elOutlineDivisor.hidden = true;
+    }
+
+    function ocultarPopover() {
+      if (el.cpPopover) {
+        el.cpPopover.hidden = true;
+        el.cpPopover.innerHTML = "";
+      }
+      popoverBloqueIndice = null;
+    }
+
+    function programarOcultarFlot() {
+      clearTimeout(ocultarFlotTimer);
+      // Deja ~150ms para que el mouse cruce del bloque a la barra flotante sin
+      // que esta parpadee al ocultarse y volver a mostrarse.
+      ocultarFlotTimer = setTimeout(ocultarFlot, 150);
+    }
+
+    function asegurarOutlineDivisor() {
+      if (elOutlineDivisor) return elOutlineDivisor;
+      elOutlineDivisor = document.createElement("div");
+      elOutlineDivisor.className = "cp-flot__outline";
+      elOutlineDivisor.hidden = true;
+      el.previaFrame.parentElement.appendChild(elOutlineDivisor);
+      return elOutlineDivisor;
+    }
+
+    /** Un divider no tiene texto: se marca con un contorno para saber qué se moverá/borrará. */
+    function reflejarOutlineDivisor(indice) {
+      const outline = asegurarOutlineDivisor();
+      const b = state.bloques[indice];
+      const nodo = bloquesIframe()[indice];
+      if (!b || !nodo || b.tipo !== "divider") {
+        outline.hidden = true;
+        return;
+      }
+      const rect = nodo.getBoundingClientRect();
+      const rectIframe = el.previaFrame.getBoundingClientRect();
+      outline.style.top = `${rectIframe.top + rect.top}px`;
+      outline.style.left = `${rectIframe.left + rect.left}px`;
+      outline.style.width = `${rect.width}px`;
+      outline.style.height = `${Math.max(rect.height, 10)}px`;
+      outline.hidden = false;
+    }
+
+    function posicionarFlotEnBloque(indice) {
+      const nodo = bloquesIframe()[indice];
+      if (!nodo || !el.cpFlot) return false;
+      const rect = nodo.getBoundingClientRect();
+      const rectIframe = el.previaFrame.getBoundingClientRect();
+      el.cpFlot.style.top = `${rectIframe.top + rect.top}px`;
+      el.cpFlot.style.left = `${rectIframe.left + rect.left}px`;
+      return true;
+    }
+
+    /** Reposiciona la barra flotante activa (si hay una) tras scroll/resize. */
+    function reposicionarFlotActiva() {
+      if (bloqueHoverIndice === null || !el.cpFlot || el.cpFlot.hidden) return;
+      if (el.cpFlot.dataset.cpFlotModo === "menu") return; // el menú no sigue al bloque, se cierra si se pierde.
+      if (!posicionarFlotEnBloque(bloqueHoverIndice)) {
+        ocultarFlot();
+        return;
+      }
+      reflejarOutlineDivisor(bloqueHoverIndice);
+    }
+
+    function pintarBarraFlot(indice) {
+      if (!el.cpFlot) return;
+      const total = state.bloques.length;
+      el.cpFlot.dataset.cpFlotModo = "barra";
+      el.cpFlot.dataset.cpFlotIndice = String(indice);
+      el.cpFlot.innerHTML = `
+        <button type="button" class="cp-flot__btn" data-cp-flot-mover="-1" title="Subir bloque" ${indice === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up"></i></button>
+        <button type="button" class="cp-flot__btn" data-cp-flot-mover="1" title="Bajar bloque" ${indice === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down"></i></button>
+        <button type="button" class="cp-flot__btn" data-cp-flot-duplicar title="Duplicar bloque"><i class="fa-solid fa-copy"></i></button>
+        <button type="button" class="cp-flot__btn cp-flot__btn--danger" data-cp-flot-borrar title="Eliminar bloque"><i class="fa-solid fa-trash"></i></button>
+        <span class="cp-flot__separador"></span>
+        <button type="button" class="cp-flot__btn" data-cp-flot-agregar title="Añadir bloque después"><i class="fa-solid fa-plus"></i></button>
+      `;
+    }
+
+    function mostrarFlotSobre(indice) {
+      if (!state.personalizar || !el.cpFlot) return;
+      if (!state.bloques[indice]) return;
+      clearTimeout(ocultarFlotTimer);
+      bloqueHoverIndice = indice;
+      pintarBarraFlot(indice);
+      if (!posicionarFlotEnBloque(indice)) return;
+      el.cpFlot.hidden = false;
+      reflejarOutlineDivisor(indice);
+    }
+
+    function menuTiposHtml() {
+      return `<div class="cp-flot__menu">${tiposBloque
+        .map((tipo) => {
+          const label = (catalogoBloques[tipo] && catalogoBloques[tipo].label) || tipo;
+          return `<button type="button" class="cp-flot__menu-item" data-cp-flot-tipo="${escapeHtml(tipo)}"><i class="fa-solid ${ICONOS_BLOQUE[tipo] || "fa-square"}"></i>${escapeHtml(label)}</button>`;
+        })
+        .join("")}</div>`;
+    }
+
+    /** Abre el submenú de tipos en la posición actual de data-cp-flot (no la mueve). */
+    function mostrarMenuAgregarAqui(indiceDespuesDe) {
+      if (!el.cpFlot) return;
+      clearTimeout(ocultarFlotTimer);
+      el.cpFlot.dataset.cpFlotModo = "menu";
+      el.cpFlot.dataset.cpFlotIndiceDespues = String(indiceDespuesDe);
+      el.cpFlot.innerHTML = menuTiposHtml();
+      el.cpFlot.hidden = false;
+    }
+
+    function insertarBloquePersonalizado(despuesDe, tipo) {
+      if (state.bloques.length >= 40) {
+        toast("Un correo admite como máximo 40 bloques.", "warning");
+        return;
+      }
+      const nuevo = nuevoBloquePersonalizado(tipo);
+      let posicion = despuesDe + 1;
+      const ultimo = state.bloques[state.bloques.length - 1];
+      // El pie va al final: un bloque nuevo se inserta antes de él si existe.
+      if (nuevo.tipo !== "footer" && posicion >= state.bloques.length && ultimo && ultimo.tipo === "footer") {
+        posicion = state.bloques.length - 1;
+      }
+      state.bloques.splice(posicion, 0, nuevo);
+      programarPrevia();
+    }
+
+    function moverBloquePersonalizado(i, dir) {
+      const j = i + dir;
+      if (j < 0 || j >= state.bloques.length) return;
+      const copia = state.bloques.slice();
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+      state.bloques = copia;
+      programarPrevia();
+    }
+
+    function duplicarBloquePersonalizado(i) {
+      const b = state.bloques[i];
+      if (!b) return;
+      if (state.bloques.length >= 40) {
+        toast("Un correo admite como máximo 40 bloques.", "warning");
+        return;
+      }
+      state.bloques.splice(i + 1, 0, clonar(b));
+      programarPrevia();
+    }
+
+    function borrarBloquePersonalizado(i) {
+      if (!state.bloques[i]) return;
+      state.bloques.splice(i, 1);
+      ocultarFlot();
+      programarPrevia();
+    }
+
+    if (el.cpFlot) {
+      el.cpFlot.addEventListener("pointerover", () => clearTimeout(ocultarFlotTimer));
+      el.cpFlot.addEventListener("pointerout", () => programarOcultarFlot());
+      el.cpFlot.addEventListener("click", (e) => {
+        const tipoBtn = e.target.closest("[data-cp-flot-tipo]");
+        if (tipoBtn) {
+          const despues = Number(el.cpFlot.dataset.cpFlotIndiceDespues);
+          insertarBloquePersonalizado(Number.isNaN(despues) ? state.bloques.length - 1 : despues, tipoBtn.dataset.cpFlotTipo);
+          ocultarFlot();
+          return;
+        }
+        const indice = Number(el.cpFlot.dataset.cpFlotIndice);
+        if (Number.isNaN(indice)) return;
+        if (e.target.closest("[data-cp-flot-mover]")) {
+          moverBloquePersonalizado(indice, Number(e.target.closest("[data-cp-flot-mover]").dataset.cpFlotMover));
+          return;
+        }
+        if (e.target.closest("[data-cp-flot-duplicar]")) {
+          duplicarBloquePersonalizado(indice);
+          return;
+        }
+        if (e.target.closest("[data-cp-flot-borrar]")) {
+          borrarBloquePersonalizado(indice);
+          return;
+        }
+        if (e.target.closest("[data-cp-flot-agregar]")) {
+          mostrarMenuAgregarAqui(indice);
+        }
+      });
+    }
+
+    /** "+" fijos antes del primer bloque y después del último (siempre visibles al personalizar). */
+    function asegurarExtremos() {
+      const lienzo = el.previaFrame.parentElement;
+      if (!lienzo) return;
+      if (!elExtremoInicio) {
+        elExtremoInicio = document.createElement("button");
+        elExtremoInicio.type = "button";
+        elExtremoInicio.className = "cp-flot__extremo";
+        elExtremoInicio.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        elExtremoInicio.setAttribute("aria-label", "Añadir bloque al inicio");
+        elExtremoInicio.hidden = true;
+        elExtremoInicio.addEventListener("click", () => {
+          el.cpFlot.style.top = elExtremoInicio.style.top;
+          el.cpFlot.style.left = elExtremoInicio.style.left;
+          mostrarMenuAgregarAqui(-1);
+        });
+        lienzo.appendChild(elExtremoInicio);
+      }
+      if (!elExtremoFin) {
+        elExtremoFin = document.createElement("button");
+        elExtremoFin.type = "button";
+        elExtremoFin.className = "cp-flot__extremo";
+        elExtremoFin.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        elExtremoFin.setAttribute("aria-label", "Añadir bloque al final");
+        elExtremoFin.hidden = true;
+        elExtremoFin.addEventListener("click", () => {
+          el.cpFlot.style.top = elExtremoFin.style.top;
+          el.cpFlot.style.left = elExtremoFin.style.left;
+          mostrarMenuAgregarAqui(state.bloques.length - 1);
+        });
+        lienzo.appendChild(elExtremoFin);
+      }
+    }
+
+    function posicionarExtremos() {
+      if (!state.personalizar) {
+        if (elExtremoInicio) elExtremoInicio.hidden = true;
+        if (elExtremoFin) elExtremoFin.hidden = true;
+        return;
+      }
+      asegurarExtremos();
+      let iframeDoc;
+      try {
+        iframeDoc = el.previaFrame.contentDocument;
+      } catch (e) {
+        return;
+      }
+      if (!iframeDoc || !iframeDoc.body) return;
+      const rectIframe = el.previaFrame.getBoundingClientRect();
+      const bloques = bloquesIframe();
+      if (bloques.length) {
+        const rPrimero = bloques[0].getBoundingClientRect();
+        elExtremoInicio.style.top = `${rectIframe.top + rPrimero.top - 14}px`;
+        elExtremoInicio.style.left = `${rectIframe.left + rPrimero.left + rPrimero.width / 2 - 14}px`;
+        elExtremoInicio.hidden = false;
+
+        const rUltimo = bloques[bloques.length - 1].getBoundingClientRect();
+        elExtremoFin.style.top = `${rectIframe.top + rUltimo.bottom - 14}px`;
+        elExtremoFin.style.left = `${rectIframe.left + rUltimo.left + rUltimo.width / 2 - 14}px`;
+        elExtremoFin.hidden = false;
+      } else {
+        const rectBody = iframeDoc.body.getBoundingClientRect();
+        elExtremoInicio.style.top = `${rectIframe.top + rectBody.top}px`;
+        elExtremoInicio.style.left = `${rectIframe.left + rectBody.left + rectBody.width / 2 - 14}px`;
+        elExtremoInicio.hidden = false;
+        elExtremoFin.hidden = true;
+      }
+    }
+
+    // ---- Popover de botón/imagen ----------------------------------------------
+
+    function abrirPopover(indice, tipo, nodoBloque) {
+      if (!el.cpPopover) return;
+      const b = state.bloques[indice];
+      if (!b) return;
+      popoverBloqueIndice = indice;
+      if (tipo === "button") {
+        el.cpPopover.innerHTML = `
+          <div class="cp-popover__campo">
+            <label class="field__label">Texto del botón</label>
+            <input type="text" class="input" data-cp-popover-campo="texto" value="${escapeHtml(b.texto || "")}">
+          </div>
+          <div class="cp-popover__campo">
+            <label class="field__label">Enlace</label>
+            <input type="text" class="input u-mono" data-cp-popover-campo="url" value="${escapeHtml(b.url || "")}" placeholder="https://… o {{enlace_reporte}}">
+          </div>
+          <div class="cp-popover__pie">
+            <button type="button" class="btn btn--primary btn--sm" data-cp-popover-aplicar>Aplicar</button>
+          </div>`;
+      } else if (tipo === "image") {
+        el.cpPopover.innerHTML = `
+          <div class="cp-popover__campo">
+            <label class="field__label">URL de la imagen</label>
+            <input type="text" class="input u-mono" data-cp-popover-campo="url" value="${escapeHtml(b.url || "")}" placeholder="https://…">
+          </div>
+          <div class="cp-popover__campo">
+            <label class="field__label">Texto alternativo</label>
+            <input type="text" class="input" data-cp-popover-campo="alt" value="${escapeHtml(b.alt || "")}">
+          </div>
+          <div class="cp-popover__pie">
+            <button type="button" class="btn btn--primary btn--sm" data-cp-popover-aplicar>Aplicar</button>
+          </div>`;
+      } else {
+        return;
+      }
+      const rect = nodoBloque.getBoundingClientRect();
+      const rectIframe = el.previaFrame.getBoundingClientRect();
+      el.cpPopover.style.top = `${rectIframe.top + rect.bottom + 6}px`;
+      el.cpPopover.style.left = `${rectIframe.left + rect.left}px`;
+      el.cpPopover.hidden = false;
+    }
+
+    if (el.cpPopover) {
+      el.cpPopover.addEventListener("click", (e) => {
+        if (!e.target.closest("[data-cp-popover-aplicar]")) return;
+        if (popoverBloqueIndice === null) return;
+        const b = state.bloques[popoverBloqueIndice];
+        if (b) {
+          el.cpPopover.querySelectorAll("[data-cp-popover-campo]").forEach((input) => {
+            b[input.dataset.cpPopoverCampo] = input.value;
+          });
+        }
+        ocultarPopover();
+        programarPrevia();
+      });
+    }
+
+    // Cierra el popover si se hace click fuera de él (no se aplica nada): el
+    // click que lo abrió llega desde dentro del iframe, así que nunca coincide
+    // con este listener del documento padre.
+    document.addEventListener("pointerdown", (e) => {
+      if (!el.cpPopover || el.cpPopover.hidden) return;
+      if (el.cpPopover.contains(e.target)) return;
+      ocultarPopover();
+    });
+
+    // ---- Enganche de la edición dentro del iframe ------------------------------
+
+    function marcarEditable(nodo, etiqueta) {
+      if (!nodo) return;
+      nodo.setAttribute("contenteditable", "true");
+      nodo.setAttribute("role", "textbox");
+      nodo.setAttribute("aria-label", etiqueta);
+    }
+
+    function indiceDeBloque(nodoBloque, iframeDoc) {
+      const bloques = Array.from(iframeDoc.querySelectorAll("[data-rp-bloque]"));
+      return bloques.indexOf(nodoBloque);
+    }
+
+    function manejarInputEdicion(e) {
+      const t = e.target;
+      if (!t.hasAttribute || !t.hasAttribute("contenteditable")) return;
+      const nodoBloque = t.closest("[data-rp-bloque]");
+      if (!nodoBloque) return;
+      const i = Number(nodoBloque.dataset.rpBloque);
+      const tipo = nodoBloque.dataset.rpTipo;
+      const b = state.bloques[i];
+      if (!b) return;
+
+      if (tipo === "heading") {
+        b.texto = t.textContent;
+      } else if (tipo === "text" || tipo === "footer") {
+        // innerText conserva los saltos de línea (cada uno es un párrafo distinto en el render).
+        b.texto = t.innerText;
+      } else if (tipo === "list") {
+        const filas = Array.from(nodoBloque.querySelectorAll("table tr"));
+        const fila = t.closest("tr");
+        const k = filas.indexOf(fila);
+        if (k !== -1) {
+          if (!Array.isArray(b.items)) b.items = [];
+          b.items[k] = t.textContent;
+        }
+      } else if (tipo === "kpi") {
+        const td = t.closest("td");
+        const celdas = Array.from(nodoBloque.querySelectorAll("table.rp-kpi td:not(.rp-gap)"));
+        const k = celdas.indexOf(td);
+        if (k !== -1 && td) {
+          if (!Array.isArray(b.items)) b.items = [];
+          if (!b.items[k] || typeof b.items[k] !== "object") b.items[k] = { label: "", valor: "" };
+          // Dentro de cada <td> el primer <div> es el valor, el segundo la etiqueta (orden del contrato del backend).
+          const divs = Array.from(td.querySelectorAll("div"));
+          const posicion = divs.indexOf(t);
+          if (posicion === 0) b.items[k].valor = t.textContent;
+          else if (posicion === 1) b.items[k].label = t.textContent;
+        }
+      } else {
+        return;
+      }
+
+      state.previaDesincronizada = true;
+      clearTimeout(escrituraTimer);
+      // Debounce independiente del de 500ms de programarPrevia: por si el
+      // usuario escribe un párrafo largo sin salir del campo (sin esto, el
+      // refresco solo llegaría al perder el foco).
+      escrituraTimer = setTimeout(() => {
+        if (state.previaDesincronizada) programarPrevia();
+      }, 1500);
+    }
+
+    function manejarBlurEdicion(e) {
+      const t = e.target;
+      if (!t.hasAttribute || !t.hasAttribute("contenteditable")) return;
+      if (state.previaDesincronizada) programarPrevia();
+      // El foco puede haber ido hacia la barra flotante: se decide tras el margen de programarOcultarFlot.
+      programarOcultarFlot();
+    }
+
+    function manejarFocoEdicion(e, iframeDoc) {
+      const editable = e.target.closest && e.target.closest("[contenteditable]");
+      if (!editable) return;
+      const nodoBloque = editable.closest("[data-rp-bloque]");
+      if (!nodoBloque) return;
+      const indice = indiceDeBloque(nodoBloque, iframeDoc);
+      if (indice !== -1) mostrarFlotSobre(indice);
+    }
+
+    function manejarHoverEdicion(e, iframeDoc) {
+      const nodoBloque = e.target.closest && e.target.closest("[data-rp-bloque]");
+      if (!nodoBloque) return;
+      clearTimeout(ocultarFlotTimer);
+      const indice = indiceDeBloque(nodoBloque, iframeDoc);
+      if (indice !== -1) mostrarFlotSobre(indice);
+    }
+
+    function manejarSalidaHover() {
+      programarOcultarFlot();
+    }
+
+    function manejarClickBotonImagen(e) {
+      const nodoBloque = e.target.closest && e.target.closest('[data-rp-bloque][data-rp-tipo="button"], [data-rp-bloque][data-rp-tipo="image"]');
+      if (!nodoBloque) return;
+      if (e.target.closest("a")) e.preventDefault();
+      if (e.target.closest("img")) e.preventDefault();
+      const i = Number(nodoBloque.dataset.rpBloque);
+      const tipo = nodoBloque.dataset.rpTipo;
+      abrirPopover(i, tipo, nodoBloque);
+    }
+
+    /**
+     * Recuerda dónde estaba el cursor dentro de un nodo editable de la previa,
+     * para que un clic en un chip de variable (que vive en el documento padre
+     * y por tanto le quita el foco al iframe antes de procesarse) sepa dónde
+     * insertar el marcador. Se actualiza en cada cambio de selección, no solo
+     * al enfocar, para que el usuario pueda mover el cursor dentro del texto
+     * antes de pulsar el chip.
+     */
+    function manejarCambioSeleccionEdicion(iframeDoc) {
+      const win = iframeDoc.defaultView;
+      const sel = win && win.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const rango = sel.getRangeAt(0);
+      const contenedor = rango.commonAncestorContainer;
+      const base = contenedor.nodeType === 1 ? contenedor : contenedor.parentElement;
+      const nodoEditable = base && base.closest ? base.closest("[contenteditable]") : null;
+      if (!nodoEditable) return;
+      nodoEditableActivoIframe = nodoEditable;
+      rangoActivoIframe = rango.cloneRange();
+    }
+
+    /** Inserta `{{clave}}` en el último punto de edición recordado dentro de la previa. */
+    function insertarVariableEnPrevia(clave) {
+      const iframeDoc = el.previaFrame.contentDocument;
+      if (!nodoEditableActivoIframe || !iframeDoc || !iframeDoc.contains(nodoEditableActivoIframe)) return false;
+
+      const win = iframeDoc.defaultView;
+      const marcador = `{{${clave}}}`;
+      nodoEditableActivoIframe.focus();
+
+      const rangoValido = rangoActivoIframe && nodoEditableActivoIframe.contains(rangoActivoIframe.commonAncestorContainer);
+      const rango = rangoValido ? rangoActivoIframe.cloneRange() : iframeDoc.createRange();
+      if (!rangoValido) {
+        rango.selectNodeContents(nodoEditableActivoIframe);
+        rango.collapse(false);
+      }
+
+      rango.deleteContents();
+      const nodoTexto = iframeDoc.createTextNode(marcador);
+      rango.insertNode(nodoTexto);
+      rango.setStartAfter(nodoTexto);
+      rango.collapse(true);
+
+      const sel = win.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(rango);
+      rangoActivoIframe = rango.cloneRange();
+
+      nodoEditableActivoIframe.dispatchEvent(new win.Event("input", { bubbles: true }));
+
+      return true;
+    }
+
+    /**
+     * Engancha (o limpia) la edición en vivo tras cada carga del iframe.
+     * Se reengancha por completo en cada refresco porque `srcdoc` reemplaza el
+     * documento entero del iframe (contentDocument es un objeto nuevo cada
+     * vez): no hay nodos ni listeners previos que sobrevivan.
+     */
+    function engancharEdicionPrevia() {
+      let iframeDoc;
+      try {
+        iframeDoc = el.previaFrame.contentDocument;
+      } catch (e) {
+        return;
+      }
+      if (!iframeDoc || !iframeDoc.body) return;
+
+      ocultarFlot();
+      ocultarPopover();
+      // srcdoc crea un documento nuevo en cada refresco: las referencias del
+      // refresco anterior ya no existen en este documento.
+      nodoEditableActivoIframe = null;
+      rangoActivoIframe = null;
+
+      // El click en botón/imagen abre el popover incluso en previa de solo
+      // lectura sería confuso; solo se activa si se está personalizando.
+      if (!state.personalizar) {
+        posicionarExtremos();
+        return;
+      }
+
+      const bloques = Array.from(iframeDoc.querySelectorAll("[data-rp-bloque]"));
+      bloques.forEach((nodoBloque) => {
+        const tipo = nodoBloque.dataset.rpTipo;
+        if (tipo === "heading") {
+          marcarEditable(nodoBloque.querySelector("h1"), "Texto del encabezado");
+        } else if (tipo === "text") {
+          marcarEditable(nodoBloque.querySelector("[data-rp-texto]"), "Texto del párrafo");
+        } else if (tipo === "footer") {
+          marcarEditable(nodoBloque.querySelector("[data-rp-texto]"), "Texto del pie");
+        } else if (tipo === "list") {
+          nodoBloque.querySelectorAll("table tr").forEach((tr, k) => {
+            const celdas = tr.querySelectorAll("td");
+            marcarEditable(celdas[1], `Punto ${k + 1}`);
+          });
+        } else if (tipo === "kpi") {
+          nodoBloque.querySelectorAll("table.rp-kpi td:not(.rp-gap)").forEach((td, k) => {
+            const divs = td.querySelectorAll("div");
+            marcarEditable(divs[0], `Valor ${k + 1}`);
+            marcarEditable(divs[1], `Etiqueta ${k + 1}`);
+          });
+        }
+      });
+
+      // Un solo listener delegado por evento (no uno por nodo): así no hace
+      // falta reengancharlos nodo a nodo, solo reasignarlos aquí en cada
+      // refresco (que sí crea un documento nuevo).
+      iframeDoc.body.addEventListener("input", manejarInputEdicion);
+      // focusout en vez de blur: blur no burbujea y aquí se delega en <body>.
+      iframeDoc.body.addEventListener("focusout", manejarBlurEdicion);
+      iframeDoc.body.addEventListener("focusin", (e) => manejarFocoEdicion(e, iframeDoc));
+      iframeDoc.body.addEventListener("pointerover", (e) => manejarHoverEdicion(e, iframeDoc));
+      iframeDoc.body.addEventListener("pointerout", manejarSalidaHover);
+      iframeDoc.body.addEventListener("click", manejarClickBotonImagen);
+      iframeDoc.addEventListener("selectionchange", () => manejarCambioSeleccionEdicion(iframeDoc));
+      if (iframeDoc.defaultView) iframeDoc.defaultView.addEventListener("scroll", reposicionarFlotActiva);
+
+      posicionarExtremos();
+    }
+
+    if (el.previaFrame) {
+      // srcdoc dispara el evento "load" del iframe de forma fiable en todos los
+      // navegadores evergreen (Chrome, Firefox, Safari, Edge): es parte del
+      // ciclo de vida estándar del iframe, no algo específico de src=URL. Se
+      // usa un único listener persistente (el iframe nunca se recrea) en vez
+      // de un setTimeout(0) tras asignar srcdoc, que sería una señal más floja
+      // (no garantiza que el documento ya haya terminado de parsear).
+      el.previaFrame.addEventListener("load", engancharEdicionPrevia);
+      window.addEventListener("scroll", reposicionarFlotActiva);
+      window.addEventListener("resize", () => {
+        reposicionarFlotActiva();
+        posicionarExtremos();
+      });
+    }
 
     if (el.personalizarHtmlToggle) {
       el.personalizarHtmlToggle.addEventListener("change", () => {
@@ -1056,7 +1460,9 @@
       });
     }
 
-    // Insertar variable en el campo activo (bloques personalizados o HTML propio)
+    // Insertar variable: primero se intenta en el último punto de edición
+    // dentro de la previa (texto de un bloque); si no hay ninguno activo, en
+    // el campo [data-var-target] con foco (hoy solo el HTML propio avanzado).
     let campoActivoPersonalizar = null;
     root.addEventListener("focusin", (e) => {
       if (e.target.matches && e.target.matches("[data-var-target]")) campoActivoPersonalizar = e.target;
@@ -1066,9 +1472,12 @@
         const chip = e.target.closest("[data-var]");
         if (!chip) return;
         e.preventDefault();
+
+        if (insertarVariableEnPrevia(chip.dataset.var)) return;
+
         const objetivo = campoActivoPersonalizar && root.contains(campoActivoPersonalizar) ? campoActivoPersonalizar : null;
         if (!objetivo) {
-          toast("Haz clic primero en el campo donde quieres insertar la variable.", "warning");
+          toast("Haz clic primero en el texto del correo (en la previa) o en el campo donde quieres insertar la variable.", "warning");
           return;
         }
         const marcador = `{{${chip.dataset.var}}}`;
@@ -1206,6 +1615,11 @@
           html_personalizado: state.htmlPersonalizado || null,
           asunto: state.asunto,
           variables: variablesPrevia(),
+          // El editor en vivo (engancharEdicionPrevia) necesita que el backend
+          // anote cada bloque con data-rp-bloque/data-rp-tipo; se pide siempre
+          // desde este archivo, sin importar si se está personalizando (con la
+          // previa de solo lectura los wrappers no estorban, solo no se usan).
+          editor: true,
         }),
       })
         .then((res) => {
@@ -1405,7 +1819,6 @@
     pintarVariables();
     pintarVariablesPersonalizadas();
     pintarChipsVariablesPersonalizar();
-    pintarPaletaPersonalizada();
     aplicarCuando();
 
     if (el.personalizarToggle) el.personalizarToggle.checked = state.personalizar;
@@ -1413,6 +1826,9 @@
     const htmlActivo = state.htmlPersonalizado.trim() !== "";
     if (el.personalizarHtmlToggle) el.personalizarHtmlToggle.checked = htmlActivo;
     if (el.personalizarHtmlPanel) el.personalizarHtmlPanel.hidden = !htmlActivo;
+    // Un envío en edición con HTML propio ya guardado abre el disclosure de
+    // una vez: si no, quedaría escondido justo el contenido que importa ver.
+    if (el.detallesAvanzado && htmlActivo) el.detallesAvanzado.open = true;
     pintarPersonalizarPanel();
 
     // Un envío nuevo arranca con la primera plantilla activa elegida para que

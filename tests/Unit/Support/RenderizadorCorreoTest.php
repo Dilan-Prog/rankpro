@@ -264,4 +264,67 @@ class RenderizadorCorreoTest extends TestCase
         $this->assertStringNotContainsString('javascript:', $html);
         $this->assertStringContainsString('href="#"', $html);
     }
+
+    // --- editor visual ---------------------------------------------------------
+
+    /** Sin `editor: true` (o sin la clave), el HTML no lleva ningún marcador nuevo. */
+    public function test_without_editor_option_html_has_no_rp_markers(): void
+    {
+        $bloques = [
+            ['tipo' => 'heading', 'texto' => 'Título', 'alineacion' => 'centro'],
+            ['tipo' => 'text', 'texto' => 'Cuerpo del mensaje'],
+            ['tipo' => 'button', 'texto' => 'Ver más', 'url' => 'https://ejemplo.com'],
+            ['tipo' => 'footer', 'texto' => 'Pie de página'],
+        ];
+
+        $sinClave = $this->render($bloques);
+        $conFalse = $this->render($bloques, [], ['editor' => false]);
+
+        $this->assertSame($sinClave, $conFalse);
+        $this->assertStringNotContainsString('data-rp-', $sinClave);
+    }
+
+    public function test_editor_option_wraps_each_non_empty_block_with_its_index_and_type(): void
+    {
+        $bloques = [
+            ['tipo' => 'heading', 'texto' => 'Título'],
+            ['tipo' => 'text', 'texto' => 'Cuerpo'],
+            ['tipo' => 'text', 'texto' => ''], // vacío: no debe envolverse
+            ['tipo' => 'button', 'texto' => 'Ver más', 'url' => 'https://ejemplo.com'],
+        ];
+
+        $html = $this->render($bloques, [], ['editor' => true]);
+
+        $this->assertStringContainsString('<div data-rp-bloque="0" data-rp-tipo="heading">', $html);
+        $this->assertStringContainsString('<div data-rp-bloque="1" data-rp-tipo="text">', $html);
+        $this->assertStringNotContainsString('data-rp-bloque="2"', $html);
+        $this->assertStringContainsString('<div data-rp-bloque="3" data-rp-tipo="button">', $html);
+
+        // El wrapper es puramente estructural: sin atributo style.
+        $this->assertMatchesRegularExpression('/<div data-rp-bloque="0" data-rp-tipo="heading">/', $html);
+        $this->assertDoesNotMatchRegularExpression('/<div data-rp-bloque="0"[^>]*style=/', $html);
+    }
+
+    public function test_editor_option_groups_text_block_content_in_a_single_rp_texto_div(): void
+    {
+        $html = $this->render([
+            ['tipo' => 'text', 'texto' => "Primer párrafo\nSegundo párrafo"],
+        ], [], ['editor' => true]);
+
+        $this->assertSame(1, preg_match_all('/data-rp-texto/', $html));
+        preg_match('/<div data-rp-texto>(.*?)<\/div>/s', $html, $m);
+        $this->assertNotEmpty($m);
+        $this->assertStringContainsString('Primer párrafo</p>', $m[1]);
+        $this->assertStringContainsString('Segundo párrafo</p>', $m[1]);
+    }
+
+    public function test_editor_option_groups_footer_block_content_in_a_single_rp_texto_div(): void
+    {
+        $html = $this->render([
+            ['tipo' => 'footer', 'texto' => "RankPro Solutions\nAguascalientes"],
+        ], [], ['editor' => true]);
+
+        $this->assertSame(1, preg_match_all('/data-rp-texto/', $html));
+        $this->assertStringContainsString("RankPro Solutions<br>\nAguascalientes", $html);
+    }
 }

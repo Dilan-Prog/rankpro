@@ -74,26 +74,14 @@
                             </div>
                         </div>
 
+                        <p class="cp-ayuda-edicion">
+                            <i class="fa-solid fa-arrow-pointer"></i>
+                            Haz clic en el texto del correo (en la vista previa) para editarlo directamente. Pasa el mouse sobre un bloque para moverlo, duplicarlo o borrarlo.
+                        </p>
+
                         <div class="cp-variables">
                             <div class="cp-variables__titulo">Variables · clic para insertarlas en el campo activo</div>
                             <div class="cp-chips" data-personalizar-variables></div>
-                        </div>
-
-                        {{-- HTML propio --}}
-                        <div class="cp-seccion" style="margin-top: var(--space-4);">
-                            <label class="cp-switch">
-                                <input type="checkbox" data-personalizar-html-toggle>
-                                <span class="cp-switch__pista"></span>
-                                <span class="cp-switch__texto">HTML propio</span>
-                                <span class="field__hint">Pega tu propio código en lugar de usar los bloques.</span>
-                            </label>
-                            <div class="cp-html" data-personalizar-html-panel hidden>
-                                <textarea class="textarea cp-html__codigo" data-personalizar-html-codigo data-var-target rows="12" spellcheck="false" placeholder="<!doctype html>&#10;<html>…</html>"></textarea>
-                                <div class="cp-html__pie">
-                                    <span class="u-mono" data-personalizar-html-longitud></span>
-                                    <button type="button" class="cp-link" data-personalizar-html-descartar>Descartar el HTML y volver a los bloques</button>
-                                </div>
-                            </div>
                         </div>
 
                         {{-- Marca --}}
@@ -143,16 +131,25 @@
                             </div>
                         </section>
 
-                        {{-- Bloques --}}
-                        <section class="cp-seccion" data-personalizar-seccion-bloques>
-                            <h3 class="cp-seccion__titulo">Bloques del correo</h3>
-                            <div class="cp-bloques" data-personalizar-bloques></div>
-                            <p class="cp-bloques__vacio" data-personalizar-bloques-vacio hidden>Sin bloques. Añade uno abajo para empezar.</p>
-                            <div class="cp-paleta">
-                                <div class="cp-seccion__titulo">Añadir bloque</div>
-                                <div class="cp-paleta__grid" data-personalizar-paleta></div>
+                        {{-- HTML propio (avanzado) --}}
+                        <details class="cp-avanzado" data-personalizar-html-panel-detalles>
+                            <summary>Avanzado</summary>
+                            <div class="cp-seccion" style="margin-top: var(--space-3);">
+                                <label class="cp-switch">
+                                    <input type="checkbox" data-personalizar-html-toggle>
+                                    <span class="cp-switch__pista"></span>
+                                    <span class="cp-switch__texto">HTML propio</span>
+                                    <span class="field__hint">Pega tu propio código en lugar de usar los bloques.</span>
+                                </label>
+                                <div class="cp-html" data-personalizar-html-panel hidden>
+                                    <textarea class="textarea cp-html__codigo" data-personalizar-html-codigo data-var-target rows="12" spellcheck="false" placeholder="<!doctype html>&#10;<html>…</html>"></textarea>
+                                    <div class="cp-html__pie">
+                                        <span class="u-mono" data-personalizar-html-longitud></span>
+                                        <button type="button" class="cp-link" data-personalizar-html-descartar>Descartar el HTML y volver a los bloques</button>
+                                    </div>
+                                </div>
                             </div>
-                        </section>
+                        </details>
                     </div>
                 </div>
             </section>
@@ -314,6 +311,9 @@
                 <div class="correo-previa__lienzo">
                     <iframe class="correo-previa__frame" data-previa-frame title="Vista previa del correo" sandbox="allow-same-origin" style="width:600px"></iframe>
                     <p class="correo-previa__estado" data-previa-estado hidden></p>
+                    {{-- Controles de edición en vivo sobre la previa (solo con "Personalizar" activo): los pinta correo-envios.js. --}}
+                    <div class="cp-flot" data-cp-flot hidden></div>
+                    <div class="cp-popover" data-cp-popover hidden></div>
                 </div>
                 <p class="correo-previa__nota">
                     La previa usa valores de ejemplo para las variables de persona. Cada destinatario recibe las suyas.

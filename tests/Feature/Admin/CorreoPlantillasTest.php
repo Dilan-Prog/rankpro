@@ -278,6 +278,38 @@ class CorreoPlantillasTest extends TestCase
         $this->assertSame('<p>Libre para Hotel Fratelli</p>', $response->json('html'));
     }
 
+    public function test_preview_with_editor_true_returns_html_with_rp_bloque_markers(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.plantillas.preview'), [
+            'bloques' => [['tipo' => 'heading', 'texto' => 'Título']],
+            'editor' => true,
+        ]);
+
+        $response->assertOk();
+        $this->assertStringContainsString('data-rp-bloque="0"', $response->json('html'));
+    }
+
+    public function test_preview_without_editor_key_returns_html_without_rp_bloque_markers(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.plantillas.preview'), [
+            'bloques' => [['tipo' => 'heading', 'texto' => 'Título']],
+        ]);
+
+        $response->assertOk();
+        $this->assertStringNotContainsString('data-rp-bloque', $response->json('html'));
+    }
+
+    public function test_preview_substitutes_a_custom_variable_not_in_the_catalog(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->postJson(route('admin.correo.plantillas.preview'), [
+            'bloques' => [['tipo' => 'text', 'texto' => 'Pedido {{numero_de_pedido}}']],
+            'variables' => ['numero_de_pedido' => 'ABC-123'],
+        ]);
+
+        $response->assertOk();
+        $this->assertStringContainsString('Pedido ABC-123', $response->json('html'));
+    }
+
     // --- duplicar ------------------------------------------------------------
 
     public function test_duplicar_creates_a_copy_and_returns_show_url(): void

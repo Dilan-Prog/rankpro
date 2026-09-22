@@ -196,6 +196,7 @@ class CorreoPlantillasController extends Controller
             'marca' => ['nullable', 'array'],
             'html_personalizado' => ['nullable', 'string'],
             'variables' => ['nullable', 'array'],
+            'editor' => ['nullable', 'boolean'],
         ]);
 
         $bloques = array_values(array_filter(
@@ -221,10 +222,14 @@ class CorreoPlantillasController extends Controller
             fn ($r) => is_array($r) && trim((string) ($r['nombre'] ?? '')) !== '' && trim((string) ($r['url'] ?? '')) !== ''
         ));
 
-        // Solo claves del catálogo y solo escalares: lo demás se ignora.
+        // Claves del catálogo o nombres válidos de variable personalizada (el
+        // redactor de Enviar correo ya las admite: Variables::nombreValido()),
+        // y solo escalares. Antes se descartaba cualquier variable fuera del
+        // catálogo fijo, así que una personalizada nunca se veía en la previa.
         $recibidas = array_filter(
-            array_intersect_key($data['variables'] ?? [], Variables::catalogo()),
-            fn ($v) => is_scalar($v)
+            $data['variables'] ?? [],
+            fn ($v, $k) => is_scalar($v) && (array_key_exists($k, Variables::catalogo()) || Variables::nombreValido($k)),
+            ARRAY_FILTER_USE_BOTH
         );
         $variables = array_replace(RenderizadorCorreo::variablesEjemplo(), array_map('strval', $recibidas));
 
@@ -232,6 +237,7 @@ class CorreoPlantillasController extends Controller
 
         $html = RenderizadorCorreo::render($bloques, $marca, $variables, [
             'html_libre' => $htmlLibre !== '' ? $htmlLibre : null,
+            'editor' => (bool) ($data['editor'] ?? false),
         ]);
 
         return response()->json(['html' => $html]);

@@ -36,16 +36,17 @@ final class RenderizadorCorreo
      * @param  array<int, array<string, mixed>>  $bloques
      * @param  array<string, mixed>  $marca
      * @param  array<string, mixed>  $variables
-     * @param  array{pixel_url?: ?string, token?: ?string, html_libre?: ?string}  $opciones
+     * @param  array{pixel_url?: ?string, token?: ?string, html_libre?: ?string, editor?: bool}  $opciones
      */
     public static function render(array $bloques, array $marca, array $variables = [], array $opciones = []): string
     {
         $htmlLibre = trim((string) ($opciones['html_libre'] ?? ''));
+        $editor = (bool) ($opciones['editor'] ?? false);
 
         if ($htmlLibre !== '') {
             $html = Variables::sustituir($htmlLibre, $variables);
         } else {
-            $html = self::documento($bloques, array_replace(Bloques::marcaPorDefecto(), $marca), $variables);
+            $html = self::documento($bloques, array_replace(Bloques::marcaPorDefecto(), $marca), $variables, $editor);
         }
 
         $token = (string) ($opciones['token'] ?? '');
@@ -99,13 +100,14 @@ final class RenderizadorCorreo
      * @param  array<string, mixed>  $marca
      * @param  array<string, mixed>  $variables
      */
-    private static function documento(array $bloques, array $marca, array $variables): string
+    private static function documento(array $bloques, array $marca, array $variables, bool $editor = false): string
     {
         $color = self::colorSeguro($marca['color'] ?? null);
         $logo = self::cabeceraMarca($marca, $color, $variables);
         $cuerpo = implode("\n", array_filter(array_map(
-            fn ($b) => self::bloque(is_array($b) ? $b : [], $color, $variables),
-            $bloques
+            fn ($b, $i) => self::bloque(is_array($b) ? $b : [], $color, $variables, $i, $editor),
+            $bloques,
+            array_keys($bloques)
         )));
         $tituloBloque = collect($bloques)->first(fn ($b) => is_array($b) && ($b['tipo'] ?? '') === 'heading');
         $titulo = self::texto((string) ($tituloBloque['texto'] ?? 'RankPro'), $variables);
@@ -239,19 +241,21 @@ HTML;
      * @param  array<string, mixed>  $b
      * @param  array<string, mixed>  $variables
      */
-    private static function bloque(array $b, string $color, array $variables): string
+    private static function bloque(array $b, string $color, array $variables, int $indice = 0, bool $editor = false): string
     {
         $fuente = self::FUENTE;
         $tinta = self::TINTA;
         $gris = self::GRIS;
         $fondo = self::FONDO;
+        $tipo = (string) ($b['tipo'] ?? '');
 
-        switch ($b['tipo'] ?? '') {
+        switch ($tipo) {
             case 'heading':
                 $alineacion = ($b['alineacion'] ?? 'izquierda') === 'centro' ? 'center' : 'left';
                 $texto = self::texto((string) ($b['texto'] ?? ''), $variables);
+                $contenido = "<h1 style=\"margin:0;font-family:{$fuente};font-size:24px;line-height:1.3;font-weight:700;color:{$tinta};text-align:{$alineacion}\">{$texto}</h1>";
 
-                return self::fila("<h1 style=\"margin:0;font-family:{$fuente};font-size:24px;line-height:1.3;font-weight:700;color:{$tinta};text-align:{$alineacion}\">{$texto}</h1>", '0 32px 14px');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '0 32px 14px');
 
             case 'text':
                 $parrafos = preg_split('/\r\n|\r|\n/', self::texto((string) ($b['texto'] ?? ''), $variables)) ?: [];
@@ -262,8 +266,12 @@ HTML;
                     }
                     $html .= "<p style=\"margin:0 0 12px;font-family:{$fuente};font-size:15px;line-height:1.65;color:#334155\">{$p}</p>";
                 }
+                if ($html === '') {
+                    return '';
+                }
+                $contenido = $editor ? "<div data-rp-texto>{$html}</div>" : $html;
 
-                return $html === '' ? '' : self::fila($html, '0 32px 8px');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '0 32px 8px');
 
             case 'list':
                 $items = '';
@@ -277,10 +285,12 @@ HTML;
                         ."<td valign=\"top\" style=\"padding:0 0 8px;font-family:{$fuente};font-size:15px;line-height:1.6;color:#334155\">{$texto}</td>"
                         .'</tr>';
                 }
+                if ($items === '') {
+                    return '';
+                }
+                $contenido = "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" role=\"presentation\">{$items}</table>";
 
-                return $items === ''
-                    ? ''
-                    : self::fila("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" role=\"presentation\">{$items}</table>", '0 32px 12px');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '0 32px 12px');
 
             case 'kpi':
                 $items = array_values(array_filter((array) ($b['items'] ?? []), 'is_array'));
@@ -300,8 +310,9 @@ HTML;
                         ."<div style=\"font-family:{$fuente};font-size:11px;line-height:1.4;font-weight:600;color:{$gris};text-transform:uppercase;letter-spacing:.06em;margin-top:6px\">{$label}</div>"
                         .'</td>';
                 }
+                $contenido = '<table class="rp-kpi" width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>'.implode('', $celdas).'</tr></table>';
 
-                return self::fila('<table class="rp-kpi" width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>'.implode('', $celdas).'</tr></table>', '6px 32px 18px');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '6px 32px 18px');
 
             case 'button':
                 $texto = self::texto((string) ($b['texto'] ?? ''), $variables);
@@ -310,14 +321,12 @@ HTML;
                     return '';
                 }
                 $href = $url !== '' ? $url : '#';
-
-                return self::fila(
-                    '<table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>'
+                $contenido = '<table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>'
                     ."<td style=\"background:{$color};border-radius:10px\">"
                     ."<a href=\"{$href}\" style=\"display:inline-block;padding:13px 26px;font-family:{$fuente};font-size:15px;font-weight:700;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:10px\">{$texto}</a>"
-                    .'</td></tr></table>',
-                    '8px 32px 20px'
-                );
+                    .'</td></tr></table>';
+
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '8px 32px 20px');
 
             case 'image':
                 $url = self::url((string) ($b['url'] ?? ''), $variables);
@@ -325,23 +334,44 @@ HTML;
                 if ($url === '') {
                     return '';
                 }
+                $contenido = "<img class=\"rp-img\" src=\"{$url}\" alt=\"{$alt}\" width=\"536\" style=\"display:block;width:100%;max-width:536px;height:auto;border:0;border-radius:12px\">";
 
-                return self::fila("<img class=\"rp-img\" src=\"{$url}\" alt=\"{$alt}\" width=\"536\" style=\"display:block;width:100%;max-width:536px;height:auto;border:0;border-radius:12px\">", '4px 32px 20px');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '4px 32px 20px');
 
             case 'divider':
-                return self::fila('<div style="height:1px;line-height:1px;font-size:0;background:#E2E8F0">&nbsp;</div>', '8px 32px 20px');
+                $contenido = '<div style="height:1px;line-height:1px;font-size:0;background:#E2E8F0">&nbsp;</div>';
+
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '8px 32px 20px');
 
             case 'footer':
                 $texto = nl2br(self::texto((string) ($b['texto'] ?? ''), $variables), false);
                 if (trim($texto) === '') {
                     return '';
                 }
+                $parrafo = "<p style=\"margin:0;font-family:{$fuente};font-size:12px;line-height:1.7;color:{$gris}\">{$texto}</p>";
+                $contenido = $editor ? "<div data-rp-texto>{$parrafo}</div>" : $parrafo;
 
-                return self::fila("<p style=\"margin:0;font-family:{$fuente};font-size:12px;line-height:1.7;color:{$gris}\">{$texto}</p>", '8px 32px 0');
+                return self::fila(self::envolverEditor($editor, $indice, $tipo, $contenido), '8px 32px 0');
 
             default:
                 return '';
         }
+    }
+
+    /**
+     * Envuelve el contenido de un bloque en el marcador estructural que usa el
+     * editor visual para ubicar y reemplazar un bloque desde el iframe de la
+     * previa. Sin atributo `style`: es puramente estructural y no afecta el
+     * layout en los clientes de correo. Fuera del modo editor (correo real,
+     * plantillas) no se añade nada.
+     */
+    private static function envolverEditor(bool $editor, int $indice, string $tipo, string $contenido): string
+    {
+        if (! $editor || $contenido === '') {
+            return $contenido;
+        }
+
+        return "<div data-rp-bloque=\"{$indice}\" data-rp-tipo=\"{$tipo}\">{$contenido}</div>";
     }
 
     /** Una fila de la tarjeta con el relleno lateral estándar. */
