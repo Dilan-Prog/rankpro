@@ -133,6 +133,8 @@ final class RenderizadorCorreo
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>{$titulo}</title>
 <style>
   .rp-card,.rp-legal{width:100%!important;max-width:600px}
@@ -145,9 +147,9 @@ final class RenderizadorCorreo
 </style>
 </head>
 <body style="margin:0;padding:0;background:{$FONDO};-webkit-text-size-adjust:100%">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background:{$FONDO}"><tr><td align="center" style="padding:24px 12px">
-  <table class="rp-card" width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px">
-    <tr><td class="rp-pad" style="padding:{$paddingCabecera} 32px;background:{$color};border-radius:16px 16px 0 0">{$logo}</td></tr>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" bgcolor="{$FONDO}" style="background:{$FONDO}"><tr><td align="center" style="padding:24px 12px">
+  <table class="rp-card" width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" bgcolor="#ffffff" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px">
+    <tr><td class="rp-pad" bgcolor="{$color}" style="padding:{$paddingCabecera} 32px;background:{$color};border-radius:16px 16px 0 0">{$logo}</td></tr>
     <tr><td style="height:26px;line-height:26px;font-size:0">&nbsp;</td></tr>
 {$cuerpo}
 {$redes}
@@ -196,7 +198,7 @@ HTML;
                     return '';
                 }
 
-                return "<img src=\"{$url}\" alt=\"RankPro\" height=\"36\" style=\"display:block;height:36px;max-width:220px;border:0\">";
+                return "<img src=\"{$url}\" alt=\"RankPro\" width=\"140\" height=\"36\" style=\"display:block;height:36px;max-width:220px;border:0\">";
 
             case 'ninguno':
                 return '';
@@ -315,7 +317,7 @@ HTML;
                     if ($i > 0) {
                         $celdas[] = '<td class="rp-gap" width="10" style="width:10px;font-size:0;line-height:0">&nbsp;</td>';
                     }
-                    $celdas[] = "<td valign=\"top\" style=\"background:{$fondo};border-radius:12px;padding:16px 12px;text-align:center\">"
+                    $celdas[] = "<td valign=\"top\" bgcolor=\"{$fondo}\" style=\"background:{$fondo};border-radius:12px;padding:16px 12px;text-align:center\">"
                         ."<div style=\"font-family:{$fuente};font-size:24px;line-height:1.2;font-weight:800;color:{$color}\">{$valor}</div>"
                         ."<div style=\"font-family:{$fuente};font-size:11px;line-height:1.4;font-weight:600;color:{$gris};text-transform:uppercase;letter-spacing:.06em;margin-top:6px\">{$label}</div>"
                         .'</td>';
@@ -332,7 +334,7 @@ HTML;
                 }
                 $href = $url !== '' ? $url : '#';
                 $contenido = '<table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>'
-                    ."<td style=\"background:{$color};border-radius:10px\">"
+                    ."<td bgcolor=\"{$color}\" style=\"background:{$color};border-radius:10px\">"
                     ."<a href=\"{$href}\" style=\"display:inline-block;padding:13px 26px;font-family:{$fuente};font-size:15px;font-weight:700;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:10px\">{$texto}</a>"
                     .'</td></tr></table>';
 

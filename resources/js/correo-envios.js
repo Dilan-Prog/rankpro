@@ -129,6 +129,31 @@
     });
   }
 
+  /**
+   * Pinta el resultado de "Enviar prueba" en la ficha del envío. Con nodos de
+   * texto, no innerHTML con el mensaje: viene del servidor y en el caso de
+   * error puede incluir el texto crudo de una excepción (getMessage()).
+   */
+  function pintarResultadoPrueba(el, mensaje, ok) {
+    if (!el) return;
+    el.textContent = "";
+
+    const icono = document.createElement("i");
+    icono.className = ok ? "fa-solid fa-circle-check" : "fa-solid fa-circle-xmark";
+    icono.style.color = ok ? "var(--text-success)" : "var(--text-danger)";
+
+    const texto = document.createElement("span");
+    texto.style.color = ok ? "var(--text-success)" : "var(--text-danger)";
+    texto.textContent = " " + mensaje;
+
+    const hora = document.createElement("span");
+    hora.className = "field__hint";
+    hora.style.display = "inline";
+    hora.textContent = " (" + new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "medium" }) + ")";
+
+    el.append(icono, texto, hora);
+  }
+
   // ==========================================================================
   // Detalle
   // ==========================================================================
@@ -164,14 +189,22 @@
     root.querySelector("[data-enviar-prueba]")?.addEventListener("click", (e) => {
       const btn = e.currentTarget;
       const original = btn.innerHTML;
+      // Vive en la ficha "Datos del envío", fuera de `root` (el header de
+      // acciones) — se busca en document, no en root (ver nota de convención
+      // sobre root.querySelector solo alcanzando lo que está dentro de root).
+      const resultado = document.querySelector("[data-prueba-resultado]");
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando prueba…';
       request(root.dataset.pruebaUrl, "POST")
         .then((data) => {
-          toast(data.mensaje || "Prueba enviada.", data.adjuntos ? "success" : "info");
+          const mensaje = data.mensaje || "Prueba enviada.";
+          toast(mensaje, data.adjuntos ? "success" : "info");
+          pintarResultadoPrueba(resultado, mensaje, true);
         })
         .catch((err) => {
-          toast(mensajeDe(err, "No se pudo enviar la prueba."), "error");
+          const mensaje = mensajeDe(err, "No se pudo enviar la prueba.");
+          toast(mensaje, "error");
+          pintarResultadoPrueba(resultado, mensaje, false);
         })
         .finally(() => {
           btn.disabled = false;

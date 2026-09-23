@@ -103,6 +103,14 @@
                     <dt>Remitente</dt><dd class="u-mono">{{ $envio->remitente_nombre ?: config('mail.from.name') }} &lt;{{ $envio->remitente_email ?: config('mail.from.address') }}&gt;</dd>
                     <dt>Responsable</dt><dd>{{ $row['responsable'] ?? '—' }}</dd>
                     <dt>Creado</dt><dd class="u-mono">{{ $envio->created_at?->format('Y-m-d H:i') }}</dd>
+                    @if ($editable)
+                        {{-- El toast de "Enviar prueba" desaparece solo a los 3.5s y es
+                             fácil perderlo; esto deja el resultado a la vista hasta la
+                             siguiente prueba, para poder confirmar sin adivinar si de
+                             verdad llegó (o ver el motivo si falló). --}}
+                        <dt>Última prueba</dt>
+                        <dd data-prueba-resultado>Aún no se ha enviado una prueba de este envío.</dd>
+                    @endif
                 </dl>
 
                 @if (! empty($variables))
