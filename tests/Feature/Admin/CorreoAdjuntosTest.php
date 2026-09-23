@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\EstadoDestinatarioCorreo;
+use App\Enums\EstadoEnvioCorreo;
 use App\Mail\CorreoPlantillaMail;
 use App\Models\Archivo;
 use App\Models\Cliente;
@@ -200,5 +202,79 @@ class CorreoAdjuntosTest extends TestCase
         app(EnviadorCorreo::class)->enviar($envio);
 
         Mail::assertSent(CorreoPlantillaMail::class, fn (CorreoPlantillaMail $mail) => count($mail->attachments()) === 2);
+    }
+
+    // --- prueba del envío (desde el detalle) --------------------------------
+
+    /**
+     * Es el punto de la funcionalidad: la prueba tiene que llevar los adjuntos,
+     * porque si no, no sirve para confirmar que el PDF sale bien.
+     */
+    public function test_prueba_del_envio_manda_un_correo_al_usuario_con_los_adjuntos(): void
+    {
+        Mail::fake();
+
+        $envio = $this->envio();
+        CorreoDestinatario::factory()->create(['envio_id' => $envio->id]);
+
+        Storage::disk('local')->put('correo/envios/'.$envio->id.'/adjuntos/p.pdf', 'contenido');
+        CorreoAdjunto::factory()->create([
+            'envio_id' => $envio->id,
+            'ruta' => 'correo/envios/'.$envio->id.'/adjuntos/p.pdf',
+            'nombre' => 'Propuesta.pdf',
+        ]);
+
+        $user = User::factory()->create(['email' => 'dilan@rankprosolutions.com.mx']);
+
+        $response = $this->actingAs($user)->postJson(route('admin.correo.envios.prueba-envio', $envio));
+
+        $response->assertOk();
+        $response->assertJsonPath('ok', true);
+        $response->assertJsonPath('adjuntos', 1);
+
+        Mail::assertSent(CorreoPlantillaMail::class, 1);
+        Mail::assertSent(CorreoPlantillaMail::class, function (CorreoPlantillaMail $mail) use ($user) {
+            return $mail->hasTo($user->email)
+                && str_starts_with($mail->asunto, '[Prueba] ')
+                && count($mail->attachments()) === 1;
+        });
+    }
+
+    /** La prueba no debe tocar el envío: ni estado, ni destinatarios, ni métricas. */
+    public function test_prueba_del_envio_no_altera_el_envio_ni_a_sus_destinatarios(): void
+    {
+        Mail::fake();
+
+        $envio = $this->envio();
+        $destinatario = CorreoDestinatario::factory()->create(['envio_id' => $envio->id]);
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.correo.envios.prueba-envio', $envio))
+            ->assertOk();
+
+        $envio->refresh();
+        $destinatario->refresh();
+
+        $this->assertSame(EstadoEnvioCorreo::Borrador, $envio->estado);
+        $this->assertNull($envio->enviado_en);
+        $this->assertNull($envio->html_congelado);
+        $this->assertSame(EstadoDestinatarioCorreo::Pendiente, $destinatario->estado);
+        $this->assertNull($destinatario->enviado_en);
+        $this->assertSame(0, $destinatario->aperturas);
+    }
+
+    /** Sin adjuntos sigue siendo útil para revisar el contenido; lo dice el mensaje. */
+    public function test_prueba_del_envio_sin_adjuntos_avisa_que_no_lleva_ninguno(): void
+    {
+        Mail::fake();
+
+        $response = $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.correo.envios.prueba-envio', $this->envio()));
+
+        $response->assertOk();
+        $response->assertJsonPath('adjuntos', 0);
+        $this->assertStringContainsString('no lleva adjuntos', $response->json('mensaje'));
+
+        Mail::assertSent(CorreoPlantillaMail::class, fn (CorreoPlantillaMail $mail) => $mail->attachments() === []);
     }
 }

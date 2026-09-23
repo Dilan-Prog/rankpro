@@ -86,17 +86,23 @@ class EnviadorCorreo
      * se ha guardado todavía: se puede probar el redactor antes del primer
      * "Guardar borrador").
      *
+     * Los adjuntos van en la prueba a proposito: si no viajaran, la prueba no
+     * serviria para lo unico que de verdad hay que verificar antes de mandar a
+     * un cliente, que es si el PDF llega y con que nombre. Mismo formato que en
+     * enviar(): [['disco' => ..., 'ruta' => ..., 'nombre' => ...], ...].
+     *
      * @param  array{bloques: array, marca: array, html_libre: ?string}  $contenido
      * @param  array<string, mixed>  $variables
+     * @param  array<int, array{disco: string, ruta: string, nombre: string}>  $adjuntos
      */
-    public function prueba(array $contenido, string $asunto, array $variables, string $email, ?string $remitenteNombre = null, ?string $remitenteEmail = null): void
+    public function prueba(array $contenido, string $asunto, array $variables, string $email, ?string $remitenteNombre = null, ?string $remitenteEmail = null, array $adjuntos = []): void
     {
         $variables = array_replace(RenderizadorCorreo::variablesEjemplo(), self::limpiar($variables));
 
         $html = RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $variables, ['html_libre' => $contenido['html_libre'] ?? null]);
         $asunto = '[Prueba] '.Variables::sustituir($asunto, $variables);
 
-        Mail::to($email)->send(new CorreoPlantillaMail($asunto, $html, $remitenteNombre ?: null, $remitenteEmail ?: null));
+        Mail::to($email)->send(new CorreoPlantillaMail($asunto, $html, $remitenteNombre ?: null, $remitenteEmail ?: null, $adjuntos));
     }
 
     /**

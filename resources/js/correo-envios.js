@@ -159,6 +159,26 @@
         });
     });
 
+    // No recarga la pagina: la prueba no cambia nada del envio, y recargar
+    // haria perder de vista el aviso de que ya salio.
+    root.querySelector("[data-enviar-prueba]")?.addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando prueba…';
+      request(root.dataset.pruebaUrl, "POST")
+        .then((data) => {
+          toast(data.mensaje || "Prueba enviada.", data.adjuntos ? "success" : "info");
+        })
+        .catch((err) => {
+          toast(mensajeDe(err, "No se pudo enviar la prueba."), "error");
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = original;
+        });
+    });
+
     root.querySelector("[data-cancelar-programacion]")?.addEventListener("click", (e) => {
       const btn = e.currentTarget;
       if (!window.confirm("¿Cancelar la programación? El envío quedará como cancelado y no saldrá.")) return;

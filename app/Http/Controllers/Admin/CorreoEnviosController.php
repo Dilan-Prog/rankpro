@@ -7,6 +7,7 @@ use App\Enums\EstadoDestinatarioCorreo;
 use App\Enums\EstadoEnvioCorreo;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
+use App\Models\CorreoAdjunto;
 use App\Models\CorreoDestinatario;
 use App\Models\CorreoEnvio;
 use App\Models\CorreoPlantilla;
@@ -314,6 +315,63 @@ class CorreoEnviosController extends Controller
         }
 
         return response()->json(['ok' => true, 'mensaje' => "Prueba enviada a {$email}."]);
+    }
+
+    /**
+     * Prueba de un envío ya guardado, desde su detalle.
+     *
+     * La prueba del redactor (prueba()) nace de lo que hay en el formulario y
+     * por eso no puede llevar adjuntos: estos cuelgan del envío y solo existen
+     * cuando ya se guardó. Aquí sí, así que esta es la única forma de confirmar
+     * que el PDF sale y con qué nombre ANTES de mandarlo al cliente.
+     *
+     * Va al correo del usuario autenticado y no toca nada del envío: ni el
+     * estado, ni los destinatarios, ni el HTML congelado, ni las métricas de
+     * apertura (la prueba no lleva píxel ni enlaces firmados).
+     */
+    public function pruebaEnvio(CorreoEnvio $envio): JsonResponse
+    {
+        $envio->loadMissing(['plantilla', 'adjuntos']);
+
+        if (! $envio->personalizado() && ! $envio->plantilla instanceof CorreoPlantilla) {
+            return response()->json(['message' => 'Este envío se quedó sin plantilla; edítalo antes de probarlo.'], 422);
+        }
+
+        $email = (string) Auth::user()?->email;
+        if ($email === '') {
+            return response()->json(['message' => 'Tu usuario no tiene correo al que mandar la prueba.'], 422);
+        }
+
+        $adjuntos = $envio->adjuntos
+            ->map(fn (CorreoAdjunto $a) => ['disco' => $a->disco, 'ruta' => $a->ruta, 'nombre' => $a->nombre])
+            ->all();
+
+        try {
+            app(EnviadorCorreo::class)->prueba(
+                $envio->contenidoEfectivo(),
+                $envio->asunto,
+                $this->limpiarVariables($envio->variables ?? []),
+                $email,
+                $envio->remitente_nombre,
+                $envio->remitente_email,
+                $adjuntos,
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => 'No se pudo enviar la prueba: '.$e->getMessage()], 422);
+        }
+
+        $n = count($adjuntos);
+        $conAdjuntos = $n === 0
+            ? ' El envío no lleva adjuntos.'
+            : ($n === 1 ? ' Lleva 1 adjunto.' : " Lleva {$n} adjuntos.");
+
+        return response()->json([
+            'ok' => true,
+            'adjuntos' => $n,
+            'mensaje' => "Prueba enviada a {$email}.".$conAdjuntos,
+        ]);
     }
 
     // -------------------------------------------------------------------------

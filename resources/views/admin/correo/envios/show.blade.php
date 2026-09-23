@@ -35,6 +35,7 @@
              data-correo-envio-show
              data-envio-id="{{ $envio->id }}"
              data-enviar-url="{{ route('admin.correo.envios.enviar', $envio) }}"
+             data-prueba-url="{{ route('admin.correo.envios.prueba-envio', $envio) }}"
              data-cancelar-url="{{ route('admin.correo.envios.cancelar', $envio) }}"
              data-destroy-url="{{ route('admin.correo.envios.destroy', $envio) }}"
              data-index-url="{{ route('admin.correo.envios.index') }}"
@@ -48,6 +49,12 @@
                 <a href="{{ route('admin.correo.envios.edit', $envio) }}" class="btn btn--secondary">
                     <i class="fa-solid fa-pen"></i> Editar
                 </a>
+                {{-- Antes de "Enviar ahora" a proposito: es el paso para confirmar
+                     que el correo llega bien y con sus adjuntos. --}}
+                <button type="button" class="btn btn--secondary" data-enviar-prueba
+                        title="Te manda este correo a ti, con sus adjuntos, sin tocar a los destinatarios">
+                    <i class="fa-solid fa-flask"></i> Enviar prueba
+                </button>
                 <button type="button" class="btn btn--primary" data-enviar-ahora>
                     <i class="fa-solid fa-paper-plane"></i> Enviar ahora
                 </button>

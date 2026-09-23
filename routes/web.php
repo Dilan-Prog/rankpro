@@ -373,6 +373,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             Route::put('/{envio}', [CorreoEnviosController::class, 'update'])->name('update');
             Route::delete('/{envio}', [CorreoEnviosController::class, 'destroy'])->name('destroy');
             Route::post('/{envio}/enviar', [CorreoEnviosController::class, 'enviar'])->name('enviar');
+            // Prueba del envio ya guardado: es la unica que puede llevar sus
+            // adjuntos, porque estos cuelgan del envio y no del formulario.
+            Route::post('/{envio}/prueba', [CorreoEnviosController::class, 'pruebaEnvio'])->name('prueba-envio');
             Route::post('/{envio}/programar', [CorreoEnviosController::class, 'programar'])->name('programar');
             Route::post('/{envio}/cancelar', [CorreoEnviosController::class, 'cancelar'])->name('cancelar');
             Route::get('/{envio}/editar', [CorreoEnviosController::class, 'edit'])->name('edit');
