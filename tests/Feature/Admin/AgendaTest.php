@@ -103,6 +103,51 @@ class AgendaTest extends TestCase
         $this->assertSame(7, DisponibilidadHorario::count());
     }
 
+    /**
+     * Bug real reportado por el usuario en producción: el <input type="time">
+     * de un día que se deja inactivo llega vacío ("", no ausente) — sin la
+     * normalización a null antes de validar, "required"/"date_format" lo
+     * rechazaban aunque ese día nunca fuera a usarse, y el guardado completo
+     * fallaba (ni siquiera los días sí llenados se guardaban).
+     */
+    public function test_actualizar_horarios_permite_dejar_vacios_los_dias_inactivos(): void
+    {
+        $dias = [];
+        for ($dia = 0; $dia <= 6; $dia++) {
+            $activo = in_array($dia, [1, 2, 3, 4, 5], true);
+            $dias[] = [
+                'dia_semana' => $dia,
+                'hora_inicio' => $activo ? '09:00' : '',
+                'hora_fin' => $activo ? '18:00' : '',
+                'activo' => $activo ? '1' : '0',
+            ];
+        }
+
+        $this->actingAs(User::factory()->create())
+            ->put(route('admin.agenda.horarios.update'), ['dias' => $dias])
+            ->assertRedirect(route('admin.agenda.index'))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertSame(7, DisponibilidadHorario::count());
+        $this->assertSame(5, DisponibilidadHorario::where('activo', true)->count());
+
+        $lunes = DisponibilidadHorario::where('dia_semana', 1)->first();
+        $this->assertSame('09:00:00', $lunes->hora_inicio);
+    }
+
+    /** Un día activo SÍ sigue exigiendo horario: el vacío de arriba solo se permite si quedó inactivo. */
+    public function test_actualizar_horarios_exige_horario_en_un_dia_activo(): void
+    {
+        $dias = [];
+        for ($dia = 0; $dia <= 6; $dia++) {
+            $dias[] = ['dia_semana' => $dia, 'hora_inicio' => '', 'hora_fin' => '', 'activo' => $dia === 1 ? '1' : '0'];
+        }
+
+        $this->actingAs(User::factory()->create())
+            ->put(route('admin.agenda.horarios.update'), ['dias' => $dias])
+            ->assertSessionHasErrors(['dias.1.hora_inicio', 'dias.1.hora_fin']);
+    }
+
     public function test_store_y_destroy_bloqueo(): void
     {
         $user = User::factory()->create();

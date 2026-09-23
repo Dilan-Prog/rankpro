@@ -162,11 +162,25 @@ class AgendaController extends Controller
 
     public function actualizarHorarios(Request $request): RedirectResponse
     {
+        // El <input type="time"> de un día inactivo suele llegar vacío ("",
+        // no ausente): sin esto, "required"/"date_format" lo rechazan aunque
+        // ese día no vaya a usarse para nada. Se normaliza a null ANTES de
+        // validar para que "nullable" sí lo trate como vacío de verdad.
+        $dias = collect($request->input('dias', []))->map(function ($dia) {
+            $dia['hora_inicio'] = filled($dia['hora_inicio'] ?? null) ? $dia['hora_inicio'] : null;
+            $dia['hora_fin'] = filled($dia['hora_fin'] ?? null) ? $dia['hora_fin'] : null;
+
+            return $dia;
+        })->all();
+        $request->merge(['dias' => $dias]);
+
         $data = $request->validate([
             'dias' => ['required', 'array', 'size:7'],
             'dias.*.dia_semana' => ['required', 'integer', 'min:0', 'max:6'],
-            'dias.*.hora_inicio' => ['required', 'date_format:H:i'],
-            'dias.*.hora_fin' => ['required', 'date_format:H:i', 'after:dias.*.hora_inicio'],
+            // Solo obligatorio si ese día quedó activo — uno inactivo no
+            // necesita horario real, CalculadorDisponibilidad ni lo mira.
+            'dias.*.hora_inicio' => ['nullable', 'required_if:dias.*.activo,1', 'date_format:H:i'],
+            'dias.*.hora_fin' => ['nullable', 'required_if:dias.*.activo,1', 'date_format:H:i', 'after:dias.*.hora_inicio'],
             'dias.*.activo' => ['boolean'],
         ]);
 
@@ -176,8 +190,11 @@ class AgendaController extends Controller
             foreach ($data['dias'] as $dia) {
                 DisponibilidadHorario::create([
                     'dia_semana' => $dia['dia_semana'],
-                    'hora_inicio' => $dia['hora_inicio'],
-                    'hora_fin' => $dia['hora_fin'],
+                    // Un día inactivo sin horario cae en un valor por
+                    // defecto: la columna es NOT NULL pero el valor no
+                    // importa mientras 'activo' siga en false.
+                    'hora_inicio' => $dia['hora_inicio'] ?? '09:00',
+                    'hora_fin' => $dia['hora_fin'] ?? '18:00',
                     'activo' => (bool) ($dia['activo'] ?? false),
                 ]);
             }
