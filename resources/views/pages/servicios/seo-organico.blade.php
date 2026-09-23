@@ -273,7 +273,7 @@
                     <p>Buena parte de los sitios que revisamos pierde tráfico por contenido y problemas técnicos, no por presupuesto.</p>
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
-                        <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
                 </div>
             </div>

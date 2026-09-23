@@ -176,7 +176,7 @@
                             <p class="cs-cierre__titulo">Publicamos un caso cuando el cliente lo autoriza y las cifras se pueden sostener</p>
                             <p class="cs-cierre__p">Por eso no verás decenas de casos, sino los que podemos sostener. Si quieres revisar resultados de un sector que aún no está aquí, los mostramos en una llamada con las capturas de Search Console a la vista.</p>
                         </div>
-                        <a href="{{ route('contacto') }}" class="cv-btn cs-btn--ink">Agendar diagnóstico</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cs-btn--ink">Agendar diagnóstico</a>
                     </div>
                 </div>
             </section>

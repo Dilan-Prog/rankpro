@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\AdsGrupoKeywordController;
 use App\Http\Controllers\Admin\AdsKeywordColumnaController;
 use App\Http\Controllers\Admin\AdsMetricaController;
 use App\Http\Controllers\Admin\AdsOptimizacionController;
+use App\Http\Controllers\Admin\AgendaController;
+use App\Http\Controllers\AgendarController;
 use App\Http\Controllers\Admin\ArchivosController;
 use App\Http\Controllers\Admin\AutomatizacionController;
 use App\Http\Controllers\Admin\AutomatizacionFaseController;
@@ -141,6 +143,24 @@ Route::get('/llms.txt', [LlmsTxtController::class, 'index'])->name('llms');
 Route::prefix('correo')->name('correo.')->middleware('throttle:correo-public')->group(function () {
     Route::get('/a/{token}.gif', [CorreoTrackingController::class, 'abierto'])->name('abierto');
     Route::get('/c/{token}', [CorreoTrackingController::class, 'clic'])->middleware('signed')->name('clic');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Agendar reunión (público, sin sesión)
+|--------------------------------------------------------------------------
+|
+| El botón "Agendar" del sitio público apunta aquí. Límite por IP, mismo
+| criterio que correo-public/tracking-public.
+|
+*/
+
+Route::prefix('agendar')->name('agendar.')->middleware('throttle:agendar-public')->group(function () {
+    Route::get('/', [AgendarController::class, 'mostrar'])->name('mostrar');
+    Route::get('/disponibilidad', [AgendarController::class, 'disponibilidad'])->name('disponibilidad');
+    Route::post('/', [AgendarController::class, 'agendar'])->name('agendar');
+    Route::get('/cancelar/{token}', [AgendarController::class, 'cancelar'])->name('cancelar');
+    Route::post('/cancelar/{token}', [AgendarController::class, 'confirmarCancelacion'])->name('cancelar.confirmar');
 });
 
 /*
@@ -495,6 +515,18 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/smtp', [ConfiguracionSmtpController::class, 'edit'])->name('smtp.edit');
         Route::put('/smtp', [ConfiguracionSmtpController::class, 'update'])->name('smtp.update');
         Route::post('/smtp/probar', [ConfiguracionSmtpController::class, 'probar'])->name('smtp.probar');
+    });
+
+    Route::prefix('agenda')->name('agenda.')->group(function () {
+        Route::get('/', [AgendaController::class, 'index'])->name('index');
+        Route::put('/configuracion', [AgendaController::class, 'actualizarConfiguracion'])->name('configuracion.update');
+        Route::put('/horarios', [AgendaController::class, 'actualizarHorarios'])->name('horarios.update');
+        Route::post('/bloqueos', [AgendaController::class, 'storeBloqueo'])->name('bloqueos.store');
+        Route::delete('/bloqueos/{bloqueo}', [AgendaController::class, 'destroyBloqueo'])->name('bloqueos.destroy');
+        Route::post('/reuniones', [AgendaController::class, 'store'])->name('reuniones.store');
+        Route::put('/reuniones/{reunion}/reagendar', [AgendaController::class, 'reagendar'])->name('reuniones.reagendar');
+        Route::post('/reuniones/{reunion}/estado', [AgendaController::class, 'actualizarEstado'])->name('reuniones.estado');
+        Route::post('/reuniones/{reunion}/cancelar', [AgendaController::class, 'cancelarReunion'])->name('reuniones.cancelar');
     });
 });
 

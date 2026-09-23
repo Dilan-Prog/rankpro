@@ -43,6 +43,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(120)->by($request->ip());
         });
 
+        // /agendar es pública y sin sesión: mismo criterio que tracking-public, por IP.
+        RateLimiter::for('agendar-public', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

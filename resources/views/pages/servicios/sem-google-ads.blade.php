@@ -367,7 +367,7 @@
                     <p>Cada auditoría toma 48 horas y no te compromete a nada.</p>
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Reclamar mi auditoría gratis {!! $ico($icoFlecha, 17) !!}</a>
-                        <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
                 </div>
             </div>

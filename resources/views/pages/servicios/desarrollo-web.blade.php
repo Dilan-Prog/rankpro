@@ -388,7 +388,7 @@
                     <p>Arma la configuración arriba y mándanosla: te devolvemos la propuesta con alcance y cronograma.</p>
                     <div class="cv-actions">
                         <a href="#configurador" class="cv-btn cv-btn--white">Armar mi cotización {!! $ico($icoFlecha, 17) !!}</a>
-                        <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
                 </div>
             </div>

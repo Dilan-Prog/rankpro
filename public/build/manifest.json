@@ -4,6 +4,11 @@
     "src": "resources/css/admin/ads.css",
     "isEntry": true
   },
+  "resources/css/admin/agenda.css": {
+    "file": "assets/agenda-BLYkOPXL.css",
+    "src": "resources/css/admin/agenda.css",
+    "isEntry": true
+  },
   "resources/css/admin/archivos.css": {
     "file": "assets/archivos-N_pHQ4GD.css",
     "src": "resources/css/admin/archivos.css",
@@ -109,6 +114,11 @@
     "src": "resources/css/admin/usuarios.css",
     "isEntry": true
   },
+  "resources/css/web/agendar.css": {
+    "file": "assets/agendar-1gTuXeo_.css",
+    "src": "resources/css/web/agendar.css",
+    "isEntry": true
+  },
   "resources/css/web/app.css": {
     "file": "assets/app-CDx5YCSR.css",
     "src": "resources/css/web/app.css",
@@ -138,6 +148,12 @@
     "file": "assets/ads-6OoYvifR.js",
     "name": "ads",
     "src": "resources/js/ads.js",
+    "isEntry": true
+  },
+  "resources/js/agenda.js": {
+    "file": "assets/agenda-CIMapNXE.js",
+    "name": "agenda",
+    "src": "resources/js/agenda.js",
     "isEntry": true
   },
   "resources/js/app.js": {
@@ -246,6 +262,12 @@
     "file": "assets/keywords-DQvDpx5b.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
+    "isEntry": true
+  },
+  "resources/js/modules/agendar.js": {
+    "file": "assets/agendar-CvAtlbCA.js",
+    "name": "agendar",
+    "src": "resources/js/modules/agendar.js",
     "isEntry": true
   },
   "resources/js/propuestas.js": {

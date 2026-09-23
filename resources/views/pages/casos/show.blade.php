@@ -374,7 +374,7 @@
                         <p>{{ $caso['cta']['texto'] }}</p>
                     </div>
                     <div class="cs-cta__acciones">
-                        <a href="{{ route('contacto') }}" class="cv-btn {{ $anonimo ? 'cs-btn--brand' : 'cs-btn--blanco' }}">Agendar diagnóstico</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn {{ $anonimo ? 'cs-btn--brand' : 'cs-btn--blanco' }}">Agendar diagnóstico</a>
                         @if ($urlServicio)
                             <a href="{{ $urlServicio }}" class="cv-btn cs-btn--linea">Ver servicios de {{ ['seo' => 'SEO', 'ads' => 'Google Ads', 'desarrollo' => 'desarrollo web', 'automatizacion' => 'automatización'][$servicioPrincipal] ?? 'servicios' }}</a>
                         @else

@@ -121,7 +121,7 @@
                                 <div class="megamenu__aside">
                                     <p class="megamenu__aside-title">{{ $link['aside_title'] }}</p>
                                     <p class="megamenu__aside-text">{{ $link['aside_text'] }}</p>
-                                    <a href="{{ route('contacto') }}" class="megamenu__aside-cta">
+                                    <a href="{{ route('agendar.mostrar') }}" class="megamenu__aside-cta">
                                         Agendar diagnóstico
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                                     </a>
@@ -139,7 +139,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Iniciar sesión
             </a>
-            <a href="{{ route('contacto') }}" class="navbar__cta">Agendar gratis</a>
+            <a href="{{ route('agendar.mostrar') }}" class="navbar__cta">Agendar gratis</a>
         </div>
 
         <button id="mobile-menu-toggle" class="navbar__toggle" type="button" aria-label="Abrir menú" aria-controls="mobile-menu" aria-expanded="false">
@@ -180,7 +180,7 @@
         @endforeach
         <div class="navbar__mobile-actions">
             <a href="{{ route('login') }}" class="navbar__mobile-login">Iniciar sesión</a>
-            <a href="{{ route('contacto') }}" class="navbar__mobile-cta">Agendar gratis</a>
+            <a href="{{ route('agendar.mostrar') }}" class="navbar__mobile-cta">Agendar gratis</a>
         </div>
     </div>
 </nav>

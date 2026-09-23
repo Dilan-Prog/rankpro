@@ -132,6 +132,12 @@
 
         // Spanish (automatizacion_flujos — estado; activo/pausado ya existen arriba)
         'inactivo'      => ['Inactivo',      'badge--neutral'],
+
+        // Spanish (reuniones — App\Enums\EstadoReunion; pendiente/completada
+        // ya existen arriba con los mismos colores)
+        'confirmada'    => ['Confirmada',    'badge--success'],
+        'no_show'       => ['No asistió',    'badge--danger'],
+        'cancelada'     => ['Cancelada',     'badge--danger'],
     ];
     [$label, $class] = $map[$key] ?? [$key, 'badge--neutral'];
 @endphp

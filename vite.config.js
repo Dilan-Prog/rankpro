@@ -15,6 +15,8 @@ export default defineConfig({
                 'resources/css/web/blog.css',
                 'resources/js/blog-publico.js',
                 'resources/css/web/casos.css',
+                'resources/css/web/agendar.css',
+                'resources/js/modules/agendar.js',
                 // Admin panel — shared
                 'resources/css/admin/global.css',
                 'resources/css/admin/sidebar.css',
@@ -52,6 +54,8 @@ export default defineConfig({
                 'resources/js/roles.js',
                 'resources/css/admin/configuracion.css',
                 'resources/js/configuracion.js',
+                'resources/css/admin/agenda.css',
+                'resources/js/agenda.js',
                 'resources/js/documentos.js',
                 'resources/js/conversiones.js',
                 'resources/js/conversiones-embudo.js',
