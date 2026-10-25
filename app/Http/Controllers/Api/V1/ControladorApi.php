@@ -28,10 +28,7 @@ abstract class ControladorApi extends Controller
     protected function listar(Builder|Relation $query, Request $request, ConsultaOpciones $opciones): JsonResponse
     {
         $paginador = Consulta::aplicar($query, $request, $opciones);
-        $incluir = array_values(array_intersect(
-            array_filter(explode(',', (string) $request->string('incluir'))),
-            $opciones->incluibles
-        ));
+        $incluir = Consulta::incluir($request, $opciones->incluibles);
 
         return Respuesta::paginada($paginador, fn ($modelo) => Serializador::modelo($modelo, $incluir));
     }

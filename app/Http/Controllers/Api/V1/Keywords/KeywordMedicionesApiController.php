@@ -95,6 +95,8 @@ class KeywordMedicionesApiController extends ControladorApi
                 ->each(fn (Keyword $k) => $k->sincronizarPosiciones());
         });
 
+        \App\Support\Webhooks\RondaKeywords::emitir($lista->id, $fecha);
+
         return Respuesta::recurso([
             'fecha' => $fecha,
             'lista' => $lista->fresh(['cliente', 'keywords'])->toRow(),
@@ -145,8 +147,9 @@ class KeywordMedicionesApiController extends ControladorApi
         ]);
 
         $keywordIds = [];
+        $rondas = [];
 
-        DB::transaction(function () use ($data, &$keywordIds) {
+        DB::transaction(function () use ($data, &$keywordIds, &$rondas) {
             foreach ($data as $fila) {
                 $fecha = date('Y-m-d', strtotime($fila['fecha']));
 
@@ -164,10 +167,18 @@ class KeywordMedicionesApiController extends ControladorApi
                 );
 
                 $keywordIds[$fila['keyword_id']] = true;
+                if ($keyword?->lista_id) {
+                    $rondas[$keyword->lista_id.'|'.$fecha] = [$keyword->lista_id, $fecha];
+                }
             }
 
             Keyword::whereIn('id', array_keys($keywordIds))->get()->each(fn (Keyword $k) => $k->sincronizarPosiciones());
         });
+
+        // Una ronda = lista + fecha: un aviso por cada una, no por fila del lote.
+        foreach ($rondas as [$listaId, $fechaRonda]) {
+            \App\Support\Webhooks\RondaKeywords::emitir($listaId, $fechaRonda);
+        }
 
         return Respuesta::recurso(['procesadas' => count($data)], 201);
     }

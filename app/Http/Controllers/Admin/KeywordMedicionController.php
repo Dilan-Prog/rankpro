@@ -87,6 +87,12 @@ class KeywordMedicionController extends Controller
             'mediciones.*.posicion' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'mediciones.*.url' => ['nullable', 'string', 'max:255'],
             'mediciones.*.nota' => ['nullable', 'string', 'max:2000'],
+        ], [], [
+            // Sin esto el mensaje sale como "El campo mediciones.0.posicion...", ilegible en el toast.
+            'mediciones.*.posicion' => 'posición',
+            'mediciones.*.url' => 'URL',
+            'mediciones.*.nota' => 'nota',
+            'mediciones.*.keyword_id' => 'keyword',
         ]);
 
         $propias = $lista->keywords()->pluck('id')->all();
@@ -119,6 +125,8 @@ class KeywordMedicionController extends Controller
                 ->get()
                 ->each(fn (Keyword $k) => $k->sincronizarPosiciones());
         });
+
+        \App\Support\Webhooks\RondaKeywords::emitir($lista->id, $fecha);
 
         return response()->json([
             'fecha' => $fecha,

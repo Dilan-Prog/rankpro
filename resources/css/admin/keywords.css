@@ -329,6 +329,11 @@
   text-align: center;
 }
 
+.kw-medicion__pos-input[aria-invalid="true"],
+.kw-medicion__nota-input[aria-invalid="true"] {
+  border-color: var(--text-danger);
+}
+
 /* La nota de qué se hizo es el punto de la pantalla: se le da sitio de verdad
    (varias líneas y todo el ancho sobrante), no un input estrecho. */
 .kw-medicion__nota-input {
@@ -343,3 +348,13 @@
   min-height: 140px;
   resize: vertical;
 }
+
+/* Captura rápida, comparativo y evolución: sólo estructura mínima; el diseño visual se rehace aparte. */
+.kw-medicion__tools { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+/* `.field` es display:flex y pisa el [hidden] del navegador: sin esta regla el panel de pegado aparece abierto al entrar. */
+.kw-medicion__pegar[hidden] { display: none; }
+.kw-medicion__captura-resumen:empty { display: none; }
+.kw-medicion__captura-resumen { margin-bottom: var(--space-3); font-size: var(--text-xs); }
+.kw-comp, .kw-evo { margin-bottom: var(--space-4); }
+.kw-evo__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.kw-evo__svg { width: 100%; height: auto; max-width: 640px; }

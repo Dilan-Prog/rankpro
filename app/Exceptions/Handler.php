@@ -64,11 +64,20 @@ class Handler extends ExceptionHandler
 
             if ($e instanceof HttpExceptionInterface) {
                 $status = $e->getStatusCode();
-                if ($status === Response::HTTP_TOO_MANY_REQUESTS) {
-                    return response()->json(['message' => 'Demasiadas peticiones. Intenta de nuevo en unos segundos.'], 429);
-                }
+                // Se conservan las cabeceras de la excepción (Retry-After del 429, Allow del 405).
+                $cabeceras = $e->getHeaders();
 
-                return response()->json(['message' => $e->getMessage() ?: 'Error en la petición.'], $status);
+                // Los mensajes del framework vienen en inglés; los de abort() propios ya están en español.
+                $genericos = [
+                    Response::HTTP_METHOD_NOT_ALLOWED => 'Método no permitido para esta ruta.',
+                    Response::HTTP_REQUEST_ENTITY_TOO_LARGE => 'La petición es demasiado grande.',
+                    Response::HTTP_UNSUPPORTED_MEDIA_TYPE => 'Tipo de contenido no soportado.',
+                    Response::HTTP_TOO_MANY_REQUESTS => 'Demasiadas peticiones. Intenta de nuevo en unos segundos.',
+                    Response::HTTP_SERVICE_UNAVAILABLE => 'Servicio no disponible temporalmente.',
+                ];
+                $mensaje = $genericos[$status] ?? ($e->getMessage() ?: 'Error en la petición.');
+
+                return response()->json(['message' => $mensaje], $status, $cabeceras);
             }
 
             if (config('app.debug')) {

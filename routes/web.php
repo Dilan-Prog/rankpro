@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\AdsKeywordColumnaController;
 use App\Http\Controllers\Admin\AdsMetricaController;
 use App\Http\Controllers\Admin\AdsOptimizacionController;
 use App\Http\Controllers\Admin\AgendaController;
+use App\Http\Controllers\Admin\CapturaController;
+use App\Http\Controllers\Admin\MetricaClienteController;
+use App\Http\Controllers\Admin\MetricasController;
 use App\Http\Controllers\AgendarController;
 use App\Http\Controllers\Admin\ArchivosController;
 use App\Http\Controllers\Admin\AutomatizacionController;
@@ -39,6 +42,7 @@ use App\Http\Controllers\Admin\KeywordsController;
 use App\Http\Controllers\Admin\ProyectoFaseController;
 use App\Http\Controllers\Admin\QaController;
 use App\Http\Controllers\Admin\ReporteGeneracionController;
+use App\Http\Controllers\Admin\ReporteProgramacionesController;
 use App\Http\Controllers\Admin\ReporteSeccionController;
 use App\Http\Controllers\Admin\PropuestaController;
 use App\Http\Controllers\Admin\ReportesController;
@@ -311,6 +315,17 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/', [ReportesController::class, 'index'])->name('index');
         Route::post('/', [ReportesController::class, 'store'])->name('store');
 
+        // Antes de los comodines {reporte}: "programados" no es un reporte.
+        Route::prefix('programados')->name('programados.')->group(function () {
+            Route::get('/', [ReporteProgramacionesController::class, 'index'])->name('index');
+            Route::post('/', [ReporteProgramacionesController::class, 'store'])->name('store');
+            Route::put('/{programacion}', [ReporteProgramacionesController::class, 'update'])->name('update');
+            Route::delete('/{programacion}', [ReporteProgramacionesController::class, 'destroy'])->name('destroy');
+            Route::post('/{programacion}/alternar', [ReporteProgramacionesController::class, 'alternar'])->name('alternar');
+            Route::post('/{programacion}/probar', [ReporteProgramacionesController::class, 'probar'])->name('probar');
+            Route::post('/{programacion}/enviar-ahora', [ReporteProgramacionesController::class, 'enviarAhora'])->name('enviar-ahora');
+        });
+
         // Las secciones cuelgan del reporte y el grupo va con scopeBindings():
         // así Laravel resuelve {seccion} DENTRO del {reporte} de la URL y
         // devuelve 404 si no le pertenece. Colgando de la raíz, el binding
@@ -530,6 +545,20 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::put('/reuniones/{reunion}/reagendar', [AgendaController::class, 'reagendar'])->name('reuniones.reagendar');
         Route::post('/reuniones/{reunion}/estado', [AgendaController::class, 'actualizarEstado'])->name('reuniones.estado');
         Route::post('/reuniones/{reunion}/cancelar', [AgendaController::class, 'cancelarReunion'])->name('reuniones.cancelar');
+    });
+
+    Route::prefix('metricas')->name('metricas.')->group(function () {
+        Route::get('/', [MetricasController::class, 'index'])->name('index');
+        Route::post('/valores', [MetricasController::class, 'guardarMes'])->name('valores.store');
+        Route::post('/definiciones', [MetricaClienteController::class, 'store'])->name('definiciones.store');
+        Route::put('/definiciones/{metrica}', [MetricaClienteController::class, 'update'])->name('definiciones.update');
+        Route::post('/definiciones/{metrica}/alternar', [MetricaClienteController::class, 'alternar'])->name('definiciones.alternar');
+        Route::delete('/definiciones/{metrica}', [MetricaClienteController::class, 'destroy'])->name('definiciones.destroy');
+        Route::get('/{metrica}', [MetricasController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('captura')->name('captura.')->group(function () {
+        Route::get('/', [CapturaController::class, 'index'])->name('index');
     });
 });
 

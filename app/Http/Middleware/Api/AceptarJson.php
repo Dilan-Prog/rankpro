@@ -20,6 +20,18 @@ class AceptarJson
             return response()->json(['message' => 'La API está deshabilitada temporalmente.'], 503);
         }
 
+        // Laravel trata un JSON roto como cuerpo vacío y el cliente recibía un 422
+        // engañoso de campos "obligatorios"; solo se revisa si hay cuerpo JSON (no GET/DELETE vacíos ni multipart).
+        if ($request->isJson()) {
+            $cuerpo = trim((string) $request->getContent());
+            if ($cuerpo !== '') {
+                json_decode($cuerpo);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return response()->json(['message' => 'JSON inválido: el cuerpo de la petición no se pudo interpretar.'], 400);
+                }
+            }
+        }
+
         return $next($request);
     }
 }

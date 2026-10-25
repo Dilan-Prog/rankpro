@@ -198,6 +198,20 @@ class KeywordMedicionesTest extends TestCase
         $this->assertSame(0, KeywordMedicion::count());
     }
 
+    public function test_el_mensaje_de_error_de_una_fila_dice_posicion_y_no_el_nombre_tecnico_del_campo(): void
+    {
+        $user = User::factory()->create();
+        $lista = $this->lista(Cliente::factory()->create());
+        $k = $this->keyword($lista, 'keyword mensaje');
+
+        $mensaje = $this->ronda($user, $lista, '2026-06-01', [
+            ['keyword_id' => $k->id, 'posicion' => 0],
+        ])->assertStatus(422)->json('errors')['mediciones.0.posicion'][0];
+
+        $this->assertStringContainsString('posición', $mensaje);
+        $this->assertStringNotContainsString('mediciones.0', $mensaje);
+    }
+
     public function test_posicion_mayor_que_mil_es_422(): void
     {
         $user = User::factory()->create();
@@ -612,5 +626,55 @@ class KeywordMedicionesTest extends TestCase
         $this->assertSame(900, $k->volumen_busqueda);
 
         Carbon::setTestNow();
+    }
+
+    /**
+     * Contrato que consume el comparativo y la gráfica del historial (JS puro
+     * sobre este JSON): mediciones indexadas por fecha, posición null sin
+     * convertir a 0 y promedio null cuando ninguna keyword rankeó.
+     */
+    public function test_el_json_del_historial_conserva_el_contrato_del_comparativo(): void
+    {
+        $user = User::factory()->create();
+        $lista = $this->lista(Cliente::factory()->create());
+        $a = $this->keyword($lista, 'alfa');
+        $b = $this->keyword($lista, 'beta');
+
+        $this->ronda($user, $lista, '2026-08-01', [
+            ['keyword_id' => $a->id, 'posicion' => 10, 'url' => '/a'],
+            ['keyword_id' => $b->id, 'posicion' => null],
+        ])->assertCreated();
+        $this->ronda($user, $lista, '2026-09-01', [
+            ['keyword_id' => $a->id, 'posicion' => null],
+            ['keyword_id' => $b->id, 'posicion' => null],
+        ])->assertCreated();
+
+        $json = $this->actingAs($user)
+            ->getJson(route('admin.keywords.listas.mediciones.index', $lista))
+            ->assertOk()
+            ->json();
+
+        $this->assertSame(['2026-08-01', '2026-09-01'], $json['fechas']);
+        $this->assertEquals(10.0, $json['promedios']['2026-08-01']);
+        $this->assertNull($json['promedios']['2026-09-01']);
+
+        $alfa = collect($json['keywords'])->firstWhere('keyword_id', $a->id);
+        $this->assertSame(10, $alfa['mediciones']['2026-08-01']['posicion']);
+        $this->assertSame('/a', $alfa['mediciones']['2026-08-01']['url']);
+        $this->assertNull($alfa['mediciones']['2026-09-01']['posicion']);
+    }
+
+    /** Los ganchos data-* de la captura rápida son el contrato con keywords.js. */
+    public function test_la_pagina_incluye_los_controles_de_captura_rapida(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.keywords.index'))
+            ->assertOk()
+            ->assertSee('data-medicion-pegar-toggle', false)
+            ->assertSee('data-medicion-pegar-texto', false)
+            ->assertSee('data-medicion-copiar-anterior', false)
+            ->assertSee('data-medicion-captura-resumen', false);
     }
 }

@@ -1034,6 +1034,494 @@
     return ` <span class="kw-hist__delta" style="color:${color};"><i class="fa-solid ${icon}"></i>${Math.abs(delta)}</span>`;
   }
 
+  // <<pura>>
+  // ---------- Funciones puras: pegado, comparativo y gráfica ----------
+  //
+  // Sin DOM ni estado a propósito: así se pueden probar con Node copiando este
+  // bloque (no hay framework de tests de JS en el proyecto).
+
+  /** Minúsculas, sin acentos y con espacios colapsados: la llave para emparejar lo pegado con la lista. */
+  function normalizarKeyword(valor) {
+    return String(valor == null ? "" : valor)
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  /** Separador por mayoría en las primeras líneas: tab (Excel) gana siempre; si no, ; o , (CSV según la región). */
+  function detectarSeparador(texto) {
+    const s = String(texto || "");
+    if (s.indexOf("\t") !== -1) return "\t";
+    const lineas = s.split(/\r?\n/).filter((l) => l.trim() !== "").slice(0, 10);
+    let puntoComa = 0;
+    let coma = 0;
+    lineas.forEach((l) => {
+      const sinComillas = l.replace(/"[^"]*"/g, "");
+      puntoComa += (sinComillas.match(/;/g) || []).length;
+      coma += (sinComillas.match(/,/g) || []).length;
+    });
+    if (puntoComa > 0 && puntoComa >= coma) return ";";
+    return ",";
+  }
+
+  /** Parser CSV/TSV con comillas (y comillas dobles escapadas); cada fila conserva su número de línea de origen para reportar errores. */
+  function parsearTabla(texto, sep) {
+    const filas = [];
+    const s = String(texto || "").replace(/^﻿/, "");
+    let celdas = [];
+    let celda = "";
+    let enComillas = false;
+    let linea = 1;
+    let lineaInicio = 1;
+
+    const cerrarFila = () => {
+      celdas.push(celda);
+      celda = "";
+      if (celdas.some((c) => c.trim() !== "")) filas.push({ linea: lineaInicio, celdas });
+      celdas = [];
+    };
+
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (enComillas) {
+        if (c === '"') {
+          if (s[i + 1] === '"') {
+            celda += '"';
+            i++;
+          } else {
+            enComillas = false;
+          }
+        } else {
+          if (c === "\n") linea++;
+          celda += c;
+        }
+        continue;
+      }
+      if (c === '"' && celda.trim() === "") {
+        enComillas = true;
+        celda = "";
+      } else if (c === sep) {
+        celdas.push(celda);
+        celda = "";
+      } else if (c === "\r") {
+        continue;
+      } else if (c === "\n") {
+        cerrarFila();
+        linea++;
+        lineaInicio = linea;
+      } else {
+        celda += c;
+      }
+    }
+    cerrarFila();
+    return { filas, comillaSinCerrar: enComillas };
+  }
+
+  const MARCAS_SIN_POSICION = ["n/d", "nd", "n/a", "na", "-", "--", "—", "–", "norankea", "norankeada", "sindato", "s/d"];
+
+  /** "n/d", "-", "" y "no rankea" son posición null (sin dato); lo que no se entiende se reporta, nunca se adivina. */
+  function parsearPosicion(crudo) {
+    const t = String(crudo == null ? "" : crudo)
+      .replace(/[\s ]/g, "")
+      .toLowerCase()
+      .replace(/^#/, "");
+    if (t === "" || MARCAS_SIN_POSICION.indexOf(t) !== -1) return { ok: true, valor: null };
+    if (/^\d+([.,]\d+)?$/.test(t)) {
+      // Search Console da promedios con decimales (12.4): el banco guarda enteros.
+      const n = Math.round(parseFloat(t.replace(",", ".")));
+      if (n < 1 || n > 1000) return { ok: false, motivo: `posición fuera de 1-1000: "${String(crudo).trim()}"` };
+      return { ok: true, valor: n };
+    }
+    return { ok: false, motivo: `posición no reconocida: "${String(crudo).trim()}"` };
+  }
+
+  const ENCABEZADOS = {
+    keyword: ["keyword", "keywords", "palabra clave", "palabras clave", "consulta", "consultas", "consultas principales", "query", "queries", "top queries", "termino"],
+    posicion: ["posicion", "posicion media", "posicion promedio", "position", "average position", "avg position", "pos", "rank", "ranking"],
+    url: ["url", "pagina", "pagina principal", "page", "landing", "link"],
+  };
+
+  /** Reconoce una fila de encabezado por nombres conocidos (Excel propio o Search Console) y devuelve el índice de cada columna. */
+  function detectarEncabezado(celdas) {
+    const norm = celdas.map(normalizarKeyword);
+    const idx = { keyword: -1, posicion: -1, url: -1 };
+    let reconocido = false;
+    Object.keys(ENCABEZADOS).forEach((clave) => {
+      const i = norm.findIndex((c) => ENCABEZADOS[clave].indexOf(c) !== -1);
+      if (i !== -1) {
+        idx[clave] = i;
+        reconocido = true;
+      }
+    });
+    return reconocido ? idx : null;
+  }
+
+  /**
+   * Lee el texto pegado y lo empareja con las keywords de la lista por nombre
+   * normalizado. Nada se descarta en silencio: lo que no coincide, lo repetido
+   * y lo malformado vuelven listado fila por fila.
+   */
+  function procesarPegado(texto, keywords) {
+    const res = { coincidencias: [], sinCoincidencia: [], errores: [], repetidas: [], noMencionadas: [], encabezado: false, error: null };
+    if (!String(texto || "").trim()) {
+      res.error = "No hay nada que procesar: pega primero las filas.";
+      return res;
+    }
+
+    const { filas, comillaSinCerrar } = parsearTabla(texto, detectarSeparador(texto));
+    if (comillaSinCerrar) res.errores.push({ linea: 0, motivo: "hay unas comillas sin cerrar; las filas finales pueden haberse leído mal" });
+    if (!filas.length) {
+      res.error = "No hay nada que procesar: pega primero las filas.";
+      return res;
+    }
+
+    let cols = { keyword: 0, posicion: 1, url: 2 };
+    let datos = filas;
+    const encabezado = detectarEncabezado(filas[0].celdas);
+    if (encabezado) {
+      res.encabezado = true;
+      datos = filas.slice(1);
+      if (encabezado.keyword === -1 || encabezado.posicion === -1) {
+        res.error = "El encabezado no trae columna de keyword y de posición.";
+        return res;
+      }
+      cols = encabezado;
+    }
+
+    const porNorm = new Map();
+    (keywords || []).forEach((k) => {
+      const n = normalizarKeyword(k.keyword);
+      if (!porNorm.has(n)) porNorm.set(n, []);
+      porNorm.get(n).push(k);
+    });
+
+    const aplicadas = new Map();
+    datos.forEach((fila) => {
+      const kw = String(fila.celdas[cols.keyword] == null ? "" : fila.celdas[cols.keyword]).trim();
+      if (!kw) {
+        res.errores.push({ linea: fila.linea, motivo: "keyword vacía" });
+        return;
+      }
+      if (fila.celdas.length <= cols.posicion) {
+        res.errores.push({ linea: fila.linea, keyword: kw, motivo: "falta la columna de posición" });
+        return;
+      }
+      const pos = parsearPosicion(fila.celdas[cols.posicion]);
+      if (!pos.ok) {
+        res.errores.push({ linea: fila.linea, keyword: kw, motivo: pos.motivo });
+        return;
+      }
+      const norm = normalizarKeyword(kw);
+      if (!porNorm.has(norm)) {
+        res.sinCoincidencia.push({ linea: fila.linea, keyword: kw, posicion: pos.valor });
+        return;
+      }
+      if (aplicadas.has(norm)) res.repetidas.push({ linea: aplicadas.get(norm).linea, keyword: kw });
+      const url = cols.url !== -1 && fila.celdas[cols.url] != null ? String(fila.celdas[cols.url]).trim() : "";
+      aplicadas.set(norm, { linea: fila.linea, posicion: pos.valor, url: url || null });
+    });
+
+    aplicadas.forEach((v, norm) => {
+      porNorm.get(norm).forEach((k) => {
+        res.coincidencias.push({ keyword_id: k.id, keyword: k.keyword, posicion: v.posicion, url: v.url, linea: v.linea });
+      });
+    });
+    porNorm.forEach((lista, norm) => {
+      if (!aplicadas.has(norm)) lista.forEach((k) => res.noMencionadas.push(k.keyword));
+    });
+    return res;
+  }
+
+  /** Última ronda estrictamente anterior a `fecha` (los ISO YYYY-MM-DD se comparan bien como texto). */
+  function rondaAnterior(fechas, fecha) {
+    const previas = (fechas || []).filter((f) => f < fecha).sort();
+    return previas.length ? previas[previas.length - 1] : null;
+  }
+
+  /**
+   * Qué copiar de la ronda anterior a las filas del modal. `filas` trae lo que
+   * hay hoy en cada caja; una con posición ya tecleada o pegada se conserva y
+   * solo se cuenta, porque la precarga no debe pisar trabajo del usuario.
+   */
+  function planCopiaRonda(data, fecha, filas) {
+    const origen = rondaAnterior((data && data.fechas) || [], fecha);
+    if (!origen) return { origen: null, aplicar: [], copiadas: 0, conservadas: 0 };
+    const porId = new Map();
+    ((data && data.keywords) || []).forEach((row) => {
+      const m = (row.mediciones || {})[origen];
+      if (m) porId.set(String(row.keyword_id), m);
+    });
+    const res = { origen, aplicar: [], copiadas: 0, conservadas: 0 };
+    (filas || []).forEach((f) => {
+      const m = porId.get(String(f.keyword_id));
+      if (!m) return;
+      if (String(f.posicion == null ? "" : f.posicion).trim() !== "") {
+        res.conservadas++;
+        return;
+      }
+      res.aplicar.push({ keyword_id: f.keyword_id, posicion: m.posicion != null ? String(m.posicion) : "", url: m.url || "" });
+      res.copiadas++;
+    });
+    return res;
+  }
+
+  function diasEntre(isoA, isoB) {
+    const parse = (s) => {
+      const p = String(s).split("-").map(Number);
+      return Date.UTC(p[0], p[1] - 1, p[2]);
+    };
+    return Math.round((parse(isoB) - parse(isoA)) / 86400000);
+  }
+
+  /**
+   * Ronda cuya fecha cae más cerca de `objetivo` días antes de `ultima`. Sin
+   * tolerancia, una ronda de hace 5 días pasaría por "hace un mes"; con ±15 los
+   * rangos de 1 y 2 meses (15-45 y 45-75) no se solapan, y fuera de ellos es
+   * "sin dato" en vez de un número engañoso.
+   */
+  function rondaCercana(fechas, ultima, objetivo, excluir) {
+    let mejor = null;
+    (fechas || []).forEach((f) => {
+      if (f >= ultima || f === excluir) return;
+      const dias = diasEntre(f, ultima);
+      const dist = Math.abs(dias - objetivo);
+      if (dist <= 15 && (!mejor || dist < mejor.dist)) mejor = { fecha: f, dias, dist };
+    });
+    return mejor ? { fecha: mejor.fecha, dias: mejor.dias } : null;
+  }
+
+  function posicionDe(row, fecha) {
+    const m = (row.mediciones || {})[fecha];
+    return m && m.posicion != null ? m.posicion : null;
+  }
+
+  /** Promedio y conteos de una ronda; una keyword sin posición cuenta como "sin dato", nunca como 0. */
+  function resumenRonda(data, fecha) {
+    const keywords = data.keywords || [];
+    const vals = [];
+    keywords.forEach((row) => {
+      const p = posicionDe(row, fecha);
+      if (p != null) vals.push(p);
+    });
+    const suma = vals.reduce((a, b) => a + b, 0);
+    return {
+      fecha,
+      total: keywords.length,
+      medidas: vals.length,
+      sinDato: keywords.length - vals.length,
+      promedio: vals.length ? Math.round((suma / vals.length) * 10) / 10 : null,
+      top3: vals.filter((p) => p <= 3).length,
+      top10: vals.filter((p) => p <= 10).length,
+      top100: vals.filter((p) => p <= 100).length,
+    };
+  }
+
+  /** Ahora (última ronda) contra ~1 y ~2 meses antes. mejoraron = ahora tiene número más bajo que en el corte. */
+  function comparativo(data) {
+    const fechas = ((data && data.fechas) || []).slice().sort();
+    if (!fechas.length) return null;
+    const ultima = fechas[fechas.length - 1];
+    const ahora = resumenRonda(data, ultima);
+
+    const contra = (ronda) => {
+      if (!ronda) return null;
+      const r = resumenRonda(data, ronda.fecha);
+      const out = { ...r, dias: ronda.dias, mejoraron: 0, empeoraron: 0, igual: 0, sinDatoCmp: 0, variacion: null };
+      (data.keywords || []).forEach((row) => {
+        const a = posicionDe(row, ultima);
+        const b = posicionDe(row, ronda.fecha);
+        if (a == null || b == null) out.sinDatoCmp++;
+        else if (a < b) out.mejoraron++;
+        else if (a > b) out.empeoraron++;
+        else out.igual++;
+      });
+      // Positivo = la lista subió (promedio más bajo), igual que el delta de las celdas.
+      if (ahora.promedio != null && r.promedio != null) out.variacion = Math.round((r.promedio - ahora.promedio) * 10) / 10;
+      return out;
+    };
+
+    const r1 = rondaCercana(fechas, ultima, 30);
+    const r2 = rondaCercana(fechas, ultima, 60, r1 ? r1.fecha : null);
+    return { ahora, mes1: contra(r1), mes2: contra(r2) };
+  }
+
+  /** Serie por ronda: el promedio de la lista (keywordId null) o la posición de una keyword; valor null = sin dato. */
+  function serieEvolucion(data, keywordId) {
+    const fechas = ((data && data.fechas) || []).slice().sort();
+    return fechas.map((fecha) => {
+      if (keywordId == null || keywordId === "") return { fecha, valor: resumenRonda(data, fecha).promedio };
+      const row = (data.keywords || []).find((r) => String(r.keyword_id) === String(keywordId));
+      return { fecha, valor: row ? posicionDe(row, fecha) : null };
+    });
+  }
+
+  /** SVG inline con el eje invertido (posición 1 arriba). Devuelve "" si no hay ningún valor que graficar. */
+  function svgEvolucion(serie, titulo) {
+    const valores = serie.filter((p) => p.valor != null).map((p) => p.valor);
+    if (!valores.length) return "";
+
+    const W = 640;
+    const H = 240;
+    const m = { t: 16, r: 20, b: 34, l: 48 };
+    const iw = W - m.l - m.r;
+    const ih = H - m.t - m.b;
+
+    let min = Math.min(...valores);
+    let max = Math.max(...valores);
+    if (min === max) {
+      min = Math.max(1, min - 2);
+      max = max + 2;
+    } else {
+      const pad = (max - min) * 0.1;
+      min = Math.max(1, min - pad);
+      max = max + pad;
+    }
+    const x = (i) => (serie.length === 1 ? m.l + iw / 2 : m.l + (iw * i) / (serie.length - 1));
+    const y = (v) => m.t + (ih * (v - min)) / (max - min);
+
+    const ticks = [];
+    for (let i = 0; i <= 3; i++) {
+      const v = Math.round(min + ((max - min) * i) / 3);
+      if (ticks.indexOf(v) === -1) ticks.push(v);
+    }
+    const grid = ticks
+      .map(
+        (v) =>
+          `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="currentColor" stroke-opacity="0.15"/>` +
+          `<text x="${m.l - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="currentColor">#${v}</text>`
+      )
+      .join("");
+
+    // Un hueco (valor null) corta la línea: unir los puntos de al lado inventaría una tendencia.
+    let path = "";
+    let pendiente = false;
+    serie.forEach((p, i) => {
+      if (p.valor == null) {
+        pendiente = false;
+        return;
+      }
+      path += `${pendiente ? "L" : "M"}${x(i).toFixed(1)} ${y(p.valor).toFixed(1)} `;
+      pendiente = true;
+    });
+
+    const salto = Math.ceil(serie.length / 8);
+    // La primera y la última etiqueta se alinean hacia adentro: centradas chocan con las etiquetas "#N" del eje (izquierda) o se cortan en el borde (derecha).
+    const etiquetas = serie
+      .map((p, i) => {
+        // Con muchas rondas la penúltima etiqueta con salto quedaría pegada a la última y se encimarían.
+        if (!((i % salto === 0 && serie.length - 1 - i >= salto) || i === serie.length - 1)) return "";
+        const ancla = serie.length === 1 ? "middle" : i === 0 ? "start" : i === serie.length - 1 ? "end" : "middle";
+        const xe = i === 0 && serie.length > 1 ? m.l : i === serie.length - 1 && serie.length > 1 ? W - m.r : x(i);
+        return `<text x="${xe.toFixed(1)}" y="${H - 10}" text-anchor="${ancla}" font-size="11" fill="currentColor">${escapeHtml(fmtFecha(p.fecha))}</text>`;
+      })
+      .join("");
+
+    const puntos = serie
+      .map((p, i) =>
+        p.valor == null
+          ? ""
+          : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="4" fill="currentColor"><title>${escapeHtml(fmtFecha(p.fecha))}: #${p.valor}</title></circle>`
+      )
+      .join("");
+
+    const sinDato = serie.length - valores.length;
+    const descripcion = serie.map((p) => `${fmtFecha(p.fecha)}: ${p.valor != null ? "#" + p.valor : "sin dato"}`).join("; ");
+    const etiquetaAria = `${titulo}. Eje invertido: la posición 1 está arriba. ${descripcion}.${sinDato ? ` ${sinDato} ronda(s) sin dato.` : ""}`;
+
+    return (
+      `<svg class="kw-evo__svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(etiquetaAria)}" data-evolucion-svg>` +
+      `<title>${escapeHtml(titulo)}</title>` +
+      grid +
+      `<path d="${path.trim()}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>` +
+      puntos +
+      etiquetas +
+      `</svg>`
+    );
+  }
+  // <</pura>>
+
+  function comparativoHtml(comp) {
+    if (!comp) return "";
+    const SIN = '<span class="kw-hist__nd">sin dato</span>';
+    const cortes = [
+      { clave: "ahora", titulo: "Ahora", r: comp.ahora },
+      { clave: "mes1", titulo: "~1 mes antes", r: comp.mes1 },
+      { clave: "mes2", titulo: "~2 meses antes", r: comp.mes2 },
+    ];
+
+    const fila = (metrica, etiqueta, celda) =>
+      `<tr data-comp-metrica="${metrica}"><th scope="row">${etiqueta}</th>${cortes
+        .map((c) => `<td data-comp-corte="${c.clave}">${c.r ? celda(c.r, c.clave) : SIN}</td>`)
+        .join("")}</tr>`;
+    const deTotal = (n, r) => `${n} de ${r.total}`;
+
+    const cabecera = cortes.map((c) => `<th scope="col" data-comp-corte="${c.clave}">${c.titulo}</th>`).join("");
+
+    return `
+      <section class="kw-comp" data-comparativo aria-label="Comparativo de la lista">
+        <h4 class="kw-comp__titulo">Comparativo</h4>
+        <div class="kw-hist__scroll">
+          <table class="table kw-comp__table">
+            <thead><tr><th scope="col"></th>${cabecera}</tr></thead>
+            <tbody>
+              ${fila("fecha", "Ronda", (r) => `${fmtFecha(r.fecha)}${r.dias ? ` <span class="u-mono">(hace ${r.dias} días)</span>` : ""}`)}
+              ${fila("promedio", "Posición promedio", (r) => (r.promedio != null ? `<span class="u-mono">#${r.promedio}</span>` : SIN))}
+              ${fila("variacion", "Variación del promedio hasta ahora", (r, c) =>
+                c === "ahora" ? "—" : r.variacion == null ? SIN : r.variacion === 0 ? "igual" : deltaHtml(r.variacion)
+              )}
+              ${fila("top3", "Keywords en top 3", (r) => deTotal(r.top3, r))}
+              ${fila("top10", "Keywords en top 10", (r) => deTotal(r.top10, r))}
+              ${fila("top100", "Keywords en top 100", (r) => deTotal(r.top100, r))}
+              ${fila("mejoraron", "Mejoraron hasta ahora", (r, c) => (c === "ahora" ? "—" : r.mejoraron))}
+              ${fila("empeoraron", "Empeoraron hasta ahora", (r, c) => (c === "ahora" ? "—" : r.empeoraron))}
+              ${fila("igual", "Igual hasta ahora", (r, c) => (c === "ahora" ? "—" : r.igual))}
+              ${fila("sin-dato", "Sin dato para comparar", (r, c) => (c === "ahora" ? "—" : r.sinDatoCmp))}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+
+  function graficaHtml(data, keywordId) {
+    const nombre =
+      keywordId == null || keywordId === ""
+        ? "Posición promedio de la lista"
+        : `Posición de "${((data.keywords || []).find((r) => String(r.keyword_id) === String(keywordId)) || {}).keyword || ""}"`;
+    const svg = svgEvolucion(serieEvolucion(data, keywordId), nombre);
+    return svg || '<p class="kw-hist__loading" data-evolucion-vacia>Aún no hay posiciones registradas para graficar esta selección.</p>';
+  }
+
+  function evolucionHtml(listaId, data) {
+    const opciones = (data.keywords || [])
+      .map((row) => `<option value="${row.keyword_id}">${escapeHtml(row.keyword)}</option>`)
+      .join("");
+    return `
+      <section class="kw-evo" data-historial-evolucion>
+        <div class="kw-evo__head">
+          <h4 class="kw-evo__titulo">Evolución</h4>
+          <label class="kw-evo__selector">Ver:
+            <select class="select" data-historial-serie="${listaId}" aria-label="Qué evolución graficar">
+              <option value="">Promedio de la lista</option>
+              ${opciones}
+            </select>
+          </label>
+        </div>
+        <div class="kw-evo__grafica" data-historial-grafica>${graficaHtml(data, null)}</div>
+      </section>`;
+  }
+
+  function initEvolucion() {
+    document.addEventListener("change", (e) => {
+      const select = e.target.closest ? e.target.closest("[data-historial-serie]") : null;
+      if (!select) return;
+      const data = historialCache.get(String(select.dataset.historialSerie));
+      const destino = select.closest("[data-historial-evolucion]")?.querySelector("[data-historial-grafica]");
+      if (data && destino) destino.innerHTML = graficaHtml(data, select.value);
+    });
+  }
+
   function historialCellHtml(medicion, delta) {
     // Tres estados bien distintos: sin medición (esa keyword no se midió esa
     // ronda), medida sin posición (posicion === null: "no rankea / sin dato"),
@@ -1120,6 +1608,8 @@
       .join("");
 
     return `
+      ${comparativoHtml(comparativo(data))}
+      ${evolucionHtml(listaId, data)}
       <div class="kw-hist__scroll" data-historial-scroll>
         <table class="table kw-hist__table" data-historial-table="${listaId}">
           <thead>
@@ -1299,6 +1789,13 @@
     renderMedicionRows(l);
     prefillMedicionRonda(listaId, fechaInput.value);
 
+    // Lo pegado y el resumen de la ronda anterior no deben sobrevivir a otra lista.
+    const pegar = form.querySelector("[data-medicion-pegar-texto]");
+    if (pegar) pegar.value = "";
+    const panelPegar = form.querySelector("[data-medicion-pegar-panel]");
+    if (panelPegar) panelPegar.hidden = true;
+    setResumenCaptura("");
+
     window.AgencyOS.openModal("medicionFormModal");
   }
 
@@ -1317,6 +1814,157 @@
     fechaInput.addEventListener("change", () => {
       if (!fechaInput.value || !form.dataset.listaId) return;
       prefillMedicionRonda(form.dataset.listaId, fechaInput.value);
+    });
+  }
+
+  // ---------- Captura rápida de la ronda ----------
+
+  /** Keywords de la lista abierta en el modal, leídas de sus filas (las mismas que se guardan). */
+  function keywordsDelModal() {
+    return Array.from(document.querySelectorAll("[data-medicion-row]")).map((tr) => ({
+      id: Number(tr.dataset.keywordId),
+      keyword: tr.querySelector(".kw-medicion__kw").textContent,
+    }));
+  }
+
+  function filaDelModal(keywordId) {
+    return document.querySelector(`[data-medicion-row][data-keyword-id="${keywordId}"]`);
+  }
+
+  function setResumenCaptura(html) {
+    const el = document.querySelector("[data-medicion-captura-resumen]");
+    if (el) el.innerHTML = html;
+  }
+
+  function listaHtml(titulo, items, atributo) {
+    if (!items.length) return "";
+    return `<div ${atributo}><strong>${titulo} (${items.length})</strong><ul>${items.map((i) => `<li>${i}</li>`).join("")}</ul></div>`;
+  }
+
+  function resumenPegadoHtml(res) {
+    if (res.error) return `<p data-pegar-error>${escapeHtml(res.error)}</p>`;
+    const coinciden = `${res.coincidencias.length} coincidencia(s), ${res.sinCoincidencia.length} sin coincidencia`;
+    const conLinea = (linea, texto) => escapeHtml((linea ? `Línea ${linea}: ` : "") + texto);
+    return (
+      `<p data-pegar-conteo>${coinciden}${res.errores.length ? `, ${res.errores.length} fila(s) con error` : ""}.</p>` +
+      listaHtml(
+        "Sin coincidencia en esta lista",
+        res.sinCoincidencia.map((f) => conLinea(f.linea, `"${f.keyword}"`)),
+        "data-pegar-sin-coincidencia"
+      ) +
+      listaHtml(
+        "Filas con error (no se aplicaron)",
+        res.errores.map((f) => conLinea(f.linea, (f.keyword ? `"${f.keyword}" — ` : "") + f.motivo)),
+        "data-pegar-errores"
+      ) +
+      listaHtml(
+        "Repetidas en lo pegado (se usó la última)",
+        res.repetidas.map((f) => conLinea(f.linea, `"${f.keyword}"`)),
+        "data-pegar-repetidas"
+      ) +
+      listaHtml(
+        "Keywords de la lista que no aparecen en lo pegado (quedan como están)",
+        res.noMencionadas.map((k) => escapeHtml(k)),
+        "data-pegar-no-mencionadas"
+      )
+    );
+  }
+
+  function aplicarPegado() {
+    const area = document.querySelector("[data-medicion-pegar-texto]");
+    if (!area) return;
+    const res = procesarPegado(area.value, keywordsDelModal());
+    res.coincidencias.forEach((c) => {
+      const tr = filaDelModal(c.keyword_id);
+      if (!tr) return;
+      tr.querySelector("[data-medicion-posicion]").value = c.posicion != null ? String(c.posicion) : "";
+      // Sin URL en lo pegado se conserva la asignada: borrarla sería perder dato por omisión.
+      if (c.url) tr.querySelector("[data-medicion-url]").value = c.url;
+    });
+    setResumenCaptura(resumenPegadoHtml(res));
+  }
+
+  /** Precarga posición y URL (no la nota) con la última ronda anterior a la fecha elegida, sin pisar cajas ya llenas. */
+  function copiarRondaAnterior(listaId, fecha) {
+    const key = String(listaId);
+    const form = document.getElementById("medicionForm");
+    const fechaInput = document.querySelector("[data-medicion-fecha]");
+    // La respuesta puede llegar con el modal cerrado o ya apuntando a otra lista/fecha; aplicarla ahí sería escribir en la ronda equivocada.
+    const vigente = () =>
+      !!form &&
+      !!fechaInput &&
+      !document.getElementById("medicionFormModal")?.hidden &&
+      form.dataset.listaId === key &&
+      fechaInput.value === fecha;
+
+    const aplicar = (data) => {
+      if (!vigente()) return;
+      const filas = Array.from(document.querySelectorAll("[data-medicion-row]")).map((tr) => ({
+        keyword_id: tr.dataset.keywordId,
+        posicion: tr.querySelector("[data-medicion-posicion]").value,
+      }));
+      const plan = planCopiaRonda(data, fecha, filas);
+      if (!plan.origen) {
+        setResumenCaptura(`<p data-copiar-resultado>No hay una ronda anterior al ${escapeHtml(fmtFecha(fecha))}.</p>`);
+        return;
+      }
+      plan.aplicar.forEach((c) => {
+        const tr = filaDelModal(c.keyword_id);
+        if (!tr) return;
+        tr.querySelector("[data-medicion-posicion]").value = c.posicion;
+        if (c.url) tr.querySelector("[data-medicion-url]").value = c.url;
+      });
+      const aviso = plan.conservadas
+        ? ` ${plan.conservadas} renglón(es) ya tenían datos y se conservaron.`
+        : "";
+      setResumenCaptura(
+        `<p data-copiar-resultado>Se copiaron ${plan.copiadas} keyword(s) de la ronda del ${escapeHtml(fmtFecha(plan.origen))}. La nota no se copia.${aviso}</p>`
+      );
+    };
+
+    if (historialCache.has(key)) {
+      aplicar(historialCache.get(key));
+      return Promise.resolve();
+    }
+    return getJson(medicionTemplates().index.replace("__ID__", key))
+      .then((data) => {
+        historialCache.set(key, data);
+        aplicar(data);
+      })
+      .catch(() => {
+        if (vigente()) toast("No se pudo cargar la ronda anterior.", "error");
+      });
+  }
+
+  function initCapturaRapida() {
+    const form = document.getElementById("medicionForm");
+    if (!form) return;
+
+    form.querySelector("[data-medicion-pegar-toggle]")?.addEventListener("click", () => {
+      const panel = form.querySelector("[data-medicion-pegar-panel]");
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) panel.querySelector("[data-medicion-pegar-texto]")?.focus();
+    });
+    form.querySelector("[data-medicion-pegar-aplicar]")?.addEventListener("click", aplicarPegado);
+    form.querySelector("[data-medicion-copiar-anterior]")?.addEventListener("click", () => {
+      const fecha = form.querySelector("[data-medicion-fecha]").value;
+      if (!form.dataset.listaId || !fecha) return;
+      copiarRondaAnterior(form.dataset.listaId, fecha);
+    });
+
+    // Enter en una posición baja al siguiente renglón en vez de enviar el formulario: la ronda se llena sin mouse.
+    form.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.isComposing || !e.target.matches || !e.target.matches("[data-medicion-posicion]")) return;
+      e.preventDefault();
+      const siguiente = e.target.closest("[data-medicion-row]")?.nextElementSibling;
+      const destino = siguiente
+        ? siguiente.querySelector("[data-medicion-posicion]")
+        : document.getElementById("medicionFormSubmit");
+      if (destino) {
+        destino.focus();
+        if (destino.select) destino.select();
+      }
     });
   }
 
@@ -1375,13 +2023,38 @@
         .catch((err) => {
           submit.disabled = false;
           if (err.message === "validation_failed") {
-            renderFieldErrors(form, err.data.errors || {});
-            toast(err.data.message || "Revisa los campos marcados.", "error");
+            const errores = err.data.errors || {};
+            renderFieldErrors(form, errores);
+            // El mensaje crudo de Laravel no dice qué keyword falló: se marca el campo y se antepone el nombre.
+            const porFila = marcarErroresRonda(form, errores);
+            toast(porFila.length ? porFila.slice(0, 3).join(" · ") : err.data.message || "Revisa los campos marcados.", "error");
           } else {
             toast("No se pudo guardar la medición.", "error");
           }
         });
     });
+  }
+
+  /** Marca (aria-invalid) y enfoca el primer campo con error de la ronda; devuelve "keyword: mensaje" por cada error de fila. */
+  function marcarErroresRonda(form, errores) {
+    const filas = Array.from(form.querySelectorAll("[data-medicion-row]"));
+    form.querySelectorAll("[data-medicion-row] [aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+    const atributos = { posicion: "[data-medicion-posicion]", url: "[data-medicion-url]", nota: "[data-medicion-nota]" };
+    const mensajes = [];
+    let primero = null;
+    Object.keys(errores).forEach((clave) => {
+      const m = clave.match(/^mediciones\.(\d+)\.(\w+)$/);
+      const tr = m ? filas[Number(m[1])] : null;
+      if (!tr) return;
+      const el = atributos[m[2]] ? tr.querySelector(atributos[m[2]]) : null;
+      if (el) {
+        el.setAttribute("aria-invalid", "true");
+        if (!primero && el.type !== "hidden") primero = el;
+      }
+      mensajes.push(`${tr.querySelector(".kw-medicion__kw").textContent}: ${errores[clave][0]}`);
+    });
+    if (primero) primero.focus();
+    return mensajes;
   }
 
   // ---------- Corrección de una medición suelta (la nota) ----------
@@ -1493,6 +2166,8 @@
     initHistorial();
     initOpenMedicionModalButtons();
     initMedicionFechaChange();
+    initCapturaRapida();
+    initEvolucion();
     initMedicionForm();
     initMedicionNota();
   });

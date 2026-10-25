@@ -32,6 +32,8 @@ class Navigation
                 ['route' => 'admin.correo.plantillas.index', 'active' => 'admin.correo.plantillas.*', 'icon' => 'fa-envelope-open-text', 'label' => 'Plantillas de correo'],
                 ['route' => 'admin.correo.envios.index', 'active' => 'admin.correo.envios.*', 'icon' => 'fa-paper-plane', 'label' => 'Enviar correo'],
                 ['route' => 'admin.agenda.index', 'active' => 'admin.agenda.*', 'icon' => 'fa-calendar-check', 'label' => 'Agenda'],
+                ['route' => 'admin.metricas.index', 'active' => 'admin.metricas.*', 'icon' => 'fa-chart-line', 'label' => 'Métricas'],
+                ['route' => 'admin.captura.index', 'active' => 'admin.captura.*', 'icon' => 'fa-clipboard-check', 'label' => 'Pendientes de captura'],
                 ['route' => 'admin.desarrollo.index', 'active' => 'admin.desarrollo.*', 'icon' => 'fa-code', 'label' => 'Desarrollo'],
             ],
             'Administración' => [

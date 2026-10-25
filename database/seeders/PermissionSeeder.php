@@ -25,6 +25,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'reportes', 'label' => 'Reportes', 'module' => 'reportes'],
             ['name' => 'propuestas', 'label' => 'Propuestas', 'module' => 'propuestas'],
             ['name' => 'correo', 'label' => 'Correo', 'module' => 'correo'],
+            ['name' => 'metricas', 'label' => 'Métricas', 'module' => 'metricas'],
+            ['name' => 'captura', 'label' => 'Pendientes de captura', 'module' => 'captura'],
             ['name' => 'desarrollo', 'label' => 'Desarrollo', 'module' => 'desarrollo'],
             ['name' => 'finanzas', 'label' => 'Finanzas', 'module' => 'finanzas'],
             ['name' => 'archivos', 'label' => 'Archivos', 'module' => 'archivos'],

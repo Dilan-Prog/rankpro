@@ -10,9 +10,14 @@
             <h1 class="page-header__title">Reportes</h1>
             <p class="page-header__subtitle">{{ $totalReportes }} reporte{{ $totalReportes === 1 ? '' : 's' }} · {{ $borradores }} en borrador</p>
         </div>
-        <button type="button" class="btn btn--primary" data-open-reporte-modal>
-            <i class="fa-solid fa-plus"></i> Nuevo Reporte
-        </button>
+        <div style="display:flex; gap:8px;">
+            <a href="{{ route('admin.reportes.programados.index') }}" class="btn btn--secondary" data-reportes-programados-link>
+                <i class="fa-solid fa-calendar-check"></i> Reportes programados
+            </a>
+            <button type="button" class="btn btn--primary" data-open-reporte-modal>
+                <i class="fa-solid fa-plus"></i> Nuevo Reporte
+            </button>
+        </div>
     </div>
 
     {{-- ---------- KPIs ---------- --}}

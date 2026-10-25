@@ -12,8 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('correo:procesar-programados')->everyMinute()->withoutOverlapping();
-        $schedule->command('webhooks:reintentar')->everyMinute()->withoutOverlapping();
+        // withoutOverlapping(30): sin argumento el mutex dura 24 h y un cron muerto frenaría todo el día.
+        $schedule->command('correo:procesar-programados')->everyMinute()->withoutOverlapping(30);
+        // Cada 15 min: la hora de envío es HH:MM y no debe llegar con casi una hora de retraso.
+        $schedule->command('reportes:enviar-programados')->everyFifteenMinutes()->withoutOverlapping(30);
+        $schedule->command('webhooks:reintentar')->everyMinute()->withoutOverlapping(30);
     }
 
     /**

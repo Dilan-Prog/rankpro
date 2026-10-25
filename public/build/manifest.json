@@ -75,8 +75,13 @@
     "isEntry": true
   },
   "resources/css/admin/keywords.css": {
-    "file": "assets/keywords-DCUhEn0L.css",
+    "file": "assets/keywords-CNCnyaCJ.css",
     "src": "resources/css/admin/keywords.css",
+    "isEntry": true
+  },
+  "resources/css/admin/metricas.css": {
+    "file": "assets/metricas-Y-GzYMX9.css",
+    "src": "resources/css/admin/metricas.css",
     "isEntry": true
   },
   "resources/css/admin/propuestas.css": {
@@ -259,9 +264,15 @@
     "isEntry": true
   },
   "resources/js/keywords.js": {
-    "file": "assets/keywords-DQvDpx5b.js",
+    "file": "assets/keywords-D5rq5_xo.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
+    "isEntry": true
+  },
+  "resources/js/metricas.js": {
+    "file": "assets/metricas-BHVlppFd.js",
+    "name": "metricas",
+    "src": "resources/js/metricas.js",
     "isEntry": true
   },
   "resources/js/modules/agendar.js": {
@@ -274,6 +285,12 @@
     "file": "assets/propuestas-akAe8poy.js",
     "name": "propuestas",
     "src": "resources/js/propuestas.js",
+    "isEntry": true
+  },
+  "resources/js/reporte-programaciones.js": {
+    "file": "assets/reporte-programaciones-BbxohJc3.js",
+    "name": "reporte-programaciones",
+    "src": "resources/js/reporte-programaciones.js",
     "isEntry": true
   },
   "resources/js/reportes.js": {

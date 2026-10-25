@@ -14,7 +14,7 @@ class Modulos
         'dashboard', 'clientes', 'servicios', 'seo', 'keywords', 'blog', 'ads',
         'automatizaciones', 'conversiones', 'reportes', 'propuestas', 'correo',
         'desarrollo', 'finanzas', 'archivos', 'usuarios', 'roles', 'integraciones',
-        'webhooks',
+        'webhooks', 'metricas', 'captura',
     ];
 
     /** @return array<int, string> */
@@ -38,7 +38,7 @@ class Modulos
             'reportes' => 'Reportes', 'propuestas' => 'Propuestas', 'correo' => 'Correo',
             'desarrollo' => 'Desarrollo', 'finanzas' => 'Finanzas', 'archivos' => 'Archivos',
             'usuarios' => 'Usuarios', 'roles' => 'Roles', 'integraciones' => 'Integraciones',
-            'webhooks' => 'Webhooks',
+            'webhooks' => 'Webhooks', 'metricas' => 'Métricas', 'captura' => 'Pendientes de captura',
         ];
 
         return $etiquetas[$modulo] ?? ucfirst($modulo);

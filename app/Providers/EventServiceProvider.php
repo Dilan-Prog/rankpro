@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use App\Events\EventoWebhook;
 use App\Listeners\EmitirWebhook;
-use App\Models\{AdsClic, AdsConversion, Archivo, Bug, Cliente, CorreoEnvio, CorreoEvento, Finanza, KeywordMedicion, Propuesta, Reporte, Servicio, Tarea};
-use App\Observers\{AdsClicObserver, AdsConversionObserver, ArchivoObserver, BugObserver, ClienteObserver, CorreoEnvioObserver, CorreoEventoObserver, FinanzaObserver, KeywordMedicionObserver, PropuestaObserver, ReporteObserver, ServicioObserver, TareaObserver};
+use App\Models\{AdsClic, AdsConversion, Archivo, Bug, Cliente, CorreoEnvio, CorreoEvento, Finanza, KeywordMedicion, MetricaClienteValor, Propuesta, Reporte, Servicio, Tarea};
+use App\Observers\{AdsClicObserver, AdsConversionObserver, ArchivoObserver, BugObserver, ClienteObserver, CorreoEnvioObserver, CorreoEventoObserver, FinanzaObserver, KeywordMedicionObserver, MetricaClienteValorObserver, PropuestaObserver, ReporteObserver, ServicioObserver, TareaObserver};
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -45,6 +45,7 @@ class EventServiceProvider extends ServiceProvider
         Bug::class => [BugObserver::class],
         Archivo::class => [ArchivoObserver::class],
         KeywordMedicion::class => [KeywordMedicionObserver::class],
+        MetricaClienteValor::class => [MetricaClienteValorObserver::class],
         AdsClic::class => [AdsClicObserver::class],
         AdsConversion::class => [AdsConversionObserver::class],
         CorreoEvento::class => [CorreoEventoObserver::class],

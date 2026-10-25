@@ -279,6 +279,25 @@
                 <p class="kw-medicion__estado" data-medicion-estado></p>
             </div>
 
+            {{-- Captura rápida: pegar desde Excel/Search Console o partir de la ronda anterior. Enter en una posición baja al siguiente renglón. --}}
+            <div class="kw-medicion__tools" data-medicion-tools>
+                <button type="button" class="btn btn--secondary btn--sm" data-medicion-pegar-toggle>
+                    <i class="fa-solid fa-paste"></i> Pegar desde Excel / Search Console
+                </button>
+                <button type="button" class="btn btn--secondary btn--sm" data-medicion-copiar-anterior>
+                    <i class="fa-solid fa-copy"></i> Copiar ronda anterior
+                </button>
+            </div>
+            <div class="field kw-medicion__pegar" data-medicion-pegar-panel hidden>
+                <label class="field__label" for="km_pegar">Pega las filas: keyword, posición y (opcional) URL</label>
+                <textarea class="textarea" id="km_pegar" rows="6" data-medicion-pegar-texto
+                          placeholder="hotel centro&#9;4&#9;/hoteles&#10;hotel boutique&#9;n/d"></textarea>
+                <button type="button" class="btn btn--primary btn--sm" data-medicion-pegar-aplicar>
+                    <i class="fa-solid fa-check"></i> Aplicar a la ronda
+                </button>
+            </div>
+            <div class="kw-medicion__captura-resumen" data-medicion-captura-resumen aria-live="polite"></div>
+
             <div class="empty-state" data-medicion-empty hidden style="padding: var(--space-6);">
                 <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords que medir.</p>
             </div>
