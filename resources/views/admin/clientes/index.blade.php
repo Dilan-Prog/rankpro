@@ -108,21 +108,32 @@
         </div>
     </x-modal>
 
-    <x-modal id="clientFormModal">
-        <x-slot:header>
-            <h2 id="clientFormModalTitle" style="margin-bottom:0;">Nuevo Cliente</h2>
-        </x-slot:header>
-        <form id="clientForm" novalidate
-              data-store-action="{{ route('admin.clientes.store') }}"
-              data-update-action-template="{{ route('admin.clientes.update', ['cliente' => '__ID__']) }}">
-            @csrf
-            @include('admin.clientes._form', ['cliente' => null])
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="clientFormSubmit"><i class="fa-solid fa-check"></i> Crear Cliente</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="clientFormModal">Cancelar</button>
-            </div>
-        </form>
-    </x-modal>
+    {{-- Marcado propio (no <x-modal>) por la cabecera con subtítulo y el pie fijo; global.js lo cierra igual (overlay, Esc, [data-modal-close]). --}}
+    <div class="modal-overlay" id="clientFormModal" hidden>
+        <div class="modal modal--moderno" role="dialog" aria-modal="true" aria-labelledby="clientFormModalTitle" aria-describedby="clientFormModalSubtitle">
+            <form id="clientForm" class="form-moderno" novalidate
+                  data-store-action="{{ route('admin.clientes.store') }}"
+                  data-update-action-template="{{ route('admin.clientes.update', ['cliente' => '__ID__']) }}">
+                @csrf
+                <div class="modal--moderno__cabecera">
+                    <div>
+                        <h2 id="clientFormModalTitle" class="modal--moderno__titulo">Nuevo cliente</h2>
+                        <p id="clientFormModalSubtitle" class="modal--moderno__subtitulo">Alta de cuenta en el CRM</p>
+                    </div>
+                    <button type="button" class="modal--moderno__cerrar" data-modal-close="clientFormModal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal--moderno__cuerpo">
+                    @include('admin.clientes._form', ['cliente' => null])
+                </div>
+                <div class="modal--moderno__pie">
+                    <button type="button" class="form-moderno__boton form-moderno__boton--secundario" data-modal-close="clientFormModal">Cancelar</button>
+                    <button type="submit" class="form-moderno__boton form-moderno__boton--primario" id="clientFormSubmit">Crear cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <x-modal id="clientDeleteModal">
         <x-slot:header><h2 style="margin-bottom:0;">Eliminar cliente</h2></x-slot:header>

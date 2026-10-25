@@ -24,6 +24,8 @@ class Handler extends ExceptionHandler
         'current_password',
         'password',
         'password_confirmation',
+        // Llave privada de Google (Search Console): nunca debe quedar en la sesión como "old input".
+        'llave_json',
     ];
 
     /**

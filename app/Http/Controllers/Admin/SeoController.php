@@ -11,20 +11,14 @@ use App\Support\Reglas\SeoCampanas as ReglasSeoCampanas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class SeoController extends Controller
 {
     public function index(): View
     {
-        $clientes = Cliente::whereHas('servicios', fn ($q) => $q->where('tipo', 'seo'))
-            ->with([
-                'servicios' => fn ($q) => $q->where('tipo', 'seo'),
-                'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
-            ])
-            ->orderBy('nombre')
-            ->get()
-            ->map(fn (Cliente $cliente) => $this->toClienteRow($cliente));
+        $clientes = $this->cuentas();
 
         $scores = $clientes->pluck('seo_score')->filter(fn ($s) => $s !== null);
         $trafico = $clientes->pluck('trafico_actual')->filter(fn ($t) => $t !== null);
@@ -89,6 +83,11 @@ class SeoController extends Controller
                 'metricasMensuales'
             ),
             'usuarios' => User::where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+            // Tarjetas selectoras de cuenta (mismas filas que el índice) para cambiar de cuenta sin volver a la lista.
+            'cuentas' => $this->cuentas(),
+            'resumenCuenta' => $this->resumenCuenta($campana),
+            'serieTrafico' => $this->serieTrafico($campana),
+            'serviciosCliente' => $campana->cliente->servicios()->where('estado', '!=', 'cancelado')->orderBy('tipo')->get(),
         ]);
     }
 
@@ -99,7 +98,7 @@ class SeoController extends Controller
         $campana->update($data);
 
         $cliente = Cliente::with([
-            'servicios' => fn ($q) => $q->where('tipo', 'seo'),
+            'servicios' => fn ($q) => $q->where('tipo', 'seo')->with('responsable'),
             'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
         ])->findOrFail($campana->cliente_id);
 
@@ -112,11 +111,94 @@ class SeoController extends Controller
         $campana->delete();
 
         $cliente = Cliente::with([
-            'servicios' => fn ($q) => $q->where('tipo', 'seo'),
+            'servicios' => fn ($q) => $q->where('tipo', 'seo')->with('responsable'),
             'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
         ])->findOrFail($clienteId);
 
         return response()->json($this->toClienteRow($cliente));
+    }
+
+    /** Una fila por cliente con servicio SEO; la comparten el índice y el selector de cuentas del detalle. */
+    private function cuentas(): Collection
+    {
+        return Cliente::whereHas('servicios', fn ($q) => $q->where('tipo', 'seo'))
+            ->with([
+                'servicios' => fn ($q) => $q->where('tipo', 'seo')->with('responsable'),
+                'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
+            ])
+            ->orderBy('nombre')
+            ->get()
+            ->map(fn (Cliente $cliente) => $this->toClienteRow($cliente));
+    }
+
+    /**
+     * Filas etiqueta/valor de "Resumen de la cuenta". Todo sale de datos ya
+     * capturados; lo que no existe se deja en null para que la vista diga
+     * "Sin dato" en lugar de mostrar un 0 que parezca medición.
+     */
+    private function resumenCuenta(SeoCampana $campana): array
+    {
+        // Keywords de la campaña = las de la estrategia (keywords_ids) más las del banco ligadas por campana_id.
+        $keywords = ($campana->faseEstrategia?->keywords() ?? collect())
+            ->concat($campana->keywords()->get())
+            ->unique('id');
+
+        $ultimaMetrica = $campana->metricasMensuales->last();
+
+        return [
+            'keywords_total' => $keywords->count(),
+            'keywords_con_posicion' => $keywords->whereNotNull('posicion_actual')->count(),
+            'keywords_top10' => $keywords->filter(fn ($k) => $k->posicion_actual !== null && $k->posicion_actual > 0 && $k->posicion_actual <= 10)->count(),
+            'posiciones_registradas' => $campana->posiciones->count(),
+            'backlinks_activos' => $campana->backlinks->filter(fn ($i) => ($i->estado->value ?? $i->estado) === 'activo')->count(),
+            'backlinks_total' => $campana->backlinks->count(),
+            'contenidos_publicados' => $campana->contenido->filter(fn ($i) => ($i->estado->value ?? $i->estado) === 'publicado')->count(),
+            'contenidos_total' => $campana->contenido->count(),
+            'onpage_completadas' => $campana->onPageAcciones->filter(fn ($i) => ($i->estado->value ?? $i->estado) === 'completada')->count(),
+            'onpage_total' => $campana->onPageAcciones->count(),
+            'ultima_metrica' => $ultimaMetrica ? sprintf('%02d/%d', $ultimaMetrica->mes, $ultimaMetrica->anio) : null,
+        ];
+    }
+
+    /**
+     * Serie de tráfico orgánico por mes calendario (máx. 12, terminando en el
+     * último mes capturado). Los meses sin dato quedan en null a propósito:
+     * la gráfica corta la línea en vez de interpolar una tendencia inventada.
+     */
+    private function serieTrafico(SeoCampana $campana): ?array
+    {
+        $porMes = [];
+        foreach ($campana->metricasMensuales as $m) {
+            if ($m->trafico_organico !== null) {
+                $porMes[$m->anio * 12 + ($m->mes - 1)] = $m->trafico_organico;
+            }
+        }
+        if ($porMes === []) {
+            return null;
+        }
+
+        $fin = max(array_keys($porMes));
+        $inicio = max(min(array_keys($porMes)), $fin - 11);
+        $nombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        $completos = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+        $meses = [];
+        for ($i = $inicio; $i <= $fin; $i++) {
+            $meses[] = [
+                'etiqueta' => $nombres[$i % 12],
+                'anio' => intdiv($i, 12),
+                'valor' => $porMes[$i] ?? null,
+            ];
+        }
+
+        // Delta solo contra el mes calendario inmediato anterior; con hueco no se compara.
+        $delta = null;
+        $previo = $porMes[$fin - 1] ?? null;
+        if ($previo !== null && $previo > 0) {
+            $delta = ['pct' => round((($porMes[$fin] - $previo) / $previo) * 100), 'contra' => $completos[($fin - 1) % 12]];
+        }
+
+        return ['meses' => $meses, 'delta' => $delta];
     }
 
     /**
@@ -137,6 +219,7 @@ class SeoController extends Controller
             'cliente_id' => $cliente->id,
             'cliente' => $cliente->nombre,
             'contacto' => $cliente->contacto_nombre,
+            'responsable' => $cliente->servicios->pluck('responsable.name')->filter()->first(),
             'mrr' => (float) $cliente->servicios->sum('precio_mensual'),
             'servicios_seo' => $cliente->servicios->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre])->values(),
             'campana_id' => $campana?->id,

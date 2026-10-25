@@ -22,13 +22,13 @@
     </div>
 </div>
 
-<div class="field" style="margin-top: var(--space-4);">
+<div class="field kwx-fila">
     <label class="field__label" for="kl_nombre">Nombre de la lista</label>
     <input class="input" type="text" name="nombre" id="kl_nombre" value="{{ old('nombre', $lista?->nombre ?? '') }}" required placeholder="Ej. SEO Local — Servicios Dentales">
     <span class="field__error" data-error-for="nombre">@error('nombre'){{ $message }}@enderror</span>
 </div>
 
-<div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
+<div class="form-grid form-grid--2 kwx-fila">
     <div class="field">
         <label class="field__label" for="kl_canal">Canal</label>
         <input class="input" type="text" name="canal" id="kl_canal" value="{{ old('canal', $lista?->canal ?? '') }}" placeholder="Ej. SEO, Google Ads, SEO + Google Ads">

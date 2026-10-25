@@ -27,7 +27,6 @@ class IntegracionesController extends Controller
             ['name' => 'Google Ads API', 'desc' => 'Sincronización automática de campañas', 'icon' => 'fa-google', 'brand' => true],
             ['name' => 'Google Analytics 4', 'desc' => 'Tráfico, conversiones y audiencias', 'icon' => 'fa-chart-line', 'brand' => false],
             ['name' => 'Meta Ads API', 'desc' => 'Facebook e Instagram Ads', 'icon' => 'fa-facebook', 'brand' => true],
-            ['name' => 'Google Search Console', 'desc' => 'Posiciones, clics e indexación', 'icon' => 'fa-magnifying-glass', 'brand' => false],
             ['name' => 'Ahrefs', 'desc' => 'Backlinks y análisis de competidores', 'icon' => 'fa-link', 'brand' => false],
             ['name' => 'Semrush', 'desc' => 'Auditoría técnica y keyword research', 'icon' => 'fa-satellite-dish', 'brand' => false],
             ['name' => 'HubSpot CRM', 'desc' => 'Sincronización de contactos y pipeline', 'icon' => 'fa-handshake', 'brand' => false],

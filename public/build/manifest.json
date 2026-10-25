@@ -30,7 +30,7 @@
     "isEntry": true
   },
   "resources/css/admin/clientes.css": {
-    "file": "assets/clientes-BezzuIOO.css",
+    "file": "assets/clientes-C2nfnzvi.css",
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
@@ -40,12 +40,12 @@
     "isEntry": true
   },
   "resources/css/admin/correo-envios.css": {
-    "file": "assets/correo-envios-ByGV5N2Q.css",
+    "file": "assets/correo-envios-B8QOEdKH.css",
     "src": "resources/css/admin/correo-envios.css",
     "isEntry": true
   },
   "resources/css/admin/correo-plantillas.css": {
-    "file": "assets/correo-plantillas-CcmPxq7h.css",
+    "file": "assets/correo-plantillas-CpUYApq6.css",
     "src": "resources/css/admin/correo-plantillas.css",
     "isEntry": true
   },
@@ -75,7 +75,7 @@
     "isEntry": true
   },
   "resources/css/admin/keywords.css": {
-    "file": "assets/keywords-CNCnyaCJ.css",
+    "file": "assets/keywords-DXPcoEQV.css",
     "src": "resources/css/admin/keywords.css",
     "isEntry": true
   },
@@ -99,13 +99,18 @@
     "src": "resources/css/admin/roles.css",
     "isEntry": true
   },
+  "resources/css/admin/search-console.css": {
+    "file": "assets/search-console-BvxPpx0N.css",
+    "src": "resources/css/admin/search-console.css",
+    "isEntry": true
+  },
   "resources/css/admin/seo.css": {
-    "file": "assets/seo-BBU7TQcS.css",
+    "file": "assets/seo-BBy_mmPG.css",
     "src": "resources/css/admin/seo.css",
     "isEntry": true
   },
   "resources/css/admin/servicios.css": {
-    "file": "assets/servicios-tn0RQdqM.css",
+    "file": "assets/servicios-B9xOP5a4.css",
     "src": "resources/css/admin/servicios.css",
     "isEntry": true
   },
@@ -198,7 +203,7 @@
     "isEntry": true
   },
   "resources/js/clientes.js": {
-    "file": "assets/clientes-B362Zilk.js",
+    "file": "assets/clientes-iBJxn06O.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
     "isEntry": true
@@ -222,13 +227,13 @@
     "isEntry": true
   },
   "resources/js/correo-envios.js": {
-    "file": "assets/correo-envios-B5LdOHum.js",
+    "file": "assets/correo-envios-AyJa7l4s.js",
     "name": "correo-envios",
     "src": "resources/js/correo-envios.js",
     "isEntry": true
   },
   "resources/js/correo-plantillas.js": {
-    "file": "assets/correo-plantillas-BqKMylB1.js",
+    "file": "assets/correo-plantillas-B2wxdAN0.js",
     "name": "correo-plantillas",
     "src": "resources/js/correo-plantillas.js",
     "isEntry": true
@@ -264,7 +269,7 @@
     "isEntry": true
   },
   "resources/js/keywords.js": {
-    "file": "assets/keywords-D5rq5_xo.js",
+    "file": "assets/keywords-Brh-IVP2.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
     "isEntry": true
@@ -306,7 +311,7 @@
     "isEntry": true
   },
   "resources/js/seo.js": {
-    "file": "assets/seo-B2UDMOoh.js",
+    "file": "assets/seo-BceF7AyR.js",
     "name": "seo",
     "src": "resources/js/seo.js",
     "isEntry": true
@@ -318,7 +323,7 @@
     "isEntry": true
   },
   "resources/js/servicios.js": {
-    "file": "assets/servicios-Dq4bzi3d.js",
+    "file": "assets/servicios-BKfGYmXh.js",
     "name": "servicios",
     "src": "resources/js/servicios.js",
     "isEntry": true

@@ -1,47 +1,76 @@
 {{--
     One lista <tr> + its paired keyword sub-table <tr>, used both for the
     server-rendered rows in index.blade.php and reconstructed by keywords.js
-    (outerHTML upsert) after AJAX create/update — mirrors admin.servicios's
-    data-servicio-row JSON-on-row convention (data-lista carries the full
-    KeywordLista::toRow() shape, the single source of truth the JS reads for
-    the detail modal, the edit form, and row reconstruction).
-    $l is a KeywordLista::toRow() array. Column count here (11, including the
+    (buildListaRowElement / buildListaSubrowElement) after AJAX create/update —
+    mirrors admin.servicios's data-servicio-row JSON-on-row convention
+    (data-lista carries the full KeywordLista::toRow() shape, the single source
+    of truth the JS reads for the detail modal, the edit form, and row
+    reconstruction).
+    $l is a KeywordLista::toRow() array, $n el número de fila (JS lo
+    renumera con renumerarListas()). Column count here (12, including the
     leading checkbox and trailing actions column) must match the colspan on
     the paired sub-row below and the headers passed to <x-data-table> in
-    index.blade.php.
+    index.blade.php. Las celdas llevan data-col para que el JS las actualice
+    sin depender de su posición.
 --}}
+@php
+    $subtitulo = array_values(array_filter([
+        $l['canal'] ?? null,
+        $l['responsable_nombre'] ?? null,
+        ! empty($l['updated_at']) ? 'act. '.$l['updated_at'] : null,
+    ]));
+    $fuentesTexto = collect($l['fuentes'])->map(fn ($f) => \App\Support\Labels::herramientaOrigen($f))->implode(', ');
+@endphp
 <tr class="is-clickable" data-lista-row data-lista-id="{{ $l['id'] }}"
     data-search="{{ Str::lower($l['nombre'].' '.collect($l['keywords'])->pluck('keyword')->implode(' ')) }}"
     data-estado="{{ $l['estado'] }}"
     data-cliente="{{ $l['cliente_id'] }}"
     data-lista="{{ json_encode($l) }}">
     <td>
-        <input type="checkbox" data-lista-checkbox value="{{ $l['id'] }}" aria-label="Seleccionar {{ $l['nombre'] }}" style="width:15px;height:15px;accent-color:var(--color-primary);">
+        <input type="checkbox" class="kwx-check" data-lista-checkbox value="{{ $l['id'] }}" aria-label="Seleccionar {{ $l['nombre'] }}">
     </td>
-    <td>
-        <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" class="btn--icon" data-toggle-lista title="Expandir / colapsar">
-                <i class="fa-solid fa-chevron-right lista-toggle__chevron"></i>
+    <td class="u-mono kwx-num" data-col="num">{{ $n ?? '' }}</td>
+    <td data-col="nombre">
+        <div class="kwx-nombre">
+            <button type="button" class="kwx-chevron" data-toggle-lista aria-expanded="false" aria-controls="listaSub{{ $l['id'] }}"
+                aria-label="Mostrar u ocultar las keywords de {{ $l['nombre'] }}" title="Expandir / colapsar">
+                <i class="fa-solid fa-chevron-right lista-toggle__chevron" aria-hidden="true"></i>
             </button>
-            <span style="font-weight:500">{{ $l['nombre'] }}</span>
+            <div class="kwx-nombre__texto">
+                <span class="kwx-nombre__titulo">{{ $l['nombre'] }}</span>
+                @if ($subtitulo)<span class="kwx-nombre__sub">{{ implode(' · ', $subtitulo) }}</span>@endif
+            </div>
         </div>
     </td>
-    <td>{{ $l['cliente'] }}</td>
-    <td><x-badge :status="$l['estado']" /></td>
-    <td class="u-mono">{{ $l['keywords_count'] }}</td>
-    <td class="u-mono">{{ number_format($l['volumen_total']) }}</td>
-    <td class="u-mono">{{ $l['kd_promedio'] ?? '—' }}</td>
-    <td class="u-mono">{{ $l['cpc_promedio'] !== null ? '$'.number_format($l['cpc_promedio'], 2) : '—' }}</td>
-    <td class="u-mono">{{ $l['posicion_promedio'] !== null ? '#'.$l['posicion_promedio'] : '—' }}</td>
-    <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ implode(', ', $l['fuentes']) ?: '—' }}</span></td>
+    <td data-col="cliente">{{ $l['cliente'] }}</td>
+    <td data-col="estado"><x-badge :status="$l['estado']" /></td>
+    <td class="u-mono" data-col="count">{{ $l['keywords_count'] }}</td>
+    <td class="u-mono" data-col="volumen">{{ number_format($l['volumen_total']) }}</td>
+    <td data-col="kd">@include('admin.keywords._kd', ['valor' => $l['kd_promedio']])</td>
+    <td class="u-mono kwx-verde" data-col="cpc">{{ $l['cpc_promedio'] !== null ? '$'.number_format($l['cpc_promedio'], 2) : '—' }}</td>
+    <td class="u-mono" data-col="pos">{{ $l['posicion_promedio'] !== null ? '#'.$l['posicion_promedio'] : '—' }}</td>
+    <td data-col="fuente"><span class="kwx-tenue">{{ $fuentesTexto !== '' ? $fuentesTexto : '—' }}</span></td>
     <td>
-        <div style="display:flex; gap:4px;">
-            <button type="button" class="btn--icon" title="Editar lista" data-edit-lista="{{ $l['id'] }}">
-                <i class="fa-solid fa-pen"></i>
+        <div class="kwx-acciones">
+            <button type="button" class="kwx-icono" title="Ver detalle de la lista" aria-label="Ver detalle de {{ $l['nombre'] }}" data-open-lista-detail>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </button>
-            <button type="button" class="btn--icon" title="Eliminar lista" style="color:var(--text-danger);" data-delete-lista="{{ $l['id'] }}">
-                <i class="fa-solid fa-trash"></i>
+            <button type="button" class="kwx-icono" title="Historial de posiciones" aria-label="Abrir el historial de {{ $l['nombre'] }}" data-lista-historial="{{ $l['id'] }}">
+                <i class="fa-solid fa-clock-rotate-left"></i>
             </button>
+            <div class="kwx-menu" data-kwx-menu>
+                <button type="button" class="kwx-icono" title="Más acciones" aria-label="Más acciones de {{ $l['nombre'] }}"
+                    aria-haspopup="menu" aria-expanded="false" data-kwx-menu-toggle>
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="kwx-menu__lista" role="menu" hidden>
+                    <button type="button" role="menuitem" data-open-lista-detail><i class="fa-solid fa-circle-info"></i> Ver detalle</button>
+                    <button type="button" role="menuitem" data-edit-lista="{{ $l['id'] }}"><i class="fa-solid fa-pen"></i> Editar lista</button>
+                    <button type="button" role="menuitem" data-open-import-modal="{{ $l['id'] }}"><i class="fa-solid fa-file-import"></i> Importar keywords</button>
+                    <button type="button" role="menuitem" data-open-medicion-modal="{{ $l['id'] }}"><i class="fa-solid fa-crosshairs"></i> Nueva medición</button>
+                    <button type="button" role="menuitem" class="kwx-menu__peligro" data-delete-lista="{{ $l['id'] }}"><i class="fa-solid fa-trash"></i> Eliminar lista</button>
+                </div>
+            </div>
         </div>
     </td>
 </tr>
@@ -53,24 +82,21 @@
     and the "Mostrando X–Y de Z" count). keywords.css neutralizes the class's
     visual styling (centered muted placeholder text) for this element only.
 --}}
-<tr class="table__empty" data-lista-subrow="{{ $l['id'] }}" hidden>
-    <td colspan="11" style="padding:0; background:var(--color-secondary);">
-        <div style="padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-3);">
-                <div class="record-modal__section-label" style="margin:0;">Keywords de esta lista</div>
-                <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
-                    <button type="button" class="btn btn--secondary btn--sm" data-toggle-historial="{{ $l['id'] }}"
+<tr class="table__empty" id="listaSub{{ $l['id'] }}" data-lista-subrow="{{ $l['id'] }}" hidden>
+    <td colspan="12" class="kwx-sub">
+        <div class="kwx-sub__interior">
+            <div class="kwx-sub__barra">
+                <div class="kwx-etiqueta">Keywords de esta lista</div>
+                <div class="kwx-sub__botones">
+                    <button type="button" class="kwx-btn kwx-btn--sm" data-toggle-historial="{{ $l['id'] }}"
                         aria-expanded="false" aria-controls="listaHistorial{{ $l['id'] }}">
                         <i class="fa-solid fa-clock-rotate-left"></i> Historial
                     </button>
-                    <button type="button" class="btn btn--secondary btn--sm" data-open-import-modal="{{ $l['id'] }}">
+                    <button type="button" class="kwx-btn kwx-btn--sm" data-open-import-modal="{{ $l['id'] }}">
                         <i class="fa-solid fa-file-import"></i> Importar keywords
                     </button>
-                    <button type="button" class="btn btn--secondary btn--sm" data-open-medicion-modal="{{ $l['id'] }}">
+                    <button type="button" class="kwx-btn kwx-btn--sm" data-open-medicion-modal="{{ $l['id'] }}">
                         <i class="fa-solid fa-crosshairs"></i> Nueva medición
-                    </button>
-                    <button type="button" class="btn btn--primary btn--sm" data-add-keyword-to-lista="{{ $l['id'] }}" data-add-keyword-cliente="{{ $l['cliente_id'] }}">
-                        <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
                     </button>
                 </div>
             </div>
@@ -86,31 +112,38 @@
             --}}
             <div class="kw-hist" id="listaHistorial{{ $l['id'] }}" data-historial-panel="{{ $l['id'] }}" hidden></div>
 
-            <div class="empty-state" data-lista-keywords-empty="{{ $l['id'] }}" style="padding: var(--space-6);" {{ empty($l['keywords']) ? '' : 'hidden' }}>
-                <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords.</p>
+            <div class="kwx-vacio" data-lista-keywords-empty="{{ $l['id'] }}" {{ empty($l['keywords']) ? '' : 'hidden' }}>
+                <p>Esta lista aún no tiene keywords.</p>
             </div>
-            <div class="table-wrap" data-lista-keywords-table="{{ $l['id'] }}" {{ empty($l['keywords']) ? 'hidden' : '' }}>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Palabra clave</th>
-                            <th>Tipo</th>
-                            <th>Volumen</th>
-                            <th>KD</th>
-                            <th>CPC Est.</th>
-                            <th>Intención</th>
-                            <th>URL</th>
-                            <th>Posición</th>
-                            <th>Fuente</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody data-lista-keywords-rows="{{ $l['id'] }}">
-                        @foreach ($l['keywords'] as $k)
-                            @include('admin.keywords._keyword-row', ['k' => $k])
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="kwx-subtabla" data-lista-keywords-table="{{ $l['id'] }}" {{ empty($l['keywords']) ? 'hidden' : '' }}>
+                <div class="kwx-subtabla__scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Palabra clave</th>
+                                <th>Tipo</th>
+                                <th>Volumen</th>
+                                <th>KD</th>
+                                <th>CPC est.</th>
+                                <th>Intención</th>
+                                <th>URL</th>
+                                <th>Posición</th>
+                                <th>Fuente</th>
+                                <th><span class="u-visually-hidden">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody data-lista-keywords-rows="{{ $l['id'] }}">
+                            @foreach ($l['keywords'] as $k)
+                                @include('admin.keywords._keyword-row', ['k' => $k])
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="kwx-sub__pie">
+                <button type="button" class="kwx-enlace" data-add-keyword-to-lista="{{ $l['id'] }}" data-add-keyword-cliente="{{ $l['cliente_id'] }}">
+                    <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
+                </button>
             </div>
         </div>
     </td>

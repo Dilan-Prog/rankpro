@@ -358,3 +358,1149 @@
 .kw-comp, .kw-evo { margin-bottom: var(--space-4); }
 .kw-evo__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .kw-evo__svg { width: 100%; height: auto; max-width: 640px; }
+
+/* ==========================================================================
+   <<kwx>> Rediseño del módulo (Claude Design): tarjetas y modales blancos con
+   borde fino y radio de 16 px, campos altos con fondo gris azulado, cifras en
+   monoespaciada y verde de marca.
+
+   Todo cuelga de .kwx (la raíz de index.blade.php) o lleva prefijo .kwx-: así
+   el rediseño no toca global.css ni los componentes compartidos (x-modal,
+   x-badge...) y los demás módulos siguen igual. Sólo tokens del panel, nada de
+   colores fijos, para que el tema claro y el oscuro salgan solos.
+   ========================================================================== */
+
+.kwx {
+  --kwx-radio-tarjeta: 16px;
+  --kwx-radio-campo: 12px;
+  --kwx-alto-campo: 46px;
+  --kwx-borde-fuerte: color-mix(in srgb, var(--color-foreground) 16%, transparent);
+  --kwx-trazo-suave: color-mix(in srgb, var(--color-foreground) 10%, transparent);
+  --kwx-sombra: 0 1px 2px color-mix(in srgb, var(--color-foreground) 6%, transparent),
+    0 12px 28px -16px color-mix(in srgb, var(--color-foreground) 18%, transparent);
+}
+
+.kwx .page-header__title {
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.kwx-cabecera__botones {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* --- Botones --- */
+
+.kwx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--kwx-borde-fuerte);
+  border-radius: var(--kwx-radio-campo);
+  background: var(--color-card);
+  color: var(--color-foreground);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.kwx-btn:hover {
+  background: var(--color-secondary);
+}
+
+.kwx-btn:focus-visible,
+.kwx-icono:focus-visible,
+.kwx-chevron:focus-visible,
+.kwx-enlace:focus-visible,
+.kwx-kw-btn:focus-visible,
+.kwx-menu__lista button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.kwx-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.kwx-btn--primario {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kwx-btn--primario:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.kwx-btn--peligro {
+  background: var(--color-destructive);
+  border-color: var(--color-destructive);
+  color: var(--color-primary-foreground);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kwx-btn--peligro:hover {
+  background: var(--color-destructive);
+  filter: brightness(0.92);
+}
+
+.kwx-btn--sm {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: var(--text-xs);
+}
+
+/* --- Campos (los de este módulo; los globales no cambian) --- */
+
+.kwx .input,
+.kwx .select,
+.kwx .textarea {
+  width: 100%;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--kwx-radio-campo);
+  font-size: var(--text-base);
+  color: var(--color-foreground);
+}
+
+.kwx .input,
+.kwx .select {
+  height: var(--kwx-alto-campo);
+  padding: 0 14px;
+}
+
+.kwx .textarea {
+  padding: 12px 14px;
+  min-height: 96px;
+}
+
+.kwx .input:focus,
+.kwx .select:focus,
+.kwx .textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.kwx input[type="file"].input {
+  height: auto;
+  padding: 10px 14px;
+}
+
+.kwx .input[aria-invalid="true"] {
+  border-color: var(--text-danger);
+}
+
+.kwx .field {
+  gap: 8px;
+}
+
+.kwx .field[hidden] {
+  display: none;
+}
+
+.kwx .field__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+}
+
+.kwx .field__error {
+  color: var(--text-danger);
+}
+
+.kwx .field__error:empty {
+  display: none;
+}
+
+.kwx-fila {
+  margin-top: var(--space-4);
+}
+
+.kwx-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .kwx-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* "Más datos": estado, fecha y notas, plegados porque casi nunca se tocan. */
+.kwx-mas > summary {
+  cursor: pointer;
+  padding: 6px 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+}
+
+.kwx-mas > summary:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* --- Filtros --- */
+
+.kwx-filtros {
+  align-items: center;
+  margin-bottom: var(--space-5);
+}
+
+.kwx-buscador {
+  position: relative;
+  flex: 1 1 320px;
+}
+
+.kwx-buscador i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+}
+
+.kwx-buscador .input {
+  padding-left: 42px;
+}
+
+.kwx-filtros .select {
+  width: auto;
+  min-width: 190px;
+  background: var(--color-card);
+  border-color: var(--kwx-borde-fuerte);
+}
+
+@media (max-width: 640px) {
+  .kwx-filtros .select {
+    flex: 1 1 100%;
+  }
+}
+
+.kwx .bulk-toolbar {
+  border-radius: var(--kwx-radio-campo);
+  background: var(--color-card);
+  box-shadow: var(--kwx-sombra);
+}
+
+/* --- Tabla del banco --- */
+
+/* position:relative: los u-visually-hidden de los encabezados son absolute y, sin un contenedor posicionado, escapan del scroll de la tabla y ensanchan la página en móvil. */
+.kwx-tabla {
+  position: relative;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--kwx-radio-tarjeta);
+  box-shadow: var(--kwx-sombra);
+}
+
+.kwx-tabla .table {
+  min-width: 1080px;
+}
+
+.kwx-tabla--simple .table {
+  min-width: 960px;
+}
+
+.kwx-tabla .table th {
+  padding: 16px 14px;
+  background: var(--color-card);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* El encabezado largo de la columna de nombre se parte en dos líneas para no ensanchar la tabla. */
+.kwx-tabla > .table > thead > tr > th:nth-child(3) {
+  white-space: normal;
+  min-width: 200px;
+}
+
+.kwx-tabla .table td {
+  padding: 16px 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kwx-tabla .table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-secondary) 60%, transparent);
+}
+
+/* La fila de detalle de una lista no se comporta como una fila de datos: no se resalta al pasar el mouse. */
+.kwx-tabla .table tbody tr[data-lista-subrow]:hover {
+  background: transparent;
+}
+
+.kwx-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.kwx-num {
+  width: 44px;
+  color: var(--color-muted-foreground);
+}
+
+.kwx-nombre {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.kwx-chevron {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: none;
+  border: 0;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+}
+
+.kwx-chevron:hover {
+  background: var(--color-secondary);
+  color: var(--color-foreground);
+}
+
+.kwx-nombre__titulo {
+  display: block;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.35;
+}
+
+.kwx-nombre__sub {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-tenue {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.kwx-nulo {
+  color: var(--color-muted-foreground);
+}
+
+.kwx-verde {
+  color: var(--text-success);
+}
+
+.kwx-rojo {
+  color: var(--text-danger);
+}
+
+.kwx-url {
+  color: var(--text-success);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* Las URLs completas de producción son largas: en la tabla se recortan (el título las trae enteras). */
+.kwx-subtabla .kwx-url {
+  display: inline-block;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* "#3 (+2)": la posición en verde y negrita, el cambio apagado. */
+.kwx-pos {
+  white-space: nowrap;
+}
+
+.kwx-pos strong {
+  color: var(--text-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.kwx-pos__delta {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+}
+
+/* Barrita de KD: verde por debajo de 40, ámbar hasta 69 y rojo desde 70. */
+.kwx-kd {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kwx-kd__barra {
+  display: block;
+  width: 38px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--kwx-trazo-suave);
+  overflow: hidden;
+}
+
+.kwx-kd__relleno {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.kwx-kd__relleno--bajo {
+  background: var(--color-primary);
+}
+
+.kwx-kd__relleno--medio {
+  background: var(--color-warning);
+}
+
+.kwx-kd__relleno--alto {
+  background: var(--color-destructive);
+}
+
+.kwx-kd__num {
+  font-size: var(--text-xs);
+  min-width: 18px;
+}
+
+.kwx-kd-texto--bajo {
+  color: var(--text-success);
+}
+
+.kwx-kd-texto--medio {
+  color: var(--text-warning);
+}
+
+.kwx-kd-texto--alto {
+  color: var(--text-danger);
+}
+
+.kwx-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.kwx-icono {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.kwx-icono:hover {
+  background: var(--color-secondary);
+  color: var(--color-foreground);
+}
+
+.kwx-icono--peligro:hover {
+  color: var(--text-danger);
+}
+
+/* Menú ⋮: position:fixed (lo coloca keywords.js) porque el contenedor de la tabla recorta lo que se salga. */
+.kwx-menu {
+  position: relative;
+}
+
+.kwx-menu__lista {
+  position: fixed;
+  z-index: 60;
+  min-width: 210px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-card);
+  border: 1px solid var(--kwx-borde-fuerte);
+  border-radius: var(--kwx-radio-campo);
+  box-shadow: var(--shadow-lg);
+}
+
+.kwx-menu__lista[hidden] {
+  display: none;
+}
+
+.kwx-menu__lista button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.kwx-menu__lista button i {
+  width: 16px;
+  color: var(--color-muted-foreground);
+}
+
+.kwx-menu__lista button:hover {
+  background: var(--color-secondary);
+}
+
+.kwx-menu__lista .kwx-menu__peligro,
+.kwx-menu__lista .kwx-menu__peligro i {
+  color: var(--text-danger);
+}
+
+/* --- Sub-fila: keywords de una lista --- */
+
+.kwx-tabla .table tbody tr.table__empty[data-lista-subrow] > td.kwx-sub {
+  background: color-mix(in srgb, var(--color-secondary) 55%, var(--color-card));
+}
+
+/* contain: inline-size evita que la sub-tabla (con su propio scroll) ensanche toda la tabla del banco. */
+.kwx-sub__interior {
+  padding: 18px 24px 20px;
+  contain: inline-size;
+}
+
+.kwx-sub__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.kwx-sub__botones {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.kwx-etiqueta {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+.kwx-sub__barra .kwx-etiqueta {
+  margin: 0;
+}
+
+.kwx-subtabla {
+  position: relative;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.kwx-subtabla[hidden] {
+  display: none;
+}
+
+.kwx-subtabla__scroll {
+  overflow-x: auto;
+}
+
+.kwx-subtabla .table {
+  min-width: 900px;
+}
+
+.kwx-subtabla .table th {
+  padding: 12px 12px;
+  background: var(--color-card);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+}
+
+.kwx-subtabla .table td {
+  padding: 12px;
+}
+
+.kwx-subtabla .table td:first-child {
+  min-width: 200px;
+}
+
+.kwx-kw-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+  cursor: pointer;
+}
+
+.kwx-kw-btn:hover {
+  color: var(--text-success);
+  text-decoration: underline;
+}
+
+/* El enlace de añadir queda pegado al pie de la sub-tabla, como parte de la misma tarjeta. */
+.kwx-sub__pie {
+  margin-top: var(--space-2);
+}
+
+.kwx-subtabla:not([hidden]) + .kwx-sub__pie {
+  margin-top: -1px;
+  padding: 12px 16px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0 0 12px 12px;
+}
+
+.kwx-subtabla:not([hidden]) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.kwx-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text-success);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.kwx-enlace:hover {
+  text-decoration: underline;
+}
+
+.kwx-vacio {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.kwx-vacio[hidden] {
+  display: none;
+}
+
+.kwx-vacio p {
+  margin: 0;
+}
+
+.kwx-vacio--tarjeta {
+  background: var(--color-card);
+  border: 1px dashed var(--kwx-borde-fuerte);
+  border-radius: var(--kwx-radio-tarjeta);
+}
+
+.kwx-vacio--tarjeta i {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 20px;
+}
+
+.kwx-seccion {
+  margin: var(--space-8) 0 var(--space-4);
+}
+
+.kwx-seccion__titulo {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kwx-seccion__sub {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+/* --- Modales (sólo los de este módulo) --- */
+
+.kwx .modal {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--kwx-radio-tarjeta);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.kwx .modal:focus {
+  outline: none;
+}
+
+.kwx .modal--lg {
+  max-width: min(1100px, 94vw);
+  width: 94vw;
+}
+
+#listaDetailModal .modal {
+  max-width: 680px;
+}
+
+#keywordDetailModal .modal {
+  max-width: 1000px;
+  max-height: 90vh;
+}
+
+.kwx .modal__header {
+  flex: none;
+  gap: var(--space-4);
+  padding: 20px 24px;
+}
+
+.kwx .modal__header h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.kwx .modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.kwx .modal__close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.kwx .modal__close:focus-visible {
+  outline: 2px solid var(--color-ring);
+}
+
+.kwx-modal__titulo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.kwx-modal__sub {
+  margin: 4px 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-modal__sub:empty {
+  display: none;
+}
+
+.kwx-texto {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.55;
+}
+
+/* Pie con línea divisoria: sangra hasta los bordes del cuerpo del modal (que tiene 24 px de relleno). */
+.kwx-pie {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-6) -24px -24px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.kwx-pie--fijo {
+  flex: none;
+  margin: 0;
+  background: var(--color-card);
+}
+
+@media (max-width: 560px) {
+  .kwx-pie .kwx-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- Ficha de keyword / de lista --- */
+
+#keywordDetailModal .modal__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.kwx-det {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.kwx-det__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.kwx-tipo {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-success);
+}
+
+.kwx-metricas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 720px) {
+  .kwx-metricas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.kwx-metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-card);
+}
+
+.kwx-metrica__etq {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-metrica__val {
+  font-size: 26px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.1;
+}
+
+.kwx-bloque {
+  margin-top: var(--space-6);
+}
+
+.kwx-bloque .kwx-etiqueta {
+  margin-bottom: var(--space-2);
+}
+
+.kwx-ficha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--space-8);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .kwx-ficha {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kwx-ficha > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kwx-ficha dt {
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-ficha dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.kwx-nota-ficha {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.kwx-nota-ficha[hidden] {
+  display: none;
+}
+
+.kwx-avance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.kwx-avance__etq {
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-avance__barra {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--kwx-trazo-suave);
+  overflow: hidden;
+}
+
+.kwx-avance__relleno {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.kwx-avance__num {
+  flex: none;
+  min-width: 40px;
+  text-align: right;
+  font-size: var(--text-sm);
+}
+
+.kwx-bitacora {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kwx-bitacora li {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.kwx-bitacora__fecha,
+.kwx-bitacora__autor {
+  color: var(--color-muted-foreground);
+}
+
+.kwx-bitacora__fecha {
+  font-size: var(--text-xs);
+}
+
+.kwx-bitacora__texto {
+  overflow-wrap: anywhere;
+}
+
+.kwx-bitacora li.kwx-bitacora__vacio {
+  display: block;
+  padding: var(--space-5);
+  text-align: center;
+  color: var(--color-muted-foreground);
+  border: 1px dashed var(--kwx-borde-fuerte);
+  border-radius: var(--kwx-radio-campo);
+}
+
+@media (max-width: 640px) {
+  .kwx-bitacora li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+/* --- Importar: resultados --- */
+
+.kwx-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--space-4);
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--kwx-radio-campo);
+  font-size: var(--text-sm);
+}
+
+.kwx-aviso p {
+  margin: 0;
+}
+
+.kwx-aviso--error {
+  color: var(--text-danger);
+  background: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-destructive) 30%, transparent);
+}
+
+.kwx-import__ok {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+}
+
+.kwx-import__cuenta {
+  margin-bottom: 4px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.kwx-import__errores {
+  padding-left: 18px;
+  font-size: var(--text-xs);
+}
+
+.kwx-import__errores li {
+  margin-bottom: 4px;
+}
+
+/* --- Nueva medición, historial, comparativo y gráfica con el mismo lenguaje --- */
+
+.kwx .kw-medicion__table {
+  border-radius: 12px;
+}
+
+.kwx .kw-medicion__table .table th {
+  background: var(--color-card);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+}
+
+.kwx .kw-medicion__pos-input {
+  height: 40px;
+}
+
+.kwx .kw-medicion__nota-input {
+  min-height: 56px;
+  padding: 10px 12px;
+}
+
+.kwx .kw-medicion__tools {
+  margin-bottom: var(--space-3);
+}
+
+.kwx .kw-medicion__pegar {
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.kwx .kw-medicion__captura-resumen {
+  padding: 12px 14px;
+  border-radius: var(--kwx-radio-campo);
+  background: var(--color-secondary);
+  color: var(--color-foreground);
+}
+
+.kwx .kw-medicion__captura-resumen ul {
+  margin: 4px 0 8px;
+  padding-left: 18px;
+}
+
+.kwx .kw-hist {
+  border-radius: 12px;
+  background: var(--color-card);
+}
+
+.kwx .kw-comp__titulo,
+.kwx .kw-evo__titulo {
+  margin: 0 0 var(--space-2);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+.kwx .kw-comp__table {
+  border-collapse: collapse;
+}
+
+.kwx .kw-comp__table th,
+.kwx .kw-comp__table td {
+  padding: 8px 12px;
+  background: transparent;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kwx .kw-comp__table tbody th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+}
+
+/* El SVG pinta todo con currentColor; la línea y los puntos toman el verde de marca y los ejes quedan apagados. */
+.kwx .kw-evo__svg {
+  color: var(--color-muted-foreground);
+}
+
+.kwx .kw-evo__svg path {
+  stroke: var(--color-primary);
+}
+
+.kwx .kw-evo__svg circle {
+  fill: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kwx *,
+  .kwx *::before,
+  .kwx *::after {
+    transition: none !important;
+  }
+}
+/* <</kwx>> */

@@ -5,94 +5,41 @@
 @endsection
 
 @section('content')
-    <div class="page-header">
+<div class="seo-page">
+    <div class="seo-encabezado">
         <div>
             <h1 class="page-header__title">Módulo SEO</h1>
-            <p class="page-header__subtitle">{{ $clientesConSeo }} cliente{{ $clientesConSeo === 1 ? '' : 's' }} con SEO · {{ $campanasActivas }} campaña{{ $campanasActivas === 1 ? '' : 's' }} activa{{ $campanasActivas === 1 ? '' : 's' }}</p>
+            <p class="page-header__subtitle">Posicionamiento orgánico y optimización técnica · {{ $clientesConSeo }} cuenta{{ $clientesConSeo === 1 ? '' : 's' }} con SEO</p>
         </div>
-        <button type="button" class="btn btn--primary" data-open-seo-modal>
-            <i class="fa-solid fa-plus"></i> Nueva Campaña SEO
-        </button>
+        <div class="seo-encabezado__acciones">
+            <label class="seo-buscador">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" id="seoClienteSearch" placeholder="Buscar cliente…" aria-label="Buscar cliente">
+            </label>
+            <button type="button" class="btn btn--primary" data-open-seo-modal>
+                <i class="fa-solid fa-plus"></i> Nueva Campaña SEO
+            </button>
+        </div>
     </div>
 
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
 
-    {{-- ---------- KPIs ---------- --}}
-    <div class="kpi-grid">
-        <x-stat-card label="Clientes con SEO" value="{{ $clientesConSeo }}" icon="fa-users" color="primary" />
-        <x-stat-card label="Campañas Activas" value="{{ $campanasActivas }}" icon="fa-bullhorn" color="emerald" />
-        <x-stat-card label="SEO Score Promedio" value="{{ $scorePromedio !== null ? $scorePromedio.'/100' : '—' }}" :sub="$scorePromedio !== null ? 'promedio de campañas activas' : null" icon="fa-gauge-high" color="amber" />
-        <x-stat-card label="Tráfico Orgánico Total" value="{{ number_format($traficoTotal) }}" icon="fa-arrow-trend-up" color="teal" />
-    </div>
-
-    {{-- ---------- Client picker: searchable grid, one card per client with an SEO servicio ---------- --}}
-    <input type="search" class="input input--search" id="seoClienteSearch" placeholder="Buscar cliente...">
-
     <div class="empty-state" data-seo-cliente-empty {{ $clientes->isEmpty() ? '' : 'hidden' }}>
         <div class="empty-state__icon"><i class="fa-solid fa-magnifying-glass"></i></div>
         <p class="empty-state__text">No se encontraron clientes con servicio SEO.</p>
     </div>
 
-    <div class="seo-cliente-grid" data-seo-cliente-grid>
-        @foreach ($clientes as $c)
-            <div class="seo-cliente-card" data-seo-cliente-card data-cliente-id="{{ $c['cliente_id'] }}" data-search="{{ mb_strtolower($c['cliente'].' '.($c['contacto'] ?? '')) }}" data-cliente="{{ json_encode($c) }}">
-                @if ($c['campana_id'])
-                    <a href="{{ $c['show_url'] }}" class="seo-cliente-card__link">
-                        <div class="seo-cliente-card__header">
-                            <span class="seo-cliente-card__avatar">{{ \App\Support\Labels::initials($c['cliente']) }}</span>
-                            <span class="seo-cliente-card__id">
-                                <span class="seo-cliente-card__name">{{ $c['cliente'] }}</span>
-                                @if ($c['contacto'])
-                                    <span class="seo-cliente-card__contacto">{{ $c['contacto'] }}</span>
-                                @endif
-                            </span>
-                            <x-badge :status="$c['estado']" />
-                        </div>
-                        <div class="seo-cliente-card__body">
-                            <div class="seo-cliente-card__stat">
-                                <span class="seo-cliente-card__stat-label">Fase</span>
-                                <span class="seo-cliente-card__stat-value">{{ \App\Support\Labels::faseSeo($c['fase_actual']) }}</span>
-                            </div>
-                            <div class="seo-cliente-card__stat">
-                                <span class="seo-cliente-card__stat-label">SEO Score</span>
-                                <span class="seo-cliente-card__stat-value u-mono">{{ $c['seo_score'] ?? '—' }}/100</span>
-                            </div>
-                            <div class="seo-cliente-card__stat">
-                                <span class="seo-cliente-card__stat-label">Tráfico orgánico</span>
-                                <span class="seo-cliente-card__stat-value u-mono">{{ $c['trafico_actual'] !== null ? number_format($c['trafico_actual']) : '—' }}</span>
-                            </div>
-                            <div class="seo-cliente-card__stat">
-                                <span class="seo-cliente-card__stat-label">MRR</span>
-                                <span class="seo-cliente-card__stat-value u-mono">${{ number_format($c['mrr']) }}</span>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="seo-cliente-card__footer">
-                        <button type="button" class="btn--icon" title="Editar" data-edit-seo-cliente><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-seo-cliente><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                @else
-                    <div class="seo-cliente-card__header">
-                        <span class="seo-cliente-card__avatar">{{ \App\Support\Labels::initials($c['cliente']) }}</span>
-                        <span class="seo-cliente-card__id">
-                            <span class="seo-cliente-card__name">{{ $c['cliente'] }}</span>
-                            @if ($c['contacto'])
-                                <span class="seo-cliente-card__contacto">{{ $c['contacto'] }}</span>
-                            @endif
-                        </span>
-                        <span class="seo-cliente-card__sin-campana">Sin campaña</span>
-                    </div>
-                    <div class="seo-cliente-card__body seo-cliente-card__body--empty">
-                        <p class="seo-cliente-card__empty-text">Este cliente aún no tiene una campaña SEO.</p>
-                        <button type="button" class="btn btn--secondary btn--sm" data-open-seo-modal data-preselect-cliente="{{ $c['cliente_id'] }}">
-                            <i class="fa-solid fa-plus"></i> Crear campaña
-                        </button>
-                    </div>
-                @endif
-            </div>
-        @endforeach
+    @include('admin.seo._cuentas', ['cuentas' => $clientes, 'editable' => true])
+
+    {{-- ---------- Resumen general de todas las cuentas ---------- --}}
+    <h2 class="seo-seccion-titulo">Resumen general</h2>
+    <div class="seo-kpis">
+        <x-stat-card label="Clientes con SEO" value="{{ $clientesConSeo }}" icon="fa-users" color="primary" />
+        <x-stat-card label="Campañas Activas" value="{{ $campanasActivas }}" icon="fa-bullhorn" color="emerald" />
+        <x-stat-card label="SEO Score Promedio" value="{{ $scorePromedio !== null ? $scorePromedio.'/100' : '—' }}" :sub="$scorePromedio !== null ? 'promedio de campañas con score' : 'Sin dato todavía'" icon="fa-gauge-high" color="amber" />
+        <x-stat-card label="Tráfico Orgánico Total" value="{{ number_format($traficoTotal) }}" :sub="$traficoTotal > 0 ? 'suma del último reporte de cada campaña' : 'Sin dato todavía'" icon="fa-arrow-trend-up" color="teal" />
     </div>
 
     {{-- ---------- Create/edit modal — minimal general-data fields only; phase-specific data entry stays on show.blade.php ---------- --}}
@@ -171,6 +118,7 @@
             </div>
         </form>
     </x-modal>
+</div>
 @endsection
 
 @section('scripts')

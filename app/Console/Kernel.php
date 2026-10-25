@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         // Cada 15 min: la hora de envío es HH:MM y no debe llegar con casi una hora de retraso.
         $schedule->command('reportes:enviar-programados')->everyFifteenMinutes()->withoutOverlapping(30);
         $schedule->command('webhooks:reintentar')->everyMinute()->withoutOverlapping(30);
+        // De madrugada: Google ya cerró el día anterior y no compite con el uso del panel.
+        $schedule->command('gsc:sincronizar')->dailyAt('04:30')->withoutOverlapping(30);
     }
 
     /**

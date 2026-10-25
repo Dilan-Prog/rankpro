@@ -740,6 +740,42 @@ class CorreoEnviosTest extends TestCase
         $this->assertSame(33, $kpis['apertura']);
     }
 
+    public function test_kpis_cuentan_fallidos_y_programados_para_la_cabecera(): void
+    {
+        $user = User::factory()->create();
+        // Un envío que salió a medias (1 fallido) y otro que no salió nunca (sin enviado_en).
+        $parcial = CorreoEnvio::factory()->create(['plantilla_id' => $this->plantilla()->id, 'estado' => 'enviado', 'enviado_en' => now()]);
+        CorreoDestinatario::factory()->create(['envio_id' => $parcial->id, 'estado' => 'enviado']);
+        CorreoDestinatario::factory()->create(['envio_id' => $parcial->id, 'estado' => 'fallido']);
+        $caido = CorreoEnvio::factory()->create(['plantilla_id' => $this->plantilla()->id, 'estado' => 'fallido', 'enviado_en' => null]);
+        CorreoDestinatario::factory()->create(['envio_id' => $caido->id, 'estado' => 'fallido']);
+        CorreoEnvio::factory()->create(['plantilla_id' => $this->plantilla()->id, 'estado' => 'programado', 'programado_para' => now()->addDay()]);
+
+        $kpis = $this->actingAs($user)->get(route('admin.correo.envios.index'))->assertOk()->viewData('kpis');
+
+        $this->assertSame(2, $kpis['fallidos']);
+        $this->assertSame(1, $kpis['programados']);
+        $this->assertSame(1, $kpis['alcanzados']);
+    }
+
+    public function test_redactar_comparte_cabecera_kpis_y_pestanas_con_el_historial(): void
+    {
+        $user = User::factory()->create();
+        $this->plantilla();
+
+        $redactar = $this->actingAs($user)->get(route('admin.correo.envios.create'))->assertOk();
+        $this->assertSame('mes', $redactar->viewData('kpis')['periodo']);
+        $redactar->assertSee('Historial y programados')
+            ->assertSee('aria-current="page"', false)
+            ->assertSee('Correos entregados')
+            ->assertSee('data-accion-adjuntar', false);
+
+        $this->actingAs($user)->get(route('admin.correo.envios.index'))
+            ->assertOk()
+            ->assertSee('Nuevo envío')
+            ->assertSee('Fallidos');
+    }
+
     // --- Personalización del contenido por envío ------------------------------
 
     private function bloquesPersonalizados(): array

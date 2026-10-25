@@ -34,6 +34,7 @@ class Bloques
         '#047857' => 'Verde profundo',
         '#1A2332' => 'Tinta',
         '#0B7A56' => 'Verde oscuro',
+        '#0E1B2A' => 'Azul marino',
     ];
 
     /**

@@ -35,6 +35,8 @@ use Illuminate\View\View;
  */
 class CorreoEnviosController extends Controller
 {
+    private const PERIODOS = ['mes' => 'Este mes', '30d' => 'Últimos 30 días', 'todo' => 'Todo el historial'];
+
     public function index(Request $request): View
     {
         $query = CorreoEnvio::with(['plantilla', 'creador', 'destinatarios'])->orderByDesc('updated_at');
@@ -59,16 +61,41 @@ class CorreoEnviosController extends Controller
         // Los KPIs no dependen del filtro de estado/búsqueda del listado (son el
         // pulso del módulo, no del listado filtrado), pero sí del periodo elegido.
         // Un periodo desconocido cae a "mes" para que un enlace viejo no rompa.
-        $periodos = ['mes' => 'Este mes', '30d' => 'Últimos 30 días', 'todo' => 'Todo el historial'];
+        $periodos = self::PERIODOS;
         $periodo = (string) $request->string('periodo', 'mes');
         if (! array_key_exists($periodo, $periodos)) {
             $periodo = 'mes';
         }
 
+        return view('admin.correo.envios.index', [
+            'pageTitle' => 'Enviar correo',
+            'envios' => $envios->map(fn (CorreoEnvio $e) => $e->toRow())->values(),
+            'filtros' => [
+                'estado' => (string) $request->string('estado'),
+                'search' => (string) $request->string('search'),
+            ],
+            'periodos' => $periodos,
+            'kpis' => $this->kpis($periodo),
+        ]);
+    }
+
+    /**
+     * KPIs de la cabecera compartida por Redactar e Historial.
+     *
+     * Redactar siempre usa el mes en curso (el periodo por defecto del
+     * historial); el historial respeta el chip de periodo elegido. "Programados"
+     * no depende del periodo: es la cola actual, lo que aún puede cancelarse.
+     * Todo cuenta destinatarios (no envíos): un envío a varias personas pesa
+     * por cada una, y los fallidos nunca pudieron abrirse.
+     *
+     * @return array<string, mixed>
+     */
+    private function kpis(string $periodo): array
+    {
         $desde = match ($periodo) {
             'mes' => now()->startOfMonth(),
             '30d' => now()->subDays(30),
-            'todo' => null,
+            default => null,
         };
 
         $enviosPeriodo = CorreoEnvio::where('estado', EstadoEnvioCorreo::Enviado)
@@ -82,28 +109,30 @@ class CorreoEnviosController extends Controller
             ->selectRaw('COUNT(*) AS alcanzados, COALESCE(SUM(aperturas > 0), 0) AS abiertos, COALESCE(SUM(clics), 0) AS clics')
             ->first();
 
+        // Fallidos: destinatarios con error, tanto de envíos que salieron a medias
+        // (estado enviado) como de los que no salió ninguno (estado fallido).
+        $fallidos = CorreoDestinatario::where('estado', EstadoDestinatarioCorreo::Fallido)
+            ->whereIn('envio_id', CorreoEnvio::whereIn('estado', [EstadoEnvioCorreo::Enviado, EstadoEnvioCorreo::Fallido])
+                // Un envío fallido de raíz no llega a tener enviado_en: se ubica por su última actualización.
+                ->when($desde, fn ($q) => $q->where(fn ($w) => $w->where('enviado_en', '>=', $desde)
+                    ->orWhere(fn ($x) => $x->whereNull('enviado_en')->where('updated_at', '>=', $desde))))
+                ->select('id'))
+            ->count();
+
         $alcanzados = (int) ($totales->alcanzados ?? 0);
         $abiertos = (int) ($totales->abiertos ?? 0);
 
-        return view('admin.correo.envios.index', [
-            'pageTitle' => 'Enviar correo',
-            'envios' => $envios->map(fn (CorreoEnvio $e) => $e->toRow())->values(),
-            'filtros' => [
-                'estado' => (string) $request->string('estado'),
-                'search' => (string) $request->string('search'),
-            ],
-            'periodos' => $periodos,
-            'kpis' => [
-                'periodo' => $periodo,
-                'enviados' => (clone $enviosPeriodo)->count(),
-                'alcanzados' => $alcanzados,
-                'abiertos' => $abiertos,
-                'no_abiertos' => max($alcanzados - $abiertos, 0),
-                'apertura' => $alcanzados > 0 ? (int) round($abiertos / $alcanzados * 100) : null,
-                'clics' => (int) ($totales->clics ?? 0),
-                'programados' => CorreoEnvio::where('estado', EstadoEnvioCorreo::Programado)->count(),
-            ],
-        ]);
+        return [
+            'periodo' => $periodo,
+            'enviados' => (clone $enviosPeriodo)->count(),
+            'alcanzados' => $alcanzados,
+            'abiertos' => $abiertos,
+            'no_abiertos' => max($alcanzados - $abiertos, 0),
+            'apertura' => $alcanzados > 0 ? (int) round($abiertos / $alcanzados * 100) : null,
+            'clics' => (int) ($totales->clics ?? 0),
+            'fallidos' => $fallidos,
+            'programados' => CorreoEnvio::where('estado', EstadoEnvioCorreo::Programado)->count(),
+        ];
     }
 
     public function create(): View
@@ -118,7 +147,7 @@ class CorreoEnviosController extends Controller
             return redirect()->route('admin.correo.envios.show', $envio);
         }
 
-        return view('admin.correo.envios.redactar', $this->datosRedactar($envio->load('destinatarios')));
+        return view('admin.correo.envios.redactar', $this->datosRedactar($envio->load(['destinatarios', 'adjuntos'])));
     }
 
     public function store(Request $request): JsonResponse
@@ -450,12 +479,15 @@ class CorreoEnviosController extends Controller
                 ])->values()->all(),
                 'update_url' => route('admin.correo.envios.update', $envio),
                 'show_url' => route('admin.correo.envios.show', $envio),
+                // Solo para mostrarlos en el redactor: se gestionan en el detalle.
+                'adjuntos' => $envio->adjuntos->map(fn (CorreoAdjunto $a) => ['nombre' => $a->nombre, 'tamano' => $a->tamano])->values()->all(),
             ];
         }
 
         return [
             'pageTitle' => $envio ? 'Editar envío' : 'Redactar correo',
             'envio' => $envio,
+            'kpis' => $this->kpis('mes'),
             'datos' => [
                 'plantillas' => $plantillas,
                 'clientes' => $clientes,

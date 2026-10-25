@@ -677,4 +677,98 @@ class KeywordMedicionesTest extends TestCase
             ->assertSee('data-medicion-copiar-anterior', false)
             ->assertSee('data-medicion-captura-resumen', false);
     }
+
+    // --- bitácora de una keyword (ficha del banco) -----------------------
+
+    /** La ficha sólo muestra lo que se hizo: las mediciones sin nota no son bitácora. */
+    public function test_la_bitacora_de_una_keyword_trae_solo_las_mediciones_con_nota_de_la_mas_reciente_a_la_mas_antigua(): void
+    {
+        $user = User::factory()->create(['name' => 'Valeria Mora']);
+        $lista = $this->lista(Cliente::factory()->create());
+        $kw = $this->keyword($lista, 'dentista cdmx');
+
+        $this->ronda($user, $lista, '2026-07-01', [['keyword_id' => $kw->id, 'posicion' => 9, 'nota' => 'Primer ajuste de title']])->assertCreated();
+        $this->ronda($user, $lista, '2026-08-01', [['keyword_id' => $kw->id, 'posicion' => 7, 'nota' => '']])->assertCreated();
+        $this->ronda($user, $lista, '2026-09-01', [['keyword_id' => $kw->id, 'posicion' => 4, 'nota' => 'Enlaces internos desde el blog']])->assertCreated();
+
+        $json = $this->actingAs($user)
+            ->getJson(route('admin.keywords.mediciones', $kw))
+            ->assertOk()
+            ->json();
+
+        $this->assertSame(['2026-09-01', '2026-07-01'], array_column($json['mediciones'], 'fecha'));
+        $this->assertSame('Enlaces internos desde el blog', $json['mediciones'][0]['nota']);
+        $this->assertSame('Valeria Mora', $json['mediciones'][0]['registrado_por']);
+    }
+
+    public function test_la_bitacora_de_una_keyword_sin_notas_esta_vacia_y_no_mezcla_otras_keywords(): void
+    {
+        $user = User::factory()->create();
+        $lista = $this->lista(Cliente::factory()->create());
+        $con = $this->keyword($lista, 'con nota');
+        $sin = $this->keyword($lista, 'sin nota');
+
+        $this->ronda($user, $lista, '2026-09-01', [
+            ['keyword_id' => $con->id, 'posicion' => 3, 'nota' => 'Se reescribió el H1'],
+            ['keyword_id' => $sin->id, 'posicion' => 5],
+        ])->assertCreated();
+
+        $this->actingAs($user)
+            ->getJson(route('admin.keywords.mediciones', $sin))
+            ->assertOk()
+            ->assertExactJson(['mediciones' => []]);
+    }
+
+    /** Una keyword sin lista también tiene ficha, así que el endpoint no puede depender de la lista. */
+    public function test_la_bitacora_funciona_para_una_keyword_sin_lista(): void
+    {
+        $user = User::factory()->create();
+        $cliente = Cliente::factory()->create();
+        $suelta = Keyword::create([
+            'cliente_id' => $cliente->id,
+            'lista_id' => null,
+            'keyword' => 'suelta',
+            'tipo' => 'lsi',
+            'estado' => 'seguimiento',
+        ]);
+        KeywordMedicion::create([
+            'keyword_id' => $suelta->id,
+            'lista_id' => null,
+            'fecha' => '2026-09-01',
+            'posicion' => 12,
+            'nota' => 'Primera medición manual',
+        ]);
+
+        $this->actingAs($user)
+            ->getJson(route('admin.keywords.mediciones', $suelta))
+            ->assertOk()
+            ->assertJsonPath('mediciones.0.nota', 'Primera medición manual');
+    }
+
+    public function test_la_bitacora_exige_sesion(): void
+    {
+        $lista = $this->lista(Cliente::factory()->create());
+        $kw = $this->keyword($lista, 'privada');
+
+        $this->getJson(route('admin.keywords.mediciones', $kw))->assertUnauthorized();
+    }
+
+    /** Los ganchos de la ficha y de la tabla rediseñada son el contrato con keywords.js. */
+    public function test_la_pagina_incluye_la_ficha_de_keyword_y_los_controles_de_la_tabla(): void
+    {
+        $user = User::factory()->create();
+        $lista = $this->lista(Cliente::factory()->create(), ['nombre' => 'Servicios core']);
+        $this->keyword($lista, 'dentista cdmx', ['dificultad' => 42]);
+
+        $this->actingAs($user)
+            ->get(route('admin.keywords.index'))
+            ->assertOk()
+            ->assertSee('id="keywordDetailModal"', false)
+            ->assertSee('data-open-keyword-detail', false)
+            ->assertSee('data-keyword-mediciones-template', false)
+            ->assertSee('data-kwx-menu-toggle', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('Añadir palabra clave a esta lista')
+            ->assertSee('1 lista de palabras clave · 1 keyword en total');
+    }
 }

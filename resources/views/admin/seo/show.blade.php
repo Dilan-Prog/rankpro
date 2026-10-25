@@ -23,12 +23,17 @@
         ]);
     @endphp
 
-    <div class="page-header">
+    <div class="seo-page">
+    <div class="seo-encabezado">
         <div>
-            <h1 class="page-header__title">{{ $campana->nombre }}</h1>
-            <p class="page-header__subtitle">{{ $campana->cliente->nombre }} @if ($campana->url_sitio) · {{ $campana->url_sitio }} @endif</p>
+            <h1 class="page-header__title">Módulo SEO</h1>
+            <p class="page-header__subtitle">Posicionamiento orgánico y optimización técnica · {{ $cuentas->count() }} cuenta{{ $cuentas->count() === 1 ? '' : 's' }} con SEO</p>
         </div>
-        <div style="display:flex; gap: var(--space-2);">
+        <div class="seo-encabezado__acciones">
+            <label class="seo-buscador">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" id="seoClienteSearch" placeholder="Buscar cliente…" aria-label="Buscar cliente">
+            </label>
             <a href="{{ route('admin.seo.index', ['editar' => $campana->id]) }}" class="btn btn--secondary">
                 <i class="fa-solid fa-pen"></i> Editar
             </a>
@@ -45,49 +50,112 @@
         <div class="form-status form-status--error"><i class="fa-solid fa-triangle-exclamation" style="margin-top:2px"></i><span>{{ $errors->first() }}</span></div>
     @endif
 
-    <div class="kpi-grid">
-        <x-stat-card label="Fase Actual" value="{{ \App\Support\Labels::faseSeo($campana->fase_actual->value) }}" icon="fa-diagram-project" color="primary" />
-        <x-stat-card label="Ciclo" value="{{ $campana->ciclo_actual }}" icon="fa-arrows-rotate" color="teal" />
-        <x-stat-card label="SEO Score" value="{{ $campana->faseAuditoria->seo_score ?? '—' }}/100" icon="fa-gauge-high" color="amber" />
-        <x-stat-card label="Tráfico Orgánico" value="{{ number_format($campana->reporteActual->trafico_actual ?? 0) }}" sub="actual" icon="fa-arrow-trend-up" color="emerald" />
+    {{-- ---------- Selector de cuentas: cambia de campaña sin pasar por el índice ---------- --}}
+    <div class="empty-state" data-seo-cliente-empty hidden>
+        <div class="empty-state__icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <p class="empty-state__text">No se encontraron clientes con ese nombre.</p>
     </div>
+    @include('admin.seo._cuentas', ['cuentas' => $cuentas->whereNotNull('campana_id')->values(), 'seleccionId' => $campana->id, 'fila' => true])
 
-    {{-- ---------- Rastreador visual de fases ---------- --}}
-    <div class="fase-tracker">
-        @foreach ($fases as $fase)
-            @php
-                $ordenFase = \App\Enums\FaseSeo::from($fase)->orden();
-                $estadoPaso = $ordenFase < $ordenActual ? 'done' : ($ordenFase === $ordenActual ? 'current' : 'locked');
-            @endphp
-            <div class="fase-tracker__step fase-tracker__step--{{ $estadoPaso }}">
-                <div class="fase-tracker__circle">
-                    @if ($estadoPaso === 'done')
-                        <i class="fa-solid fa-check"></i>
-                    @else
-                        {{ $ordenFase }}
-                    @endif
-                </div>
-                <div class="fase-tracker__label">{{ \App\Support\Labels::faseSeo($fase) }}</div>
+    {{-- ---------- Franja de resumen de la cuenta seleccionada ---------- --}}
+    @php
+        $cliente = $campana->cliente;
+        $filaCuenta = $cuentas->firstWhere('cliente_id', $cliente->id);
+        $contactoTexto = collect([$cliente->contacto_nombre, $cliente->email])->filter()->implode(' · ');
+    @endphp
+    <section class="seo-resumen" aria-label="Resumen de la cuenta {{ $cliente->nombre }}">
+        <dl class="seo-resumen__datos">
+            <div class="seo-resumen__dato">
+                <dt>Cuenta</dt>
+                <dd class="seo-resumen__valor--fuerte">{{ $cliente->nombre }}</dd>
             </div>
-            @if (! $loop->last)
-                <div class="fase-tracker__line fase-tracker__line--{{ $ordenFase < $ordenActual ? 'done' : 'locked' }}"></div>
-            @endif
+            <div class="seo-resumen__dato">
+                <dt>Contacto</dt>
+                <dd>{{ $contactoTexto !== '' ? $contactoTexto : 'Sin dato' }}</dd>
+            </div>
+            <div class="seo-resumen__dato">
+                <dt>MRR SEO</dt>
+                <dd class="u-mono">${{ number_format($filaCuenta['mrr'] ?? 0) }}</dd>
+            </div>
+            <div class="seo-resumen__dato">
+                <dt>Contrato</dt>
+                <dd class="u-mono">
+                    @if ($cliente->fecha_inicio_contrato || $cliente->fecha_renovacion_contrato)
+                        {{ $cliente->fecha_inicio_contrato?->format('Y-m-d') ?? '—' }} → {{ $cliente->fecha_renovacion_contrato?->format('Y-m-d') ?? '—' }}
+                    @else
+                        <span class="seo-resumen__vacio">Sin dato</span>
+                    @endif
+                </dd>
+            </div>
+            <div class="seo-resumen__dato">
+                <dt>Campaña</dt>
+                <dd>
+                    {{ $campana->nombre }}
+                    @if ($campana->url_sitio)<span class="seo-resumen__url u-mono">{{ $campana->url_sitio }}</span>@endif
+                </dd>
+            </div>
+            <div class="seo-resumen__dato">
+                <dt>Fase · Ciclo</dt>
+                <dd>{{ \App\Support\Labels::faseSeo($campana->fase_actual->value) }} · <span class="u-mono">{{ $campana->ciclo_actual }}</span> <x-badge :status="$campana->estado" /></dd>
+            </div>
+        </dl>
+        @if ($serviciosCliente->isNotEmpty())
+            <ul class="seo-resumen__chips" aria-label="Servicios contratados">
+                @foreach ($serviciosCliente->unique(fn ($sv) => $sv->tipo->value) as $sv)
+                    <li class="seo-chip">{{ \App\Support\Labels::servicioTipo($sv->tipo) }}</li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
+    {{-- ---------- Pestañas ---------- --}}
+    @php
+        $pestanas = [
+            'auditoria' => 'Auditoría',
+            'fase' => 'Fase actual',
+            'posiciones' => 'Posiciones',
+            'onpage' => 'On-Page',
+            'linkbuilding' => 'Link Building',
+            'tecnico' => 'Técnico',
+            'contenido' => 'Contenido',
+            'reporte' => 'Reporte',
+        ];
+    @endphp
+    <div class="seo-tabs" id="seoTabs" role="tablist" aria-label="Secciones de la campaña" data-campana="{{ $campana->id }}">
+        @foreach ($pestanas as $clave => $etiqueta)
+            <button type="button" role="tab" class="seo-tabs__item {{ $loop->first ? 'is-active' : '' }}" id="seoTab-{{ $clave }}" data-panel="{{ $clave }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" aria-controls="seoPanel-{{ $clave }}" tabindex="{{ $loop->first ? '0' : '-1' }}">{{ $etiqueta }}</button>
         @endforeach
     </div>
 
-    {{-- ---------- Tabs ---------- --}}
-    <div class="tabs" id="seoTabs">
-        <button type="button" class="tabs__item is-active" data-panel="resumen">Resumen</button>
-        <button type="button" class="tabs__item" data-panel="posiciones">Posiciones</button>
-        <button type="button" class="tabs__item" data-panel="linkbuilding">Link Building</button>
-        <button type="button" class="tabs__item" data-panel="onpage">On-Page</button>
-        <button type="button" class="tabs__item" data-panel="tecnico">Técnico</button>
-        <button type="button" class="tabs__item" data-panel="contenido">Contenido</button>
-        <button type="button" class="tabs__item" data-panel="reporte">Reporte</button>
+    {{-- ---------- Tab: Auditoría (KPIs, tráfico y resumen) ---------- --}}
+    <div data-panel-content="auditoria" id="seoPanel-auditoria" role="tabpanel" aria-labelledby="seoTab-auditoria" tabindex="0">
+        @include('admin.seo._tab-auditoria')
     </div>
 
-    {{-- ---------- Tab: Resumen ---------- --}}
-    <div data-panel-content="resumen">
+    {{-- ---------- Tab: Fase actual (rastreador + panel de la fase) ---------- --}}
+    <div data-panel-content="fase" id="seoPanel-fase" role="tabpanel" aria-labelledby="seoTab-fase" tabindex="0" hidden>
+        <div class="fase-tracker">
+            @foreach ($fases as $fase)
+                @php
+                    $ordenFase = \App\Enums\FaseSeo::from($fase)->orden();
+                    $estadoPaso = $ordenFase < $ordenActual ? 'done' : ($ordenFase === $ordenActual ? 'current' : 'locked');
+                @endphp
+                <div class="fase-tracker__step fase-tracker__step--{{ $estadoPaso }}">
+                    <div class="fase-tracker__circle">
+                        @if ($estadoPaso === 'done')
+                            <i class="fa-solid fa-check"></i>
+                        @else
+                            {{ $ordenFase }}
+                        @endif
+                    </div>
+                    <div class="fase-tracker__label">{{ \App\Support\Labels::faseSeo($fase) }}</div>
+                </div>
+                @if (! $loop->last)
+                    <div class="fase-tracker__line fase-tracker__line--{{ $ordenFase < $ordenActual ? 'done' : 'locked' }}"></div>
+                @endif
+            @endforeach
+        </div>
+
         @if ($campana->fase_actual->value === 'cerrada')
             <div class="card card--padded fase-panel">
                 <div class="fase-panel__header">
@@ -113,7 +181,7 @@
     </div>
 
     {{-- ---------- Tab: Posiciones ---------- --}}
-    <div data-panel-content="posiciones" hidden>
+    <div data-panel-content="posiciones" id="seoPanel-posiciones" role="tabpanel" aria-labelledby="seoTab-posiciones" tabindex="0" hidden>
         {{-- ---------- Keywords objetivo: vista previa desde Estrategia en adelante ---------- --}}
         @if (in_array($campana->fase_actual->value, ['estrategia', 'ejecucion', 'reporte', 'cerrada']))
             @php $keywordsObjetivo = $campana->faseEstrategia?->keywords() ?? collect(); @endphp
@@ -158,28 +226,13 @@
                     @include('admin.seo._posiciones-tabla', ['posiciones' => $campana->posiciones])
                 </div>
             </div>
-        @endif
-    </div>
-
-    {{-- ---------- Tab: Link Building ---------- --}}
-    <div data-panel-content="linkbuilding" hidden>
-        @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
-            <div class="card" id="backlinksCard">
-                <div class="card__header">
-                    <h2 class="card__header-title">Link Building</h2>
-                    <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('backlinkModal')">
-                        <i class="fa-solid fa-plus"></i> Agregar Backlink
-                    </button>
-                </div>
-                <div data-backlinks-body>
-                    @include('admin.seo._backlinks-tabla', ['backlinks' => $campana->backlinks])
-                </div>
-            </div>
+        @else
+            @include('admin.seo._tab-bloqueado', ['campana' => $campana])
         @endif
     </div>
 
     {{-- ---------- Tab: On-Page ---------- --}}
-    <div data-panel-content="onpage" hidden>
+    <div data-panel-content="onpage" id="seoPanel-onpage" role="tabpanel" aria-labelledby="seoTab-onpage" tabindex="0" hidden>
         @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
             <div class="card" id="onpageCard">
                 <div class="card__header">
@@ -192,11 +245,32 @@
                     @include('admin.seo._onpage-lista', ['acciones' => $campana->onPageAcciones])
                 </div>
             </div>
+        @else
+            @include('admin.seo._tab-bloqueado', ['campana' => $campana])
+        @endif
+    </div>
+
+    {{-- ---------- Tab: Link Building ---------- --}}
+    <div data-panel-content="linkbuilding" id="seoPanel-linkbuilding" role="tabpanel" aria-labelledby="seoTab-linkbuilding" tabindex="0" hidden>
+        @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
+            <div class="card" id="backlinksCard">
+                <div class="card__header">
+                    <h2 class="card__header-title">Link Building</h2>
+                    <button type="button" class="btn btn--ghost" onclick="window.AgencyOS.openModal('backlinkModal')">
+                        <i class="fa-solid fa-plus"></i> Agregar Backlink
+                    </button>
+                </div>
+                <div data-backlinks-body>
+                    @include('admin.seo._backlinks-tabla', ['backlinks' => $campana->backlinks])
+                </div>
+            </div>
+        @else
+            @include('admin.seo._tab-bloqueado', ['campana' => $campana])
         @endif
     </div>
 
     {{-- ---------- Tab: Técnico ---------- --}}
-    <div data-panel-content="tecnico" hidden>
+    <div data-panel-content="tecnico" id="seoPanel-tecnico" role="tabpanel" aria-labelledby="seoTab-tecnico" tabindex="0" hidden>
         @php $auditoriaTecnico = $campana->faseAuditoria; @endphp
         @if (! $auditoriaTecnico)
             <div class="card card--padded">
@@ -229,7 +303,7 @@
     </div>
 
     {{-- ---------- Tab: Contenido ---------- --}}
-    <div data-panel-content="contenido" hidden>
+    <div data-panel-content="contenido" id="seoPanel-contenido" role="tabpanel" aria-labelledby="seoTab-contenido" tabindex="0" hidden>
         @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
             <div class="card" id="contenidoCard">
                 <div class="card__header">
@@ -242,11 +316,13 @@
                     @include('admin.seo._contenido-tabla', ['contenidos' => $campana->contenido])
                 </div>
             </div>
+        @else
+            @include('admin.seo._tab-bloqueado', ['campana' => $campana])
         @endif
     </div>
 
     {{-- ---------- Tab: Reporte ---------- --}}
-    <div data-panel-content="reporte" hidden>
+    <div data-panel-content="reporte" id="seoPanel-reporte" role="tabpanel" aria-labelledby="seoTab-reporte" tabindex="0" hidden>
         {{-- ---------- Métricas mensuales: base de las gráficas de tendencia / reporte de crecimiento ---------- --}}
         @if (in_array($campana->fase_actual->value, ['ejecucion', 'reporte', 'cerrada']))
             <div class="card card--padded" id="metricasCard">
@@ -276,6 +352,8 @@
                     @include('admin.seo._metricas-mensuales-tabla', ['metricas' => $campana->metricasMensuales])
                 </div>
             </div>
+        @else
+            @include('admin.seo._tab-bloqueado', ['campana' => $campana])
         @endif
 
         {{-- ---------- Conclusiones / recomendaciones del ciclo actual ---------- --}}
@@ -585,6 +663,7 @@
             </div>
         </form>
     </x-modal>
+    </div>
 @endsection
 
 @section('scripts')

@@ -5,30 +5,39 @@
 @endsection
 
 @section('content')
+    @php
+        $nListas = $listas->count();
+        $subtituloBanco = $nListas.' '.($nListas === 1 ? 'lista' : 'listas').' de palabras clave · '.$totalKeywords.' '.($totalKeywords === 1 ? 'keyword' : 'keywords').' en total';
+    @endphp
+    {{-- .kwx acota el rediseño de este módulo (tarjetas, modales y formularios) sin tocar los componentes compartidos. --}}
+    <div class="kwx">
     <div class="page-header">
         <div>
             <h1 class="page-header__title">Banco de Keywords</h1>
-            <p class="page-header__subtitle" id="keywordsCountSubtitle">{{ $totalKeywords }} keywords en {{ $listas->count() }} listas</p>
+            <p class="page-header__subtitle" id="keywordsCountSubtitle">{{ $subtituloBanco }}</p>
         </div>
-        <div style="display:flex; gap:var(--space-2);">
-            <button type="button" class="btn btn--ghost" data-open-import-modal>
-                <i class="fa-solid fa-file-import"></i> Importar
+        <div class="kwx-cabecera__botones">
+            <button type="button" class="kwx-btn" data-open-import-modal>
+                <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i> Importar
             </button>
-            <button type="button" class="btn btn--primary" data-open-lista-modal>
-                <i class="fa-solid fa-plus"></i> Nueva Lista
+            <button type="button" class="kwx-btn kwx-btn--primario" data-open-lista-modal>
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva lista
             </button>
         </div>
     </div>
 
-    <div class="filters-bar">
-        <input type="search" class="input input--search" id="listasSearch" placeholder="Buscar lista o keyword...">
-        <select class="select" id="listasClienteFilter">
+    <div class="filters-bar kwx-filtros">
+        <div class="kwx-buscador">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" class="input input--search" id="listasSearch" placeholder="Buscar lista o palabra clave…" aria-label="Buscar lista o palabra clave">
+        </div>
+        <select class="select" id="listasClienteFilter" aria-label="Filtrar por cliente">
             <option value="all">Todos los clientes</option>
             @foreach ($clientes as $id => $nombre)
                 <option value="{{ $id }}">{{ $nombre }}</option>
             @endforeach
         </select>
-        <select class="select" id="listasEstadoFilter">
+        <select class="select" id="listasEstadoFilter" aria-label="Filtrar por estado">
             <option value="all">Todos los estados</option>
             <option value="en_uso">En Uso</option>
             <option value="seguimiento">Seguimiento</option>
@@ -38,41 +47,43 @@
 
     <div class="bulk-toolbar" id="listasBulkToolbar" hidden
         data-bulk-descartar-action="{{ route('admin.keywords.listas.bulk-descartar') }}">
-        <span id="listasBulkCount"></span>
+        <span id="listasBulkCount" aria-live="polite"></span>
         <div class="bulk-toolbar__actions">
-            <button type="button" class="btn btn--danger btn--sm" id="listasBulkDescartar">
+            <button type="button" class="kwx-btn kwx-btn--peligro kwx-btn--sm" id="listasBulkDescartar">
                 <i class="fa-solid fa-ban"></i> Descartar seleccionadas
             </button>
-            <button type="button" class="btn btn--secondary btn--sm" id="listasBulkCancelar">Cancelar</button>
+            <button type="button" class="kwx-btn kwx-btn--sm" id="listasBulkCancelar">Cancelar</button>
         </div>
     </div>
 
     @php
         $listaHeaders = [
-            new \Illuminate\Support\HtmlString('<input type="checkbox" id="listasCheckAll" aria-label="Seleccionar todas las listas" style="width:15px;height:15px;accent-color:var(--color-primary);">'),
-            'Lista', 'Cliente', 'Estado', 'Keywords', 'Volumen', 'KD prom.', 'CPC prom.', 'Posición prom.', 'Fuentes', '',
+            new \Illuminate\Support\HtmlString('<input type="checkbox" class="kwx-check" id="listasCheckAll" aria-label="Seleccionar todas las listas">'),
+            '#', 'Nombre de lista de palabras clave', 'Cliente', 'Estado', 'Keywords', 'Volumen', 'KD prom.', 'CPC prom.', 'Pos. prom.', 'Fuente',
+            new \Illuminate\Support\HtmlString('<span class="u-visually-hidden">Acciones</span>'),
         ];
     @endphp
-    <x-data-table :headers="$listaHeaders" data-paginate="15" data-listas-table
+    <x-data-table :headers="$listaHeaders" class="kwx-tabla" data-paginate="15" data-listas-table
         data-mediciones-index-template="{{ route('admin.keywords.listas.mediciones.index', ['lista' => '__ID__']) }}"
         data-mediciones-store-template="{{ route('admin.keywords.listas.mediciones.store', ['lista' => '__ID__']) }}"
-        data-medicion-update-template="{{ route('admin.keywords.listas.mediciones.update', ['medicion' => '__ID__']) }}">
+        data-medicion-update-template="{{ route('admin.keywords.listas.mediciones.update', ['medicion' => '__ID__']) }}"
+        data-keyword-mediciones-template="{{ route('admin.keywords.mediciones', ['keyword' => '__ID__']) }}">
         @forelse ($listas as $l)
-            @include('admin.keywords._lista-row', ['l' => $l])
+            @include('admin.keywords._lista-row', ['l' => $l, 'n' => $loop->iteration])
         @empty
-            <tr class="table__empty"><td colspan="11">Aún no hay listas de keywords. Crea la primera con "Nueva Lista".</td></tr>
+            <tr class="table__empty"><td colspan="12">Aún no hay listas de keywords. Crea la primera con "Nueva lista".</td></tr>
         @endforelse
     </x-data-table>
 
-    <div style="margin-top:var(--space-8); margin-bottom:var(--space-4);">
-        <h2 style="font-size:var(--text-lg); font-weight:var(--font-weight-semibold);">Sin lista asignada</h2>
-        <p style="font-size:var(--text-sm); color:var(--color-muted-foreground);">Keywords existentes que aún no pertenecen a ninguna lista.</p>
+    <div class="kwx-seccion">
+        <h2 class="kwx-seccion__titulo">Sin lista asignada</h2>
+        <p class="kwx-seccion__sub">Keywords existentes que aún no pertenecen a ninguna lista.</p>
     </div>
-    <div class="empty-state" data-sinlista-empty {{ $keywordsSinLista->isEmpty() ? '' : 'hidden' }}>
-        <div class="empty-state__icon"><i class="fa-solid fa-key"></i></div>
-        <p class="empty-state__text">No hay keywords sin lista asignada.</p>
+    <div class="kwx-vacio kwx-vacio--tarjeta" data-sinlista-empty {{ $keywordsSinLista->isEmpty() ? '' : 'hidden' }}>
+        <i class="fa-solid fa-key" aria-hidden="true"></i>
+        <p>No hay keywords sin lista asignada.</p>
     </div>
-    <div class="table-wrap" data-sinlista-table data-paginate="15" {{ $keywordsSinLista->isEmpty() ? 'hidden' : '' }}>
+    <div class="table-wrap kwx-tabla kwx-tabla--simple" data-sinlista-table data-paginate="15" {{ $keywordsSinLista->isEmpty() ? 'hidden' : '' }}>
         <table class="table">
             <thead>
                 <tr>
@@ -80,12 +91,12 @@
                     <th>Tipo</th>
                     <th>Volumen</th>
                     <th>KD</th>
-                    <th>CPC Est.</th>
+                    <th>CPC est.</th>
                     <th>Intención</th>
                     <th>URL</th>
                     <th>Posición</th>
                     <th>Fuente</th>
-                    <th></th>
+                    <th><span class="u-visually-hidden">Acciones</span></th>
                 </tr>
             </thead>
             <tbody data-sinlista-rows>
@@ -98,127 +109,190 @@
 
     <x-modal id="listaDetailModal">
         <x-slot:header>
-            <h2 id="listaDetailTitle" style="margin-bottom:6px;"></h2>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:var(--text-xs);color:var(--color-muted-foreground);">Lista de keywords</span>
+            <div class="kwx-modal__titulo">
+                <h2 id="listaDetailTitle"></h2>
                 <span id="listaDetailBadge"></span>
             </div>
+            <p class="kwx-modal__sub">Lista de keywords</p>
         </x-slot:header>
 
-        <div class="record-modal__stats">
-            <div>
-                <div class="record-modal__section-label">Keywords</div>
-                <div id="listaDetailCount"></div>
+        <div class="kwx-metricas">
+            <div class="kwx-metrica">
+                <span class="kwx-metrica__etq">Keywords</span>
+                <span class="kwx-metrica__val u-mono" id="listaDetailCount"></span>
             </div>
-            <div>
-                <div class="record-modal__section-label">Volumen total</div>
-                <div id="listaDetailVolumen"></div>
+            <div class="kwx-metrica">
+                <span class="kwx-metrica__etq">Volumen total</span>
+                <span class="kwx-metrica__val u-mono" id="listaDetailVolumen"></span>
             </div>
-            <div>
-                <div class="record-modal__section-label">KD promedio</div>
-                <div id="listaDetailKd"></div>
+            <div class="kwx-metrica">
+                <span class="kwx-metrica__etq">KD promedio</span>
+                <span class="kwx-metrica__val u-mono" id="listaDetailKd"></span>
             </div>
-            <div>
-                <div class="record-modal__section-label">CPC promedio</div>
-                <div id="listaDetailCpc"></div>
-            </div>
-        </div>
-
-        <div class="record-modal__section">
-            <div class="record-modal__section-label">Datos</div>
-            <div class="form-grid form-grid--2">
-                <div>
-                    <div class="record-modal__section-label">Cliente</div>
-                    <div id="listaDetailCliente"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Canal</div>
-                    <div id="listaDetailCanal"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Responsable</div>
-                    <div id="listaDetailResponsable"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Posición promedio</div>
-                    <div id="listaDetailPosicion"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Fuentes</div>
-                    <div id="listaDetailFuentes"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Última actualización</div>
-                    <div id="listaDetailUpdated"></div>
-                </div>
+            <div class="kwx-metrica">
+                <span class="kwx-metrica__etq">CPC promedio</span>
+                <span class="kwx-metrica__val u-mono kwx-verde" id="listaDetailCpc"></span>
             </div>
         </div>
 
-        <div class="record-modal__actions">
-            <a id="listaDetailIrCliente" href="#" class="btn btn--secondary"
+        <div class="kwx-bloque">
+            <div class="kwx-etiqueta">Datos</div>
+            <dl class="kwx-ficha">
+                <div><dt>Cliente</dt><dd id="listaDetailCliente"></dd></div>
+                <div><dt>Canal</dt><dd id="listaDetailCanal"></dd></div>
+                <div><dt>Responsable</dt><dd id="listaDetailResponsable"></dd></div>
+                <div><dt>Posición promedio</dt><dd class="u-mono" id="listaDetailPosicion"></dd></div>
+                <div><dt>Fuentes</dt><dd id="listaDetailFuentes"></dd></div>
+                <div><dt>Última actualización</dt><dd class="u-mono" id="listaDetailUpdated"></dd></div>
+            </dl>
+        </div>
+
+        <div class="kwx-pie">
+            <a id="listaDetailIrCliente" href="#" class="kwx-btn"
                 data-href-template="{{ route('admin.clientes.show', ['cliente' => '__ID__']) }}">Ir al cliente</a>
-            <button type="button" id="listaDetailImportar" class="btn btn--secondary">Importar keywords</button>
-            <button type="button" id="listaDetailAddKeyword" class="btn btn--secondary">Añadir palabra clave</button>
-            <button type="button" id="listaDetailEditar" class="btn btn--primary">Editar lista</button>
+            <button type="button" id="listaDetailImportar" class="kwx-btn">Importar keywords</button>
+            <button type="button" id="listaDetailAddKeyword" class="kwx-btn">Añadir palabra clave</button>
+            <button type="button" id="listaDetailEditar" class="kwx-btn kwx-btn--primario">Editar lista</button>
         </div>
     </x-modal>
 
     <x-modal id="listaFormModal">
-        <x-slot:header><h2 id="listaFormModalTitle" style="margin-bottom:0;">Nueva Lista de Keywords</h2></x-slot:header>
+        <x-slot:header>
+            <h2 id="listaFormModalTitle">Nueva lista de keywords</h2>
+            <p class="kwx-modal__sub" id="listaFormModalSub">Agrupa las keywords de un cliente por canal.</p>
+        </x-slot:header>
         <form id="listaForm" novalidate
               data-store-action="{{ route('admin.keywords.listas.store') }}"
               data-update-action-template="{{ route('admin.keywords.listas.update', ['lista' => '__ID__']) }}">
             @csrf
             @include('admin.keywords._lista-form', ['lista' => null, 'clientes' => $clientes, 'usuarios' => $usuarios])
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="listaFormSubmit"><i class="fa-solid fa-check"></i> Crear Lista</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="listaFormModal">Cancelar</button>
+            <div class="kwx-pie">
+                <button type="button" class="kwx-btn" data-modal-close="listaFormModal">Cancelar</button>
+                <button type="submit" class="kwx-btn kwx-btn--primario" id="listaFormSubmit">Crear lista</button>
             </div>
         </form>
     </x-modal>
 
     <x-modal id="listaDeleteModal">
-        <x-slot:header><h2 style="margin-bottom:0;">Eliminar lista</h2></x-slot:header>
-        <p style="margin-bottom:var(--space-4);">
+        <x-slot:header><h2>Eliminar lista</h2></x-slot:header>
+        <p class="kwx-texto">
             ¿Eliminar la lista <strong id="listaDeleteName"></strong>?
             Sus <strong id="listaDeleteCount"></strong> keywords <u>no</u> se eliminarán — quedarán sin lista asignada, disponibles en la sección "Sin lista asignada".
         </p>
-        <div class="form-actions">
-            <button type="button" class="btn btn--danger" id="listaDeleteConfirm"
+        <div class="kwx-pie">
+            <button type="button" class="kwx-btn" data-modal-close="listaDeleteModal">Cancelar</button>
+            <button type="button" class="kwx-btn kwx-btn--peligro" id="listaDeleteConfirm"
                 data-destroy-action-template="{{ route('admin.keywords.listas.destroy', ['lista' => '__ID__']) }}">Eliminar</button>
-            <button type="button" class="btn btn--secondary" data-modal-close="listaDeleteModal">Cancelar</button>
         </div>
     </x-modal>
 
+    {{-- Añadir y editar comparten este modal: keywords.js cambia título, subtítulo y botón (openKeywordFormModal). --}}
     <x-modal id="keywordFormModal">
-        <x-slot:header><h2 id="keywordFormModalTitle" style="margin-bottom:0;">Añadir Keyword</h2></x-slot:header>
+        <x-slot:header>
+            <h2 id="keywordFormModalTitle">Añadir palabra clave</h2>
+            <p class="kwx-modal__sub" id="keywordFormModalSub"></p>
+        </x-slot:header>
         <form id="keywordForm" novalidate
               data-store-action="{{ route('admin.keywords.store') }}"
               data-update-action-template="{{ route('admin.keywords.update', ['keyword' => '__ID__']) }}">
             @csrf
             @include('admin.keywords._form', ['keyword' => null, 'clientes' => $clientes, 'listas' => $listas])
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="keywordFormSubmit"><i class="fa-solid fa-check"></i> Guardar Keyword</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="keywordFormModal">Cancelar</button>
+            <div class="kwx-pie">
+                <button type="button" class="kwx-btn" data-modal-close="keywordFormModal">Cancelar</button>
+                <button type="submit" class="kwx-btn kwx-btn--primario" id="keywordFormSubmit">Guardar keyword</button>
             </div>
         </form>
     </x-modal>
 
+    {{--
+        Ficha de una keyword (sólo lectura): la llena keywords.js (abrirKeywordDetalle) con la
+        fila y pide la bitácora a keywords.mediciones. "Tráfico estimado" y "Valor equivalente
+        en Ads" del diseño no están: necesitan una curva de CTR orgánico que el proyecto no tiene.
+    --}}
+    <x-modal id="keywordDetailModal">
+        <x-slot:header>
+            <div class="kwx-modal__titulo">
+                <h2 id="kwDetailTitle"></h2>
+                <span id="kwDetailBadge"></span>
+            </div>
+            <p class="kwx-modal__sub" id="kwDetailSub"></p>
+        </x-slot:header>
+        <div class="kwx-det">
+            <div class="kwx-det__scroll">
+                <span class="kwx-tipo" id="kwDetailTipo"></span>
+
+                <div class="kwx-metricas">
+                    <div class="kwx-metrica">
+                        <span class="kwx-metrica__etq">Posición</span>
+                        <span class="kwx-metrica__val u-mono kwx-verde" id="kwDetailPosicion"></span>
+                    </div>
+                    <div class="kwx-metrica">
+                        <span class="kwx-metrica__etq">Volumen</span>
+                        <span class="kwx-metrica__val u-mono" id="kwDetailVolumen"></span>
+                    </div>
+                    <div class="kwx-metrica">
+                        <span class="kwx-metrica__etq">KD</span>
+                        <span class="kwx-metrica__val u-mono" id="kwDetailKd"></span>
+                    </div>
+                    <div class="kwx-metrica">
+                        <span class="kwx-metrica__etq">CPC est.</span>
+                        <span class="kwx-metrica__val u-mono kwx-verde" id="kwDetailCpc"></span>
+                    </div>
+                </div>
+
+                <div class="kwx-bloque">
+                    <div class="kwx-etiqueta">Ficha del registro</div>
+                    <dl class="kwx-ficha">
+                        <div><dt>Intención</dt><dd id="kwDetailIntencion"></dd></div>
+                        <div><dt>URL destino</dt><dd class="u-mono kwx-url" id="kwDetailUrl"></dd></div>
+                        <div><dt>Posición anterior</dt><dd class="u-mono" id="kwDetailAnterior"></dd></div>
+                        <div><dt>Cambio</dt><dd id="kwDetailCambio"></dd></div>
+                        <div><dt>Lista</dt><dd id="kwDetailLista"></dd></div>
+                        <div><dt>Incorporada</dt><dd class="u-mono" id="kwDetailIncorporada"></dd></div>
+                    </dl>
+                    <p class="kwx-nota-ficha" id="kwDetailNotas" hidden></p>
+                </div>
+
+                <div class="kwx-bloque">
+                    <div class="kwx-etiqueta">Avance</div>
+                    <div class="kwx-avance">
+                        <span class="kwx-avance__etq">Dificultad (KD)</span>
+                        <span class="kwx-avance__barra" aria-hidden="true"><span class="kwx-avance__relleno" id="kwDetailKdBarra"></span></span>
+                        <span class="kwx-avance__num u-mono" id="kwDetailKdPct"></span>
+                    </div>
+                </div>
+
+                <div class="kwx-bloque">
+                    <div class="kwx-etiqueta">Bitácora</div>
+                    <ol class="kwx-bitacora" id="kwDetailBitacora" aria-live="polite"></ol>
+                </div>
+            </div>
+            <div class="kwx-pie kwx-pie--fijo">
+                <button type="button" class="kwx-btn" data-modal-close="keywordDetailModal">Cerrar</button>
+                <a class="kwx-btn" id="kwDetailSerp" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Ver en SERP</a>
+                <button type="button" class="kwx-btn kwx-btn--primario" id="kwDetailEditar">Editar keyword</button>
+            </div>
+        </div>
+    </x-modal>
+
     <x-modal id="keywordDeleteModal">
-        <x-slot:header><h2 style="margin-bottom:0;">Eliminar keyword</h2></x-slot:header>
-        <p style="margin-bottom:var(--space-4);">
+        <x-slot:header><h2>Eliminar keyword</h2></x-slot:header>
+        <p class="kwx-texto">
             ¿Eliminar la keyword <strong id="keywordDeleteName"></strong>?
             Se eliminará por completo del banco de keywords, incluyendo de su lista. Esta acción no se puede deshacer.
         </p>
-        <div class="form-actions">
-            <button type="button" class="btn btn--danger" id="keywordDeleteConfirm"
+        <div class="kwx-pie">
+            <button type="button" class="kwx-btn" data-modal-close="keywordDeleteModal">Cancelar</button>
+            <button type="button" class="kwx-btn kwx-btn--peligro" id="keywordDeleteConfirm"
                 data-destroy-action-template="{{ route('admin.keywords.destroy', ['keyword' => '__ID__']) }}">Eliminar</button>
-            <button type="button" class="btn btn--secondary" data-modal-close="keywordDeleteModal">Cancelar</button>
         </div>
     </x-modal>
 
     <x-modal id="keywordImportModal">
-        <x-slot:header><h2 style="margin-bottom:0;">Importar Keywords</h2></x-slot:header>
+        <x-slot:header>
+            <h2>Importar keywords</h2>
+            <p class="kwx-modal__sub">Pega las filas o sube un CSV a una lista.</p>
+        </x-slot:header>
         <form id="keywordImportForm" novalidate
               data-import-action-template="{{ route('admin.keywords.listas.importar', ['lista' => '__ID__']) }}">
             <div class="field">
@@ -231,23 +305,23 @@
                 </select>
                 <span class="field__error" data-error-for="lista_id"></span>
             </div>
-            <div class="field" style="margin-top: var(--space-4);">
+            <div class="field kwx-fila">
                 <label class="field__label" for="ki_texto">Pegar keywords (una por línea)</label>
-                <textarea class="textarea" name="texto" id="ki_texto" rows="6" placeholder="keyword, volumen, KD, CPC, intención, URL"></textarea>
-                <span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">Formato por línea: keyword, volumen, KD, CPC, intención, URL — las columnas después de la keyword son opcionales.</span>
+                <textarea class="textarea u-mono" name="texto" id="ki_texto" rows="6" placeholder="keyword, volumen, KD, CPC, intención, URL"></textarea>
+                <span class="field__hint">Formato por línea: keyword, volumen, KD, CPC, intención, URL — las columnas después de la keyword son opcionales.</span>
                 <span class="field__error" data-error-for="texto"></span>
             </div>
-            <div class="field" style="margin-top: var(--space-4);">
+            <div class="field kwx-fila">
                 <label class="field__label" for="ki_archivo">O sube un archivo CSV / TXT</label>
                 <input class="input" type="file" name="archivo" id="ki_archivo" accept=".csv,.txt">
                 <span class="field__error" data-error-for="archivo"></span>
             </div>
 
-            <div id="keywordImportResults"></div>
+            <div id="keywordImportResults" aria-live="polite"></div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="keywordImportSubmit"><i class="fa-solid fa-file-import"></i> Importar</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="keywordImportModal">Cerrar</button>
+            <div class="kwx-pie">
+                <button type="button" class="kwx-btn" data-modal-close="keywordImportModal">Cerrar</button>
+                <button type="submit" class="kwx-btn kwx-btn--primario" id="keywordImportSubmit"><i class="fa-solid fa-file-import" aria-hidden="true"></i> Importar</button>
             </div>
         </form>
     </x-modal>
@@ -262,8 +336,8 @@
     --}}
     <x-modal id="medicionFormModal" size="lg">
         <x-slot:header>
-            <h2 id="medicionFormTitle" style="margin-bottom:6px;">Nueva medición</h2>
-            <p style="font-size:var(--text-xs); color:var(--color-muted-foreground); margin:0;">
+            <h2 id="medicionFormTitle">Nueva medición</h2>
+            <p class="kwx-modal__sub">
                 Anota la posición de cada keyword y, sobre todo, <strong>qué se hizo</strong> para moverla.
                 Deja la posición vacía si la keyword no rankea.
             </p>
@@ -281,25 +355,27 @@
 
             {{-- Captura rápida: pegar desde Excel/Search Console o partir de la ronda anterior. Enter en una posición baja al siguiente renglón. --}}
             <div class="kw-medicion__tools" data-medicion-tools>
-                <button type="button" class="btn btn--secondary btn--sm" data-medicion-pegar-toggle>
-                    <i class="fa-solid fa-paste"></i> Pegar desde Excel / Search Console
+                <button type="button" class="kwx-btn kwx-btn--sm" data-medicion-pegar-toggle>
+                    <i class="fa-solid fa-paste" aria-hidden="true"></i> Pegar desde Excel / Search Console
                 </button>
-                <button type="button" class="btn btn--secondary btn--sm" data-medicion-copiar-anterior>
-                    <i class="fa-solid fa-copy"></i> Copiar ronda anterior
+                <button type="button" class="kwx-btn kwx-btn--sm" data-medicion-copiar-anterior>
+                    <i class="fa-solid fa-copy" aria-hidden="true"></i> Copiar ronda anterior
                 </button>
             </div>
             <div class="field kw-medicion__pegar" data-medicion-pegar-panel hidden>
                 <label class="field__label" for="km_pegar">Pega las filas: keyword, posición y (opcional) URL</label>
-                <textarea class="textarea" id="km_pegar" rows="6" data-medicion-pegar-texto
+                <textarea class="textarea u-mono" id="km_pegar" rows="6" data-medicion-pegar-texto
                           placeholder="hotel centro&#9;4&#9;/hoteles&#10;hotel boutique&#9;n/d"></textarea>
-                <button type="button" class="btn btn--primary btn--sm" data-medicion-pegar-aplicar>
-                    <i class="fa-solid fa-check"></i> Aplicar a la ronda
-                </button>
+                <div>
+                    <button type="button" class="kwx-btn kwx-btn--primario kwx-btn--sm" data-medicion-pegar-aplicar>
+                        <i class="fa-solid fa-check" aria-hidden="true"></i> Aplicar a la ronda
+                    </button>
+                </div>
             </div>
             <div class="kw-medicion__captura-resumen" data-medicion-captura-resumen aria-live="polite"></div>
 
-            <div class="empty-state" data-medicion-empty hidden style="padding: var(--space-6);">
-                <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords que medir.</p>
+            <div class="kwx-vacio" data-medicion-empty hidden>
+                <p>Esta lista aún no tiene keywords que medir.</p>
             </div>
 
             <div class="table-wrap kw-medicion__table" data-medicion-table>
@@ -315,9 +391,9 @@
                 </table>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="medicionFormSubmit"><i class="fa-solid fa-check"></i> Guardar medición</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="medicionFormModal">Cancelar</button>
+            <div class="kwx-pie">
+                <button type="button" class="kwx-btn" data-modal-close="medicionFormModal">Cancelar</button>
+                <button type="submit" class="kwx-btn kwx-btn--primario" id="medicionFormSubmit">Guardar medición</button>
             </div>
         </form>
     </x-modal>
@@ -325,36 +401,37 @@
     {{-- Corrección de una medición suelta (PUT mediciones.update), abierta al pulsar una celda del historial. --}}
     <x-modal id="medicionNotaModal">
         <x-slot:header>
-            <h2 id="medicionNotaTitle" style="margin-bottom:6px;">Medición</h2>
-            <p id="medicionNotaSubtitle" style="font-size:var(--text-xs); color:var(--color-muted-foreground); margin:0;"></p>
+            <h2 id="medicionNotaTitle">Medición</h2>
+            <p class="kwx-modal__sub" id="medicionNotaSubtitle"></p>
         </x-slot:header>
         <form id="medicionNotaForm" novalidate data-medicion-nota-form>
             @csrf
             <div class="form-grid form-grid--2">
                 <div class="field">
                     <label class="field__label" for="kmn_posicion">Posición</label>
-                    <input class="input" type="number" min="1" max="1000" name="posicion" id="kmn_posicion" placeholder="Vacío = no rankea">
+                    <input class="input u-mono" type="number" min="1" max="1000" name="posicion" id="kmn_posicion" placeholder="Vacío = no rankea">
                     <span class="field__error" data-error-for="posicion"></span>
                 </div>
                 <div class="field">
                     <label class="field__label" for="kmn_url">URL medida</label>
-                    <input class="input" type="text" name="url" id="kmn_url" placeholder="/pagina-destino">
+                    <input class="input u-mono" type="text" name="url" id="kmn_url" placeholder="/pagina-destino">
                     <span class="field__error" data-error-for="url"></span>
                 </div>
             </div>
-            <div class="field" style="margin-top: var(--space-4);">
+            <div class="field kwx-fila">
                 <label class="field__label" for="kmn_nota">¿Qué se hizo este mes?</label>
                 <textarea class="textarea kw-hist__nota-input" name="nota" id="kmn_nota" rows="7"
                     placeholder="Ej. Reescritura del title y del H1, tres enlaces internos desde el blog."></textarea>
                 <span class="field__error" data-error-for="nota"></span>
             </div>
             <p id="medicionNotaAutor" class="kw-hist__autor"></p>
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="medicionNotaSubmit"><i class="fa-solid fa-check"></i> Guardar cambios</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="medicionNotaModal">Cancelar</button>
+            <div class="kwx-pie">
+                <button type="button" class="kwx-btn" data-modal-close="medicionNotaModal">Cancelar</button>
+                <button type="submit" class="kwx-btn kwx-btn--primario" id="medicionNotaSubmit">Guardar cambios</button>
             </div>
         </form>
     </x-modal>
+    </div>{{-- /.kwx --}}
 @endsection
 
 @section('scripts')

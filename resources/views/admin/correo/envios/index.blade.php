@@ -5,38 +5,8 @@
 @endsection
 
 @section('content')
-    <div class="page-header">
-        <div>
-            <h1 class="page-header__title">Enviar correo</h1>
-            <p class="page-header__subtitle">Historial y programados · un correo puede ir a varias personas a la vez</p>
-        </div>
-        <div class="correo-header-actions">
-            <a href="{{ route('admin.correo.plantillas.index') }}" class="btn btn--secondary">
-                <i class="fa-solid fa-layer-group"></i> Plantillas
-            </a>
-            <a href="{{ route('admin.correo.envios.create') }}" class="btn btn--primary">
-                <i class="fa-solid fa-pen-to-square"></i> Redactar correo
-            </a>
-        </div>
-    </div>
-
-    {{-- ---------- KPIs del periodo elegido ---------- --}}
-    {{-- Pills GET (sin JS): conservan estado/search del listado y solo cambian `periodo`. --}}
-    <nav class="correo-periodos" aria-label="Periodo de las métricas">
-        @foreach ($periodos as $clave => $label)
-            <a href="{{ route('admin.correo.envios.index', array_merge(request()->query(), ['periodo' => $clave])) }}"
-               class="correo-periodos__chip {{ $kpis['periodo'] === $clave ? 'is-active' : '' }}"
-               @if ($kpis['periodo'] === $clave) aria-current="page" @endif>{{ $label }}</a>
-        @endforeach
-    </nav>
-
-    <div class="kpi-grid">
-        <x-stat-card label="Tasa de apertura" value="{{ $kpis['apertura'] !== null ? $kpis['apertura'].'%' : '—' }}" sub="Estimada por píxel de seguimiento" icon="fa-envelope-open" color="emerald" />
-        <x-stat-card label="Abiertos" value="{{ number_format($kpis['abiertos']) }}" sub="Con al menos una apertura" icon="fa-envelope-open-text" color="blue" />
-        <x-stat-card label="No abiertos" value="{{ number_format($kpis['no_abiertos']) }}" sub="Enviados sin apertura registrada" icon="fa-envelope" color="amber" />
-        <x-stat-card label="Clics" value="{{ number_format($kpis['clics']) }}" sub="En enlaces del correo" icon="fa-mouse-pointer" color="teal" />
-        <x-stat-card label="Enviados en el periodo" value="{{ number_format($kpis['enviados']) }}" sub="{{ $kpis['programados'] }} programados en cola" icon="fa-paper-plane" color="primary" />
-    </div>
+    <div class="cenv">
+    @include('admin.correo.envios._cabecera', ['tab' => 'historial'])
 
     <form method="GET" action="{{ route('admin.correo.envios.index') }}" class="filters-bar" data-correo-envios-index>
         <input type="search" class="input input--search" name="search" value="{{ $filtros['search'] }}" placeholder="Buscar por asunto, plantilla o destinatario…" data-filtro-search>
@@ -131,6 +101,7 @@
         <i class="fa-solid fa-circle-info"></i>
         La apertura es una estimación: algunos clientes de correo bloquean o precargan imágenes. Los clics sí son exactos.
     </p>
+    </div>
 @endsection
 
 @section('scripts')

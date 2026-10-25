@@ -111,13 +111,15 @@ class IntegracionesIndexTest extends TestCase
 
     // --- decorative fake SaaS list (unchanged by the rewrite) ------------
 
-    public function test_fake_saas_integraciones_list_still_has_eight_entries(): void
+    public function test_fake_saas_integraciones_list_has_seven_entries_without_search_console(): void
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->get(route('admin.integraciones.index'));
 
-        $this->assertCount(8, $response->viewData('integraciones'));
+        // Search Console salió de la lista decorativa: ahora es una integración real (admin.integraciones.search-console.*).
+        $this->assertCount(7, $response->viewData('integraciones'));
+        $this->assertNull(collect($response->viewData('integraciones'))->firstWhere('name', 'Google Search Console'));
     }
 
     public function test_fake_saas_integraciones_entries_keep_their_known_shape(): void

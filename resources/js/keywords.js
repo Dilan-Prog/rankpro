@@ -87,7 +87,36 @@
 
   function badgeHtml(estado) {
     const [label, cls] = ESTADO_BADGE[estado] || [estado, "badge--neutral"];
-    return `<span class="badge ${cls}">${label}</span>`;
+    return `<span class="badge ${cls}">${escapeHtml(label)}</span>`;
+  }
+
+  const NULO_HTML = '<span class="kwx-nulo">—</span>';
+
+  /** Mismos umbrales que admin.keywords._kd.blade.php (<40 bajo, 40-69 medio, >=70 alto). */
+  function kdNivel(v) {
+    return v >= 70 ? "alto" : v >= 40 ? "medio" : "bajo";
+  }
+
+  /** KD como barrita + número; un valor ausente es un guion, nunca "null" ni "NaN". */
+  function kdHtml(valor) {
+    if (valor == null || valor === "" || isNaN(Number(valor))) return NULO_HTML;
+    const v = Math.max(0, Math.min(100, Math.round(Number(valor))));
+    return `<span class="kwx-kd" title="Dificultad ${v} de 100"><span class="kwx-kd__barra" aria-hidden="true"><span class="kwx-kd__relleno kwx-kd__relleno--${kdNivel(v)}" style="width:${v}%"></span></span><span class="kwx-kd__num u-mono">${v}</span></span>`;
+  }
+
+  function fuentesTexto(fuentes) {
+    return (fuentes || []).map((f) => HERRAMIENTA_LABELS[f] || f).join(", ") || "—";
+  }
+
+  /** "SEO + Google Ads · Valeria Mora · act. 2024-12-12": canal, responsable y fecha, saltando lo que falte. */
+  function listaSubtitulo(l) {
+    return [l.canal, l.responsable_nombre, l.updated_at ? "act. " + l.updated_at : null].filter(Boolean).join(" · ");
+  }
+
+  /** textContent de un nodo por id; vacío o null se muestra como guion para no pintar "null". */
+  function setText(id, texto) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = texto == null || texto === "" ? "—" : String(texto);
   }
 
   function clearFieldErrors(form) {
@@ -117,33 +146,33 @@
 
   // ---------- Row content builders ----------
 
+  /** "#3 (+2)": la posición en negrita y el cambio frente a la medición anterior en gris; sin posición, un guion. */
   function keywordPosicionHtml(k) {
     const actual = k.posicion_actual;
     const anterior = k.posicion_anterior;
-    const delta = actual != null && anterior != null ? anterior - actual : null;
-    const color =
-      delta == null ? "var(--color-muted-foreground)" : delta > 0 ? "var(--text-success)" : delta < 0 ? "var(--text-danger)" : "var(--color-muted-foreground)";
-    const posLabel = actual ? `#${actual}` : "—";
-    const deltaLabel = delta != null ? ` <span style="font-size:var(--text-xs); color:${color};">(${delta > 0 ? "+" : ""}${delta})</span>` : "";
-    return posLabel + deltaLabel;
+    if (!actual) return NULO_HTML;
+    const delta = anterior != null ? anterior - actual : null;
+    const deltaLabel =
+      delta != null ? ` <span class="kwx-pos__delta" title="Cambio frente a la medición anterior">(${delta > 0 ? "+" : ""}${delta})</span>` : "";
+    return `<span class="kwx-pos"><strong>#${actual}</strong>${deltaLabel}</span>`;
   }
 
   /** Matches admin.keywords._keyword-row.blade.php's <td> markup exactly. */
   function keywordRowCellsHtml(k) {
     return `
-      <td><div style="font-weight:500">${escapeHtml(k.keyword)}</div></td>
-      <td><span style="text-transform:capitalize; font-size:var(--text-xs); color:var(--color-muted-foreground)">${TIPO_LABELS[k.tipo] || escapeHtml(k.tipo)}</span></td>
+      <td><button type="button" class="kwx-kw-btn" data-open-keyword-detail title="Ver ficha de la keyword">${escapeHtml(k.keyword)}</button></td>
+      <td><span class="kwx-tenue">${escapeHtml(TIPO_LABELS[k.tipo] || k.tipo)}</span></td>
       <td class="u-mono">${fmtNum(k.volumen_busqueda)}</td>
-      <td class="u-mono">${k.dificultad ?? "—"}</td>
-      <td class="u-mono" style="color:var(--text-success)">${k.cpc_estimado > 0 ? fmtMoney(k.cpc_estimado) : "—"}</td>
-      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">${INTENCION_LABELS[k.intencion] || "—"}</span></td>
-      <td><span class="u-mono" style="font-size:var(--text-xs); color:var(--color-primary);">${escapeHtml(k.url_asignada || "—")}</span></td>
+      <td>${kdHtml(k.dificultad)}</td>
+      <td class="u-mono kwx-verde">${k.cpc_estimado > 0 ? fmtMoney(k.cpc_estimado) : "—"}</td>
+      <td><span class="kwx-tenue">${INTENCION_LABELS[k.intencion] || "—"}</span></td>
+      <td>${k.url_asignada ? `<span class="u-mono kwx-url" title="${escapeHtml(k.url_asignada)}">${escapeHtml(k.url_asignada)}</span>` : NULO_HTML}</td>
       <td class="u-mono">${keywordPosicionHtml(k)}</td>
-      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">${HERRAMIENTA_LABELS[k.herramienta_origen] || "—"}</span></td>
+      <td><span class="kwx-tenue">${HERRAMIENTA_LABELS[k.herramienta_origen] || "—"}</span></td>
       <td>
-        <div style="display:flex; gap:4px;">
-          <button type="button" class="btn--icon" title="Editar" data-edit-keyword="${k.id}"><i class="fa-solid fa-pen"></i></button>
-          <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-keyword="${k.id}"><i class="fa-solid fa-trash"></i></button>
+        <div class="kwx-acciones">
+          <button type="button" class="kwx-icono" title="Editar" aria-label="Editar ${escapeHtml(k.keyword)}" data-edit-keyword="${k.id}"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="kwx-icono kwx-icono--peligro" title="Eliminar" aria-label="Eliminar ${escapeHtml(k.keyword)}" data-delete-keyword="${k.id}"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>`;
   }
@@ -151,6 +180,7 @@
   /** Builds a full keyword <tr> element — dataset assigned via properties (not string-embedded JSON), safe regardless of quote characters in the data. */
   function buildKeywordRowElement(k) {
     const tr = document.createElement("tr");
+    tr.className = "is-clickable";
     tr.setAttribute("data-keyword-row", "");
     tr.dataset.keywordId = String(k.id);
     tr.dataset.listaId = k.lista_id != null ? String(k.lista_id) : "";
@@ -165,36 +195,54 @@
     return tr;
   }
 
-  /** Matches admin.keywords._lista-row.blade.php's lista <td> markup exactly. */
-  function listaRowCellsHtml(l) {
-    const fuentes = (l.fuentes || []).map((f) => escapeHtml(f)).join(", ") || "—";
+  /** Matches admin.keywords._lista-row.blade.php's lista <td> markup exactly (12 columnas). */
+  function listaRowCellsHtml(l, n) {
+    const sub = listaSubtitulo(l);
+    const nombre = escapeHtml(l.nombre);
     return `
-      <td><input type="checkbox" data-lista-checkbox value="${l.id}" aria-label="Seleccionar ${escapeHtml(l.nombre)}" style="width:15px;height:15px;accent-color:var(--color-primary);"></td>
-      <td>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <button type="button" class="btn--icon" data-toggle-lista title="Expandir / colapsar">
-            <i class="fa-solid fa-chevron-right lista-toggle__chevron"></i>
+      <td><input type="checkbox" class="kwx-check" data-lista-checkbox value="${l.id}" aria-label="Seleccionar ${nombre}"></td>
+      <td class="u-mono kwx-num" data-col="num">${n ?? ""}</td>
+      <td data-col="nombre">
+        <div class="kwx-nombre">
+          <button type="button" class="kwx-chevron" data-toggle-lista aria-expanded="false" aria-controls="listaSub${l.id}"
+            aria-label="Mostrar u ocultar las keywords de ${nombre}" title="Expandir / colapsar">
+            <i class="fa-solid fa-chevron-right lista-toggle__chevron" aria-hidden="true"></i>
           </button>
-          <span style="font-weight:500">${escapeHtml(l.nombre)}</span>
+          <div class="kwx-nombre__texto">
+            <span class="kwx-nombre__titulo">${nombre}</span>
+            ${sub ? `<span class="kwx-nombre__sub">${escapeHtml(sub)}</span>` : ""}
+          </div>
         </div>
       </td>
-      <td>${escapeHtml(l.cliente)}</td>
-      <td>${badgeHtml(l.estado)}</td>
-      <td class="u-mono">${l.keywords_count}</td>
-      <td class="u-mono">${fmtNum(l.volumen_total)}</td>
-      <td class="u-mono">${l.kd_promedio ?? "—"}</td>
-      <td class="u-mono">${l.cpc_promedio != null ? fmtMoney(l.cpc_promedio) : "—"}</td>
-      <td class="u-mono">${l.posicion_promedio != null ? "#" + l.posicion_promedio : "—"}</td>
-      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">${fuentes}</span></td>
+      <td data-col="cliente">${escapeHtml(l.cliente)}</td>
+      <td data-col="estado">${badgeHtml(l.estado)}</td>
+      <td class="u-mono" data-col="count">${l.keywords_count}</td>
+      <td class="u-mono" data-col="volumen">${fmtNum(l.volumen_total)}</td>
+      <td data-col="kd">${kdHtml(l.kd_promedio)}</td>
+      <td class="u-mono kwx-verde" data-col="cpc">${l.cpc_promedio != null ? fmtMoney(l.cpc_promedio) : "—"}</td>
+      <td class="u-mono" data-col="pos">${l.posicion_promedio != null ? "#" + l.posicion_promedio : "—"}</td>
+      <td data-col="fuente"><span class="kwx-tenue">${escapeHtml(fuentesTexto(l.fuentes))}</span></td>
       <td>
-        <div style="display:flex; gap:4px;">
-          <button type="button" class="btn--icon" title="Editar lista" data-edit-lista="${l.id}"><i class="fa-solid fa-pen"></i></button>
-          <button type="button" class="btn--icon" title="Eliminar lista" style="color:var(--text-danger);" data-delete-lista="${l.id}"><i class="fa-solid fa-trash"></i></button>
+        <div class="kwx-acciones">
+          <button type="button" class="kwx-icono" title="Ver detalle de la lista" aria-label="Ver detalle de ${nombre}" data-open-lista-detail><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+          <button type="button" class="kwx-icono" title="Historial de posiciones" aria-label="Abrir el historial de ${nombre}" data-lista-historial="${l.id}"><i class="fa-solid fa-clock-rotate-left"></i></button>
+          <div class="kwx-menu" data-kwx-menu>
+            <button type="button" class="kwx-icono" title="Más acciones" aria-label="Más acciones de ${nombre}" aria-haspopup="menu" aria-expanded="false" data-kwx-menu-toggle>
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <div class="kwx-menu__lista" role="menu" hidden>
+              <button type="button" role="menuitem" data-open-lista-detail><i class="fa-solid fa-circle-info"></i> Ver detalle</button>
+              <button type="button" role="menuitem" data-edit-lista="${l.id}"><i class="fa-solid fa-pen"></i> Editar lista</button>
+              <button type="button" role="menuitem" data-open-import-modal="${l.id}"><i class="fa-solid fa-file-import"></i> Importar keywords</button>
+              <button type="button" role="menuitem" data-open-medicion-modal="${l.id}"><i class="fa-solid fa-crosshairs"></i> Nueva medición</button>
+              <button type="button" role="menuitem" class="kwx-menu__peligro" data-delete-lista="${l.id}"><i class="fa-solid fa-trash"></i> Eliminar lista</button>
+            </div>
+          </div>
         </div>
       </td>`;
   }
 
-  function buildListaRowElement(l) {
+  function buildListaRowElement(l, n) {
     const tr = document.createElement("tr");
     tr.className = "is-clickable";
     tr.setAttribute("data-lista-row", "");
@@ -203,45 +251,49 @@
     tr.dataset.estado = l.estado;
     tr.dataset.cliente = String(l.cliente_id);
     tr.dataset.lista = JSON.stringify(l);
-    tr.innerHTML = listaRowCellsHtml(l);
+    tr.innerHTML = listaRowCellsHtml(l, n);
     return tr;
   }
 
   /** Sub-row chrome (header buttons + empty-state + table shell) — matches _lista-row.blade.php's subrow markup; keyword <tr>s are appended as real elements afterward (buildKeywordRowElement), not string-interpolated. */
   function listaSubrowShellHtml(l, hasKeywords) {
     return `
-      <div style="padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-3);">
-          <div class="record-modal__section-label" style="margin:0;">Keywords de esta lista</div>
-          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
-            <button type="button" class="btn btn--secondary btn--sm" data-toggle-historial="${l.id}" aria-expanded="false" aria-controls="listaHistorial${l.id}">
+      <div class="kwx-sub__interior">
+        <div class="kwx-sub__barra">
+          <div class="kwx-etiqueta">Keywords de esta lista</div>
+          <div class="kwx-sub__botones">
+            <button type="button" class="kwx-btn kwx-btn--sm" data-toggle-historial="${l.id}" aria-expanded="false" aria-controls="listaHistorial${l.id}">
               <i class="fa-solid fa-clock-rotate-left"></i> Historial
             </button>
-            <button type="button" class="btn btn--secondary btn--sm" data-open-import-modal="${l.id}">
+            <button type="button" class="kwx-btn kwx-btn--sm" data-open-import-modal="${l.id}">
               <i class="fa-solid fa-file-import"></i> Importar keywords
             </button>
-            <button type="button" class="btn btn--secondary btn--sm" data-open-medicion-modal="${l.id}">
+            <button type="button" class="kwx-btn kwx-btn--sm" data-open-medicion-modal="${l.id}">
               <i class="fa-solid fa-crosshairs"></i> Nueva medición
-            </button>
-            <button type="button" class="btn btn--primary btn--sm" data-add-keyword-to-lista="${l.id}" data-add-keyword-cliente="${l.cliente_id}">
-              <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
             </button>
           </div>
         </div>
         <div class="kw-hist" id="listaHistorial${l.id}" data-historial-panel="${l.id}" hidden></div>
-        <div class="empty-state" data-lista-keywords-empty="${l.id}" style="padding: var(--space-6);" ${hasKeywords ? "hidden" : ""}>
-          <p class="empty-state__text" style="margin-bottom:0;">Esta lista aún no tiene keywords.</p>
+        <div class="kwx-vacio" data-lista-keywords-empty="${l.id}" ${hasKeywords ? "hidden" : ""}>
+          <p>Esta lista aún no tiene keywords.</p>
         </div>
-        <div class="table-wrap" data-lista-keywords-table="${l.id}" ${hasKeywords ? "" : "hidden"}>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Palabra clave</th><th>Tipo</th><th>Volumen</th><th>KD</th><th>CPC Est.</th>
-                <th>Intención</th><th>URL</th><th>Posición</th><th>Fuente</th><th></th>
-              </tr>
-            </thead>
-            <tbody data-lista-keywords-rows="${l.id}"></tbody>
-          </table>
+        <div class="kwx-subtabla" data-lista-keywords-table="${l.id}" ${hasKeywords ? "" : "hidden"}>
+          <div class="kwx-subtabla__scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Palabra clave</th><th>Tipo</th><th>Volumen</th><th>KD</th><th>CPC est.</th>
+                  <th>Intención</th><th>URL</th><th>Posición</th><th>Fuente</th><th><span class="u-visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody data-lista-keywords-rows="${l.id}"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="kwx-sub__pie">
+          <button type="button" class="kwx-enlace" data-add-keyword-to-lista="${l.id}" data-add-keyword-cliente="${l.cliente_id}">
+            <i class="fa-solid fa-plus"></i> Añadir palabra clave a esta lista
+          </button>
         </div>
       </div>`;
   }
@@ -250,13 +302,13 @@
   function buildListaSubrowElement(l, wasOpen) {
     const tr = document.createElement("tr");
     tr.className = "table__empty";
+    tr.id = `listaSub${l.id}`;
     tr.setAttribute("data-lista-subrow", String(l.id));
     tr.hidden = !wasOpen;
 
     const td = document.createElement("td");
-    td.colSpan = 11;
-    td.style.padding = "0";
-    td.style.background = "var(--color-secondary)";
+    td.colSpan = 12;
+    td.className = "kwx-sub";
     const keywords = l.keywords || [];
     td.innerHTML = listaSubrowShellHtml(l, keywords.length > 0);
     tr.appendChild(td);
@@ -283,7 +335,27 @@
     if (!subtitle) return;
     const listaCount = document.querySelectorAll("[data-lista-row]").length;
     const keywordCount = document.querySelectorAll("[data-keyword-row]").length;
-    subtitle.textContent = `${keywordCount} keywords en ${listaCount} listas`;
+    subtitle.textContent = `${listaCount} ${listaCount === 1 ? "lista" : "listas"} de palabras clave · ${keywordCount} ${keywordCount === 1 ? "keyword" : "keywords"} en total`;
+    renumerarListas();
+  }
+
+  /** El "#" sigue el orden del DOM (no el de lo visible): así no se reinicia al filtrar ni al cambiar de página. */
+  function renumerarListas() {
+    document.querySelectorAll("[data-lista-row]").forEach((row, i) => {
+      const celda = row.querySelector('[data-col="num"]');
+      if (celda) celda.textContent = String(i + 1);
+    });
+  }
+
+  /** Abre o cierra el sub-row de una lista y mantiene sincronizados el chevron y su aria-expanded. */
+  function setListaAbierta(listaId, abierta) {
+    const subrow = document.querySelector(`[data-lista-subrow="${listaId}"]`);
+    const row = document.querySelector(`[data-lista-row][data-lista-id="${listaId}"]`);
+    if (!subrow) return;
+    subrow.hidden = !abierta;
+    const toggle = row?.querySelector("[data-toggle-lista]");
+    toggle?.setAttribute("aria-expanded", abierta ? "true" : "false");
+    toggle?.querySelector(".lista-toggle__chevron")?.classList.toggle("is-open", abierta);
   }
 
   function toggleSinListaEmptyState() {
@@ -305,8 +377,8 @@
     const tr = document.createElement("tr");
     tr.className = "table__empty";
     const td = document.createElement("td");
-    td.colSpan = 11;
-    td.textContent = 'Aún no hay listas de keywords. Crea la primera con "Nueva Lista".';
+    td.colSpan = 12;
+    td.textContent = 'Aún no hay listas de keywords. Crea la primera con "Nueva lista".';
     tr.appendChild(td);
     tbody.appendChild(tr);
   }
@@ -376,14 +448,14 @@
     listaRow.dataset.lista = JSON.stringify(l);
     listaRow.dataset.search = (l.nombre + " " + l.keywords.map((k) => k.keyword).join(" ")).toLowerCase();
 
-    const cells = listaRow.querySelectorAll(":scope > td");
-    cells[4].textContent = count;
-    cells[5].textContent = fmtNum(volumenTotal);
-    cells[6].textContent = kdProm ?? "—";
-    cells[7].textContent = cpcProm != null ? fmtMoney(cpcProm) : "—";
-    cells[8].textContent = posProm != null ? "#" + posProm : "—";
-    const fuentesSpan = cells[9].querySelector("span");
-    if (fuentesSpan) fuentesSpan.textContent = fuentes.join(", ") || "—";
+    const celda = (col) => listaRow.querySelector(`:scope > [data-col="${col}"]`);
+    celda("count").textContent = count;
+    celda("volumen").textContent = fmtNum(volumenTotal);
+    celda("kd").innerHTML = kdHtml(kdProm);
+    celda("cpc").textContent = cpcProm != null ? fmtMoney(cpcProm) : "—";
+    celda("pos").textContent = posProm != null ? "#" + posProm : "—";
+    const fuentesSpan = celda("fuente").querySelector("span");
+    if (fuentesSpan) fuentesSpan.textContent = fuentesTexto(fuentes);
 
     const emptyDiv = document.querySelector(`[data-lista-keywords-empty="${listaId}"]`);
     const tableWrap = document.querySelector(`[data-lista-keywords-table="${listaId}"]`);
@@ -410,7 +482,7 @@
     const existingSubrow = tbody.querySelector(`[data-lista-subrow="${l.id}"]`);
     const wasOpen = existingSubrow ? !existingSubrow.hidden : false;
 
-    const newRow = buildListaRowElement(l);
+    const newRow = buildListaRowElement(l, existingRow?.querySelector('[data-col="num"]')?.textContent);
     const newSubrow = buildListaSubrowElement(l, wasOpen);
 
     if (existingRow) {
@@ -422,6 +494,9 @@
       tbody.insertBefore(newSubrow, tbody.firstChild);
       tbody.insertBefore(newRow, newSubrow);
     }
+
+    // La fila nueva nace cerrada: si la lista estaba abierta se vuelve a marcar (chevron y aria-expanded).
+    if (wasOpen) setListaAbierta(l.id, true);
 
     syncListaOptionsEverywhere(l);
     updateKeywordsCountSubtitle();
@@ -444,10 +519,7 @@
 
       if (!show) {
         const subrow = document.querySelector(`[data-lista-subrow="${row.dataset.listaId}"]`);
-        if (subrow && !subrow.hidden) {
-          subrow.hidden = true;
-          row.querySelector(".lista-toggle__chevron")?.classList.remove("is-open");
-        }
+        if (subrow && !subrow.hidden) setListaAbierta(row.dataset.listaId, false);
       }
     });
   }
@@ -473,8 +545,7 @@
       const row = toggle.closest("[data-lista-row]");
       const subrow = row && document.querySelector(`[data-lista-subrow="${row.dataset.listaId}"]`);
       if (!subrow) return;
-      subrow.hidden = !subrow.hidden;
-      toggle.querySelector(".lista-toggle__chevron")?.classList.toggle("is-open", !subrow.hidden);
+      setListaAbierta(row.dataset.listaId, subrow.hidden);
     });
   }
 
@@ -486,13 +557,13 @@
     document.getElementById("listaDetailBadge").innerHTML = badgeHtml(l.estado);
     document.getElementById("listaDetailCount").textContent = l.keywords_count;
     document.getElementById("listaDetailVolumen").textContent = fmtNum(l.volumen_total);
-    document.getElementById("listaDetailKd").textContent = l.kd_promedio ?? "—";
+    document.getElementById("listaDetailKd").innerHTML = kdHtml(l.kd_promedio);
     document.getElementById("listaDetailCpc").textContent = l.cpc_promedio != null ? fmtMoney(l.cpc_promedio) : "—";
     document.getElementById("listaDetailCliente").textContent = l.cliente || "—";
     document.getElementById("listaDetailCanal").textContent = l.canal || "—";
     document.getElementById("listaDetailResponsable").textContent = l.responsable_nombre || "— Sin asignar —";
     document.getElementById("listaDetailPosicion").textContent = l.posicion_promedio != null ? "#" + l.posicion_promedio : "—";
-    document.getElementById("listaDetailFuentes").textContent = (l.fuentes || []).join(", ") || "—";
+    document.getElementById("listaDetailFuentes").textContent = fuentesTexto(l.fuentes);
     document.getElementById("listaDetailUpdated").textContent = l.updated_at || "—";
 
     const irCliente = document.getElementById("listaDetailIrCliente");
@@ -509,8 +580,23 @@
     document.addEventListener("click", (e) => {
       const row = e.target.closest("[data-lista-row]");
       if (!row) return;
-      if (e.target.closest("[data-toggle-lista], a, button, form, input")) return; // let toggle/action controls behave normally
+      // Los controles propios de la fila (chevron, ⋮, íconos) se comportan normal; sólo "ver detalle" abre la ficha desde un botón.
+      if (e.target.closest("[data-open-lista-detail]")) {
+        openListaDetailModal(JSON.parse(row.dataset.lista));
+        return;
+      }
+      if (e.target.closest("[data-toggle-lista], a, button, form, input")) return;
       openListaDetailModal(JSON.parse(row.dataset.lista));
+    });
+
+    // Ícono "historial" de la fila: abre la lista y su matriz de posiciones de una vez.
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-lista-historial]");
+      if (!btn) return;
+      const id = btn.dataset.listaHistorial;
+      setListaAbierta(id, true);
+      setHistorialOpen(id, true);
+      document.querySelector(`[data-lista-subrow="${id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     });
 
     document.getElementById("listaDetailEditar")?.addEventListener("click", () => {
@@ -539,10 +625,9 @@
     fillForm(form, l);
     form.dataset.editingId = l?.id ?? "";
 
-    document.getElementById("listaFormModalTitle").textContent = l ? "Editar Lista de Keywords" : "Nueva Lista de Keywords";
-    document.getElementById("listaFormSubmit").innerHTML = l
-      ? '<i class="fa-solid fa-check"></i> Guardar Cambios'
-      : '<i class="fa-solid fa-check"></i> Crear Lista';
+    document.getElementById("listaFormModalTitle").textContent = l ? "Editar lista de keywords" : "Nueva lista de keywords";
+    setText("listaFormModalSub", l ? l.nombre : "Agrupa las keywords de un cliente por canal.");
+    document.getElementById("listaFormSubmit").textContent = l ? "Guardar cambios" : "Crear lista";
 
     window.AgencyOS.openModal("listaFormModal");
   }
@@ -697,7 +782,7 @@
             if (!row) return;
             row.dataset.estado = l.estado;
             row.dataset.lista = JSON.stringify(l);
-            const badgeCell = row.querySelectorAll(":scope > td")[3];
+            const badgeCell = row.querySelector(':scope > [data-col="estado"]');
             if (badgeCell) badgeCell.innerHTML = badgeHtml(l.estado);
           });
 
@@ -726,7 +811,11 @@
   }
 
   function initKeywordFormCascade() {
-    document.getElementById("kw_cliente_id")?.addEventListener("change", (e) => applyListaCascadeToKeywordForm(e.target.value));
+    document.getElementById("kw_cliente_id")?.addEventListener("change", (e) => {
+      applyListaCascadeToKeywordForm(e.target.value);
+      sincronizarClienteDeLista();
+    });
+    document.getElementById("kw_lista_id")?.addEventListener("change", sincronizarClienteDeLista);
   }
 
   function openKeywordFormModal(k, presetListaId, presetClienteId) {
@@ -742,12 +831,37 @@
     applyListaCascadeToKeywordForm(form.querySelector("#kw_cliente_id").value);
     if (!k && presetListaId) form.querySelector("#kw_lista_id").value = String(presetListaId);
 
-    document.getElementById("keywordFormModalTitle").textContent = k ? "Editar Keyword" : "Añadir Keyword";
-    document.getElementById("keywordFormSubmit").innerHTML = k
-      ? '<i class="fa-solid fa-check"></i> Guardar Cambios'
-      : '<i class="fa-solid fa-check"></i> Guardar Keyword';
+    document.getElementById("keywordFormModalTitle").textContent = k ? "Editar palabra clave" : "Añadir palabra clave";
+    document.getElementById("keywordFormSubmit").textContent = k ? "Guardar cambios" : "Guardar keyword";
+    document.querySelector("[data-kw-mas]")?.removeAttribute("open");
+    sincronizarClienteDeLista();
 
     window.AgencyOS.openModal("keywordFormModal");
+  }
+
+  /**
+   * Con lista, el cliente es el de la lista (se copia al campo oculto); sin lista el
+   * campo "Cliente" aparece, porque una keyword suelta tiene que saber de quién es.
+   * El subtítulo del modal acompaña a la lista elegida.
+   */
+  function sincronizarClienteDeLista() {
+    const form = document.getElementById("keywordForm");
+    if (!form) return;
+    const listaSelect = form.querySelector("#kw_lista_id");
+    const clienteSelect = form.querySelector("#kw_cliente_id");
+    const campoCliente = form.querySelector("[data-kw-cliente-field]");
+    const opt = listaSelect.selectedOptions[0];
+    const conLista = !!listaSelect.value && !!opt;
+
+    if (conLista && opt.dataset.cliente) clienteSelect.value = opt.dataset.cliente;
+    if (campoCliente) campoCliente.hidden = conLista;
+
+    const sub = document.getElementById("keywordFormModalSub");
+    if (sub) {
+      if (conLista) sub.textContent = listaFromRow(listaSelect.value)?.nombre || opt.textContent.trim();
+      else if (clienteSelect.value) sub.textContent = `Sin lista · ${clienteSelect.selectedOptions[0].textContent.trim()}`;
+      else sub.textContent = "Sin lista asignada";
+    }
   }
 
   function initOpenKeywordFormButtons() {
@@ -803,6 +917,11 @@
         .catch((err) => {
           if (err.message === "validation_failed") {
             renderFieldErrors(form, err.data.errors || {});
+            // Un error en estado/fecha/notas no se vería con "Más datos" cerrado.
+            const mas = form.querySelector("[data-kw-mas]");
+            if (mas && Array.from(mas.querySelectorAll("[data-error-for]")).some((sp) => sp.textContent)) mas.open = true;
+            // El campo Cliente sólo aparece sin lista; si el error es suyo, se vuelve a mostrar.
+            if (err.data.errors && err.data.errors.cliente_id) form.querySelector("[data-kw-cliente-field]")?.removeAttribute("hidden");
             toast("Revisa los campos marcados.", "error");
           } else {
             toast("No se pudo guardar la keyword.", "error");
@@ -859,24 +978,22 @@
     // module's own "no rows to import" / "every row malformed" responses
     // (never have `creadas`, may carry just a `message`).
     if (data.creadas === undefined) {
-      return `<div class="alert-banner" style="--alert-color:#EF4444; margin-top:var(--space-4);"><i class="fa-solid fa-triangle-exclamation"></i><p>${escapeHtml(data.message || "No se encontraron filas para importar.")}</p></div>`;
+      return `<div class="kwx-aviso kwx-aviso--error"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><p>${escapeHtml(data.message || "No se encontraron filas para importar.")}</p></div>`;
     }
-    const creadasHtml = `<p style="font-size:var(--text-sm); margin-top:var(--space-4);"><strong style="color:var(--text-success)">${data.creadas}</strong> keyword(s) creada(s).</p>`;
+    const creadasHtml = `<p class="kwx-import__ok"><strong class="kwx-verde">${data.creadas}</strong> keyword(s) creada(s).</p>`;
     if (!data.errores || !data.errores.length) return creadasHtml;
     const erroresHtml = data.errores
       .map(
         (err) =>
-          `<li style="margin-bottom:4px;"><strong>Fila ${err.fila}:</strong> ${escapeHtml(err.texto)} — <span style="color:var(--text-danger)">${(err.errores || []).map(escapeHtml).join("; ")}</span></li>`
+          `<li><strong>Fila ${err.fila}:</strong> ${escapeHtml(err.texto)} — <span class="kwx-rojo">${(err.errores || []).map(escapeHtml).join("; ")}</span></li>`
       )
       .join("");
-    return `${creadasHtml}<div style="font-size:var(--text-xs); color:var(--color-muted-foreground); margin-bottom:4px;">${data.errores.length} fila(s) con errores:</div><ul style="padding-left:18px; font-size:var(--text-xs);">${erroresHtml}</ul>`;
+    return `${creadasHtml}<div class="kwx-import__cuenta">${data.errores.length} fila(s) con errores:</div><ul class="kwx-import__errores">${erroresHtml}</ul>`;
   }
 
   function applyImportedLista(l) {
     upsertListaRow(l);
-    const subrow = document.querySelector(`[data-lista-subrow="${l.id}"]`);
-    if (subrow) subrow.hidden = false;
-    document.querySelector(`[data-lista-row][data-lista-id="${l.id}"] .lista-toggle__chevron`)?.classList.add("is-open");
+    setListaAbierta(l.id, true);
   }
 
   function openImportModal(listaId) {
@@ -1990,9 +2107,7 @@
 
     if (lista) {
       upsertListaRow(lista);
-      const subrow = document.querySelector(`[data-lista-subrow="${lista.id}"]`);
-      if (subrow) subrow.hidden = false;
-      document.querySelector(`[data-lista-row][data-lista-id="${lista.id}"] .lista-toggle__chevron`)?.classList.add("is-open");
+      setListaAbierta(lista.id, true);
     }
 
     if (estabaAbierto) setHistorialOpen(key, true);
@@ -2148,6 +2263,233 @@
     });
   }
 
+  // ---------- Ficha de la keyword (sólo lectura) ----------
+
+  // Keyword que muestra la ficha, para que "Editar keyword" entregue el registro sin otra búsqueda.
+  let currentDetailKeyword = null;
+  // Sólo la última petición de bitácora puede pintar: abrir otra ficha antes de que llegue la anterior no debe mezclarlas.
+  let bitacoraToken = 0;
+
+  function serpUrl(keyword) {
+    return "https://www.google.com.mx/search?q=" + encodeURIComponent(keyword);
+  }
+
+  /** Posición como "#3", o null si no hay (0 y vacío cuentan como sin posición, igual que en la tabla). */
+  function posicionLabel(n) {
+    return n ? "#" + n : null;
+  }
+
+  function cambioHtml(actual, anterior) {
+    if (!actual || !anterior) return NULO_HTML;
+    const delta = anterior - actual;
+    if (delta === 0) return "Sin cambio";
+    const n = Math.abs(delta);
+    const texto = `${delta > 0 ? "+" : "−"}${n} ${n === 1 ? "posición" : "posiciones"}`;
+    return `<span class="${delta > 0 ? "kwx-verde" : "kwx-rojo"}">${texto}</span>`;
+  }
+
+  function bitacoraHtml(mediciones) {
+    if (!mediciones.length) {
+      return '<li class="kwx-bitacora__vacio">Aún no hay notas de lo que se hizo con esta keyword. Aparecen al guardar una medición con nota.</li>';
+    }
+    return mediciones
+      .map(
+        (m) =>
+          `<li><span class="kwx-bitacora__fecha u-mono">${escapeHtml(m.fecha || "—")}</span>` +
+          `<span class="kwx-bitacora__texto">${escapeHtml(m.nota)}</span>` +
+          `<span class="kwx-bitacora__autor">${escapeHtml(m.registrado_por || "")}</span></li>`
+      )
+      .join("");
+  }
+
+  function cargarBitacora(k, token) {
+    const lista = document.getElementById("kwDetailBitacora");
+    if (!lista) return;
+    lista.innerHTML = '<li class="kwx-bitacora__vacio"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Cargando bitácora…</li>';
+    const plantilla = document.querySelector("[data-listas-table]")?.dataset.keywordMedicionesTemplate || "";
+    getJson(plantilla.replace("__ID__", k.id))
+      .then((data) => {
+        if (token !== bitacoraToken) return;
+        lista.innerHTML = bitacoraHtml((data && data.mediciones) || []);
+      })
+      .catch(() => {
+        if (token !== bitacoraToken) return;
+        lista.innerHTML = '<li class="kwx-bitacora__vacio">No se pudo cargar la bitácora.</li>';
+      });
+  }
+
+  function abrirKeywordDetalle(k) {
+    currentDetailKeyword = k;
+    const token = ++bitacoraToken;
+
+    const cliente = k.cliente && k.cliente !== "—" ? k.cliente : null;
+    const fuente = HERRAMIENTA_LABELS[k.herramienta_origen] ? `fuente ${HERRAMIENTA_LABELS[k.herramienta_origen]}` : null;
+    setText("kwDetailTitle", k.keyword);
+    setText("kwDetailSub", [cliente, fuente].filter(Boolean).join(" · ") || "Sin cliente ni fuente de origen");
+    document.getElementById("kwDetailBadge").innerHTML = badgeHtml(k.estado);
+    setText("kwDetailTipo", TIPO_LABELS[k.tipo] || k.tipo);
+
+    setText("kwDetailPosicion", posicionLabel(k.posicion_actual));
+    setText("kwDetailVolumen", k.volumen_busqueda != null ? fmtNum(k.volumen_busqueda) : null);
+    const kd = k.dificultad != null && !isNaN(Number(k.dificultad)) ? Math.max(0, Math.min(100, Math.round(Number(k.dificultad)))) : null;
+    const kdEl = document.getElementById("kwDetailKd");
+    kdEl.textContent = kd != null ? String(kd) : "—";
+    kdEl.className = "kwx-metrica__val u-mono" + (kd != null ? ` kwx-kd-texto--${kdNivel(kd)}` : "");
+    setText("kwDetailCpc", k.cpc_estimado > 0 ? fmtMoney(k.cpc_estimado) : null);
+
+    setText("kwDetailIntencion", INTENCION_LABELS[k.intencion]);
+    setText("kwDetailUrl", k.url_asignada);
+    setText("kwDetailAnterior", posicionLabel(k.posicion_anterior));
+    document.getElementById("kwDetailCambio").innerHTML = cambioHtml(k.posicion_actual, k.posicion_anterior);
+    setText("kwDetailLista", k.lista_nombre || "Sin lista");
+    setText("kwDetailIncorporada", k.fecha_incorporacion);
+    const notas = document.getElementById("kwDetailNotas");
+    notas.hidden = !k.notas;
+    notas.textContent = k.notas ? `Notas: ${k.notas}` : "";
+
+    const barra = document.getElementById("kwDetailKdBarra");
+    barra.style.width = kd != null ? kd + "%" : "0%";
+    setText("kwDetailKdPct", kd != null ? kd + "%" : null);
+
+    document.getElementById("kwDetailSerp").href = serpUrl(k.keyword);
+    cargarBitacora(k, token);
+    window.AgencyOS.openModal("keywordDetailModal");
+  }
+
+  function initKeywordDetalle() {
+    document.addEventListener("click", (e) => {
+      const row = e.target.closest("[data-keyword-row]");
+      if (!row) return;
+      // La fila entera abre la ficha, salvo sus botones de editar/eliminar (el nombre sí es un botón que la abre).
+      if (e.target.closest("[data-edit-keyword], [data-delete-keyword], a, input, select, textarea")) return;
+      abrirKeywordDetalle(JSON.parse(row.dataset.keyword));
+    });
+
+    document.getElementById("kwDetailEditar")?.addEventListener("click", () => {
+      const k = currentDetailKeyword;
+      if (!k) return;
+      window.AgencyOS.closeModal("keywordDetailModal");
+      openKeywordFormModal(k);
+    });
+  }
+
+  // ---------- Menú ⋮ de cada lista ----------
+
+  function initMenusFila() {
+    let abierto = null;
+
+    const cerrar = (devolverFoco) => {
+      if (!abierto) return;
+      const { toggle, panel } = abierto;
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (devolverFoco) toggle.focus();
+      abierto = null;
+    };
+
+    // position:fixed porque la tabla recorta (overflow) cualquier menú absoluto en las últimas filas.
+    const abrir = (toggle) => {
+      const panel = toggle.parentElement.querySelector(".kwx-menu__lista");
+      if (!panel) return;
+      cerrar(false);
+      panel.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      const r = toggle.getBoundingClientRect();
+      const ancho = panel.offsetWidth;
+      const alto = panel.offsetHeight;
+      const cabeAbajo = r.bottom + 4 + alto <= window.innerHeight - 8;
+      panel.style.top = Math.max(8, cabeAbajo ? r.bottom + 4 : r.top - alto - 4) + "px";
+      panel.style.left = Math.max(8, Math.min(r.right - ancho, window.innerWidth - ancho - 8)) + "px";
+      abierto = { toggle, panel };
+      panel.querySelector('[role="menuitem"]')?.focus();
+    };
+
+    document.addEventListener("click", (e) => {
+      const toggle = e.target.closest("[data-kwx-menu-toggle]");
+      if (toggle) {
+        const yaAbierto = abierto && abierto.toggle === toggle;
+        if (yaAbierto) cerrar(true);
+        else abrir(toggle);
+        return;
+      }
+      cerrar(false);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (!abierto) return;
+      const items = Array.from(abierto.panel.querySelectorAll('[role="menuitem"]'));
+      const i = items.indexOf(document.activeElement);
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        cerrar(true);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        items[(i + 1) % items.length]?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        items[(i - 1 + items.length) % items.length]?.focus();
+      } else if (e.key === "Tab") {
+        cerrar(false);
+      }
+    }, true);
+
+    window.addEventListener("resize", () => cerrar(false));
+    window.addEventListener("scroll", () => cerrar(false), true);
+  }
+
+  // ---------- Accesibilidad de los modales ----------
+  //
+  // global.js abre y cierra los .modal-overlay pero no nombra el diálogo, no mueve el
+  // foco ni lo devuelve; aquí se hace sólo para los modales de este módulo (no se toca x-modal).
+
+  const FOCALIZABLES = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function visibles(raiz) {
+    return Array.from(raiz.querySelectorAll(FOCALIZABLES)).filter((el) => el.getClientRects().length > 0);
+  }
+
+  function initModalesAccesibles() {
+    document.querySelectorAll(".kwx .modal-overlay").forEach((overlay) => {
+      const dialogo = overlay.querySelector(".modal");
+      if (!dialogo) return;
+      const titulo = overlay.querySelector(".modal__header h2");
+      if (titulo) {
+        if (!titulo.id) titulo.id = `${overlay.id}Titulo`;
+        dialogo.setAttribute("aria-labelledby", titulo.id);
+      }
+      dialogo.setAttribute("tabindex", "-1");
+
+      let opener = null;
+      new MutationObserver(() => {
+        if (!overlay.hidden) {
+          if (!opener) opener = document.activeElement;
+          // Con formulario se enfoca el primer campo; sin él (fichas y confirmaciones) el propio diálogo.
+          const campo = dialogo.querySelector("form") ? visibles(dialogo.querySelector(".modal__body")).find((el) => el.matches("input, select, textarea")) : null;
+          (campo || dialogo).focus({ preventScroll: true });
+        } else if (opener) {
+          if (document.contains(opener) && opener.getClientRects().length > 0) opener.focus({ preventScroll: true });
+          opener = null;
+        }
+      }).observe(overlay, { attributes: true, attributeFilter: ["hidden"] });
+
+      // El Tab no debe escapar del diálogo hacia la página que queda detrás.
+      overlay.addEventListener("keydown", (e) => {
+        if (e.key !== "Tab" || overlay.hidden) return;
+        const focalizables = visibles(dialogo);
+        if (!focalizables.length) return;
+        const primero = focalizables[0];
+        const ultimo = focalizables[focalizables.length - 1];
+        if (e.shiftKey && (document.activeElement === primero || document.activeElement === dialogo)) {
+          e.preventDefault();
+          ultimo.focus();
+        } else if (!e.shiftKey && document.activeElement === ultimo) {
+          e.preventDefault();
+          primero.focus();
+        }
+      });
+    });
+  }
+
   document.addEventListener("shell:ready", () => {
     initFilters();
     initExpandCollapse();
@@ -2170,5 +2512,8 @@
     initEvolucion();
     initMedicionForm();
     initMedicionNota();
+    initKeywordDetalle();
+    initMenusFila();
+    initModalesAccesibles();
   });
 })();

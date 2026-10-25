@@ -235,6 +235,15 @@
 
     const el = {
       nota: root.querySelector("[data-autosave-note]"),
+      titulo: root.querySelector("[data-titulo]"),
+      modos: Array.from(root.querySelectorAll("[data-modo]")),
+      logos: root.querySelector("[data-logos]"),
+      logoSelect: root.querySelector('[data-marca="logo"]'),
+      redesChips: root.querySelector("[data-redes-chips]"),
+      redesActivas: root.querySelector("[data-redes-activas]"),
+      btnGuardar: root.querySelector("[data-guardar]"),
+      btnGuardarTexto: root.querySelector("[data-guardar-texto]"),
+      cancelar: root.querySelector("[data-cancelar]"),
       variables: root.querySelector("[data-variables]"),
       bloques: root.querySelector("[data-bloques]"),
       bloquesVacio: root.querySelector("[data-bloques-vacio]"),
@@ -242,7 +251,6 @@
       redes: root.querySelector("[data-redes]"),
       resumenBloques: root.querySelector("[data-resumen-bloques]"),
       resumenHtml: root.querySelector("[data-resumen-html]"),
-      htmlToggle: root.querySelector("[data-html-toggle]"),
       htmlPanel: root.querySelector("[data-html-panel]"),
       htmlAviso: root.querySelector("[data-html-aviso]"),
       htmlCodigo: root.querySelector('[data-campo="html_personalizado"]'),
@@ -264,7 +272,7 @@
       el.variables.innerHTML = Object.keys(variables)
         .map((clave) => {
           const v = variables[clave];
-          return `<button type="button" class="cp-chip cp-chip--var u-mono" data-var="${escapeHtml(clave)}" title="${escapeHtml(v.label)} · ej. ${escapeHtml(v.ejemplo)}">{{${escapeHtml(clave)}}}</button>`;
+          return `<button type="button" class="cpe-chip cpe-chip--var u-mono${campoActivo ? "" : " is-inactivo"}" data-var="${escapeHtml(clave)}" title="${escapeHtml(v.label)} · ej. ${escapeHtml(v.ejemplo)}">{{${escapeHtml(clave)}}}</button>`;
         })
         .join("");
     }
@@ -274,27 +282,98 @@
       el.paleta.innerHTML = tipos
         .map((tipo) => {
           const label = (catalogo[tipo] && catalogo[tipo].label) || tipo;
-          return `<button type="button" class="cp-paleta__btn" data-agregar="${escapeHtml(tipo)}"><i class="fa-solid ${ICONOS_BLOQUE[tipo] || "fa-square"}"></i>${escapeHtml(label)}</button>`;
+          return `<button type="button" class="cpe-paleta__btn" data-agregar="${escapeHtml(tipo)}"><i class="fa-solid ${ICONOS_BLOQUE[tipo] || "fa-square"}"></i>${escapeHtml(label)}</button>`;
         })
         .join("");
+    }
+
+    // Redes del pie: la fuente de verdad sigue siendo estado.marca.redes
+    // ({nombre, url}); una red "apagada" sale de ahí (no se guarda ni se
+    // renderiza) y su URL se recuerda aquí para reactivarla sin reescribirla.
+    const SUGERIDAS = ["Instagram", "Facebook", "LinkedIn", "WhatsApp", "Sitio web"];
+    const redesApagadas = new Map();
+
+    function claveRed(nombre) {
+      return String(nombre || "").trim().toLowerCase();
+    }
+
+    function pintarChipsRedes() {
+      if (!el.redesChips) return;
+      const activas = estado.marca.redes;
+      const usados = new Set(activas.map((r) => claveRed(r.nombre)));
+      const chips = activas.map((r, i) => {
+        const nombre = String(r.nombre || "").trim() || "Nuevo enlace";
+        return `<button type="button" class="cpe-chip cpe-chip--red is-active" data-red-chip="${i}" aria-pressed="true" title="Quitar del pie"><i class="fa-solid fa-check" aria-hidden="true"></i>${escapeHtml(nombre)}</button>`;
+      });
+      redesApagadas.forEach((red, clave) => {
+        if (usados.has(clave)) return;
+        usados.add(clave);
+        chips.push(`<button type="button" class="cpe-chip cpe-chip--red" data-red-activar="${escapeHtml(clave)}" aria-pressed="false" title="Mostrar en el pie">${escapeHtml(red.nombre)}</button>`);
+      });
+      SUGERIDAS.forEach((nombre) => {
+        if (usados.has(claveRed(nombre))) return;
+        chips.push(`<button type="button" class="cpe-chip cpe-chip--red" data-red-activar="${escapeHtml(claveRed(nombre))}" data-red-nombre="${escapeHtml(nombre)}" aria-pressed="false" title="Mostrar en el pie">${escapeHtml(nombre)}</button>`);
+      });
+      el.redesChips.innerHTML = chips.join("");
+      if (el.redesActivas) {
+        const n = activas.filter((r) => String(r.url || "").trim() !== "").length;
+        el.redesActivas.textContent = `${n} ${n === 1 ? "activa" : "activas"}`;
+      }
     }
 
     function pintarRedes() {
       if (!el.redes) return;
       const redes = estado.marca.redes;
+      pintarChipsRedes();
       if (!redes.length) {
-        el.redes.innerHTML = '<p class="field__hint">Sin enlaces en el pie.</p>';
+        el.redes.innerHTML = '<p class="cpe-ayuda">Sin enlaces en el pie. Activa una red de arriba o añade un enlace.</p>';
         return;
       }
       el.redes.innerHTML = redes
         .map(
           (r, i) => `
-          <div class="cp-red">
-            <input class="input" type="text" placeholder="Nombre" value="${escapeHtml(r.nombre)}" data-red="${i}" data-red-campo="nombre" maxlength="40" aria-label="Nombre del enlace">
-            <input class="input u-mono" type="text" placeholder="https://…" value="${escapeHtml(r.url)}" data-red="${i}" data-red-campo="url" aria-label="URL del enlace">
-            <button type="button" class="btn--icon cp-accion-danger" data-red-quitar="${i}" title="Quitar"><i class="fa-solid fa-xmark"></i></button>
+          <div class="cpe-red">
+            <input class="cpe-input" type="text" placeholder="Nombre" value="${escapeHtml(r.nombre)}" data-red="${i}" data-red-campo="nombre" maxlength="40" aria-label="Nombre del enlace ${i + 1}">
+            <input class="cpe-input u-mono" type="text" placeholder="https://…" value="${escapeHtml(r.url)}" data-red="${i}" data-red-campo="url" aria-label="URL del enlace ${i + 1}">
+            <button type="button" class="cpe-icono cpe-icono--peligro" data-red-quitar="${i}" title="Quitar" aria-label="Quitar el enlace ${i + 1}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </div>`
         )
+        .join("");
+    }
+
+    const NOMBRES_LOGO = {
+      wordmark: "Wordmark",
+      monograma: "Monograma",
+      apilado: "Apilado",
+      imagen: "Imagen propia",
+      ninguno: "Sin logotipo",
+    };
+
+    // Mosaicos de las variantes que ya existen (no hay activos de logo): se
+    // dibujan con CSS sobre el color de marca, como se ve en la cabecera.
+    function miniLogo(logo) {
+      switch (logo) {
+        case "monograma":
+          return '<span class="cpe-mini cpe-mini--mono"><b>R</b><span>RankPro</span></span>';
+        case "apilado":
+          return '<span class="cpe-mini cpe-mini--apilado"><span>RankPro</span><small>Digital Solutions</small></span>';
+        case "imagen":
+          return '<span class="cpe-mini cpe-mini--icono"><i class="fa-regular fa-image" aria-hidden="true"></i></span>';
+        case "ninguno":
+          return '<span class="cpe-mini cpe-mini--icono"><i class="fa-solid fa-ban" aria-hidden="true"></i></span>';
+        default:
+          return '<span class="cpe-mini cpe-mini--wordmark"><span>RankPro</span></span>';
+      }
+    }
+
+    function pintarLogos() {
+      if (!el.logos) return;
+      const lista = Array.isArray(datos.logos) && datos.logos.length ? datos.logos : Object.keys(NOMBRES_LOGO);
+      el.logos.innerHTML = lista
+        .map((logo) => {
+          const activo = estado.marca.logo === logo;
+          return `<button type="button" class="cpe-logo${activo ? " is-active" : ""}" role="radio" aria-checked="${activo}" tabindex="${activo || (!lista.includes(estado.marca.logo) && logo === lista[0]) ? 0 : -1}" data-logo="${escapeHtml(logo)}" title="${escapeHtml(NOMBRES_LOGO[logo] || logo)}"><span class="cpe-logo__lienzo">${miniLogo(logo)}</span><span class="cpe-logo__nombre">${escapeHtml(NOMBRES_LOGO[logo] || logo)}</span></button>`;
+        })
         .join("");
     }
 
@@ -303,9 +382,9 @@
       const extra = o.mono ? " u-mono" : "";
       const attrs = `data-bloque="${i}" data-campo-bloque="${campo}" data-var-target${o.placeholder ? ` placeholder="${escapeHtml(o.placeholder)}"` : ""}${o.label ? ` aria-label="${escapeHtml(o.label)}"` : ""}`;
       if (o.textarea) {
-        return `<textarea class="textarea${extra}" rows="${o.rows || 4}" ${attrs}>${escapeHtml(valor)}</textarea>`;
+        return `<textarea class="cpe-textarea${extra}" rows="${o.rows || 4}" ${attrs}>${escapeHtml(valor)}</textarea>`;
       }
-      return `<input class="input${extra}" type="text" value="${escapeHtml(valor)}" ${attrs}>`;
+      return `<input class="cpe-input${extra}" type="text" value="${escapeHtml(valor)}" ${attrs}>`;
     }
 
     function cuerpoBloque(b, i) {
@@ -313,9 +392,9 @@
         case "heading":
           return `
             ${campoTexto(i, "texto", b.texto, { label: "Texto del encabezado" })}
-            <div class="cp-segmento cp-segmento--inline" role="group" aria-label="Alineación">
-              <button type="button" class="cp-segmento__btn ${b.alineacion !== "centro" ? "is-active" : ""}" data-bloque="${i}" data-alineacion="izquierda">Izquierda</button>
-              <button type="button" class="cp-segmento__btn ${b.alineacion === "centro" ? "is-active" : ""}" data-bloque="${i}" data-alineacion="centro">Centrado</button>
+            <div class="cpe-seg" role="group" aria-label="Alineación">
+              <button type="button" class="cpe-seg__btn ${b.alineacion !== "centro" ? "is-active" : ""}" data-bloque="${i}" data-alineacion="izquierda">Izquierda</button>
+              <button type="button" class="cpe-seg__btn ${b.alineacion === "centro" ? "is-active" : ""}" data-bloque="${i}" data-alineacion="centro">Centrado</button>
             </div>`;
         case "text":
           return campoTexto(i, "texto", b.texto, { textarea: true, rows: 4, label: "Texto del párrafo", placeholder: "Cada salto de línea es un párrafo." });
@@ -326,9 +405,9 @@
           const filas = items
             .map(
               (it, k) => `
-              <div class="cp-item">
-                <input class="input" type="text" value="${escapeHtml(it)}" data-bloque="${i}" data-item="${k}" data-var-target aria-label="Punto ${k + 1}">
-                <button type="button" class="btn--icon cp-accion-danger" data-bloque="${i}" data-item-quitar="${k}" title="Quitar punto"><i class="fa-solid fa-xmark"></i></button>
+              <div class="cpe-item">
+                <input class="cpe-input" type="text" value="${escapeHtml(it)}" data-bloque="${i}" data-item="${k}" data-var-target aria-label="Punto ${k + 1}">
+                <button type="button" class="cpe-icono cpe-icono--peligro" data-bloque="${i}" data-item-quitar="${k}" title="Quitar punto"><i class="fa-solid fa-xmark"></i></button>
               </div>`
             )
             .join("");
@@ -339,27 +418,27 @@
           const filas = items
             .map(
               (it, k) => `
-              <div class="cp-item cp-item--kpi">
-                <input class="input" type="text" placeholder="Etiqueta" value="${escapeHtml(it && it.label)}" data-bloque="${i}" data-item="${k}" data-sub="label" data-var-target aria-label="Etiqueta ${k + 1}">
-                <input class="input u-mono" type="text" placeholder="Valor" value="${escapeHtml(it && it.valor)}" data-bloque="${i}" data-item="${k}" data-sub="valor" data-var-target aria-label="Valor ${k + 1}">
-                <button type="button" class="btn--icon cp-accion-danger" data-bloque="${i}" data-item-quitar="${k}" title="Quitar cifra" ${items.length <= MIN_KPI ? "disabled" : ""}><i class="fa-solid fa-xmark"></i></button>
+              <div class="cpe-item cpe-item--kpi">
+                <input class="cpe-input" type="text" placeholder="Etiqueta" value="${escapeHtml(it && it.label)}" data-bloque="${i}" data-item="${k}" data-sub="label" data-var-target aria-label="Etiqueta ${k + 1}">
+                <input class="cpe-input u-mono" type="text" placeholder="Valor" value="${escapeHtml(it && it.valor)}" data-bloque="${i}" data-item="${k}" data-sub="valor" data-var-target aria-label="Valor ${k + 1}">
+                <button type="button" class="cpe-icono cpe-icono--peligro" data-bloque="${i}" data-item-quitar="${k}" title="Quitar cifra" ${items.length <= MIN_KPI ? "disabled" : ""}><i class="fa-solid fa-xmark"></i></button>
               </div>`
             )
             .join("");
-          return `${filas}${items.length < MAX_KPI ? `<button type="button" class="cp-link" data-bloque="${i}" data-item-agregar>+ Añadir cifra</button>` : `<p class="field__hint">Máximo ${MAX_KPI} cifras.</p>`}`;
+          return `${filas}${items.length < MAX_KPI ? `<button type="button" class="cp-link" data-bloque="${i}" data-item-agregar>+ Añadir cifra</button>` : `<p class="cpe-ayuda">Máximo ${MAX_KPI} cifras.</p>`}`;
         }
         case "button":
           return `
-            <div class="field"><span class="field__label">Texto del botón</span>${campoTexto(i, "texto", b.texto, { label: "Texto del botón" })}</div>
-            <div class="field"><span class="field__label">Enlace</span>${campoTexto(i, "url", b.url, { mono: true, label: "Enlace del botón", placeholder: "https://… o {{enlace_reporte}}" })}</div>`;
+            <div class="cpe-campo"><span class="cpe-etiqueta">Texto del botón</span>${campoTexto(i, "texto", b.texto, { label: "Texto del botón" })}</div>
+            <div class="cpe-campo"><span class="cpe-etiqueta">Enlace</span>${campoTexto(i, "url", b.url, { mono: true, label: "Enlace del botón", placeholder: "https://… o {{enlace_reporte}}" })}</div>`;
         case "image":
           return `
-            <div class="field"><span class="field__label">URL de la imagen</span>${campoTexto(i, "url", b.url, { mono: true, label: "URL de la imagen", placeholder: "https://…" })}</div>
-            <div class="field"><span class="field__label">Texto alternativo</span>${campoTexto(i, "alt", b.alt, { label: "Texto alternativo" })}</div>`;
+            <div class="cpe-campo"><span class="cpe-etiqueta">URL de la imagen</span>${campoTexto(i, "url", b.url, { mono: true, label: "URL de la imagen", placeholder: "https://…" })}</div>
+            <div class="cpe-campo"><span class="cpe-etiqueta">Texto alternativo</span>${campoTexto(i, "alt", b.alt, { label: "Texto alternativo" })}</div>`;
         case "divider":
-          return '<p class="field__hint">Línea divisoria de 1px, sin opciones.</p>';
+          return '<p class="cpe-ayuda">Línea divisoria de 1px, sin opciones.</p>';
         default:
-          return `<p class="field__hint">Tipo de bloque desconocido: ${escapeHtml(b.tipo)}.</p>`;
+          return `<p class="cpe-ayuda">Tipo de bloque desconocido: ${escapeHtml(b.tipo)}.</p>`;
       }
     }
 
@@ -370,28 +449,37 @@
         .map((b, i) => {
           const label = (catalogo[b.tipo] && catalogo[b.tipo].label) || b.tipo;
           return `
-          <div class="card cp-bloque" data-bloque-card="${i}">
-            <div class="cp-bloque__cabecera">
-              <div class="cp-bloque__titulo">
-                <span class="cp-bloque__asa" draggable="true" title="Arrastra para reordenar"><i class="fa-solid fa-grip-vertical"></i></span>
-                <i class="fa-solid ${ICONOS_BLOQUE[b.tipo] || "fa-square"} cp-bloque__icono"></i>
+          <div class="cpe-bloque" data-bloque-card="${i}">
+            <div class="cpe-bloque__cabecera">
+              <div class="cpe-bloque__titulo">
+                <span class="cpe-bloque__asa" draggable="true" title="Arrastra para reordenar"><i class="fa-solid fa-grip-vertical"></i></span>
+                <i class="fa-solid ${ICONOS_BLOQUE[b.tipo] || "fa-square"} cpe-bloque__icono"></i>
                 <span>${escapeHtml(label)}</span>
-                <span class="u-mono cp-muted">#${i + 1}</span>
+                <span class="u-mono cpe-mudo">#${i + 1}</span>
               </div>
-              <div class="cp-bloque__acciones">
-                <button type="button" class="btn--icon" data-bloque="${i}" data-mover="-1" title="Subir" ${i === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up"></i></button>
-                <button type="button" class="btn--icon" data-bloque="${i}" data-mover="1" title="Bajar" ${i === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down"></i></button>
-                <button type="button" class="btn--icon" data-bloque="${i}" data-duplicar-bloque title="Duplicar bloque"><i class="fa-solid fa-copy"></i></button>
-                <button type="button" class="btn--icon cp-accion-danger" data-bloque="${i}" data-quitar-bloque title="Eliminar bloque"><i class="fa-solid fa-trash"></i></button>
+              <div class="cpe-bloque__acciones">
+                <button type="button" class="cpe-icono" data-bloque="${i}" data-mover="-1" title="Subir" ${i === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up"></i></button>
+                <button type="button" class="cpe-icono" data-bloque="${i}" data-mover="1" title="Bajar" ${i === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down"></i></button>
+                <button type="button" class="cpe-icono" data-bloque="${i}" data-duplicar-bloque title="Duplicar bloque"><i class="fa-solid fa-copy"></i></button>
+                <button type="button" class="cpe-icono cpe-icono--peligro" data-bloque="${i}" data-quitar-bloque title="Eliminar bloque"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
-            <div class="cp-bloque__cuerpo">${cuerpoBloque(b, i)}</div>
+            <div class="cpe-bloque__cuerpo">${cuerpoBloque(b, i)}</div>
           </div>`;
         })
         .join("");
 
       if (el.bloquesVacio) el.bloquesVacio.hidden = total !== 0;
       if (el.resumenBloques) el.resumenBloques.textContent = `${total} ${total === 1 ? "bloque" : "bloques"}`;
+    }
+
+    // Vista sencilla (bloques) o avanzada (HTML propio): solo cambia qué panel
+    // se ve; el contenido sigue siendo html_personalizado vacío o no.
+    let modoAvanzado = estado.html_personalizado.trim() !== "";
+
+    function reflejarModo() {
+      el.modos.forEach((btn) => btn.setAttribute("aria-pressed", String((btn.dataset.modo === "avanzada") === modoAvanzado)));
+      if (el.htmlPanel) el.htmlPanel.hidden = !modoAvanzado;
     }
 
     function reflejarHtmlLibre() {
@@ -405,14 +493,26 @@
     function reflejarColor() {
       const actual = String(estado.marca.color || "").toUpperCase();
       root.querySelectorAll("[data-color]").forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.color.toUpperCase() === actual);
+        const activo = btn.dataset.color.toUpperCase() === actual;
+        btn.classList.toggle("is-active", activo);
+        btn.setAttribute("aria-pressed", String(activo));
       });
+      // Los mosaicos del logo se pintan sobre el color de marca elegido.
+      if (/^#[0-9A-F]{6}$/.test(actual)) root.style.setProperty("--cpe-marca", actual);
       if (el.colorLibre && /^#[0-9A-F]{6}$/.test(actual)) el.colorLibre.value = actual.toLowerCase();
       if (el.colorHex) el.colorHex.textContent = actual;
     }
 
     function reflejarLogo() {
       if (el.logoUrlCampo) el.logoUrlCampo.hidden = estado.marca.logo !== "imagen";
+      if (el.logoSelect && el.logoSelect.value !== estado.marca.logo) el.logoSelect.value = estado.marca.logo;
+      pintarLogos();
+    }
+
+    function reflejarTitulo() {
+      const nombre = String(estado.nombre || "").trim();
+      if (el.titulo) el.titulo.textContent = nombre || "Plantilla sin nombre";
+      document.title = `${nombre || "Plantilla sin nombre"} — RankPro`;
     }
 
     // ----- Vista previa ------------------------------------------------------
@@ -478,7 +578,9 @@
       // El ancho cambia el reflujo del correo: se recalcula el alto tras pintar.
       setTimeout(ajustarAltoIframe, 250);
       root.querySelectorAll("[data-dispositivo]").forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.dispositivo === dispositivo);
+        const activo = btn.dataset.dispositivo === dispositivo;
+        btn.classList.toggle("is-active", activo);
+        btn.setAttribute("aria-pressed", String(activo));
       });
     }
 
@@ -491,7 +593,7 @@
     function nota(texto, clase) {
       if (!el.nota) return;
       el.nota.textContent = texto;
-      el.nota.className = `cp-guardado${clase ? ` ${clase}` : ""}`;
+      el.nota.className = `cpe-guardado${clase ? ` ${clase}` : ""}`;
     }
 
     function payloadCompleto() {
@@ -501,10 +603,39 @@
         estado: estado.estado,
         asunto: estado.asunto,
         bloques: estado.bloques,
-        marca: estado.marca,
+        // Un enlace a medio escribir (sin nombre o sin URL) no se guarda: el
+        // validador lo rechazaría y tumbaría todo el autosave.
+        marca: Object.assign({}, estado.marca, {
+          redes: estado.marca.redes.filter((r) => String(r.nombre || "").trim() !== "" && String(r.url || "").trim() !== ""),
+        }),
         html_personalizado: estado.html_personalizado,
       };
     }
+
+    // Errores de validación junto a su campo: la clave de Laravel
+    // ("marca.color", "bloques.0.texto") se resume en su primer segmento.
+    function limpiarErrores() {
+      root.querySelectorAll("[data-error-for]").forEach((n) => (n.textContent = ""));
+      root.querySelectorAll('[aria-invalid="true"]').forEach((n) => n.removeAttribute("aria-invalid"));
+    }
+
+    function mostrarErrores(error) {
+      limpiarErrores();
+      const errores = error && error.body && error.body.errors;
+      if (!errores) return false;
+      let alguno = false;
+      Object.keys(errores).forEach((clave) => {
+        const slot = root.querySelector(`[data-error-for="${clave.split(".")[0]}"]`);
+        if (!slot || slot.textContent) return;
+        slot.textContent = errores[clave][0];
+        alguno = true;
+        const campo = slot.parentElement && slot.parentElement.querySelector("input, select, textarea");
+        if (campo) campo.setAttribute("aria-invalid", "true");
+      });
+      return alguno;
+    }
+
+    let ultimoGuardadoOk = true;
 
     function guardar() {
       if (!sucio) return Promise.resolve();
@@ -518,12 +649,16 @@
 
       return request(urls.update, "PUT", payloadCompleto())
         .then(() => {
+          ultimoGuardadoOk = true;
+          limpiarErrores();
           if (!sucio) nota("Guardado", "is-ok");
         })
         .catch((error) => {
+          ultimoGuardadoOk = false;
           sucio = true;
           nota("Error al guardar", "is-error");
-          toast(primerError(error, "No se pudo guardar la plantilla."), "error");
+          // Con errores de campo basta el mensaje en línea; el toast queda para fallos de red o del servidor.
+          if (!mostrarErrores(error)) toast(primerError(error, "No se pudo guardar la plantilla."), "error");
         })
         .finally(() => {
           guardando = false;
@@ -531,6 +666,30 @@
             reguardar = false;
             guardar();
           }
+        });
+    }
+
+    // "Guardar plantilla": fuerza el guardado ya (sin esperar el debounce) y lo confirma.
+    function guardarAhora() {
+      if (!el.btnGuardar || el.btnGuardar.disabled) return;
+      el.btnGuardar.disabled = true;
+      el.btnGuardar.setAttribute("aria-busy", "true");
+      if (el.btnGuardarTexto) el.btnGuardarTexto.textContent = "Guardando…";
+      sucio = true;
+      const esperar = () => (guardando ? new Promise((r) => setTimeout(r, 150)).then(esperar) : Promise.resolve());
+      guardar()
+        .then(esperar)
+        .then(() => {
+          if (ultimoGuardadoOk && !sucio) toast("Plantilla guardada.", "success");
+          else if (!ultimoGuardadoOk) {
+            const primero = root.querySelector('[aria-invalid="true"]');
+            if (primero) primero.focus();
+          }
+        })
+        .finally(() => {
+          el.btnGuardar.disabled = false;
+          el.btnGuardar.removeAttribute("aria-busy");
+          if (el.btnGuardarTexto) el.btnGuardarTexto.textContent = "Guardar plantilla";
         });
     }
 
@@ -550,13 +709,18 @@
       if (target.dataset.campo) {
         const campo = target.dataset.campo;
         estado[campo] = target.value;
-        if (campo === "asunto" && el.previewAsunto) el.previewAsunto.textContent = target.value;
+        if (campo === "asunto" && el.previewAsunto) el.previewAsunto.textContent = target.value.trim() || "(sin asunto)";
         if (campo === "html_personalizado") {
           reflejarHtmlLibre();
           marcarCambio();
           return;
         }
-        if (campo === "nombre") document.title = `${target.value || "Plantilla"} — RankPro`;
+        if (campo === "nombre") reflejarTitulo();
+        const slotError = root.querySelector(`[data-error-for="${campo}"]`);
+        if (slotError && slotError.textContent) {
+          slotError.textContent = "";
+          target.removeAttribute("aria-invalid");
+        }
         // Nombre/categoría/estado/asunto no cambian el HTML: no hace falta previa.
         marcarCambio({ preview: false });
         return;
@@ -581,6 +745,7 @@
       if (target.dataset.red !== undefined) {
         const r = estado.marca.redes[Number(target.dataset.red)];
         if (r) r[target.dataset.redCampo] = target.value;
+        pintarChipsRedes();
         marcarCambio();
         return;
       }
@@ -608,6 +773,10 @@
     // ----- Variables: inserción en el campo activo ---------------------------
 
     let campoActivo = null;
+
+    function reflejarChipsVariables() {
+      root.querySelectorAll("[data-var]").forEach((chip) => chip.classList.toggle("is-inactivo", !campoActivo));
+    }
 
     function insertarVariable(clave) {
       const marcador = `{{${clave}}}`;
@@ -640,6 +809,20 @@
       marcarCambio();
     }
 
+    function cambiarModo(avanzado) {
+      if (avanzado === modoAvanzado) return;
+      if (!avanzado && estado.html_personalizado.trim() !== "") {
+        if (!window.confirm("¿Descartar el HTML propio? Los bloques volverán a controlar el correo.")) return;
+        estado.html_personalizado = "";
+        if (el.htmlCodigo) el.htmlCodigo.value = "";
+        reflejarHtmlLibre();
+        marcarCambio();
+      }
+      modoAvanzado = avanzado;
+      reflejarModo();
+      if (avanzado && el.htmlCodigo) el.htmlCodigo.focus();
+    }
+
     function manejarClick(e) {
       const t = e.target;
 
@@ -647,6 +830,55 @@
       if (chip) {
         e.preventDefault();
         insertarVariable(chip.dataset.var);
+        return;
+      }
+
+      const logoBtn = t.closest("[data-logo]");
+      if (logoBtn) {
+        estado.marca.logo = logoBtn.dataset.logo;
+        reflejarLogo();
+        marcarCambio();
+        const activo = el.logos && el.logos.querySelector(".is-active");
+        if (activo) activo.focus();
+        return;
+      }
+
+      const redChip = t.closest("[data-red-chip]");
+      if (redChip) {
+        const [quitada] = estado.marca.redes.splice(Number(redChip.dataset.redChip), 1);
+        const clave = claveRed(quitada && quitada.nombre);
+        if (quitada && clave !== "") redesApagadas.set(clave, quitada);
+        pintarRedes();
+        marcarCambio();
+        return;
+      }
+
+      const redActivar = t.closest("[data-red-activar]");
+      if (redActivar) {
+        if (estado.marca.redes.length >= 8) {
+          toast("Máximo 8 enlaces en el pie.", "warning");
+          return;
+        }
+        const clave = redActivar.dataset.redActivar;
+        const previa = redesApagadas.get(clave);
+        redesApagadas.delete(clave);
+        estado.marca.redes.push(previa || { nombre: redActivar.dataset.redNombre || clave, url: "" });
+        pintarRedes();
+        // Una red nueva no tiene URL todavía: se pide en el acto.
+        const campoUrl = el.redes && el.redes.querySelector(`[data-red="${estado.marca.redes.length - 1}"][data-red-campo="url"]`);
+        if (campoUrl && !String(estado.marca.redes[estado.marca.redes.length - 1].url || "").trim()) campoUrl.focus();
+        marcarCambio();
+        return;
+      }
+
+      const modoBtn = t.closest("[data-modo]");
+      if (modoBtn) {
+        cambiarModo(modoBtn.dataset.modo === "avanzada");
+        return;
+      }
+
+      if (t.closest("[data-guardar]")) {
+        guardarAhora();
         return;
       }
 
@@ -716,8 +948,8 @@
         if (estado.html_personalizado.trim() !== "" && !window.confirm("¿Descartar el HTML propio? Los bloques volverán a controlar el correo.")) return;
         estado.html_personalizado = "";
         if (el.htmlCodigo) el.htmlCodigo.value = "";
-        if (el.htmlToggle) el.htmlToggle.checked = false;
-        if (el.htmlPanel) el.htmlPanel.hidden = true;
+        modoAvanzado = false;
+        reflejarModo();
         reflejarHtmlLibre();
         marcarCambio();
         return;
@@ -808,7 +1040,7 @@
         // Solo el asa es draggable: si lo fuera la tarjeta entera, seleccionar
         // texto dentro de un input arrastraría el bloque (y Firefox bloquea la
         // selección dentro de elementos draggable).
-        const asa = e.target.closest && e.target.closest(".cp-bloque__asa");
+        const asa = e.target.closest && e.target.closest(".cpe-bloque__asa");
         const card = asa && asa.closest("[data-bloque-card]");
         if (!card) {
           e.preventDefault();
@@ -857,34 +1089,20 @@
     root.addEventListener("input", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement)) return;
-      if (t.hasAttribute("data-html-toggle")) return;
       aplicarCambioDeCampo(t);
     });
 
     root.addEventListener("change", (e) => {
       const t = e.target;
-      if (t.hasAttribute("data-html-toggle")) {
-        const activar = t.checked;
-        if (!activar && estado.html_personalizado.trim() !== "") {
-          if (!window.confirm("¿Descartar el HTML propio? Los bloques volverán a controlar el correo.")) {
-            t.checked = true;
-            return;
-          }
-          estado.html_personalizado = "";
-          if (el.htmlCodigo) el.htmlCodigo.value = "";
-          reflejarHtmlLibre();
-          marcarCambio();
-        }
-        if (el.htmlPanel) el.htmlPanel.hidden = !activar;
-        if (activar && el.htmlCodigo) el.htmlCodigo.focus();
-        return;
-      }
       // Los <select> no disparan input en todos los navegadores: se cubre aquí.
       if (t instanceof HTMLSelectElement) aplicarCambioDeCampo(t);
     });
 
     root.addEventListener("focusin", (e) => {
-      if (e.target.matches && e.target.matches("[data-var-target]")) campoActivo = e.target;
+      if (e.target.matches && e.target.matches("[data-var-target]")) {
+        campoActivo = e.target;
+        reflejarChipsVariables();
+      }
     });
 
     root.addEventListener("focusout", (e) => {
@@ -894,19 +1112,43 @@
       }
     });
 
+    // Los chips no roban el foco: así el campo activo conserva el cursor donde se insertará la variable.
+    root.addEventListener("mousedown", (e) => {
+      if (e.target.closest && e.target.closest("[data-var]")) e.preventDefault();
+    });
+
     root.addEventListener("click", manejarClick);
 
-    // Volver: se guarda antes de navegar para no perder el último tecleo.
-    const volver = root.querySelector(".cp-bar__volver");
-    if (volver) {
-      volver.addEventListener("click", (e) => {
-        if (!sucio && !guardando) return;
-        e.preventDefault();
-        guardar().then(() => {
-          window.location.href = volver.href;
+    // Cancelar sale al listado. Hay autosave, así que lo escrito ya está a salvo:
+    // se guarda lo pendiente antes de irse y solo se pregunta si no se pudo.
+    function salir(destino) {
+      if (!sucio && !guardando) {
+        window.location.href = destino;
+        return;
+      }
+      guardar()
+        .then(() => (guardando ? new Promise((r) => setTimeout(r, 200)) : null))
+        .then(() => {
+          if (sucio && !window.confirm("Hay cambios que no se pudieron guardar. ¿Salir y descartarlos?")) return;
+          sucio = false;
+          window.location.href = destino;
         });
+    }
+
+    if (el.cancelar) {
+      el.cancelar.addEventListener("click", (e) => {
+        e.preventDefault();
+        salir(el.cancelar.href);
       });
     }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || e.defaultPrevented || !el.cancelar) return;
+      // Esc cierra primero lo que esté abierto (modales, menús, listas nativas).
+      if (document.querySelector(".modal-overlay:not([hidden]), .command-palette-overlay:not([hidden])")) return;
+      if (e.target instanceof HTMLSelectElement) return;
+      salir(el.cancelar.href);
+    });
 
     window.addEventListener("beforeunload", (e) => {
       if (!sucio && !guardando) return;
@@ -920,6 +1162,8 @@
     pintarRedes();
     pintarBloques();
     reflejarHtmlLibre();
+    reflejarModo();
+    reflejarTitulo();
     reflejarColor();
     reflejarLogo();
     aplicarDispositivo();

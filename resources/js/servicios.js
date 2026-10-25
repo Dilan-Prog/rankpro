@@ -104,16 +104,17 @@
 
   function buildTimelineHtml(eventos) {
     if (!eventos || !eventos.length) {
-      return '<p style="color:var(--color-muted-foreground);font-size:var(--text-sm)">Sin eventos registrados</p>';
+      return '<li class="srv-bitacora__vacia">Aún no hay movimientos registrados para este servicio.</li>';
     }
     return eventos
       .map((evento) => {
-        const meta = formatFechaHora(evento.fecha) + (evento.usuario ? ` · por ${escapeHtml(evento.usuario)}` : "");
+        const fecha = (evento.fecha || "").split(" ")[0] || "—";
         return `
-          <div class="record-modal__timeline-item">
-            <div class="record-modal__timeline-text">${escapeHtml(evento.descripcion)}</div>
-            <div class="record-modal__timeline-meta">${meta}</div>
-          </div>`;
+          <li class="srv-bitacora__item">
+            <span class="srv-bitacora__fecha" title="${escapeHtml(formatFechaHora(evento.fecha))}">${escapeHtml(fecha)}</span>
+            <span class="srv-bitacora__texto">${escapeHtml(evento.descripcion)}</span>
+            <span class="srv-bitacora__autor">${escapeHtml(evento.usuario || "")}</span>
+          </li>`;
       })
       .join("");
   }
@@ -123,26 +124,35 @@
 
     document.getElementById("servicioDetailTitle").textContent =
       `${TIPO_LABELS[servicio.tipo] || servicio.tipo} — ${servicio.cliente}`;
+    document.getElementById("servicioDetailSubtitulo").textContent =
+      (servicio.fecha_inicio ? `Alta ${servicio.fecha_inicio}` : "Sin fecha de alta") +
+      " · " + (servicio.responsable_nombre ? `responsable ${servicio.responsable_nombre}` : "sin responsable asignado");
     document.getElementById("servicioDetailBadge").outerHTML = badgeHtml(servicio.estado);
 
     document.getElementById("servicioDetailMrr").textContent =
-      servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) + " MXN/mes" : "—";
+      servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—";
     document.getElementById("servicioDetailAnualizado").textContent =
-      servicio.anualizado > 0 ? formatCurrency(servicio.anualizado) + " MXN" : "—";
-    document.getElementById("servicioDetailMeses").textContent = servicio.meses_activos;
+      servicio.anualizado > 0 ? formatCurrency(servicio.anualizado) : "—";
+    document.getElementById("servicioDetailMeses").textContent = servicio.fecha_inicio ? servicio.meses_activos : "—";
     document.getElementById("servicioDetailEstadoLabel").textContent = ESTADO_LABELS[servicio.estado] || servicio.estado;
 
     document.getElementById("servicioDetailCliente").textContent = servicio.cliente || "—";
     document.getElementById("servicioDetailNombre").textContent = servicio.nombre || "—";
     document.getElementById("servicioDetailInicio").textContent = servicio.fecha_inicio || "—";
-    document.getElementById("servicioDetailResponsable").textContent = servicio.responsable_nombre || "— Sin asignar —";
+    document.getElementById("servicioDetailResponsable").textContent = servicio.responsable_nombre || "Sin asignar";
     document.getElementById("servicioDetailIngresoAcumulado").textContent =
-      servicio.ingreso_acumulado > 0 ? formatCurrency(servicio.ingreso_acumulado) + " MXN" : "—";
+      servicio.ingreso_acumulado > 0 ? formatCurrency(servicio.ingreso_acumulado) : "—";
 
     document.getElementById("servicioDetailTimeline").innerHTML = buildTimelineHtml(servicio.eventos);
     document.getElementById("servicioDetailContrato").href = `/admin/archivos?cliente=${servicio.cliente_id}`;
 
-    window.AgencyOS.openModal("servicioDetailModal");
+    abrirModalConFoco("servicioDetailModal", "#servicioDetailEditar");
+  }
+
+  /** Abre el modal y manda el foco al control indicado: global.js no gestiona foco y sin esto Tab sigue en la página de fondo. */
+  function abrirModalConFoco(id, selectorFoco) {
+    window.AgencyOS.openModal(id);
+    requestAnimationFrame(() => document.querySelector(`#${id} ${selectorFoco}`)?.focus());
   }
 
   /**
@@ -202,12 +212,13 @@
     fillServicioForm(form, servicio);
     form.dataset.editingId = servicio?.id ?? "";
 
-    if (title) title.textContent = servicio ? "Editar Servicio" : "Asignar Servicio";
-    if (submitBtn) submitBtn.innerHTML = servicio
-      ? '<i class="fa-solid fa-check"></i> Guardar Cambios'
-      : '<i class="fa-solid fa-check"></i> Crear Servicio';
+    const subtitle = document.getElementById("servicioFormModalSubtitulo");
 
-    window.AgencyOS.openModal("servicioFormModal");
+    if (title) title.textContent = servicio ? "Editar Servicio" : "Asignar Servicio";
+    if (subtitle) subtitle.textContent = servicio ? "Actualiza el contrato con el cliente" : "Alta de contrato con un cliente";
+    if (submitBtn) submitBtn.textContent = servicio ? "Guardar cambios" : "Crear servicio";
+
+    abrirModalConFoco("servicioFormModal", "#cliente_id");
   }
 
   function initOpenServicioModalButtons() {

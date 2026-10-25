@@ -71,6 +71,25 @@ class KeywordMedicionController extends Controller
     }
 
     /**
+     * Bitácora de una keyword: sus mediciones con nota (lo que se hizo cada mes),
+     * de la más reciente a la más antigua. Es de sólo lectura y existe aparte de
+     * index() porque ese es por lista y una keyword sin lista también tiene ficha.
+     */
+    public function porKeyword(Keyword $keyword): JsonResponse
+    {
+        $mediciones = $keyword->mediciones()
+            ->whereNotNull('nota')
+            ->where('nota', '!=', '')
+            ->with('usuario:id,name')
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json([
+            'mediciones' => $mediciones->map(fn (KeywordMedicion $m) => $m->toRow())->values()->all(),
+        ]);
+    }
+
+    /**
      * Guarda una ronda completa. Volver a enviar la misma fecha corrige la
      * ronda en vez de duplicarla: medir dos veces el mismo día es una
      * corrección, no dos mediciones.

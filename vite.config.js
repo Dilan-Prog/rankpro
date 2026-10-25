@@ -50,6 +50,7 @@ export default defineConfig({
                 'resources/css/admin/usuarios.css',
                 'resources/js/usuarios.js',
                 'resources/css/admin/integraciones.css',
+                'resources/css/admin/search-console.css',
                 'resources/css/admin/roles.css',
                 'resources/js/roles.js',
                 'resources/css/admin/configuracion.css',

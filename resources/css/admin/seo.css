@@ -79,143 +79,519 @@
 /* Fase tracker / fase panel styles moved to global.css (shared across
    SEO, Ads, Automatizaciones, Desarrollo). */
 
-/* ---------- Client picker (index) ---------- */
 
-#seoClienteSearch {
-  margin-bottom: var(--space-4);
-  width: 100%;
+/* ==========================================================================
+   >>> Rediseño Claude Design (cuentas, resumen, pestañas, KPIs, gráfica)
+   Prefijos propios .seo-*; solo tokens del panel, sin colores fijos, para
+   que el tema claro y el oscuro salgan de var(--...).
+   ========================================================================== */
+
+/* Radio de 16px del diseño solo dentro del módulo, sin tocar .card/.kpi globales. */
+.seo-page .card,
+.seo-page .kpi,
+.seo-page .fase-panel {
+  border-radius: var(--radius-2xl);
 }
 
-.seo-cliente-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-4);
-}
-
-.seo-cliente-card {
+.seo-encabezado {
   display: flex;
-  flex-direction: column;
-  border-radius: var(--radius-xl);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.seo-encabezado__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.seo-buscador {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 240px;
+  padding: 0 var(--space-3);
+  height: 38px;
   border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   background: var(--color-card);
-  overflow: hidden;
-  transition: border-color var(--transition-fast);
+  color: var(--color-muted-foreground);
 }
 
-.seo-cliente-card:hover {
+.seo-buscador:focus-within {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
-/* Toggled by seo.js's search filter — a custom class needs its own
-   display:none since there's no UA-stylesheet rule for it like [hidden]. */
-.seo-cliente-card.hidden {
+.seo-buscador input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.seo-seccion-titulo {
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Tarjetas selectoras de cuenta ---------- */
+.seo-cuentas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* En el detalle van en una sola fila con scroll propio: con muchas cuentas no empujan el contenido hacia abajo. */
+.seo-cuentas--fila {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  scroll-snap-type: x proximity;
+}
+
+.seo-cuentas--fila .seo-cuenta {
+  flex: 1 0 240px;
+  max-width: 340px;
+  scroll-snap-align: start;
+}
+
+.seo-cuenta {
+  position: relative;
+  display: flex;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.seo-cuenta:hover,
+.seo-cuenta:focus-within {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+}
+
+.seo-cuenta.is-active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-card));
+}
+
+/* seo.js alterna esta clase al filtrar; no hay regla de UA para ella como en [hidden]. */
+.seo-cuenta.hidden {
   display: none;
 }
 
-.seo-cliente-card__link {
-  display: block;
-  text-decoration: none;
+.seo-cuenta__link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: inherit;
   color: inherit;
+  text-decoration: none;
 }
 
-.seo-cliente-card__link:focus-visible {
+.seo-cuenta__link:focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
 
-/* Padding lives on header/body themselves (not their .seo-cliente-card__link
-   wrapper) so the "no campaign" state — where header/body are direct
-   children of the card, not wrapped in a link — gets identical spacing. */
-.seo-cliente-card__header {
+.seo-cuenta__head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: var(--space-4) var(--space-4) 0;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.seo-cliente-card__avatar {
+.seo-cuenta__avatar {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-  color: var(--color-primary);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
   font-size: var(--text-xs);
   font-weight: var(--font-weight-semibold);
-  flex-shrink: 0;
 }
 
-.seo-cliente-card__id {
+.seo-cuenta.is-active .seo-cuenta__avatar {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.seo-cuenta__id {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
-  flex: 1;
 }
 
-.seo-cliente-card__name {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.seo-cliente-card__contacto {
-  font-size: var(--text-xs);
-  color: var(--color-muted-foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.seo-cliente-card__sin-campana {
-  font-size: var(--text-xs);
-  color: var(--color-muted-foreground);
-  flex-shrink: 0;
-}
-
-.seo-cliente-card__body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-}
-
-.seo-cliente-card__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.seo-cliente-card__stat-label {
-  font-size: var(--text-xs);
-  color: var(--color-muted-foreground);
-}
-
-.seo-cliente-card__stat-value {
-  font-size: var(--text-sm);
+.seo-cuenta__name {
+  font-size: var(--text-base);
   font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.seo-cliente-card__body--empty {
-  display: block;
-  padding: var(--space-3) var(--space-4) var(--space-4);
-}
-
-.seo-cliente-card__empty-text {
-  font-size: var(--text-sm);
+.seo-cuenta__resp {
+  font-size: var(--text-xs);
   color: var(--color-muted-foreground);
-  margin-bottom: var(--space-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.seo-cliente-card__footer {
+.seo-cuenta__foot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  padding: var(--space-2) var(--space-4);
-  border-top: 1px solid var(--color-border);
+  justify-content: space-between;
+  gap: var(--space-2);
 }
+
+.seo-cuenta__score {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+/* Editar/eliminar solo en el índice; flotan sobre la esquina para no ensuciar el diseño de la tarjeta. */
+.seo-cuenta__acciones {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.seo-cuenta:hover .seo-cuenta__acciones,
+.seo-cuenta:focus-within .seo-cuenta__acciones {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .seo-cuenta__acciones { opacity: 1; }
+}
+
+/* ---------- Franja de resumen de la cuenta ---------- */
+.seo-resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+}
+
+.seo-resumen__datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  margin: 0;
+}
+
+.seo-resumen__dato {
+  min-width: 0;
+}
+
+.seo-resumen__dato dt {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-bottom: 2px;
+}
+
+.seo-resumen__dato dd {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.seo-resumen__valor--fuerte {
+  font-weight: var(--font-weight-semibold);
+}
+
+.seo-resumen__vacio {
+  color: var(--color-muted-foreground);
+  font-family: var(--font-sans);
+}
+
+.seo-resumen__url {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.seo-resumen__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.seo-chip {
+  padding: 3px 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---------- Pestañas ---------- */
+.seo-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.seo-tabs__item {
+  flex-shrink: 0;
+  padding: 12px var(--space-4);
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.seo-tabs__item:hover {
+  color: var(--color-foreground);
+}
+
+.seo-tabs__item.is-active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.seo-tabs__item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
+}
+
+[data-panel-content]:focus-visible {
+  outline: none;
+}
+
+/* ---------- KPIs ---------- */
+.seo-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+  .seo-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.seo-kpi {
+  padding: var(--space-5);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  min-width: 0;
+}
+
+.seo-kpi__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.seo-kpi__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.seo-kpi__icono {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  font-size: 14px;
+}
+
+.seo-kpi__icono--ambar { background: color-mix(in srgb, var(--color-warning) 16%, transparent); color: var(--color-warning); }
+.seo-kpi__icono--rojo  { background: color-mix(in srgb, var(--color-destructive) 14%, transparent); color: var(--color-destructive); }
+.seo-kpi__icono--verde { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
+
+.seo-kpi__valor {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.seo-kpi__valor--texto {
+  font-size: 1.4rem;
+}
+
+.seo-kpi__valor--vacio {
+  color: var(--color-muted-foreground);
+}
+
+.seo-kpi__unidad {
+  font-size: 0.55em;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+}
+
+.seo-kpi__sub {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+/* ---------- Gráfica + resumen ---------- */
+.seo-duo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 1100px) {
+  .seo-duo { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
+}
+
+.seo-panel-card {
+  padding: var(--space-5);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  min-width: 0;
+}
+
+.seo-panel-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.seo-panel-card__titulo {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.seo-delta {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+.seo-delta--sube { color: var(--text-success); }
+.seo-delta--baja { color: var(--text-danger); }
+
+.seo-grafica {
+  overflow-x: auto;
+}
+
+/* Piso de ancho: bajo ~480px el texto del eje quedaría ilegible, así que en móvil la gráfica hace scroll dentro de su tarjeta. */
+.seo-grafica__svg {
+  display: block;
+  width: 100%;
+  min-width: 480px;
+  height: auto;
+}
+
+.seo-grafica__guia { stroke: var(--chart-grid-color); stroke-width: 1; stroke-dasharray: 3 4; }
+.seo-grafica__eje { fill: var(--chart-tick-color); font-size: 11px; font-family: var(--font-mono); }
+.seo-grafica__area { fill: color-mix(in srgb, var(--color-primary) 16%, transparent); stroke: none; }
+.seo-grafica__linea { fill: none; stroke: var(--color-primary); stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.seo-grafica__punto { fill: var(--color-card); stroke: var(--color-primary); stroke-width: 2; }
+.seo-grafica__punto:hover { fill: var(--color-primary); }
+
+.seo-filas { margin: 0; }
+
+.seo-filas__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.seo-filas__fila:last-child { border-bottom: 0; }
+
+.seo-filas__fila dt {
+  font-size: var(--text-base);
+  color: var(--color-foreground);
+}
+
+.seo-filas__fila dd {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  text-align: right;
+}
+
+.seo-filas__fila dd.seo-filas__vacio {
+  font-weight: var(--font-weight-normal);
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
+}
+
+@media (max-width: 640px) {
+  .seo-encabezado__acciones { width: 100%; }
+  .seo-buscador { flex: 1 1 100%; }
+  .seo-cuentas:not(.seo-cuentas--fila) {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: var(--space-2);
+  }
+  .seo-cuentas:not(.seo-cuentas--fila) .seo-cuenta { flex: 0 0 78%; scroll-snap-align: start; }
+  .seo-cuentas--fila .seo-cuenta { flex-basis: 78%; }
+  .seo-resumen__datos { gap: var(--space-3) var(--space-5); }
+  .seo-kpi { padding: var(--space-4); }
+  .seo-kpi__valor { font-size: 1.4rem; }
+}
+
+/* <<< Fin rediseño */

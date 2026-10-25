@@ -13,6 +13,7 @@
         <div class="page-header__actions">
             <a href="{{ route('admin.integraciones.api.index') }}" class="btn btn--ghost"><i class="fa-solid fa-key"></i> API y tokens</a>
             <a href="{{ route('admin.integraciones.webhooks.index') }}" class="btn btn--ghost"><i class="fa-solid fa-bolt"></i> Webhooks</a>
+            <a href="{{ route('admin.integraciones.search-console.index') }}" class="btn btn--ghost"><i class="fa-solid fa-magnifying-glass-chart"></i> Search Console</a>
         </div>
     </div>
 

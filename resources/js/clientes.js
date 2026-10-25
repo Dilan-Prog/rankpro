@@ -134,6 +134,7 @@
     form.querySelectorAll("[data-error-for]").forEach((span) => {
       span.textContent = "";
     });
+    form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
   }
 
   function renderFieldErrors(form, errors) {
@@ -141,7 +142,18 @@
     Object.keys(errors || {}).forEach((field) => {
       const span = form.querySelector(`[data-error-for="${field}"]`);
       if (span) span.textContent = errors[field][0];
+      form.elements[field]?.setAttribute("aria-invalid", "true");
     });
+    // Foco al primer campo con error: si no, queda fuera del scroll interno del modal.
+    form.querySelector('[aria-invalid="true"]')?.focus();
+  }
+
+  // Bloquea el botón durante la petición para evitar el doble envío.
+  function setSubmitting(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.classList.toggle("is-cargando", loading);
+    btn.setAttribute("aria-busy", loading ? "true" : "false");
   }
 
   function fillClientForm(form, client) {
@@ -162,16 +174,19 @@
     const title = document.getElementById("clientFormModalTitle");
     const submitBtn = document.getElementById("clientFormSubmit");
 
+    const subtitle = document.getElementById("clientFormModalSubtitle");
+
     clearFieldErrors(form);
+    setSubmitting(submitBtn, false);
     fillClientForm(form, client);
     form.dataset.editingId = client?.id ?? "";
 
-    if (title) title.textContent = client ? "Editar Cliente" : "Nuevo Cliente";
-    if (submitBtn) submitBtn.innerHTML = client
-      ? '<i class="fa-solid fa-check"></i> Guardar Cambios'
-      : '<i class="fa-solid fa-check"></i> Crear Cliente';
+    if (title) title.textContent = client ? "Editar cliente" : "Nuevo cliente";
+    if (subtitle) subtitle.textContent = client ? "Actualiza los datos de la cuenta" : "Alta de cuenta en el CRM";
+    if (submitBtn) submitBtn.textContent = client ? "Guardar cambios" : "Crear cliente";
 
     window.AgencyOS.openModal("clientFormModal");
+    form.querySelector("#nombre")?.focus();
   }
 
   function initOpenClientModalButtons() {
@@ -292,6 +307,9 @@
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const submitBtn = document.getElementById("clientFormSubmit");
+      if (submitBtn?.disabled) return;
+      setSubmitting(submitBtn, true);
       const editingId = form.dataset.editingId;
       const url = editingId
         ? form.dataset.updateActionTemplate.replace("__ID__", editingId)
@@ -320,7 +338,8 @@
           if (err.message !== "validation_failed") {
             toast("No se pudo guardar el cliente.", "error");
           }
-        });
+        })
+        .finally(() => setSubmitting(submitBtn, false));
     });
   }
 

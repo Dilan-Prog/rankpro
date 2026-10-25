@@ -53,6 +53,7 @@ use App\Http\Controllers\Admin\SeoContenidoController;
 use App\Http\Controllers\Admin\SeoOnPageAccionController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\SeoFaseController;
+use App\Http\Controllers\Admin\SearchConsoleController;
 use App\Http\Controllers\Admin\SeoPosicionController;
 use App\Http\Controllers\Admin\ServiciosController;
 use App\Http\Controllers\Admin\TareaController;
@@ -299,6 +300,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             Route::put('/mediciones/{medicion}', [KeywordMedicionController::class, 'update'])->name('mediciones.update');
             Route::delete('/mediciones/{medicion}', [KeywordMedicionController::class, 'destroy'])->name('mediciones.destroy');
         });
+
+        // Bitácora de una keyword para su ficha: va después de /listas para que el comodín no se la trague.
+        Route::get('/{keyword}/mediciones', [KeywordMedicionController::class, 'porKeyword'])->name('mediciones');
     });
 
     Route::prefix('conversiones')->name('conversiones.')->group(function () {
@@ -513,6 +517,16 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/{webhook}/regenerar-secreto', [WebhooksController::class, 'regenerarSecreto'])->name('regenerar-secreto');
         Route::get('/{webhook}/entregas', [WebhooksController::class, 'entregas'])->name('entregas');
         Route::post('/entregas/{entrega}/reintentar', [WebhooksController::class, 'reintentar'])->name('entregas.reintentar');
+    });
+
+    Route::prefix('integraciones/search-console')->name('integraciones.search-console.')->group(function () {
+        Route::get('/', [SearchConsoleController::class, 'index'])->name('index');
+        Route::put('/llave', [SearchConsoleController::class, 'guardarLlave'])->name('llave.guardar');
+        Route::delete('/llave', [SearchConsoleController::class, 'quitarLlave'])->name('llave.quitar');
+        Route::post('/probar', [SearchConsoleController::class, 'probar'])->name('probar');
+        Route::put('/clientes/{cliente}/propiedad', [SearchConsoleController::class, 'guardarPropiedad'])->name('propiedad.guardar');
+        Route::delete('/propiedades/{propiedad}', [SearchConsoleController::class, 'quitarPropiedad'])->name('propiedad.quitar');
+        Route::post('/propiedades/{propiedad}/sincronizar', [SearchConsoleController::class, 'sincronizar'])->name('sincronizar');
     });
 
     Route::prefix('roles')->name('roles.')->group(function () {

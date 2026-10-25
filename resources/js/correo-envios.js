@@ -396,7 +396,10 @@
     if (!frame || !botones.length) return;
     botones.forEach((b) => {
       b.addEventListener("click", () => {
-        botones.forEach((x) => x.classList.toggle("is-active", x === b));
+        botones.forEach((x) => {
+          x.classList.toggle("is-active", x === b);
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
         frame.style.width = b.dataset.previaAncho + "px";
       });
     });
@@ -427,7 +430,7 @@
 
     const form = root.querySelector("#envioForm");
     const el = {
-      plantillasLista: root.querySelector("[data-plantillas-lista]"),
+      plantillaSelect: root.querySelector("[data-plantilla-select]"),
       plantillasVacio: root.querySelector("[data-plantillas-vacio]"),
       asunto: root.querySelector("[data-campo=asunto]"),
       remitenteNombre: root.querySelector("[data-campo=remitente_nombre]"),
@@ -435,6 +438,16 @@
       chips: root.querySelector("[data-chips]"),
       chipsVacio: root.querySelector("[data-chips-vacio]"),
       contador: root.querySelector("[data-destinatarios-contador]"),
+      contadorSufijo: root.querySelector("[data-destinatarios-sufijo]"),
+      contactosToggle: root.querySelector("[data-contactos-toggle]"),
+      contactosPanel: root.querySelector("[data-contactos-panel]"),
+      variablesDetalles: root.querySelector("[data-variables-detalles]"),
+      adjuntosEstado: root.querySelector("[data-adjuntos-estado]"),
+      adjuntosLista: root.querySelector("[data-adjuntos-lista]"),
+      adjuntosAyuda: root.querySelector("[data-adjuntos-ayuda]"),
+      adjuntar: root.querySelector("[data-accion-adjuntar]"),
+      adjuntarTexto: root.querySelector("[data-adjuntar-texto]"),
+      accionAviso: root.querySelector("[data-accion-aviso]"),
       todosActivos: root.querySelector("[data-todos-activos]"),
       limpiar: root.querySelector("[data-limpiar-destinatarios]"),
       buscadorInput: root.querySelector("[data-buscador-input]"),
@@ -513,6 +526,8 @@
       // el iframe (ver engancharEdicionPrevia): evita refrescar en cada tecla,
       // que perdería el foco al reemplazar el srcdoc.
       previaDesincronizada: false,
+      // Mientras la petición de guardar/enviar está en vuelo: evita el doble envío.
+      enviando: false,
     };
     if (!Array.isArray(state.marca.redes)) state.marca.redes = [];
 
@@ -540,19 +555,19 @@
     function pintarPlantillas() {
       if (!plantillas.length) {
         el.plantillasVacio.hidden = false;
-        el.plantillasLista.innerHTML = "";
+        el.plantillaSelect.innerHTML = '<option value="">Sin plantillas activas</option>';
+        el.plantillaSelect.disabled = true;
         return;
       }
-      el.plantillasLista.innerHTML = plantillas
-        .map(
-          (p) => `
-          <button type="button" class="correo-plantilla ${p.id === state.plantillaId ? "is-active" : ""}" data-plantilla="${p.id}">
-            <span class="correo-plantilla__cat">${escapeHtml(p.categoria_label)}${p.html_libre ? " · HTML" : ""}</span>
-            <span class="correo-plantilla__nombre">${escapeHtml(p.nombre)}</span>
-            <span class="correo-plantilla__asunto">${escapeHtml(p.asunto)}</span>
-          </button>`
-        )
-        .join("");
+      // El placeholder solo existe mientras no hay una elegida (en un envío nuevo se preselecciona la primera).
+      el.plantillaSelect.innerHTML =
+        (state.plantillaId ? "" : '<option value="">Elige una plantilla</option>') +
+        plantillas
+          .map(
+            (p) =>
+              `<option value="${p.id}" ${p.id === state.plantillaId ? "selected" : ""}>${escapeHtml(p.nombre)} · ${escapeHtml(p.categoria_label)}${p.html_libre ? " · HTML" : ""}</option>`
+          )
+          .join("");
     }
 
     function elegirPlantilla(id) {
@@ -573,9 +588,8 @@
       actualizarPrevia();
     }
 
-    el.plantillasLista.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-plantilla]");
-      if (btn) elegirPlantilla(Number(btn.dataset.plantilla));
+    el.plantillaSelect.addEventListener("change", () => {
+      if (el.plantillaSelect.value) elegirPlantilla(Number(el.plantillaSelect.value));
     });
 
     // ---- 2 · Asunto y remitente --------------------------------------------
@@ -616,16 +630,17 @@
         .map((d, i) => {
           const extra = etiquetaChip(d);
           return `
-          <span class="correo-chip ${d.cliente_id ? "correo-chip--cliente" : ""}" title="${escapeHtml(d.email)}">
-            <i class="fa-solid ${d.cliente_id ? "fa-building" : "fa-at"}"></i>
-            ${extra ? `<span class="correo-chip__extra">${escapeHtml(extra)}</span>` : ""}
-            <span class="correo-chip__email u-mono">${escapeHtml(d.email)}</span>
-            <button type="button" class="correo-chip__quitar" data-quitar="${i}" aria-label="Quitar ${escapeHtml(d.email)}"><i class="fa-solid fa-xmark"></i></button>
+          <span class="cenv-chip ${d.cliente_id ? "cenv-chip--cliente" : ""}" role="listitem" title="${escapeHtml(d.email)}">
+            <i class="fa-solid ${d.cliente_id ? "fa-building" : "fa-at"}" aria-hidden="true"></i>
+            <span class="cenv-chip__email u-mono">${escapeHtml(d.email)}</span>
+            ${extra ? `<span class="cenv-chip__extra">· ${escapeHtml(extra)}</span>` : ""}
+            <button type="button" class="cenv-chip__quitar" data-quitar="${i}" aria-label="Quitar a ${escapeHtml(d.email)} de los destinatarios"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </span>`;
         })
         .join("");
-      el.chips.innerHTML = chips || '<span class="correo-chips__vacio">Sin destinatarios todavía</span>';
+      el.chips.innerHTML = chips || '<span class="cenv-chips__vacio">Sin destinatarios todavía</span>';
       el.contador.textContent = String(state.destinatarios.length);
+      el.contadorSufijo.textContent = state.destinatarios.length === 1 ? "seleccionado" : "seleccionados";
       el.limpiar.hidden = state.destinatarios.length === 0;
       if (state.destinatarios.length) limpiarError("destinatarios");
       actualizarPreviaMeta();
@@ -635,9 +650,13 @@
     el.chips.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-quitar]");
       if (!btn) return;
-      state.destinatarios.splice(Number(btn.dataset.quitar), 1);
+      const i = Number(btn.dataset.quitar);
+      state.destinatarios.splice(i, 1);
       pintarChips();
       pintarBuscador();
+      // Sin esto el foco se perdería con el botón que acaba de desaparecer.
+      const siguiente = el.chips.querySelectorAll("[data-quitar]")[Math.min(i, state.destinatarios.length - 1)];
+      (siguiente || el.sueltos).focus();
     });
 
     function agregarCliente(c) {
@@ -660,7 +679,10 @@
       state.destinatarios = [];
       pintarChips();
       pintarBuscador();
+      el.sueltos.focus();
     });
+
+    // ---- "Contactos": clientes activos del CRM con correo ---------------------
 
     function pintarBuscador() {
       const term = el.buscadorInput.value.trim().toLowerCase();
@@ -669,11 +691,6 @@
         if (!term) return true;
         return [c.empresa, c.nombre, c.contacto_nombre, c.email].some((v) => String(v || "").toLowerCase().includes(term));
       });
-      if (document.activeElement !== el.buscadorInput && !term) {
-        el.buscadorLista.hidden = true;
-        return;
-      }
-      el.buscadorLista.hidden = false;
       el.buscadorLista.innerHTML = candidatos.length
         ? candidatos
             .slice(0, 30)
@@ -688,31 +705,45 @@
         : `<span class="correo-buscador__vacio">${clientes.length ? "Sin coincidencias o ya están todos agregados." : "No hay clientes activos con correo."}</span>`;
     }
 
+    function abrirContactos() {
+      el.contactosPanel.hidden = false;
+      el.contactosToggle.setAttribute("aria-expanded", "true");
+      pintarBuscador();
+      el.buscadorInput.focus();
+    }
+
+    function cerrarContactos(devolverFoco) {
+      if (el.contactosPanel.hidden) return;
+      el.contactosPanel.hidden = true;
+      el.contactosToggle.setAttribute("aria-expanded", "false");
+      if (devolverFoco) el.contactosToggle.focus();
+    }
+
+    el.contactosToggle.addEventListener("click", () => (el.contactosPanel.hidden ? abrirContactos() : cerrarContactos(true)));
     el.buscadorInput.addEventListener("input", pintarBuscador);
-    el.buscadorInput.addEventListener("focus", pintarBuscador);
-    el.buscadorInput.addEventListener("keydown", (e) => {
+    el.contactosPanel.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        el.buscadorLista.hidden = true;
-        el.buscadorInput.blur();
+        e.preventDefault();
+        cerrarContactos(true);
       }
-      if (e.key === "Enter") {
+      if (e.key === "Enter" && e.target === el.buscadorInput) {
         e.preventDefault();
         el.buscadorLista.querySelector("[data-cliente]")?.click();
       }
     });
-    // mousedown y no click: el blur del input cerraría la lista antes del click.
-    el.buscadorLista.addEventListener("mousedown", (e) => {
+    el.buscadorLista.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-cliente]");
       if (!btn) return;
-      e.preventDefault();
       agregarCliente(clientes.find((c) => c.id === Number(btn.dataset.cliente)));
-      el.buscadorInput.value = "";
       pintarChips();
       pintarBuscador();
+      el.buscadorInput.focus();
     });
     document.addEventListener("click", (e) => {
-      if (!e.target.closest("[data-buscador]")) el.buscadorLista.hidden = true;
+      if (!e.target.closest("[data-buscador]")) cerrarContactos(false);
     });
+
+    // ---- Correos sueltos ------------------------------------------------------
 
     /** "Nombre <correo>", "correo" — separados por coma, punto y coma o salto de línea. */
     function parsearSueltos(texto) {
@@ -733,30 +764,39 @@
     }
 
     function agregarSueltos() {
+      if (!el.sueltos.value.trim()) return;
       const { validos, invalidos } = parsearSueltos(el.sueltos.value);
-      let n = 0;
       validos.forEach((v) => {
         if (tieneEmail(v.email)) return;
         // Si el correo pertenece a un cliente activo se vincula: así {{cliente}} sale del CRM.
         const c = clientes.find((x) => String(x.email).toLowerCase() === v.email.toLowerCase());
         if (c) agregarCliente(c);
         else state.destinatarios.push({ cliente_id: null, email: v.email, nombre: v.nombre, variables: v.nombre ? { contacto: v.nombre } : {} });
-        n++;
       });
-      el.sueltos.value = invalidos.join("\n");
+      // Lo que no es un correo se queda en el campo para corregirlo, con el motivo junto a él.
+      el.sueltos.value = invalidos.join(", ");
       pintarChips();
       pintarBuscador();
-      if (invalidos.length) toast(`${invalidos.length} ${invalidos.length === 1 ? "entrada no es un correo válido" : "entradas no son correos válidos"}; se dejaron en el cuadro.`, "warning");
-      else if (n) toast(`${n} ${n === 1 ? "correo agregado" : "correos agregados"}.`, "success");
+      const aviso = root.querySelector('[data-error-for="destinatarios"]');
+      if (invalidos.length) {
+        aviso.textContent = `${invalidos.length === 1 ? "No es un correo válido" : "No son correos válidos"}: ${invalidos.join(", ")}. Corrígelo y vuelve a añadirlo.`;
+        el.sueltos.setAttribute("aria-invalid", "true");
+      } else {
+        el.sueltos.removeAttribute("aria-invalid");
+      }
     }
 
-    el.agregarSueltos.addEventListener("click", agregarSueltos);
+    el.agregarSueltos.addEventListener("click", () => {
+      agregarSueltos();
+      el.sueltos.focus();
+    });
     el.sueltos.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      if (e.key === "Enter") {
         e.preventDefault();
         agregarSueltos();
       }
     });
+    el.sueltos.addEventListener("input", () => el.sueltos.removeAttribute("aria-invalid"));
 
     // ---- 4 · Variables -------------------------------------------------------
 
@@ -780,6 +820,8 @@
 
       el.variablesPersona.hidden = persona.length === 0;
       el.variablesPersonaTexto.textContent = persona.map((k) => `{{${k}}}`).join(", ");
+      // Solo se abre (nunca se fuerza el cierre): si la plantilla pide valores, no pueden quedar escondidos.
+      if (claves.length && el.variablesDetalles) el.variablesDetalles.open = true;
     }
 
     el.variablesCampos.addEventListener("input", (e) => {
@@ -1843,7 +1885,7 @@
       el.programarCampo.hidden = state.cuando !== "programar";
       el.cuando.forEach((r) => {
         r.checked = r.value === state.cuando;
-        r.closest(".correo-cuando__opcion")?.classList.toggle("is-active", r.value === state.cuando);
+        r.closest(".cenv-segmento__op")?.classList.toggle("is-active", r.value === state.cuando);
       });
       actualizarAccionPrincipal();
       actualizarPreviaMeta();
@@ -1878,15 +1920,14 @@
 
     function actualizarAccionPrincipal() {
       const n = state.destinatarios.length;
-      if (state.cuando === "programar") {
-        el.accionPrincipal.dataset.accion = "programar";
-        el.accionPrincipal.querySelector("i").className = "fa-solid fa-clock";
-        el.accionPrincipalTexto.textContent = n ? `Programar envío a ${n}` : "Programar envío";
-      } else {
-        el.accionPrincipal.dataset.accion = "enviar";
-        el.accionPrincipal.querySelector("i").className = "fa-solid fa-paper-plane";
-        el.accionPrincipalTexto.textContent = n ? `Enviar a ${n}` : "Enviar ahora";
-      }
+      const programar = state.cuando === "programar";
+      el.accionPrincipal.dataset.accion = programar ? "programar" : "enviar";
+      el.accionPrincipal.querySelector("i").className = programar ? "fa-solid fa-calendar-days" : "fa-solid fa-paper-plane";
+      el.accionPrincipalTexto.textContent = programar ? `Programar a ${n}` : `Enviar a ${n}`;
+      // Con 0 destinatarios no hay a quién mandar (el borrador sí se puede guardar); mientras se envía, todo queda bloqueado.
+      const sinDestinatarios = n === 0;
+      el.accionPrincipal.disabled = state.enviando || sinDestinatarios;
+      el.accionAviso.textContent = sinDestinatarios && !state.enviando ? "Agrega al menos un destinatario para poder enviar." : "";
     }
 
     // ---- Previa --------------------------------------------------------------
@@ -1996,10 +2037,12 @@
     function limpiarError(campo) {
       const span = root.querySelector(`[data-error-for="${campo}"]`);
       if (span) span.textContent = "";
+      root.querySelector(`[data-campo="${campo}"]`)?.removeAttribute("aria-invalid");
     }
 
     function limpiarErrores() {
       root.querySelectorAll("[data-error-for]").forEach((s) => (s.textContent = ""));
+      root.querySelectorAll('[aria-invalid="true"][data-campo]').forEach((c) => c.removeAttribute("aria-invalid"));
       el.formError.hidden = true;
       el.formError.textContent = "";
     }
@@ -2015,12 +2058,17 @@
         if (span && !pintados.has(raiz)) {
           span.textContent = msg;
           pintados.add(raiz);
+          root.querySelector(`[data-campo="${raiz}"]`)?.setAttribute("aria-invalid", "true");
         }
       });
       const general = (body && body.message) || "Revisa los campos marcados.";
       el.formError.textContent = Object.keys(errors).length ? "Revisa los campos marcados." : general;
       el.formError.hidden = false;
-      root.querySelector("[data-error-for]:not(:empty)")?.closest(".correo-paso")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const primero = root.querySelector("[data-error-for]:not(:empty)");
+      // Un error dentro de un <details> cerrado (variables) quedaría invisible.
+      const plegable = primero?.closest("details");
+      if (plegable) plegable.open = true;
+      primero?.closest("[data-seccion]")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     // ---- Guardar / enviar / programar ---------------------------------------
@@ -2061,11 +2109,17 @@
     }
 
     function bloquear(bloqueado) {
+      state.enviando = bloqueado;
       form.querySelectorAll("button").forEach((b) => (b.disabled = bloqueado));
+      form.setAttribute("aria-busy", bloqueado ? "true" : "false");
+      // Al desbloquear, el botón principal depende de si hay destinatarios.
+      if (!bloqueado) actualizarAccionPrincipal();
     }
 
-    function guardar(accion) {
+    /** `boton` solo se pasa cuando la acción la dispara otro control distinto del habitual (p. ej. "Guardar y adjuntar"). */
+    function guardar(accion, boton) {
       limpiarErrores();
+      if (state.enviando) return;
       if (!state.plantillaId) {
         pintarErrores({ errors: { plantilla_id: ["Elige una plantilla."] } });
         return;
@@ -2082,9 +2136,10 @@
       if (accion === "enviar" && !window.confirm(`¿Enviar ahora a ${n} ${n === 1 ? "destinatario" : "destinatarios"}? Los correos salen en este momento.`)) return;
 
       bloquear(true);
-      const boton = accion === "borrador" ? root.querySelector('[data-accion="borrador"]') : el.accionPrincipal;
-      const htmlOriginal = boton.innerHTML;
-      if (accion === "enviar") boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando…';
+      const objetivo = boton || (accion === "borrador" ? root.querySelector('[data-accion="borrador"]') : el.accionPrincipal);
+      const htmlOriginal = objetivo.innerHTML;
+      const textos = { enviar: "Enviando…", programar: "Programando…", borrador: "Guardando…" };
+      objetivo.innerHTML = `<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> ${boton ? "Guardando…" : textos[accion]}`;
 
       const url = envio ? envio.update_url : urls.store;
       request(url, envio ? "PUT" : "POST", payload(accion))
@@ -2094,7 +2149,7 @@
         })
         .catch((err) => {
           bloquear(false);
-          boton.innerHTML = htmlOriginal;
+          objetivo.innerHTML = htmlOriginal;
           if (err.status === 422) pintarErrores(err.body);
           else {
             el.formError.textContent = mensajeDe(err, "No se pudo guardar el envío.");
@@ -2106,6 +2161,8 @@
     form.querySelectorAll("[data-accion]").forEach((b) =>
       b.addEventListener("click", () => guardar(b.dataset.accion))
     );
+
+    el.adjuntar.addEventListener("click", () => guardar("borrador", el.adjuntar));
 
     form.addEventListener("submit", (e) => e.preventDefault());
 
@@ -2141,13 +2198,47 @@
         .then((data) => toast(data.mensaje || `Prueba enviada a ${destino}.`, "success"))
         .catch((err) => {
           if (err.status === 422 && err.body && err.body.errors) pintarErrores(err.body);
-          else toast(mensajeDe(err, "No se pudo enviar la prueba."), "error");
+          else {
+            // El toast dura 3.5 s: el motivo (p. ej. SMTP caído) se deja también fijo junto a las acciones.
+            const motivo = mensajeDe(err, "No se pudo enviar la prueba.");
+            toast(motivo, "error");
+            el.formError.textContent = motivo;
+            el.formError.hidden = false;
+          }
         })
         .finally(() => {
           btn.disabled = false;
           btn.innerHTML = html;
         });
     });
+
+    // ---- Adjuntos ------------------------------------------------------------
+
+    /** Los adjuntos cuelgan del envío (no existe hasta guardarlo): aquí solo se muestran los ya subidos y se lleva al detalle. */
+    function pintarAdjuntos() {
+      const lista = (envio && envio.adjuntos) || [];
+      if (lista.length) {
+        el.adjuntosEstado.hidden = true;
+        el.adjuntosLista.hidden = false;
+        el.adjuntosLista.innerHTML = lista
+          .map((a) => `<li class="cenv-adjuntos__item"><i class="fa-solid fa-paperclip" aria-hidden="true"></i><span class="cenv-adjuntos__nombre">${escapeHtml(a.nombre)}</span><span class="cenv-adjuntos__tamano u-mono">${escapeHtml(tamanoLegible(a.tamano))}</span></li>`)
+          .join("");
+        el.adjuntosAyuda.textContent = "Para quitar o agregar adjuntos, guarda y gestiónalos en el detalle del envío.";
+        el.adjuntarTexto.textContent = "Guardar y gestionar adjuntos";
+      } else {
+        el.adjuntosEstado.hidden = false;
+        el.adjuntosLista.hidden = true;
+        el.adjuntosAyuda.textContent = envio
+          ? "Este envío no tiene adjuntos. Guarda para agregarlos en el detalle del envío."
+          : "Guarda el borrador para adjuntar PDF: los adjuntos se agregan en el detalle del envío.";
+      }
+    }
+
+    function tamanoLegible(bytes) {
+      const n = Number(bytes) || 0;
+      if (n >= 1048576) return (n / 1048576).toFixed(1) + " MB";
+      return Math.max(1, Math.round(n / 1024)) + " KB";
+    }
 
     // ---- Arranque ------------------------------------------------------------
 
@@ -2156,6 +2247,8 @@
     pintarVariables();
     pintarVariablesPersonalizadas();
     pintarChipsVariablesPersonalizar();
+    if (state.variablesPersonalizadas.length && el.variablesDetalles) el.variablesDetalles.open = true;
+    pintarAdjuntos();
     aplicarCuando();
 
     if (el.personalizarToggle) el.personalizarToggle.checked = state.personalizar;

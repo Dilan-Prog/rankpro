@@ -146,6 +146,32 @@ class CorreoPlantillasTest extends TestCase
         $this->assertSame($plantilla->id, $response->viewData('editorData')['plantilla']['id']);
     }
 
+    public function test_show_offers_the_azul_marino_color_and_the_simple_advanced_switch(): void
+    {
+        $plantilla = CorreoPlantilla::factory()->create();
+
+        $response = $this->actingAs(User::factory()->create())->get(route('admin.correo.plantillas.show', $plantilla));
+
+        $response->assertOk()
+            ->assertSee('data-modo="sencilla"', false)
+            ->assertSee('data-modo="avanzada"', false)
+            ->assertSee('Guardar plantilla');
+        $this->assertSame('Azul marino', $response->viewData('editorData')['colores']['#0E1B2A']);
+    }
+
+    public function test_update_accepts_the_azul_marino_color(): void
+    {
+        $plantilla = CorreoPlantilla::factory()->create();
+        $payload = $this->payloadUpdate();
+        $payload['marca']['color'] = '#0E1B2A';
+
+        $this->actingAs(User::factory()->create())
+            ->putJson(route('admin.correo.plantillas.update', $plantilla), $payload)
+            ->assertOk();
+
+        $this->assertSame('#0E1B2A', $plantilla->fresh()->marca['color']);
+    }
+
     // --- update --------------------------------------------------------------
 
     public function test_update_saves_blocks_and_marca(): void

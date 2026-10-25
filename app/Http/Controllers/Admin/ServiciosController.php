@@ -65,8 +65,10 @@ class ServiciosController extends Controller
     /** Shared shape for index()'s server-rendered rows and store()/update()'s AJAX responses. */
     private function toRow(Servicio $servicio): array
     {
-        $mesesActivos = $servicio->fecha_inicio
-            ? max(0, (int) $servicio->fecha_inicio->diffInMonths(now()))
+        // diffInMonths de Carbon 2 es absoluto: un inicio futuro daría meses positivos, y tras fecha_fin el servicio ya no acumula.
+        $corte = $servicio->fecha_fin && $servicio->fecha_fin->lt(now()) ? $servicio->fecha_fin : now();
+        $mesesActivos = $servicio->fecha_inicio && $servicio->fecha_inicio->lte($corte)
+            ? (int) $servicio->fecha_inicio->diffInMonths($corte)
             : 0;
         $precio = (float) $servicio->precio_mensual;
 

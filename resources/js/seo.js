@@ -510,19 +510,68 @@
 
   // ---------- Tabs de la campaña (Resumen / Posiciones / Link Building / On-Page / Técnico / Contenido / Reporte) ----------
   function initSeoTabs() {
-    const tabs = document.querySelectorAll("#seoTabs .tabs__item");
-    if (!tabs.length) return;
+    const list = document.getElementById("seoTabs");
+    const tabs = Array.from(document.querySelectorAll("#seoTabs [role='tab']"));
+    if (!list || !tabs.length) return;
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("is-active"));
-        tab.classList.add("is-active");
+    // Una aprobación/retroceso recarga la página: sin recordar la pestaña, el usuario volvería siempre a Auditoría.
+    const storageKey = `seo-tab-${list.dataset.campana || ""}`;
+    const readStored = () => {
+      try {
+        return window.sessionStorage.getItem(storageKey);
+      } catch (e) {
+        return null;
+      }
+    };
+    const writeStored = (value) => {
+      try {
+        window.sessionStorage.setItem(storageKey, value);
+      } catch (e) {
+        /* sin almacenamiento: la pestaña simplemente no se recuerda */
+      }
+    };
 
-        document.querySelectorAll("[data-panel-content]").forEach((panel) => {
-          panel.hidden = panel.dataset.panelContent !== tab.dataset.panel;
-        });
+    function activate(tab, { focus = false, persist = true } = {}) {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+      });
+
+      document.querySelectorAll("[data-panel-content]").forEach((panel) => {
+        panel.hidden = panel.dataset.panelContent !== tab.dataset.panel;
+      });
+
+      if (persist) writeStored(tab.dataset.panel);
+      if (focus) tab.focus();
+      tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => activate(tab));
+      tab.addEventListener("keydown", (e) => {
+        const last = tabs.length - 1;
+        const target = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last }[e.key];
+        if (target === undefined) return;
+        e.preventDefault();
+        activate(tabs[target], { focus: true });
       });
     });
+
+    // Botones de estados vacíos ("Ver fase actual", "Capturar meses en Reporte") que saltan a otra pestaña.
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest("[data-tab-link]");
+      if (!link) return;
+      const destino = tabs.find((t) => t.dataset.panel === link.dataset.tabLink);
+      if (destino) {
+        activate(destino);
+        window.scrollTo({ top: list.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
+      }
+    });
+
+    const inicial = tabs.find((t) => t.dataset.panel === location.hash.slice(1)) || tabs.find((t) => t.dataset.panel === readStored());
+    if (inicial) activate(inicial, { persist: false });
   }
 
   // ---------- Métricas mensuales (tendencia) ----------
@@ -662,15 +711,6 @@
     finalizada: ["Finalizada", "badge--neutral"],
   };
 
-  // Mirrors App\Support\Labels::faseSeo() exactly.
-  const SEO_FASE_LABELS = {
-    auditoria: "Auditoría",
-    estrategia: "Estrategia",
-    ejecucion: "Ejecución",
-    reporte: "Reporte y Análisis",
-    cerrada: "Cerrada",
-  };
-
   function seoBadgeHtml(map, key) {
     const [label, cls] = map[key] || [key, "badge--neutral"];
     return `<span class="badge ${cls}">${label}</span>`;
@@ -726,67 +766,47 @@
 
   function buildSeoClienteCardElement(row) {
     const card = document.createElement("div");
-    card.className = "seo-cliente-card";
+    card.className = "seo-cuenta";
+    card.setAttribute("role", "listitem");
     card.setAttribute("data-seo-cliente-card", "");
     card.dataset.clienteId = String(row.cliente_id);
-    card.dataset.search = `${row.cliente || ""} ${row.contacto || ""}`.toLowerCase();
+    card.dataset.search = `${row.cliente || ""} ${row.contacto || ""} ${row.responsable || ""}`.toLowerCase();
     card.dataset.cliente = JSON.stringify(row);
 
     const initials = escapeHtml(seoClienteInitials(row.cliente));
-    const contactoHtml = row.contacto ? `<span class="seo-cliente-card__contacto">${escapeHtml(row.contacto)}</span>` : "";
+    const cabecera = `
+      <span class="seo-cuenta__head">
+        <span class="seo-cuenta__avatar" aria-hidden="true">${initials}</span>
+        <span class="seo-cuenta__id">
+          <span class="seo-cuenta__name">${escapeHtml(row.cliente)}</span>
+          <span class="seo-cuenta__resp">${escapeHtml(row.responsable || "Sin responsable")}</span>
+        </span>
+      </span>`;
 
     if (row.campana_id) {
-      const faseLabel = SEO_FASE_LABELS[row.fase_actual] || row.fase_actual || "—";
       const scoreLabel = row.seo_score != null ? row.seo_score : "—";
-      const traficoLabel = row.trafico_actual != null ? Number(row.trafico_actual).toLocaleString("es-MX") : "—";
       card.innerHTML = `
-        <a href="${row.show_url}" class="seo-cliente-card__link">
-          <div class="seo-cliente-card__header">
-            <span class="seo-cliente-card__avatar">${initials}</span>
-            <span class="seo-cliente-card__id">
-              <span class="seo-cliente-card__name">${escapeHtml(row.cliente)}</span>
-              ${contactoHtml}
-            </span>
+        <a href="${row.show_url}" class="seo-cuenta__link">
+          ${cabecera}
+          <span class="seo-cuenta__foot">
             ${seoBadgeHtml(ESTADO_CAMPANA_BADGE, row.estado)}
-          </div>
-          <div class="seo-cliente-card__body">
-            <div class="seo-cliente-card__stat">
-              <span class="seo-cliente-card__stat-label">Fase</span>
-              <span class="seo-cliente-card__stat-value">${escapeHtml(faseLabel)}</span>
-            </div>
-            <div class="seo-cliente-card__stat">
-              <span class="seo-cliente-card__stat-label">SEO Score</span>
-              <span class="seo-cliente-card__stat-value u-mono">${scoreLabel}/100</span>
-            </div>
-            <div class="seo-cliente-card__stat">
-              <span class="seo-cliente-card__stat-label">Tráfico orgánico</span>
-              <span class="seo-cliente-card__stat-value u-mono">${traficoLabel}</span>
-            </div>
-            <div class="seo-cliente-card__stat">
-              <span class="seo-cliente-card__stat-label">MRR</span>
-              <span class="seo-cliente-card__stat-value u-mono">$${Math.round(Number(row.mrr) || 0).toLocaleString("es-MX")}</span>
-            </div>
-          </div>
+            <span class="seo-cuenta__score" title="SEO Score de la auditoría">Score ${scoreLabel}</span>
+          </span>
         </a>
-        <div class="seo-cliente-card__footer">
-          <button type="button" class="btn--icon" title="Editar" data-edit-seo-cliente><i class="fa-solid fa-pen"></i></button>
-          <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-seo-cliente><i class="fa-solid fa-trash"></i></button>
-        </div>`;
+        <span class="seo-cuenta__acciones">
+          <button type="button" class="btn--icon" title="Editar campaña" aria-label="Editar campaña de ${escapeHtml(row.cliente)}" data-edit-seo-cliente><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="btn--icon" title="Eliminar campaña" aria-label="Eliminar campaña de ${escapeHtml(row.cliente)}" style="color:var(--text-danger);" data-delete-seo-cliente><i class="fa-solid fa-trash"></i></button>
+        </span>`;
     } else {
       card.innerHTML = `
-        <div class="seo-cliente-card__header">
-          <span class="seo-cliente-card__avatar">${initials}</span>
-          <span class="seo-cliente-card__id">
-            <span class="seo-cliente-card__name">${escapeHtml(row.cliente)}</span>
-            ${contactoHtml}
+        <div class="seo-cuenta__link seo-cuenta__link--vacia">
+          ${cabecera}
+          <span class="seo-cuenta__foot">
+            <span class="seo-cuenta__resp">Sin campaña</span>
+            <button type="button" class="btn btn--secondary btn--sm" data-open-seo-modal data-preselect-cliente="${row.cliente_id}">
+              <i class="fa-solid fa-plus"></i> Crear campaña
+            </button>
           </span>
-          <span class="seo-cliente-card__sin-campana">Sin campaña</span>
-        </div>
-        <div class="seo-cliente-card__body seo-cliente-card__body--empty">
-          <p class="seo-cliente-card__empty-text">Este cliente aún no tiene una campaña SEO.</p>
-          <button type="button" class="btn btn--secondary btn--sm" data-open-seo-modal data-preselect-cliente="${row.cliente_id}">
-            <i class="fa-solid fa-plus"></i> Crear campaña
-          </button>
         </div>`;
     }
 

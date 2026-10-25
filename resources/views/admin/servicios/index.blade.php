@@ -56,90 +56,94 @@
         <p class="table__empty" id="servicioNoResults" hidden>No hay servicios de este tipo.</p>
     @endif
 
-    <x-modal id="servicioDetailModal">
-        <x-slot:header>
-            <h2 id="servicioDetailTitle" style="margin-bottom:6px;"></h2>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:var(--text-xs);color:var(--color-muted-foreground);">Servicio contratado</span>
-                <span id="servicioDetailBadge"></span>
-            </div>
-        </x-slot:header>
+    {{-- Modal propio (no <x-modal>) para no tocar el componente compartido: mismas clases base, cierre global por [data-modal-close]/Esc. --}}
+    <div class="modal-overlay" id="servicioDetailModal" hidden>
+        <div class="modal srv-modal" role="dialog" aria-modal="true" aria-labelledby="servicioDetailTitle">
+            <header class="srv-modal__cabecera">
+                <div class="srv-modal__titulos">
+                    <h2 class="srv-modal__titulo" id="servicioDetailTitle"></h2>
+                    <p class="srv-modal__subtitulo" id="servicioDetailSubtitulo"></p>
+                    <span id="servicioDetailBadge"></span>
+                </div>
+                <button type="button" class="srv-modal__cerrar" data-modal-close="servicioDetailModal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </header>
 
-        <div class="record-modal__stats">
-            <div>
-                <div class="record-modal__section-label">MRR</div>
-                <div id="servicioDetailMrr"></div>
+            <div class="srv-modal__cuerpo">
+                <section class="srv-seccion" aria-labelledby="srvSecContratado">
+                    <h3 class="srv-seccion__titulo srv-seccion__titulo--acento" id="srvSecContratado">Servicio contratado</h3>
+                    <div class="srv-metricas">
+                        <div class="srv-metrica">
+                            <span class="srv-metrica__etiqueta">MRR</span>
+                            <span class="srv-metrica__valor srv-metrica__valor--acento" id="servicioDetailMrr"></span>
+                        </div>
+                        <div class="srv-metrica">
+                            <span class="srv-metrica__etiqueta">Anualizado</span>
+                            <span class="srv-metrica__valor" id="servicioDetailAnualizado"></span>
+                        </div>
+                        <div class="srv-metrica">
+                            <span class="srv-metrica__etiqueta">Meses activos</span>
+                            <span class="srv-metrica__valor" id="servicioDetailMeses"></span>
+                        </div>
+                        <div class="srv-metrica">
+                            <span class="srv-metrica__etiqueta">Estado</span>
+                            <span class="srv-metrica__valor" id="servicioDetailEstadoLabel"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="srv-seccion" aria-labelledby="srvSecFicha">
+                    <h3 class="srv-seccion__titulo" id="srvSecFicha">Ficha del registro</h3>
+                    <dl class="srv-ficha">
+                        <div class="srv-ficha__fila"><dt>Cliente</dt><dd id="servicioDetailCliente"></dd></div>
+                        <div class="srv-ficha__fila"><dt>Servicio</dt><dd id="servicioDetailNombre"></dd></div>
+                        <div class="srv-ficha__fila"><dt>Inicio</dt><dd class="srv-mono" id="servicioDetailInicio"></dd></div>
+                        <div class="srv-ficha__fila"><dt>Responsable</dt><dd id="servicioDetailResponsable"></dd></div>
+                        <div class="srv-ficha__fila"><dt>Facturación</dt><dd>Mensual · MXN</dd></div>
+                        <div class="srv-ficha__fila"><dt>Ingreso acumulado</dt><dd class="srv-mono srv-acento" id="servicioDetailIngresoAcumulado"></dd></div>
+                    </dl>
+                </section>
+
+                <section class="srv-seccion" aria-labelledby="srvSecBitacora">
+                    <h3 class="srv-seccion__titulo" id="srvSecBitacora">Bitácora</h3>
+                    <ul class="srv-bitacora" id="servicioDetailTimeline"></ul>
+                </section>
             </div>
-            <div>
-                <div class="record-modal__section-label">Anualizado</div>
-                <div id="servicioDetailAnualizado"></div>
-            </div>
-            <div>
-                <div class="record-modal__section-label">Meses activos</div>
-                <div id="servicioDetailMeses"></div>
-            </div>
-            <div>
-                <div class="record-modal__section-label">Estado</div>
-                <div id="servicioDetailEstadoLabel"></div>
-            </div>
+
+            <footer class="srv-modal__pie">
+                <button type="button" class="srv-btn srv-btn--secundario" data-modal-close="servicioDetailModal">Cerrar</button>
+                <a id="servicioDetailContrato" href="#" class="srv-btn srv-btn--secundario">Ver contrato</a>
+                <button type="button" id="servicioDetailEditar" class="srv-btn srv-btn--primario">Editar servicio</button>
+            </footer>
         </div>
+    </div>
 
-        <div class="record-modal__section">
-            <div class="record-modal__section-label">Datos</div>
-            <div class="form-grid form-grid--2">
-                <div>
-                    <div class="record-modal__section-label">Cliente</div>
-                    <div id="servicioDetailCliente"></div>
+    <div class="modal-overlay" id="servicioFormModal" hidden>
+        <div class="modal srv-modal srv-modal--form" role="dialog" aria-modal="true" aria-labelledby="servicioFormModalTitle">
+            <form id="servicioForm" class="srv-modal__formulario" novalidate
+                  data-store-action="{{ route('admin.servicios.store') }}"
+                  data-update-action-template="{{ route('admin.servicios.update', ['servicio' => '__ID__']) }}">
+                @csrf
+                <header class="srv-modal__cabecera">
+                    <div class="srv-modal__titulos">
+                        <h2 class="srv-modal__titulo" id="servicioFormModalTitle">Asignar Servicio</h2>
+                        <p class="srv-modal__subtitulo" id="servicioFormModalSubtitulo">Alta de contrato con un cliente</p>
+                    </div>
+                    <button type="button" class="srv-modal__cerrar" data-modal-close="servicioFormModal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </header>
+                <div class="srv-modal__cuerpo srv-form">
+                    @include('admin.servicios._form', ['servicio' => null, 'clientes' => $clientes, 'usuarios' => $usuarios])
                 </div>
-                <div>
-                    <div class="record-modal__section-label">Servicio</div>
-                    <div id="servicioDetailNombre"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Inicio</div>
-                    <div id="servicioDetailInicio"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Responsable</div>
-                    <div id="servicioDetailResponsable"></div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Facturación</div>
-                    <div>Mensual · MXN</div>
-                </div>
-                <div>
-                    <div class="record-modal__section-label">Ingreso acumulado</div>
-                    <div id="servicioDetailIngresoAcumulado"></div>
-                </div>
-            </div>
+                <footer class="srv-modal__pie">
+                    <button type="button" class="srv-btn srv-btn--secundario" data-modal-close="servicioFormModal">Cancelar</button>
+                    <button type="submit" class="srv-btn srv-btn--primario" id="servicioFormSubmit">Crear servicio</button>
+                </footer>
+            </form>
         </div>
-
-        <div class="record-modal__section">
-            <div class="record-modal__section-label">Historial</div>
-            <div class="record-modal__timeline" id="servicioDetailTimeline"></div>
-        </div>
-
-        <div class="record-modal__actions">
-            <a id="servicioDetailContrato" href="#" class="btn btn--secondary">Ver contrato</a>
-            <button type="button" id="servicioDetailEditar" class="btn btn--primary">Editar servicio</button>
-        </div>
-    </x-modal>
-
-    <x-modal id="servicioFormModal">
-        <x-slot:header>
-            <h2 id="servicioFormModalTitle" style="margin-bottom:0;">Asignar Servicio</h2>
-        </x-slot:header>
-        <form id="servicioForm" novalidate
-              data-store-action="{{ route('admin.servicios.store') }}"
-              data-update-action-template="{{ route('admin.servicios.update', ['servicio' => '__ID__']) }}">
-            @csrf
-            @include('admin.servicios._form', ['servicio' => null, 'clientes' => $clientes, 'usuarios' => $usuarios])
-            <div class="form-actions">
-                <button type="submit" class="btn btn--primary" id="servicioFormSubmit"><i class="fa-solid fa-check"></i> Crear Servicio</button>
-                <button type="button" class="btn btn--secondary" data-modal-close="servicioFormModal">Cancelar</button>
-            </div>
-        </form>
-    </x-modal>
+    </div>
 
     <x-modal id="servicioDeleteModal">
         <x-slot:header><h2 style="margin-bottom:0;">Eliminar servicio</h2></x-slot:header>
