@@ -179,7 +179,7 @@
                         <div>
                             <span class="cv-badge">{!! $ico('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline>', 12) !!} Ejemplo de proyecto</span>
                             <h2 class="cv-calc__title" style="font-size:1.5rem;">Lo que se deja sobre la mesa cada mes</h2>
-                            <p class="cv-chart__hint" style="max-width:32rem;">Curva promedio de nuestros proyectos de SEO tras corregir los frentes de arriba, frente a un sitio que no cambia nada. <strong>Es un ejemplo ilustrativo, no una proyección de tu sitio.</strong></p>
+                            <p class="cv-chart__hint" style="max-width:32rem;">Curva típica de un proyecto de SEO tras corregir los frentes de arriba, frente a un sitio que no cambia nada. <strong>Es un ejemplo ilustrativo, no datos de un cliente ni una proyección de tu sitio.</strong></p>
                         </div>
                     </div>
 

@@ -32,9 +32,43 @@ class SitemapController extends Controller
         '/servicios'                         => ['monthly', '0.9', 'pages.servicios.index'],
         '/casos-de-exito'                    => ['monthly', '0.8', 'pages.casos.index'],
         '/contacto'                        => ['monthly', '0.7', 'pages.contacto'],
+        '/agendar'                           => ['monthly', '0.8', 'agendar.mostrar'],
         '/terminos-y-condiciones'            => ['yearly',  '0.3', 'pages.legal.terminos'],
         '/aviso-de-privacidad'               => ['yearly',  '0.3', 'pages.legal.privacidad'],
         '/politica-de-cookies'               => ['yearly',  '0.3', 'pages.legal.cookies'],
+    ];
+
+    /**
+     * Fecha del ultimo cambio de contenido de cada vista (vista => Y-m-d).
+     *
+     * POR QUE EXISTE: filemtime() devuelve la fecha de despliegue, no la del
+     * cambio. En el hosting (sin git) cada deploy deja todos los blades con la
+     * misma fecha y las 19 URLs salian con el mismo lastmod; Google termina
+     * ignorando un lastmod que no distingue paginas modificadas de las que no.
+     *
+     * Hay que subir la fecha a mano cuando cambie el contenido real de la
+     * pagina (no por tocar estilos o refactorizar). Una vista que no este aqui
+     * cae al filemtime, que es lo peor que puede pasar, no un error.
+     *
+     * @var array<string, string>
+     */
+    private const FECHAS_VISTA = [
+        'pages.index'                                => '2026-11-01',
+        'pages.nosotros'                             => '2026-09-03',
+        'pages.servicios.index'                      => '2026-09-03',
+        'pages.servicios.sem-google-ads'             => '2026-11-01',
+        'pages.servicios.seo-organico'               => '2026-11-01',
+        'pages.servicios.desarrollo-web'             => '2026-09-22',
+        'pages.servicios.automatizacion-de-procesos' => '2026-09-03',
+        'pages.servicios.show'                       => '2026-09-03',
+        'pages.casos.index'                          => '2026-09-22',
+        'pages.casos.show'                           => '2026-09-22',
+        'pages.contacto'                             => '2026-09-03',
+        'agendar.mostrar'                            => '2026-09-22',
+        'pages.legal.terminos'                       => '2026-08-23',
+        'pages.legal.privacidad'                     => '2026-08-23',
+        'pages.legal.cookies'                        => '2026-08-23',
+        'pages.blog.index'                           => '2026-08-23',
     ];
 
     public function __construct(private readonly Articulo $articulos)
@@ -211,6 +245,10 @@ class SitemapController extends Controller
     {
         if ($view === null) {
             return null;
+        }
+
+        if (isset(self::FECHAS_VISTA[$view])) {
+            return self::FECHAS_VISTA[$view];
         }
 
         $file = resource_path('views/' . str_replace('.', '/', $view) . '.blade.php');

@@ -227,6 +227,36 @@ class SeoTest extends TestCase
         }
     }
 
+    public function test_el_sitemap_incluye_agendar_y_no_todas_las_urls_comparten_lastmod(): void
+    {
+        $xml = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<loc>'.url('/agendar').'</loc>', $xml);
+
+        // Con filemtime() todas salian con la fecha del despliegue; Google ignora
+        // un lastmod que no distingue paginas cambiadas de las que no.
+        preg_match_all('#<lastmod>([^<]+)</lastmod>#', $xml, $m);
+        $this->assertGreaterThan(1, count(array_unique($m[1])), 'Todas las URLs tienen el mismo lastmod.');
+    }
+
+    public function test_la_portada_no_promete_top_3_ni_dominar_el_mundo_digital(): void
+    {
+        $this->get('/')
+            ->assertDontSee('Top 3')
+            ->assertDontSee('dominar el mundo digital')
+            ->assertSee(route('agendar.mostrar'), false);
+    }
+
+    public function test_la_landing_de_google_ads_no_publica_cifras_ni_acreditaciones_sin_fuente(): void
+    {
+        $this->get('/servicios/sem-google-ads')
+            ->assertOk()
+            ->assertDontSee('312')
+            ->assertDontSee('4.8x')
+            ->assertDontSee('Google Partner')
+            ->assertDontSee('Meta Business Partner');
+    }
+
     public function test_el_sitemap_no_incluye_urls_bloqueadas_en_robots(): void
     {
         $xml = $this->get('/sitemap.xml')->getContent();

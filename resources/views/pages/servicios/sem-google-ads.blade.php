@@ -10,8 +10,12 @@
       2. El telefono del prototipo (+52 55 1234 5678) era un marcador de posicion;
          aqui se usa el numero real de RankPro.
 
-    Las cifras de prueba social (ROAS 4.8x, 312 cuentas, 187 resenas...) vienen
-    del diseno y NO estan verificadas: revisalas antes de publicar.
+    Las cifras de prueba social del diseno (ROAS 4.8x, 312 cuentas, -38% CPL), las
+    curvas "de nuestras cuentas", el reparto del gasto "promedio" y las insignias
+    Google/Meta Partner se retiraron (nov-2026): no tenian fuente verificable y el
+    sitio no publica cifras ni acreditaciones sin respaldo (ver partners.blade.php).
+    Lo que queda son compromisos propios de la oferta (48 h, 7 dias, mes a mes) y
+    una calculadora con supuestos declarados como ilustrativos.
 --}}
 @extends('layouts.app')
 
@@ -35,10 +39,9 @@
     $correo = 'administracion@rankprosolutions.com.mx';
 
     $proof = [
-        ['value' => '4.8x', 'label' => 'ROAS promedio a 90 días'],
-        ['value' => '-38%', 'label' => 'Costo por lead vs. cuenta previa'],
-        ['value' => '312', 'label' => 'Cuentas de Google Ads activas'],
         ['value' => '48 h', 'label' => 'Auditoría entregada'],
+        ['value' => '7 días', 'label' => 'Del kickoff a las primeras campañas'],
+        ['value' => 'Mes a mes', 'label' => 'Sin contratos forzosos'],
     ];
 
     $auditItems = [
@@ -60,20 +63,6 @@
         ['q' => '¿En cuánto tiempo veo resultados?', 'a' => 'Primeros leads en la semana 1-2. Rentabilidad estable entre el día 60 y 90, cuando el algoritmo ya tiene volumen de conversiones limpias.'],
         ['q' => '¿Qué incluye la fee mensual?', 'a' => 'Estrategia, creación y optimización de campañas, anuncios, seguimiento, reportes y juntas. La inversión publicitaria se paga directo a Google desde tu tarjeta.'],
         ['q' => '¿Firmo algo para la auditoría?', 'a' => 'Nada. Nos das acceso de solo lectura a tu cuenta, la revisamos y te entregamos el diagnóstico en 48 horas. Si decides no trabajar con nosotros, el documento es tuyo.'],
-    ];
-
-    $series = [
-        'leads' => ['label' => 'Leads calificados / mes', 'hint' => 'Volumen de solicitudes reales, no clics.', 'suffix' => '', 'data' => [['m' => 'Mes 0', 'v' => 38], ['m' => 'Mes 1', 'v' => 71], ['m' => 'Mes 2', 'v' => 118], ['m' => 'Mes 3', 'v' => 164], ['m' => 'Mes 4', 'v' => 203], ['m' => 'Mes 5', 'v' => 241]]],
-        'cpl' => ['label' => 'Costo por lead (MXN)', 'hint' => 'Lo que pagas por cada solicitud calificada.', 'suffix' => '', 'data' => [['m' => 'Mes 0', 'v' => 940], ['m' => 'Mes 1', 'v' => 760], ['m' => 'Mes 2', 'v' => 612], ['m' => 'Mes 3', 'v' => 505], ['m' => 'Mes 4', 'v' => 448], ['m' => 'Mes 5', 'v' => 402]]],
-        'roas' => ['label' => 'ROAS', 'hint' => 'Ingreso generado por cada peso invertido.', 'suffix' => 'x', 'data' => [['m' => 'Mes 0', 'v' => 1.4], ['m' => 'Mes 1', 'v' => 2.1], ['m' => 'Mes 2', 'v' => 3.0], ['m' => 'Mes 3', 'v' => 3.9], ['m' => 'Mes 4', 'v' => 4.4], ['m' => 'Mes 5', 'v' => 4.8]]],
-    ];
-
-    $spendMix = [
-        ['name' => 'Búsquedas que sí convierten', 'v' => 34, 'good' => true],
-        ['name' => 'Términos irrelevantes', 'v' => 27],
-        ['name' => 'Horarios sin demanda', 'v' => 18],
-        ['name' => 'Ubicaciones fuera de zona', 'v' => 13],
-        ['name' => 'Anuncios duplicados', 'v' => 8],
     ];
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
@@ -129,10 +118,6 @@
                             @endforeach
                         </ul>
 
-                        <div class="cv-trust">
-                            <span>{!! $ico('<circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 21l-5-3-5 3 1.523-8.11"></path>', 14) !!} Google Partner</span>
-                            <span>{!! $ico('<circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 21l-5-3-5 3 1.523-8.11"></path>', 14) !!} Meta Business Partner</span>
-                        </div>
                     </div>
 
                     {{-- El prototipo tenia aqui un formulario que no enviaba nada.
@@ -168,7 +153,7 @@
                     <div>
                         <span class="cv-badge">{!! $ico('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline>', 12) !!} Proyección con tus números</span>
                         <h2 class="cv-calc__title">¿Cuánto puede generar tu inversión en Google Ads?</h2>
-                        <p class="cv-card__text">Mueve los controles con tus cifras reales. Usamos promedios de nuestras cuentas activas en México (CPC $14, 6.2% de conversión a lead, 22% de cierre).</p>
+                        <p class="cv-card__text">Mueve los controles con tus cifras reales. Es un modelo ilustrativo con supuestos fijos (CPC $14, 6.2% de conversión a lead, 22% de cierre) que no son resultados de clientes; el ROAS ya descuenta la fee de gestión.</p>
 
                         <div class="cv-calc__controls">
                             <div>
@@ -213,7 +198,7 @@
                             <div class="cv-calc__total-value" data-out-ingresos>$624,000</div>
                         </div>
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white cv-btn--block" style="margin-top:1.5rem;" target="_blank" rel="noopener nofollow">Validar estos números con un experto {!! $ico($icoFlecha, 16) !!}</a>
-                        <p class="cv-calc__disclaimer">Estimación referencial. En la auditoría ajustamos el modelo con el CPC real de tu industria.</p>
+                        <p class="cv-calc__disclaimer">Estimación ilustrativa, no una promesa de resultados. En la auditoría ajustamos el modelo con el CPC real de tu industria.</p>
                     </div>
                 </div>
             </div>
@@ -239,82 +224,6 @@
                             </li>
                         @endforeach
                     </ul>
-                </div>
-            </div>
-        </section>
-
-        {{-- ------------------------------------------------------- gráficas --}}
-        <section class="cv-section">
-            <div class="container">
-                <div class="cv-head">
-                    <span class="cv-badge">{!! $ico('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline>', 12) !!} Curva de nuestras cuentas</span>
-                    <h2>Qué cambia en los primeros 5 meses</h2>
-                    <p>Promedio ponderado de las cuentas de Google Ads que gestionamos en México. Mes 0 = estado en que las recibimos.</p>
-                </div>
-
-                <div class="cv-charts">
-                    <div class="cv-chart" data-cv-chart='@json($series)'>
-                        <div class="cv-chart__head">
-                            <div>
-                                <div class="cv-chart__label" data-label>{{ $series['leads']['label'] }}</div>
-                                <div class="cv-chart__hint" data-hint>{{ $series['leads']['hint'] }}</div>
-                            </div>
-                            <div class="cv-tabs" role="tablist" aria-label="Métrica a mostrar">
-                                <button type="button" class="cv-tab" role="tab" data-serie="leads" aria-selected="true">Leads</button>
-                                <button type="button" class="cv-tab" role="tab" data-serie="cpl" aria-selected="false">Costo/lead</button>
-                                <button type="button" class="cv-tab" role="tab" data-serie="roas" aria-selected="false">ROAS</button>
-                            </div>
-                        </div>
-
-                        <div class="cv-chart__figure">
-                            <span class="cv-chart__value" data-valor>241</span>
-                            <span class="cv-chart__delta" data-delta>+534% vs. mes 0</span>
-                        </div>
-
-                        <div class="cv-chart__canvas">
-                            <svg viewBox="0 0 640 260" role="img" aria-label="Evolución de la métrica seleccionada durante 5 meses">
-                                <defs>
-                                    <linearGradient id="semGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#0F9D6E" stop-opacity="0.28"></stop>
-                                        <stop offset="100%" stop-color="#0F9D6E" stop-opacity="0.02"></stop>
-                                    </linearGradient>
-                                </defs>
-                                @for ($i = 0; $i < 5; $i++)
-                                    <line x1="28" x2="612" y1="{{ 28 + $i * 51 }}" y2="{{ 28 + $i * 51 }}" stroke="rgba(0,0,0,0.06)" stroke-dasharray="4 4"></line>
-                                    <text x="20" y="{{ 32 + $i * 51 }}" text-anchor="end" font-size="12" fill="#6B7280" data-y></text>
-                                @endfor
-                                <path data-area fill="url(#semGrad)"></path>
-                                <path data-linea fill="none" stroke="#0F9D6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-                                <g data-puntos></g>
-                                @foreach ($series['leads']['data'] as $i => $p)
-                                    <text x="{{ 28 + $i * ((640 - 56) / 5) }}" y="254" text-anchor="middle" font-size="12" fill="#6B7280">{{ $p['m'] }}</text>
-                                @endforeach
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div class="cv-chart cv-chart--alt">
-                        <div class="cv-chart__label">A dónde se va el presupuesto</div>
-                        <div class="cv-chart__hint">Distribución promedio del gasto en las cuentas que auditamos, antes de optimizarlas.</div>
-
-                        <ul class="cv-bars">
-                            @foreach ($spendMix as $bar)
-                                <li class="cv-bars__row{{ !empty($bar['good']) ? ' cv-bars__row--good' : '' }}">
-                                    <div class="cv-bars__head">
-                                        <span>{{ $bar['name'] }}</span>
-                                        <span class="cv-bars__pct">{{ $bar['v'] }}%</span>
-                                    </div>
-                                    <div class="cv-bars__track">
-                                        <div class="cv-bars__fill" style="width: {{ round($bar['v'] / 34 * 100) }}%;"></div>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-
-                        <p class="cv-chart__note">En promedio, <strong>66% del presupuesto</strong> se va en clics que jamás iban a comprar. Ese es el primer dinero que recuperamos.</p>
-
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.25rem;" target="_blank" rel="noopener nofollow">Ver mi desperdicio real {!! $ico($icoFlecha, 15) !!}</a>
-                    </div>
                 </div>
             </div>
         </section>

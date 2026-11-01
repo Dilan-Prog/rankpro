@@ -58,7 +58,8 @@
                          loading="lazy" decoding="async">
                 </picture>
             </div>
-            <p class="site-footer__desc">Agencia de marketing digital y desarrollo de software.</p>
+            <p class="site-footer__desc">Agencia de marketing digital y desarrollo de software. Atendemos a negocios en todo México.</p>
+            <p class="site-footer__desc"><a href="tel:+527341036410">+52 734 103 6410</a></p>
         </div>
 
         @foreach ($footerColumns as $column)

@@ -21,8 +21,8 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
                 NUESTROS SERVICIOS
             </div>
-            <h2>Todo lo que necesitas para <span class="text-brand">dominar el mundo digital</span></h2>
-            <p>Combinamos estrategia, creatividad y tecnología para llevar tu marca al siguiente nivel en México.</p>
+            <h2>Servicios de <span class="text-brand">SEO, Google Ads y desarrollo web</span> en México</h2>
+            <p>Combinamos estrategia, medición y tecnología para que tu negocio reciba más clientes desde Google.</p>
         </div>
 
         <div class="services__grid">
@@ -41,8 +41,8 @@
                     <a href="{{ route('servicios.show', $service['slug']) }}"
                        class="service-card__link"
                        style="text-decoration:none"
-                       aria-label="Ver más sobre {{ $service['title'] }}">
-                        Ver más
+                       aria-label="Conocer el servicio de {{ $service['title'] }}">
+                        Conocer {{ $service['title'] }}
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
                     </a>
                 </div>

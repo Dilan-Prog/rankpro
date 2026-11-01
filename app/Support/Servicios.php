@@ -94,7 +94,7 @@ class Servicios
                 'gradient' => 'gradient-2',
                 'icon' => '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>',
                 'tags' => ['On-Page', 'Off-Page', 'Técnico'],
-                'resumen' => 'Estrategia de contenido, link building y SEO técnico para el Top 3.',
+                'resumen' => 'Estrategia de contenido, link building y SEO técnico para ganar posiciones en Google.',
                 'meta_title' => 'Agencia SEO en México | Posicionamiento Orgánico | RankPro',
                 'meta_description' => 'SEO técnico, de contenidos y de autoridad para empresas en México. Arquitectura de contenido, intención de búsqueda y medición en Search Console.',
                 'h1' => 'SEO orgánico: posicionamiento sostenible en Google',
