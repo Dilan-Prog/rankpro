@@ -39,7 +39,8 @@
   }
 
   function fmtMoney(n) {
-    return "$" + Math.round(Number(n) || 0).toLocaleString("es-MX");
+    const v = Math.round(Number(n) || 0);
+    return (v < 0 ? "-$" : "$") + Math.abs(v).toLocaleString("es-MX");
   }
 
   function jsonHeaders() {
@@ -369,6 +370,8 @@
     const totalIngresoEl = document.querySelector("[data-total-ingreso]");
     const totalGastoEl = document.querySelector("[data-total-gasto]");
     const totalBalanceEl = document.querySelector("[data-total-balance]");
+    const totalCountEl = document.querySelector("[data-total-count]");
+    if (totalCountEl) totalCountEl.textContent = String(visibleCount);
     if (totalIngresoEl) totalIngresoEl.textContent = fmtMoney(totalIngreso);
     if (totalGastoEl) totalGastoEl.textContent = fmtMoney(totalGasto);
     if (totalBalanceEl) totalBalanceEl.textContent = fmtMoney(totalIngreso - totalGasto);

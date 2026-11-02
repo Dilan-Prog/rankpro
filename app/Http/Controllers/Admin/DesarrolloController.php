@@ -9,6 +9,8 @@ use App\Models\Bug;
 use App\Models\Cliente;
 use App\Models\Proyecto;
 use App\Models\ProyectoPlaneacion;
+use App\Enums\EstadoTarea;
+use App\Support\ProyectoProgreso;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +18,14 @@ use Illuminate\View\View;
 
 class DesarrolloController extends Controller
 {
-    public function index(): View
+    /** Vistas de proyectos que acepta ?vista=; «filas» es la tarjeta de siempre. */
+    public const VISTAS = ['filas', 'kanban', 'tabla', 'timeline'];
+
+    public function index(Request $request): View
     {
         $proyectos = Proyecto::with(['cliente', 'organizacion', 'bugs' => fn ($q) => $q->select('id', 'proyecto_id', 'estado')])
+            // Conteos en la misma consulta para calcular el avance por tareas sin N+1.
+            ->withCount(['tareas', 'tareas as tareas_hechas_count' => fn ($q) => $q->where('estado', EstadoTarea::Completada->value)])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (Proyecto $p) => $this->toRow($p));
@@ -31,6 +38,8 @@ class DesarrolloController extends Controller
 
         return view('admin.desarrollo.index', [
             'pageTitle' => 'Módulo de Desarrollo',
+            // Null = el usuario no pidió vista: el JS usa la recordada en localStorage.
+            'vistaUrl' => in_array($request->query('vista'), self::VISTAS, true) ? $request->query('vista') : null,
             'proyectos' => $proyectos,
             'bugs' => $bugs,
             'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->count(),
@@ -134,6 +143,11 @@ class DesarrolloController extends Controller
     {
         $pendiente = max(0, (float) $p->presupuesto - (float) $p->pagos_recibidos);
 
+        // store()/update() llegan sin withCount: se consulta solo ese proyecto.
+        $tareasTotal = (int) ($p->tareas_count ?? $p->tareas()->count());
+        $tareasHechas = (int) ($p->tareas_hechas_count ?? $p->tareas()->where('estado', EstadoTarea::Completada->value)->count());
+        $porTareas = ProyectoProgreso::porTareas($tareasTotal, $tareasHechas);
+
         return [
             'id' => $p->id,
             'cliente_id' => $p->cliente_id,
@@ -144,7 +158,13 @@ class DesarrolloController extends Controller
             'fase_actual' => $p->fase_actual->value,
             'fase_orden' => $p->fase_actual->orden(),
             'estado' => $p->estado->value,
-            'porcentaje_avance' => $p->porcentaje_avance,
+            // Con tareas manda hechas/total; sin ellas, el avance manual de siempre.
+            'porcentaje_avance' => $porTareas ?? $p->porcentaje_avance,
+            'avance_origen' => $porTareas !== null ? 'tareas' : 'fase',
+            'tareas_total' => $tareasTotal,
+            'tareas_hechas' => $tareasHechas,
+            'dias_restantes' => ProyectoProgreso::diasRestantes($p->fecha_entrega_estimada, $p->fase_actual === FaseProyecto::Cerrado),
+            'stack' => ProyectoProgreso::chipsStack($p->organizacion?->stack_tecnologico),
             'presupuesto' => (float) $p->presupuesto,
             'anticipo' => (float) $p->anticipo,
             'pagos_recibidos' => (float) $p->pagos_recibidos,

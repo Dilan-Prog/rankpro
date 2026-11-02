@@ -50,6 +50,36 @@ class FinanzasMetrics
         ];
     }
 
+    /**
+     * Variación porcentual contra el periodo anterior, para la flecha "vs mes
+     * anterior" de las tarjetas KPI. Devuelve null cuando la base es 0 (o
+     * negativa): dividir entre 0 daría "infinito" y un porcentaje sobre una
+     * base inexistente sería una cifra inventada; mejor no pintar tendencia.
+     */
+    public static function variacionPorcentual(float $actual, float $anterior): ?float
+    {
+        if ($anterior <= 0.0) {
+            return null;
+        }
+
+        return round((($actual - $anterior) / $anterior) * 100, 1);
+    }
+
+    /**
+     * Tendencia de "pagos pendientes" contra el mes calendario anterior, con
+     * la misma fórmula de periodoActual() para que no diverja de Finanzas.
+     * Ojo: el pendiente del mes anterior se lee con el estado de HOY de esas
+     * facturas (lo que sigue sin cobrarse de ese mes), no una foto de cómo
+     * estaba entonces; no existe historial de cambios de estado.
+     */
+    public static function tendenciaPendiente(Carbon $now): ?float
+    {
+        // startOfMonth() antes de restar evita el desbordamiento de fin de mes (ver revenueData()).
+        $anterior = self::periodoActual($now->copy()->startOfMonth()->subMonth());
+
+        return self::variacionPorcentual(self::periodoActual($now)['pendiente'], $anterior['pendiente']);
+    }
+
     /** Last 6 calendar months of ingreso/gasto/utilidad totals, zero-filled where there's no data. */
     public static function revenueData(Carbon $now): array
     {

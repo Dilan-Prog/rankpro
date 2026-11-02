@@ -11,6 +11,9 @@
             <p class="page-header__subtitle">{{ $totalReportes }} reporte{{ $totalReportes === 1 ? '' : 's' }} · {{ $borradores }} en borrador</p>
         </div>
         <div style="display:flex; gap:8px;">
+            <a href="{{ route('admin.reportes.tablero.index') }}" class="btn btn--secondary" data-reportes-tablero-link>
+                <i class="fa-solid fa-chart-line"></i> Tablero por cliente
+            </a>
             <a href="{{ route('admin.reportes.programados.index') }}" class="btn btn--secondary" data-reportes-programados-link>
                 <i class="fa-solid fa-calendar-check"></i> Reportes programados
             </a>

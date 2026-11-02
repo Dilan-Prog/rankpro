@@ -532,6 +532,7 @@
 
 .cpe-bar__meta {
   display: flex;
+  flex-wrap: wrap; /* la ficha (peso, variables) puede ser larga en móvil */
   gap: 4px;
   font-size: var(--text-xs);
   color: var(--color-muted-foreground);

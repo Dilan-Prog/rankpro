@@ -30,6 +30,13 @@
     }
   })();
 
+  // Slug del rol que nunca se elimina ni cambia de identificador (el servidor
+  // lo impone igual; aquí solo se evita ofrecer el botón o el campo).
+  const rolAdmin = document.getElementById("rolesGrid")?.dataset.rolAdmin || "admin";
+  const duplicarTemplate = document.getElementById("rolesGrid")?.dataset.duplicarTemplate || "";
+
+  const MAX_CHIPS = 8;
+
   function escapeHtml(value) {
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -126,12 +133,18 @@
 
   function roleCardInnerHtml(r) {
     const modules = r.permission_modules || [];
-    const chips = permisosList
-      .map((p) => {
-        const granted = modules.includes(p.module);
-        return `<span class="role-chip ${granted ? "role-chip--on" : "role-chip--off"}"><i class="fa-solid ${granted ? "fa-check" : "fa-minus"}"></i>${escapeHtml(p.label)}</span>`;
-      })
+    // Solo los concedidos (gemelo de index.blade.php): listar los ~30 módulos
+    // en cada tarjeta la volvía ilegible; la matriz y la ficha dan el detalle.
+    const concedidos = permisosList.filter((p) => modules.includes(p.module));
+    let chips = concedidos
+      .slice(0, MAX_CHIPS)
+      .map((p) => `<span class="role-chip role-chip--on"><i class="fa-solid fa-check"></i>${escapeHtml(p.label)}</span>`)
       .join("");
+    if (concedidos.length > MAX_CHIPS) {
+      chips += `<span class="role-chip">+${concedidos.length - MAX_CHIPS} más</span>`;
+    } else if (!concedidos.length) {
+      chips = '<span class="role-chip role-chip--off">Sin módulos asignados</span>';
+    }
 
     const description = r.description ? `<p class="role-card__description">${escapeHtml(r.description)}</p>` : "";
 
@@ -142,12 +155,19 @@
           <div class="u-mono role-card__slug">${escapeHtml(r.name)}</div>
         </div>
         <div class="role-card__actions">
+          <button type="button" class="btn--icon" title="Duplicar" data-duplicate-role="${r.id}">
+            <i class="fa-solid fa-copy"></i>
+          </button>
           <button type="button" class="btn--icon" title="Editar" data-edit-role="${r.id}">
             <i class="fa-solid fa-pen"></i>
           </button>
-          <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-role="${r.id}">
+          ${
+            r.name === rolAdmin
+              ? ""
+              : `<button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-role="${r.id}">
             <i class="fa-solid fa-trash"></i>
-          </button>
+          </button>`
+          }
         </div>
       </div>
       <div class="role-card__meta">
@@ -197,26 +217,55 @@
     document.getElementById("roleDetailUsers").textContent = `${r.users_count} usuario${r.users_count === 1 ? "" : "s"}`;
     document.getElementById("roleDetailModulos").textContent = `${(r.permission_modules || []).length}/${permisosList.length}`;
 
-    const grantedLabels = permisosList
+    // Módulos concedidos, agrupados como en la matriz.
+    const porGrupo = new Map();
+    permisosList
       .filter((p) => (r.permission_modules || []).includes(p.module))
-      .map((p) => p.label);
+      .forEach((p) => {
+        if (!porGrupo.has(p.grupo)) porGrupo.set(p.grupo, []);
+        porGrupo.get(p.grupo).push(p.label);
+      });
 
     const tagsEl = document.getElementById("roleDetailTags");
-    tagsEl.innerHTML = grantedLabels.length
-      ? grantedLabels.map((label) => `<span class="badge badge--primary">${escapeHtml(label)}</span>`).join("")
+    tagsEl.innerHTML = porGrupo.size
+      ? Array.from(porGrupo.entries())
+          .map(
+            ([grupo, labels]) => `
+        <div class="role-ficha-grupo">
+          <div class="role-ficha-grupo__titulo">${escapeHtml(grupo)}</div>
+          <div class="record-modal__tags">${labels.map((label) => `<span class="badge badge--primary">${escapeHtml(label)}</span>`).join("")}</div>
+        </div>`
+          )
+          .join("")
       : '<span style="color:var(--color-muted-foreground);font-size:var(--text-sm)">Sin módulos asignados</span>';
+
+    const usuariosEl = document.getElementById("roleDetailUsuarios");
+    const usuarios = r.usuarios || [];
+    usuariosEl.innerHTML = usuarios.length
+      ? usuarios
+          .map(
+            (u) =>
+              `<span class="badge ${u.is_active ? "badge--primary" : "badge--neutral role-user-chip--inactivo"}" title="${escapeHtml(u.email)}${u.is_active ? "" : " · inactivo"}">${escapeHtml(u.name)}</span>`
+          )
+          .join("")
+      : '<span style="color:var(--color-muted-foreground);font-size:var(--text-sm)">Ningún usuario tiene este rol</span>';
 
     const editBtn = document.getElementById("roleDetailEdit");
     if (editBtn) editBtn.dataset.editRole = String(r.id);
     const deleteBtn = document.getElementById("roleDetailDelete");
-    if (deleteBtn) deleteBtn.dataset.deleteRole = String(r.id);
+    if (deleteBtn) {
+      deleteBtn.dataset.deleteRole = String(r.id);
+      deleteBtn.hidden = r.name === rolAdmin;
+    }
+    const duplicateBtn = document.getElementById("roleDetailDuplicate");
+    if (duplicateBtn) duplicateBtn.dataset.duplicateRole = String(r.id);
 
     window.AgencyOS.openModal("roleDetailModal");
   }
 
   function initRoleCardClicks() {
     document.addEventListener("click", (e) => {
-      if (e.target.closest("[data-edit-role], [data-delete-role]")) return;
+      if (e.target.closest("[data-edit-role], [data-delete-role], [data-duplicate-role]")) return;
       const card = e.target.closest("[data-role-card]");
       if (!card) return;
       openRoleDetailModal(JSON.parse(card.dataset.role));
@@ -225,12 +274,11 @@
 
   // ---------- Create/edit form modal ----------
 
-  function updateToggleAllLabel() {
-    const btn = document.getElementById("roleFormToggleAll");
-    if (!btn) return;
-    const boxes = document.querySelectorAll('#roleFormPermissions input[name="permissions[]"]');
-    const allChecked = boxes.length > 0 && Array.from(boxes).every((cb) => cb.checked);
-    btn.textContent = allChecked ? "Quitar todos" : "Seleccionar todos";
+  // Marca o desmarca un conjunto de casillas (todo el formulario o un grupo).
+  function setChecked(boxes, value) {
+    boxes.forEach((cb) => {
+      cb.checked = value;
+    });
   }
 
   function fillRoleForm(form, r) {
@@ -266,7 +314,17 @@
         : '<i class="fa-solid fa-check"></i> Crear Rol';
     }
 
-    updateToggleAllLabel();
+    // El rol admin conserva su identificador: el sistema lo busca por nombre.
+    const nameInput = form.querySelector("#rf_name");
+    const esAdmin = !!r && r.name === rolAdmin;
+    nameInput.readOnly = esAdmin;
+    const hint = document.getElementById("rf_name_hint");
+    if (hint) {
+      hint.textContent = esAdmin
+        ? "El identificador del rol admin no se puede cambiar."
+        : 'Minúsculas, números y guion bajo (ej. "editor_seo").';
+    }
+
     window.AgencyOS.openModal("roleFormModal");
   }
 
@@ -287,20 +345,16 @@
       openRoleFormModal(r);
     });
 
-    const toggleAllBtn = document.getElementById("roleFormToggleAll");
-    if (toggleAllBtn) {
-      toggleAllBtn.addEventListener("click", () => {
-        const boxes = document.querySelectorAll('#roleFormPermissions input[name="permissions[]"]');
-        const allChecked = Array.from(boxes).every((cb) => cb.checked);
-        boxes.forEach((cb) => {
-          cb.checked = !allChecked;
-        });
-        updateToggleAllLabel();
-      });
-    }
+    const allBoxes = () => form.querySelectorAll('#roleFormPermissions input[name="permissions[]"]');
+    document.getElementById("roleFormSelectAll")?.addEventListener("click", () => setChecked(allBoxes(), true));
+    document.getElementById("roleFormSelectNone")?.addEventListener("click", () => setChecked(allBoxes(), false));
 
-    form.querySelectorAll('input[name="permissions[]"]').forEach((cb) => {
-      cb.addEventListener("change", updateToggleAllLabel);
+    // Por grupo (módulo del menú): delegado en el contenedor de la checklist.
+    document.getElementById("roleFormPermissions")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-group-all], [data-group-none]");
+      if (!btn) return;
+      const boxes = btn.closest(".perm-group").querySelectorAll('input[name="permissions[]"]');
+      setChecked(boxes, btn.hasAttribute("data-group-all"));
     });
 
     form.addEventListener("submit", (e) => {
@@ -342,6 +396,30 @@
         })
         .finally(() => {
           if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  }
+
+  // ---------- Duplicar: el servidor crea la copia ("Copia de ...") con los mismos permisos ----------
+
+  function initRoleDuplicate() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-duplicate-role]");
+      if (!btn || !duplicarTemplate) return;
+      e.stopPropagation();
+      const id = btn.dataset.duplicateRole;
+      btn.disabled = true;
+      roleRequest(duplicarTemplate.replace("__ID__", id), "POST")
+        .then((r) => {
+          upsertRoleCard(r);
+          window.AgencyOS.closeModal("roleDetailModal");
+          toast(`Se creó "${r.label}". Ajusta su nombre y permisos con Editar.`, "success");
+        })
+        .catch((err) => {
+          toast(err.data && err.data.message ? err.data.message : "No se pudo duplicar el rol.", "error");
+        })
+        .finally(() => {
+          btn.disabled = false;
         });
     });
   }
@@ -408,6 +486,7 @@
     initRolesTabs();
     initRoleCardClicks();
     initRoleForm();
+    initRoleDuplicate();
     initRoleDelete();
   });
 })();

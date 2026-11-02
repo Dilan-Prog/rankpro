@@ -183,6 +183,43 @@ class FinanzasMetricsTest extends TestCase
         }
     }
 
+    // --- variacionPorcentual() / tendenciaPendiente() ------------------------
+
+    public function test_variacion_porcentual_calcula_contra_la_base_anterior(): void
+    {
+        $this->assertSame(50.0, FinanzasMetrics::variacionPorcentual(150, 100));
+        $this->assertSame(-25.0, FinanzasMetrics::variacionPorcentual(75, 100));
+    }
+
+    public function test_variacion_porcentual_es_null_si_la_base_es_cero(): void
+    {
+        $this->assertNull(FinanzasMetrics::variacionPorcentual(500, 0));
+        $this->assertNull(FinanzasMetrics::variacionPorcentual(0, 0));
+    }
+
+    public function test_tendencia_pendiente_compara_contra_el_mes_calendario_anterior(): void
+    {
+        $now = Carbon::create(2026, 8, 31); // fin de mes: no debe desbordar al restar un mes
+        $cliente = Cliente::factory()->create();
+
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pendiente', 'monto' => 1000, 'mes' => 7, 'anio' => 2026]);
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'vencido', 'monto' => 500, 'mes' => 8, 'anio' => 2026]);
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pendiente', 'monto' => 1000, 'mes' => 8, 'anio' => 2026]);
+
+        $this->assertSame(50.0, FinanzasMetrics::tendenciaPendiente($now)); // 1500 vs 1000
+    }
+
+    public function test_tendencia_pendiente_es_null_si_el_mes_anterior_no_tenia_pendiente(): void
+    {
+        $now = Carbon::create(2026, 8, 15);
+        $cliente = Cliente::factory()->create();
+
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pendiente', 'monto' => 1000, 'mes' => 8, 'anio' => 2026]);
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pagado', 'monto' => 700, 'mes' => 7, 'anio' => 2026]); // pagado: no cuenta como pendiente
+
+        $this->assertNull(FinanzasMetrics::tendenciaPendiente($now));
+    }
+
     public function test_revenue_data_excludes_finanzas_outside_the_six_month_window(): void
     {
         $now = Carbon::create(2026, 8, 15);

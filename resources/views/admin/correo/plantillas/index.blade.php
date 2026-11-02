@@ -21,7 +21,8 @@
 
         {{-- ---------- KPIs (globales, no cambian con los filtros) ---------- --}}
         <div class="kpi-grid">
-            <x-stat-card label="Plantillas activas" value="{{ $kpis['activas'] }}" sub="{{ $kpis['total'] - $kpis['activas'] }} archivadas" icon="fa-envelope-open-text" color="primary" />
+            <x-stat-card label="Plantillas activas" value="{{ $kpis['activas'] }}" sub="de {{ $kpis['total'] }} en total" icon="fa-envelope-open-text" color="primary" />
+            <x-stat-card label="Archivadas" value="{{ $kpis['archivadas'] }}" sub="fuera de uso, se conservan" icon="fa-box-archive" color="amber" />
             <x-stat-card label="Envíos del mes" value="{{ $kpis['envios_mes'] }}" sub="{{ now()->translatedFormat('F Y') }}" icon="fa-paper-plane" color="blue" />
             <x-stat-card label="Apertura estimada" value="{{ $kpis['apertura'] !== null ? $kpis['apertura'].'%' : '—' }}" sub="{{ $kpis['destinatarios'] > 0 ? $kpis['abiertos'].' de '.$kpis['destinatarios'].' destinatarios' : 'sin envíos todavía' }}" icon="fa-eye" color="teal" />
         </div>

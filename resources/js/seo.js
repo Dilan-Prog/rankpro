@@ -21,6 +21,8 @@
     en_progreso: ["En Progreso", "badge--info"],
     completada: ["Completada", "badge--success"],
     pausada: ["Pausada", "badge--warning"],
+    pendiente: ["Pendiente", "badge--warning"],
+    en_revision: ["En revisión", "badge--orange"],
   };
 
   function escapeHtml(value) {
@@ -708,6 +710,8 @@
   const ESTADO_CAMPANA_BADGE = {
     activa: ["Activa", "badge--success"],
     pausada: ["Pausada", "badge--warning"],
+    pendiente: ["Pendiente", "badge--warning"],
+    en_revision: ["En revisión", "badge--orange"],
     finalizada: ["Finalizada", "badge--neutral"],
   };
 

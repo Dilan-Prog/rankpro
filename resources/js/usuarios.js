@@ -75,6 +75,42 @@
     });
   }
 
+  // ---------- Módulos que concede un rol (solo lectura) ----------
+
+  // Mapa role_id => [{titulo, modulos[]}] que el servidor embebe en el formulario;
+  // así el panel cambia al instante al elegir otro rol, sin pedir nada al servidor.
+  const permisosPorRol = (() => {
+    try {
+      return JSON.parse(document.getElementById("usuarioForm")?.dataset.permisosRol || "{}");
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  function modulosDeRolHtml(roleId) {
+    if (roleId == null || roleId === "") {
+      return '<span class="usuario-modulos__vacio">Sin rol: no puede entrar a ningún módulo.</span>';
+    }
+    const grupos = permisosPorRol[String(roleId)] || [];
+    if (!grupos.length) {
+      return '<span class="usuario-modulos__vacio">Este rol no tiene módulos asignados: el usuario no podrá entrar a ninguno.</span>';
+    }
+    return grupos
+      .map(
+        (g) => `
+      <div class="usuario-modulos__grupo">
+        <div class="usuario-modulos__titulo">${escapeHtml(g.titulo)}</div>
+        <div class="record-modal__tags">${g.modulos.map((m) => `<span class="badge badge--primary">${escapeHtml(m)}</span>`).join("")}</div>
+      </div>`
+      )
+      .join("");
+  }
+
+  function pintarModulos(containerId, roleId) {
+    const el = document.getElementById(containerId);
+    if (el) el.innerHTML = modulosDeRolHtml(roleId);
+  }
+
   // ---------- Filters ----------
 
   function initUsuarioFilters() {
@@ -227,6 +263,8 @@
       ? u.cuentas_asignadas.map((c) => `<span class="badge badge--primary">${escapeHtml(c)}</span>`).join("")
       : '<span style="color:var(--color-muted-foreground);font-size:var(--text-sm)">Sin cuentas asignadas</span>';
 
+    pintarModulos("usuarioDetailModulos", u.role_id);
+
     const editBtn = document.getElementById("usuarioDetailEdit");
     if (editBtn) editBtn.dataset.editUsuario = String(u.id);
 
@@ -274,6 +312,7 @@
     clearFieldErrors(form);
     fillUsuarioForm(form, u);
     form.dataset.editingId = u?.id ?? "";
+    pintarModulos("usuarioFormModulos", u ? u.role_id : "");
 
     if (createOnlyWrap) createOnlyWrap.hidden = !!u;
 
@@ -298,6 +337,10 @@
   function initUsuarioForm() {
     const form = document.getElementById("usuarioForm");
     if (!form) return;
+
+    document.getElementById("uf_role_id")?.addEventListener("change", (e) => {
+      pintarModulos("usuarioFormModulos", e.target.value);
+    });
 
     document.querySelectorAll("[data-open-usuario-modal]").forEach((btn) => {
       btn.addEventListener("click", () => openUsuarioFormModal(null));

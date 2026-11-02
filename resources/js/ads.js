@@ -830,6 +830,13 @@
     return window.AgencyOS.formatCompact(Number(n) || 0);
   }
 
+  /** Valor con división segura: null/undefined (denominador 0 en el servidor) se pinta como guion, nunca como 0. */
+  function fmtRatio(n, kind) {
+    if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
+    const v = Number(n);
+    return kind === "pct" ? v.toFixed(2) + "%" : "$" + v.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   function adsRoasColor(roas) {
     const r = Number(roas) || 0;
     return r >= 5 ? "var(--text-success)" : r >= 3 ? "var(--text-warning)" : "var(--text-danger)";
@@ -892,10 +899,14 @@
       <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${OBJETIVO_LABELS[c.objetivo] || escapeHtml(c.objetivo)}</span></td>
       <td>${adsBadgeHtml(FASE_ADS_BADGE, c.fase_actual)}</td>
       <td>${adsBadgeHtml(ESTADO_CAMPANA_BADGE, c.estado)}</td>
+      <td class="u-mono">${fmtMoney(c.presupuesto_mensual)}</td>
       <td class="u-mono">${fmtMoney(c.inversion)}</td>
       <td class="u-mono">${fmtCompact(c.impresiones)}</td>
       <td class="u-mono">${fmtNum(c.clics)}</td>
+      <td class="u-mono">${fmtRatio(c.ctr, "pct")}</td>
+      <td class="u-mono">${fmtRatio(c.cpc)}</td>
       <td class="u-mono">${fmtNum(c.conversiones)}</td>
+      <td class="u-mono">${fmtRatio(c.cpa)}</td>
       <td class="u-mono"><strong style="color:${adsRoasColor(c.roas)}">${c.roas}x</strong></td>
       <td>
         <div style="display:flex; gap:4px;">
@@ -974,17 +985,61 @@
     if (emptyQueryEl) emptyQueryEl.textContent = searchValue;
   }
 
+  /** Fecha ISO (YYYY-MM-DD) a dd/mm/aaaa sin pasar por Date: evita el desfase de un día por zona horaria. */
+  function fmtFechaIso(iso) {
+    if (!iso) return "—";
+    const [y, m, d] = String(iso).split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  /** Tarjeta de la cuenta seleccionada con datos reales de Cliente (inyectados en data-cuentas); sin selección se oculta. */
+  function renderCuentaCard() {
+    const el = document.getElementById("adsCuentaCard");
+    if (!el) return;
+    let info = null;
+    try {
+      info = JSON.parse(el.dataset.cuentas || "{}")[String(adsActiveCliente)] || null;
+    } catch (e) {
+      info = null;
+    }
+    if (adsActiveCliente === "all" || !info) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+
+    const contacto = [info.contacto, info.email, info.telefono].filter(Boolean).map(escapeHtml).join(" · ") || "—";
+    const vigencia = info.inicio_contrato || info.renovacion_contrato ? `${fmtFechaIso(info.inicio_contrato)} → ${fmtFechaIso(info.renovacion_contrato)}` : "—";
+    const servicios = info.servicios && info.servicios.length ? info.servicios.map((s) => `<span class="badge badge--neutral">${escapeHtml(s)}</span>`).join(" ") : "—";
+    const dato = (titulo, valor) => `<div class="ads-cuenta__dato"><dt>${titulo}</dt><dd>${valor}</dd></div>`;
+
+    el.innerHTML = `
+      <div class="ads-cuenta__cabecera">
+        <span class="ads-account-card__avatar">${escapeHtml(adsInitials(info.nombre))}</span>
+        <div class="card__header-title">${escapeHtml(info.nombre)}</div>
+      </div>
+      <dl class="ads-cuenta__datos">
+        ${dato("Contacto", contacto)}
+        ${dato("MRR", info.mrr > 0 ? fmtMoney(info.mrr) : "—")}
+        ${dato("Vigencia del contrato", vigencia)}
+        ${dato("Servicios activos", servicios)}
+      </dl>`;
+    el.hidden = false;
+  }
+
   function initAdsAccountPicker() {
     const row = document.getElementById("adsAccountRow");
     if (!row) return;
 
     renderAccountCards();
+    renderCuentaCard();
 
     row.addEventListener("click", (e) => {
       const card = e.target.closest("[data-account-card]");
       if (!card) return;
       adsActiveCliente = card.dataset.accountCard;
       renderAccountCards();
+      renderCuentaCard();
       applyAdsFilters();
     });
 
@@ -1165,6 +1220,37 @@
     adsChartInstance.update();
   }
 
+  /**
+   * 4 filas resumen del reparto (mismo alcance: cuenta seleccionada, todas las plataformas). Todo sale de las filas ya
+   * cargadas; si no hay dato que sustente una fila, guion. "Consumido" compara la inversión del MES EN CURSO contra el
+   * presupuesto mensual de las campañas activas que tienen métrica de ese mes (comparar contra el histórico no tendría sentido).
+   */
+  function renderPlatformResumen(campanas) {
+    const dl = document.getElementById("adsPlatformResumen");
+    if (!dl) return;
+
+    const activas = campanas.filter((c) => c.estado === "activa");
+    const pausadas = campanas.filter((c) => c.estado === "pausada");
+
+    const conMes = activas.filter((c) => c.inversion_mes !== null && c.inversion_mes !== undefined);
+    const presupuesto = conMes.reduce((a, c) => a + (Number(c.presupuesto_mensual) || 0), 0);
+    const gastado = conMes.reduce((a, c) => a + (Number(c.inversion_mes) || 0), 0);
+    const consumido = presupuesto > 0 ? `${Math.round((gastado / presupuesto) * 100)}% · ${fmtMoney(gastado)} de ${fmtMoney(presupuesto)}` : "—";
+
+    // Solo cuentan campañas con al menos una métrica: sin ella roas es 0.0 por defecto, no un resultado real.
+    const conRoas = campanas.filter((c) => Number(c.metricas_count) > 0);
+    const mejor = conRoas.reduce((best, c) => (!best || Number(c.roas) > Number(best.roas) ? c : best), null);
+    const mejorRoas = mejor ? `${Number(mejor.roas).toFixed(1)}x · ${escapeHtml(mejor.nombre)}` : "—";
+
+    const fila = (t, v) => `<div class="ads-resumen__fila"><dt>${t}</dt><dd>${v}</dd></div>`;
+    dl.innerHTML = [
+      fila("Presupuesto consumido (mes)", consumido),
+      fila("Campañas activas", campanas.length ? String(activas.length) : "—"),
+      fila("Campañas pausadas", campanas.length ? String(pausadas.length) : "—"),
+      fila("Mejor ROAS", mejorRoas),
+    ].join("");
+  }
+
   /** Scoped to activeCliente only (ignores activePlataforma) — always shows all 3 platforms' split for the selected account, matching the account cards' all-platforms scoping. */
   function renderPlatformSplit() {
     const container = document.getElementById("adsPlatformSplit");
@@ -1181,6 +1267,8 @@
       byPlataforma[c.plataforma].count++;
       byPlataforma[c.plataforma].inversion += Number(c.inversion) || 0;
     });
+
+    renderPlatformResumen(campanas);
 
     const active = Object.entries(byPlataforma).filter(([, v]) => v.count > 0);
     if (!active.length) {

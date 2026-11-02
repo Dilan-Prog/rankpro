@@ -16,6 +16,7 @@ class Keyword extends Model
         'cliente_id',
         'campana_id',
         'lista_id',
+        'cluster_id',
         'keyword',
         'tipo',
         'volumen_busqueda',
@@ -47,6 +48,11 @@ class Keyword extends Model
     public function seoCampana(): BelongsTo
     {
         return $this->belongsTo(SeoCampana::class, 'campana_id');
+    }
+
+    public function cluster(): BelongsTo
+    {
+        return $this->belongsTo(KeywordCluster::class, 'cluster_id');
     }
 
     public function lista(): BelongsTo

@@ -37,7 +37,12 @@
             return number_format($n, 0);
         };
 
-        $headers = ['Campaña', 'Cliente', 'Plataforma', 'Objetivo', 'Fase', 'Estado', 'Invertido', 'Impr.', 'Clics', 'Conv.', 'ROAS', ''];
+        // Se conservan las columnas previas y se suman Presup., CTR, CPC y CPA; la tabla hace scroll horizontal (min-width en ads.css) en vez de comprimirlas.
+        $headers = ['Campaña', 'Cliente', 'Plataforma', 'Objetivo', 'Fase', 'Estado', 'Presup.', 'Invertido', 'Impr.', 'Clics', 'CTR', 'CPC', 'Conv.', 'CPA', 'ROAS', ''];
+
+        // Mismo formato que fmtRatio() de ads.js: null (denominador 0) se muestra como guion, nunca como 0.
+        $moneda2 = fn ($n) => $n === null ? '—' : '$' . number_format((float) $n, 2);
+        $pct2 = fn ($n) => $n === null ? '—' : number_format((float) $n, 2) . '%';
     @endphp
 
     <div class="page-header">
@@ -54,6 +59,9 @@
     <input type="search" class="input input--search ads-account-search" id="adsAccountSearch" placeholder="Buscar cuenta...">
     <div class="ads-account-row" id="adsAccountRow"></div>
     <div class="ads-account-empty" id="adsAccountEmpty" hidden>No se encontraron cuentas para "<span id="adsAccountEmptyQuery"></span>".</div>
+
+    {{-- Tarjeta de la cuenta seleccionada: ads.js la llena con estos datos reales de Cliente y la oculta en "Todas las cuentas". --}}
+    <section class="card card--padded ads-cuenta" id="adsCuentaCard" data-cuentas="{{ json_encode($cuentasInfo) }}" hidden aria-live="polite"></section>
 
     {{-- ---------- Platform tabs (client-side only — no page reload) ---------- --}}
     <div class="ads-platform-tabs" id="adsPlatformTabs">
@@ -89,6 +97,7 @@
     <div class="card card--padded" style="margin-bottom: var(--space-6);">
         <div class="card__header-title" style="margin-bottom: var(--space-4);">Reparto por plataforma</div>
         <div id="adsPlatformSplit"></div>
+        <dl class="ads-resumen" id="adsPlatformResumen"></dl>
     </div>
 
     {{-- ---------- Campaigns table ---------- --}}
@@ -96,7 +105,7 @@
         <div class="empty-state__icon"><i class="fa-solid fa-bullhorn"></i></div>
         <p class="empty-state__text">No hay campañas que coincidan con los filtros actuales.</p>
     </div>
-    <x-data-table :headers="$headers" data-paginate="15" data-campanas-table :hidden="$campanas->isEmpty()">
+    <x-data-table :headers="$headers" class="ads-tabla" data-paginate="15" data-campanas-table :hidden="$campanas->isEmpty()">
         @foreach ($campanas as $c)
             @php
                 [$platLabel, $platColor] = $plataformas[$c['plataforma']] ?? [$c['plataforma'], '#6b7280'];
@@ -108,10 +117,14 @@
                 <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ \App\Support\Labels::objetivo($c['objetivo']) }}</span></td>
                 <td><x-badge :status="$c['fase_actual']" /></td>
                 <td><x-badge :status="$c['estado']" /></td>
+                <td class="u-mono">${{ number_format($c['presupuesto_mensual']) }}</td>
                 <td class="u-mono">${{ number_format($c['inversion']) }}</td>
                 <td class="u-mono">{{ $compact($c['impresiones']) }}</td>
                 <td class="u-mono">{{ number_format($c['clics']) }}</td>
+                <td class="u-mono">{{ $pct2($c['ctr']) }}</td>
+                <td class="u-mono">{{ $moneda2($c['cpc']) }}</td>
                 <td class="u-mono">{{ number_format($c['conversiones']) }}</td>
+                <td class="u-mono">{{ $moneda2($c['cpa']) }}</td>
                 <td class="u-mono"><strong style="color:{{ $c['roas'] >= 5 ? 'var(--text-success)' : ($c['roas'] >= 3 ? 'var(--text-warning)' : 'var(--text-danger)') }}">{{ $c['roas'] }}x</strong></td>
                 <td>
                     <div style="display:flex; gap:4px;">

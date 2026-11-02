@@ -244,6 +244,7 @@
       <td>${escapeHtml(servicio.nombre)}</td>
       <td>${TIPO_LABELS[servicio.tipo] || escapeHtml(servicio.tipo)}</td>
       <td>${badgeEstadoHtml(servicio.estado)}</td>
+      <td class="srv-responsable${servicio.responsable_nombre ? "" : " srv-responsable--vacio"}">${escapeHtml(servicio.responsable_nombre || "—")}</td>
       <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(servicio.fecha_inicio || "—")}</span></td>
       <td class="u-mono">${servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—"}</td>
       <td>
@@ -283,7 +284,7 @@
     wrap.innerHTML = `
       <table class="table">
         <thead>
-          <tr><th>Cliente</th><th>Servicio</th><th>Tipo</th><th>Estado</th><th>Inicio</th><th>Precio Mensual</th><th></th></tr>
+          <tr><th>Cliente</th><th>Servicio</th><th>Tipo</th><th>Estado</th><th>Responsable</th><th>Inicio</th><th>Precio Mensual</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>`;

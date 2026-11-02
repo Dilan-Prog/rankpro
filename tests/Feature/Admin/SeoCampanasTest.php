@@ -661,4 +661,19 @@ class SeoCampanasTest extends TestCase
 
         $response->assertStatus(404);
     }
+    public function test_auditoria_evalua_core_web_vitals_contra_los_umbrales_de_google(): void
+    {
+        [$cliente, $servicio] = $this->clienteConServicioSeo();
+        $campana = $this->campana($cliente, $servicio);
+        // LCP 2.5 (límite exacto, bueno), CLS 0.2 (mejorar), FID 350 (malo); escritorio sin captura.
+        $campana->auditorias()->create(['ciclo' => 1, 'checklist' => [], 'lcp_mobile' => 2.5, 'cls_mobile' => 0.2, 'fid_mobile' => 350]);
+
+        $html = $this->actingAs(User::factory()->create())->get(route('admin.seo.show', $campana->id))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Bueno</span>', $html);
+        $this->assertStringContainsString('Mejorar</span>', $html);
+        $this->assertStringContainsString('Malo</span>', $html);
+        $this->assertStringContainsString('Sin dato</span>', $html);
+        $this->assertStringNotContainsString('INP', $html);
+    }
 }

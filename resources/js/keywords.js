@@ -234,6 +234,7 @@
               <button type="button" role="menuitem" data-open-lista-detail><i class="fa-solid fa-circle-info"></i> Ver detalle</button>
               <button type="button" role="menuitem" data-edit-lista="${l.id}"><i class="fa-solid fa-pen"></i> Editar lista</button>
               <button type="button" role="menuitem" data-open-import-modal="${l.id}"><i class="fa-solid fa-file-import"></i> Importar keywords</button>
+              <button type="button" role="menuitem" data-exportar-lista="${l.id}"><i class="fa-solid fa-file-csv"></i> Exportar a CSV</button>
               <button type="button" role="menuitem" data-open-medicion-modal="${l.id}"><i class="fa-solid fa-crosshairs"></i> Nueva medición</button>
               <button type="button" role="menuitem" class="kwx-menu__peligro" data-delete-lista="${l.id}"><i class="fa-solid fa-trash"></i> Eliminar lista</button>
             </div>
@@ -1013,6 +1014,28 @@
     }
 
     window.AgencyOS.openModal("keywordImportModal");
+  }
+
+  /**
+   * Exportar a CSV: una lista desde su menú ⋮ y las listas con casilla marcada desde la barra de selección. Es una
+   * descarga por GET (el servidor responde con Content-Disposition), así que basta navegar a la URL: sin fetch ni
+   * estado que mantener. La unidad es la lista porque es lo que el índice permite seleccionar.
+   */
+  function initExportarCsv() {
+    const toolbar = document.getElementById("listasBulkToolbar");
+    if (!toolbar) return;
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-exportar-lista]");
+      if (!btn || !toolbar.dataset.exportarListaTemplate) return;
+      window.location.href = toolbar.dataset.exportarListaTemplate.replace("__ID__", encodeURIComponent(btn.dataset.exportarLista));
+    });
+
+    document.getElementById("listasBulkExportar")?.addEventListener("click", () => {
+      const ids = Array.from(document.querySelectorAll("[data-lista-checkbox]:checked")).map((cb) => cb.value);
+      if (!ids.length || !toolbar.dataset.exportarSeleccionAction) return;
+      window.location.href = `${toolbar.dataset.exportarSeleccionAction}?listas=${encodeURIComponent(ids.join(","))}`;
+    });
   }
 
   function initOpenImportModalButtons() {
@@ -2499,6 +2522,7 @@
     initListaForm();
     initListaDelete();
     initBulkSelection();
+    initExportarCsv();
     initKeywordFormCascade();
     initOpenKeywordFormButtons();
     initKeywordForm();

@@ -7,10 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Support\GruposPermisos;
 use App\Support\Labels;
+use App\Support\ProteccionAdmin;
 use App\Support\Reglas\Usuarios as ReglasUsuarios;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
 
 class UsersController extends Controller
@@ -28,7 +31,61 @@ class UsersController extends Controller
             'usuariosActivos' => $usuarios->where('is_active', true)->count(),
             'usuariosInternos' => $usuarios->filter(fn (array $u) => $u['area'] !== 'externo')->count(),
             'rolesEnUso' => $usuarios->pluck('role_id')->filter()->unique()->count(),
+            'permisosPorRol' => $this->permisosPorRol(),
         ]);
+    }
+
+    /**
+     * Exporta la lista a CSV (UTF-8 con BOM para que Excel respete los acentos).
+     * Solo lleva lo que ya se ve en la tabla: nunca teléfono, hash ni tokens.
+     */
+    public function exportar(): StreamedResponse
+    {
+        $usuarios = User::with('role')->orderBy('name')->get();
+
+        return response()->streamDownload(function () use ($usuarios) {
+            $salida = fopen('php://output', 'w');
+            fwrite($salida, "\xEF\xBB\xBF");
+            fputcsv($salida, ['Nombre', 'Correo', 'Rol', 'Área', 'Estado']);
+            foreach ($usuarios as $u) {
+                fputcsv($salida, array_map([self::class, 'celdaSegura'], [
+                    $u->name,
+                    $u->email,
+                    $u->role?->label ?? 'Sin rol',
+                    $u->area ? Labels::areaUsuario($u->area->value) : '',
+                    $u->is_active ? 'Activo' : 'Inactivo',
+                ]));
+            }
+            fclose($salida);
+        }, 'usuarios-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Evita la inyección de fórmulas: una celda que empieza por = + - @ (o tab/CR)
+     * se interpreta como fórmula al abrir el CSV en Excel; el apóstrofo la vuelve texto.
+     */
+    public static function celdaSegura(?string $valor): string
+    {
+        $valor = (string) $valor;
+
+        return $valor !== '' && in_array($valor[0], ['=', '+', '-', '@', "\t", "\r"], true) ? "'".$valor : $valor;
+    }
+
+    /**
+     * Módulos que concede cada rol, agrupados, para el panel de solo lectura
+     * del formulario (cambia al elegir otro rol sin recargar).
+     *
+     * @return array<int, list<array{titulo: string, modulos: list<string>}>>
+     */
+    private function permisosPorRol(): array
+    {
+        return Role::with('permissions')->get()->mapWithKeys(function (Role $rol) {
+            $grupos = collect(GruposPermisos::agrupar($rol->permissions))
+                ->map(fn (array $g) => ['titulo' => $g['titulo'], 'modulos' => collect($g['permisos'])->pluck('label')->all()])
+                ->all();
+
+            return [$rol->id => $grupos];
+        })->all();
     }
 
     public function store(Request $request): JsonResponse
@@ -59,6 +116,10 @@ class UsersController extends Controller
             ], 422);
         }
 
+        if ($error = ProteccionAdmin::alEditarUsuario($user, $data['role_id'] ?? null, $request->boolean('is_active'))) {
+            return response()->json(['message' => $error[1], 'errors' => [$error[0] => [$error[1]]]], 422);
+        }
+
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -76,6 +137,10 @@ class UsersController extends Controller
     {
         if ($user->id === $request->user()->id) {
             return response()->json(['message' => 'No puedes desactivar tu propia cuenta.'], 422);
+        }
+
+        if ($mensaje = ProteccionAdmin::alDesactivarUsuario($user)) {
+            return response()->json(['message' => $mensaje], 422);
         }
 
         $user->update(['is_active' => false]);

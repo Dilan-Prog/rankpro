@@ -114,23 +114,25 @@
    Applied via [data-theme="light"] on <html>, set by js/theme.js before
    first paint (reading localStorage) to avoid a flash of the wrong theme.
    :root above stays the dark theme's values as the default/fallback. */
+/* Fondo, texto, secundarios, entrada y borde alineados con el prototipo de Claude Design (2026-11-01):
+   el oscuro ya coincidia; el claro difería en pocos tonos. */
 :root[data-theme="light"] {
-  --color-background: #F5F7FA;
+  --color-background: #F6F8FA;
   --color-sidebar: #FFFFFF;
   --color-card: #FFFFFF;
   --color-popover: #FFFFFF;
-  --color-secondary: #F1F5F9;
-  --color-muted: #F1F5F9;
-  --color-input-background: #FFFFFF;
+  --color-secondary: #E9EEF4;
+  --color-muted: #EDF2F7;
+  --color-input-background: #F1F5F9;
 
-  --color-foreground: #1A2332;
+  --color-foreground: #0F172A;
   --color-muted-foreground: #64748B;
   --color-sidebar-foreground: #475569;
   --color-secondary-foreground: #475569;
 
   --color-sidebar-accent: #ECFDF5;
 
-  --color-border: rgba(15, 23, 42, 0.09);
+  --color-border: rgba(15, 23, 42, 0.10);
   --color-sidebar-border: rgba(15, 23, 42, 0.08);
 
   --text-success: #059669;
@@ -160,6 +162,12 @@ body,
 .table th,
 .table td {
   transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+}
+
+/* El atributo [hidden] pierde contra `display` de componentes como .btn (flex), y un botón «oculto»
+   seguía viéndose (p. ej. Eliminar en el modal de tarea nueva). */
+.btn[hidden] {
+  display: none;
 }
 
 /* ---------- Reset ---------- */

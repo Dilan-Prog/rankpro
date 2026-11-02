@@ -20,6 +20,27 @@
   color: var(--color-muted-foreground);
 }
 
+/* Pie del detalle. <x-modal> no ofrece slot de pie, así que va dentro de .modal__body
+   (padding --space-6) con márgenes negativos para llegar a los bordes y sticky para
+   quedar visible aunque el detalle sea largo y .modal haga scroll. */
+.client-modal__pie {
+  position: sticky;
+  bottom: calc(-1 * var(--space-6));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+}
+
+/* Eliminar se separa de Editar: acción destructiva a la izquierda, la principal a la derecha. */
+.client-modal__pie-eliminar {
+  margin-right: auto;
+}
+
 .client-modal__notes {
   font-size: var(--text-sm);
   line-height: 1.6;

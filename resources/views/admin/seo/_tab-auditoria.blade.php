@@ -4,6 +4,24 @@
     $num = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
     $indexacionVerificada = (bool) ($aud?->checklist['indexacion_verificada'] ?? false);
     $hayCwv = $aud && ($aud->lcp_mobile !== null || $aud->cls_mobile !== null || $aud->fid_mobile !== null);
+
+    // Umbrales publicados por Google (web.dev/vitals): [bueno hasta, mejorar hasta]. Se evalúa al mostrar, no se guarda,
+    // para que un cambio de criterio no obligue a migrar datos. El modelo guarda FID (no INP): se asume FID en ms y LCP en s.
+    $umbralesCwv = ['lcp' => [2.5, 4.0], 'cls' => [0.1, 0.25], 'fid' => [100, 300]];
+    $evaluarCwv = function (string $metrica, $valor) use ($umbralesCwv): array {
+        if ($valor === null) {
+            return ['Sin dato', 'badge--neutral'];
+        }
+        [$bueno, $mejorar] = $umbralesCwv[$metrica];
+        $v = (float) $valor;
+        return $v <= $bueno ? ['Bueno', 'badge--success'] : ($v <= $mejorar ? ['Mejorar', 'badge--warning'] : ['Malo', 'badge--danger']);
+    };
+    $filasCwv = [
+        ['lcp', 'LCP', 'Carga del contenido principal', ' s', '≤ 2.5 s bueno · ≤ 4 s mejorar'],
+        ['cls', 'CLS', 'Estabilidad visual', '', '≤ 0.1 bueno · ≤ 0.25 mejorar'],
+        ['fid', 'FID', 'Retardo de la primera interacción', ' ms', '≤ 100 ms bueno · ≤ 300 ms mejorar'],
+    ];
+    $hayCwvEscritorio = $aud && ($aud->lcp_desktop !== null || $aud->cls_desktop !== null || $aud->fid_desktop !== null);
 @endphp
 
 <div class="seo-kpis">
@@ -63,6 +81,47 @@
         @endif
     </article>
 </div>
+
+<section class="seo-panel-card seo-cwv" aria-labelledby="seoCwvTitulo">
+    <header class="seo-panel-card__head">
+        <h2 class="seo-panel-card__titulo" id="seoCwvTitulo">Core Web Vitals</h2>
+        <span class="seo-delta">Evaluados contra los umbrales publicados por Google</span>
+    </header>
+    @if ($hayCwv || $hayCwvEscritorio)
+        <div class="seo-cwv__scroll">
+            <table class="seo-cwv__tabla">
+                <thead>
+                    <tr>
+                        <th scope="col">Métrica</th>
+                        <th scope="col">Móvil</th>
+                        <th scope="col">Escritorio</th>
+                        <th scope="col">Umbral</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($filasCwv as [$clave, $sigla, $descripcion, $unidad, $umbral])
+                        <tr>
+                            <th scope="row"><span class="seo-cwv__sigla">{{ $sigla }}</span><span class="seo-cwv__desc">{{ $descripcion }}</span></th>
+                            @foreach (['mobile', 'desktop'] as $dispositivo)
+                                @php
+                                    $valor = $aud?->{$clave.'_'.$dispositivo};
+                                    [$etiquetaCwv, $claseCwv] = $evaluarCwv($clave, $valor);
+                                @endphp
+                                <td>
+                                    <span class="u-mono seo-cwv__valor">{{ $valor !== null ? $num($valor).$unidad : '—' }}</span>
+                                    <span class="badge {{ $claseCwv }}">{{ $etiquetaCwv }}</span>
+                                </td>
+                            @endforeach
+                            <td class="seo-cwv__umbral">{{ $umbral }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p class="seo-filas__vacio">Sin dato todavía. Se capturan en la fase de Auditoría.</p>
+    @endif
+</section>
 
 <div class="seo-duo">
     <section class="seo-panel-card" aria-labelledby="seoTraficoTitulo">

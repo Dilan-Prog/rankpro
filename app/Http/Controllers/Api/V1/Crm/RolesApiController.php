@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Support\Api\ConsultaOpciones;
 use App\Support\Api\Respuesta;
 use App\Support\Api\Serializador;
+use App\Support\ProteccionAdmin;
 use App\Support\Reglas\Roles as ReglasRoles;
 use Illuminate\Http\Request;
 
@@ -40,6 +41,10 @@ class RolesApiController extends ControladorApi
     {
         $data = $request->validate(ReglasRoles::guardar($role), ReglasRoles::mensajes());
 
+        if ($error = ProteccionAdmin::alEditarRol($role, $data['name'], $data['permissions'] ?? [])) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
+
         $role->update([
             'name' => $data['name'],
             'label' => $data['label'],
@@ -52,6 +57,10 @@ class RolesApiController extends ControladorApi
 
     public function destroy(Role $role)
     {
+        if ($mensaje = ProteccionAdmin::alEliminarRol($role)) {
+            throw new ErrorDeDominio($mensaje, 'role');
+        }
+
         if ($role->users()->exists()) {
             throw new ErrorDeDominio("No puedes eliminar el rol \"{$role->label}\" porque tiene usuarios asignados. Reasígnalos primero.", 'role');
         }

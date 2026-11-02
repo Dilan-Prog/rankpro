@@ -118,7 +118,10 @@
       } catch (e) {
         stored = null;
       }
-      const initial = stored && buttons.some((b) => b.dataset.viewToggleBtn === stored) ? stored : buttons[0].dataset.viewToggleBtn;
+      // ?vista= (enlace compartible) manda sobre la preferencia recordada.
+      const fromUrl = group === "desarrolloIndex" ? new URLSearchParams(window.location.search).get("vista") : null;
+      const valid = (v) => v && buttons.some((b) => b.dataset.viewToggleBtn === v);
+      const initial = valid(fromUrl) ? fromUrl : valid(stored) ? stored : buttons[0].dataset.viewToggleBtn;
 
       function activate(view) {
         buttons.forEach((b) => b.classList.toggle("is-active", b.dataset.viewToggleBtn === view));
@@ -129,6 +132,12 @@
           localStorage.setItem(storageKey, view);
         } catch (e) {
           /* ignore (private browsing, storage disabled, etc.) */
+        }
+        if (group === "desarrolloIndex") {
+          // Deja la URL al día para poder copiarla; replaceState no ensucia el historial.
+          const url = new URL(window.location.href);
+          url.searchParams.set("vista", view);
+          window.history.replaceState(null, "", url);
         }
       }
 
@@ -288,7 +297,9 @@
       const estadoSlot = card.querySelector("[data-kanban-card-estado]");
       if (estadoSlot && data.estado) estadoSlot.innerHTML = badge(data.estado);
 
-      if (typeof data.porcentaje_avance === "number") {
+      // Con avance por tareas la respuesta de aprobar/retroceder trae el avance
+      // manual de la fase, que no es el que muestra la tarjeta: no lo pisa.
+      if (typeof data.porcentaje_avance === "number" && card.dataset.avanceOrigen !== "tareas") {
         const fill = card.querySelector("[data-kanban-card-progress-fill]");
         if (fill) fill.style.width = data.porcentaje_avance + "%";
         const porcentajeEl = card.querySelector("[data-kanban-card-porcentaje]");
@@ -1028,6 +1039,10 @@
     const stagingLink = p.url_staging
       ? `<a href="${p.url_staging}" target="_blank" rel="noopener" style="color:var(--color-primary);"><i class="fa-solid fa-flask"></i> Staging</a>`
       : "";
+    const stackChips = Array.isArray(p.stack) && p.stack.length
+      ? `<div class="proyecto-chips" data-proyecto-stack>${p.stack.map((t) => `<span class="proyecto-chip">${escapeHtml(t)}</span>`).join("")}</div>`
+      : "";
+    const avanceLabel = p.avance_origen === "tareas" ? `${p.tareas_hechas}/${p.tareas_total} tareas` : "completado";
     const responsableLine = p.responsable ? `<span>·</span><span>Responsable: ${escapeHtml(p.responsable)}</span>` : "";
 
     return `
@@ -1043,11 +1058,12 @@
             <span>${escapeHtml(p.cliente)}</span><span>·</span><span>${TIPO_PROYECTO_LABELS[p.tipo] || p.tipo}</span>
             ${responsableLine}
           </div>
+          ${stackChips}
         </div>
         <div style="text-align:right; display:flex; align-items:flex-start; gap: var(--space-3);">
           <div>
             <div class="u-mono" style="font-size:var(--text-2xl); font-weight:700;">${p.porcentaje_avance}%</div>
-            <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);">completado</div>
+            <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${avanceLabel}</div>
           </div>
           <div style="display:flex; gap:4px;">
             <button type="button" class="btn--icon" title="Editar" data-edit-proyecto="${p.id}"><i class="fa-solid fa-pen"></i></button>
@@ -1132,6 +1148,13 @@
       if (show) visibleCount++;
     });
 
+    // Tabla y línea de tiempo son de solo lectura pero respetan los mismos filtros.
+    document.querySelectorAll("[data-vista-item]").forEach((item) => {
+      const matchesCliente = cliente === "all" || item.dataset.clienteId === String(cliente);
+      const matchesEstado = estado === "all" || item.dataset.estado === estado;
+      item.hidden = !(matchesCliente && matchesEstado);
+    });
+
     // Only the empty-state message is toggled here — the list container's
     // own [hidden] is owned by initViewToggles() (list vs. kanban), and
     // overwriting it here would fight that when the kanban view is active.
@@ -1151,6 +1174,41 @@
 
     cliente?.addEventListener("change", applyDesarrolloFilters);
     estado?.addEventListener("change", applyDesarrolloFilters);
+  }
+
+  // ---------- Vista de tabla: orden por columna ----------
+  // Ordena por el data-sort de cada celda (valor real, no texto); un segundo
+  // clic invierte. Valores vacíos van siempre al final para que «sin fecha» no
+  // se cuele como la entrega más próxima.
+  function initTablaProyectos() {
+    const wrap = document.querySelector("[data-proyectos-tabla]");
+    const body = wrap?.querySelector("[data-tabla-cuerpo]");
+    if (!wrap || !body) return;
+
+    const headers = Array.from(wrap.querySelectorAll("th"));
+    wrap.querySelectorAll("[data-ordenar]").forEach((btn, col) => {
+      btn.addEventListener("click", () => {
+        const th = btn.closest("th");
+        const dir = th.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
+        headers.forEach((h) => h.setAttribute("aria-sort", "none"));
+        th.setAttribute("aria-sort", dir);
+
+        const factor = dir === "ascending" ? 1 : -1;
+        const rows = Array.from(body.querySelectorAll("tr[data-vista-item]"));
+        const valor = (tr) => tr.children[col]?.dataset.sort ?? "";
+        rows.sort((a, b) => {
+          const va = valor(a);
+          const vb = valor(b);
+          if (va === "" && vb !== "") return 1;
+          if (vb === "" && va !== "") return -1;
+          const na = Number(va);
+          const nb = Number(vb);
+          const numeric = va !== "" && vb !== "" && !Number.isNaN(na) && !Number.isNaN(nb);
+          return factor * (numeric ? na - nb : va.localeCompare(vb, "es"));
+        });
+        rows.forEach((tr) => body.appendChild(tr));
+      });
+    });
   }
 
   // ---------- KPI / chart aggregates (Proyectos tab) ----------
@@ -1569,6 +1627,7 @@
 
   document.addEventListener("shell:ready", () => {
     initViewToggles();
+    initTablaProyectos();
     initProyectosKanban();
     initFasePanel();
     initTareas();

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\Api\ConsultaOpciones;
 use App\Support\Api\Respuesta;
 use App\Support\Api\Serializador;
+use App\Support\ProteccionAdmin;
 use App\Support\Reglas\Usuarios as ReglasUsuarios;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -65,6 +66,11 @@ class UsuariosApiController extends ControladorApi
     {
         $data = $request->validate(ReglasUsuarios::datos($user));
 
+        $quedaActivo = $request->boolean('is_active', $user->is_active);
+        if ($error = ProteccionAdmin::alEditarUsuario($user, $data['role_id'] ?? null, $quedaActivo)) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
+
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -95,6 +101,10 @@ class UsuariosApiController extends ControladorApi
     {
         if ($user->id === $request->user()->id) {
             throw new ErrorDeDominio('No puedes desactivar tu propia cuenta.', 'is_active');
+        }
+
+        if ($mensaje = ProteccionAdmin::alDesactivarUsuario($user)) {
+            throw new ErrorDeDominio($mensaje, 'is_active');
         }
 
         $user->update(['is_active' => false]);

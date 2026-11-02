@@ -8,6 +8,7 @@ use App\Enums\MetodoPago;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -95,6 +96,16 @@ class Cliente extends Model
     public function embudoEtapas(): HasMany
     {
         return $this->hasMany(AdsEmbudoEtapa::class)->orderBy('orden');
+    }
+
+    public function identidad(): HasOne
+    {
+        return $this->hasOne(IdentidadMarca::class);
+    }
+
+    public function buyerPersonas(): HasMany
+    {
+        return $this->hasMany(BuyerPersona::class)->orderBy('orden')->orderBy('id');
     }
 
     /**

@@ -483,4 +483,48 @@ class AdsCampanasTest extends TestCase
 
         $response->assertStatus(401);
     }
+    public function test_index_incluye_columnas_ctr_cpc_cpa_con_division_segura_y_datos_de_la_cuenta(): void
+    {
+        $user = User::factory()->create();
+        $cliente = Cliente::factory()->create(['contacto_nombre' => 'Marta Pérez']);
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 4200]);
+        $campana = $this->campanaConFases($cliente, $servicio, ['nombre' => 'Con metricas']);
+        $this->campanaConFases($cliente, $servicio, ['nombre' => 'Sin metricas']);
+
+        AdsMetrica::create([
+            'ads_campana_id' => $campana->id,
+            'cliente_id' => $cliente->id,
+            'mes' => now()->month,
+            'anio' => now()->year,
+            'inversion_real' => 1000,
+            'impresiones' => 10000,
+            'clics' => 500,
+            'conversiones' => 20,
+            'roas' => 3,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('admin.ads.index'));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Presup.', 'Invertido', 'CTR', 'CPC', 'CPA', 'ROAS']);
+        // 500/10000 = 5.00 %, 1000/500 = $2.00 por clic, 1000/20 = $50.00 por conversión.
+        $response->assertSee('5.00%', false);
+        $response->assertSee('$2.00', false);
+        $response->assertSee('$50.00', false);
+        // La campaña sin métricas no divide entre cero: muestra guion.
+        $response->assertSee('—', false);
+
+        $cuentas = $response->viewData('cuentasInfo');
+        $this->assertSame(4200.0, $cuentas[$cliente->id]['mrr']);
+        $this->assertSame('Marta Pérez', $cuentas[$cliente->id]['contacto']);
+        $this->assertSame(['Google Ads'], $cuentas[$cliente->id]['servicios']);
+
+        $filas = $response->viewData('campanas')->keyBy('nombre');
+        $this->assertNull($filas['Sin metricas']['ctr']);
+        $this->assertNull($filas['Sin metricas']['cpc']);
+        $this->assertNull($filas['Sin metricas']['cpa']);
+        $this->assertNull($filas['Sin metricas']['inversion_mes']);
+        $this->assertSame(5.0, $filas['Con metricas']['ctr']);
+        $this->assertSame(1000.0, $filas['Con metricas']['inversion_mes']);
+    }
 }

@@ -90,7 +90,7 @@ class RolesTest extends TestCase
     {
         return [
             'id', 'name', 'label', 'description', 'users_count',
-            'permission_ids', 'permission_modules',
+            'permission_ids', 'permission_modules', 'usuarios',
         ];
     }
 

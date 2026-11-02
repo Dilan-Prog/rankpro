@@ -191,3 +191,57 @@
 
 /* Fase tracker / fase panel styles moved to global.css (shared across
    SEO, Ads, Automatizaciones, Desarrollo). */
+
+/* ---------- Tarjeta de la cuenta seleccionada ---------- */
+.ads-cuenta { margin-bottom: var(--space-6); }
+
+.ads-cuenta__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.ads-cuenta__datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.ads-cuenta__dato dt {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-bottom: var(--space-1);
+}
+
+.ads-cuenta__dato dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 4 filas resumen bajo el reparto por plataforma ---------- */
+.ads-resumen {
+  margin: var(--space-4) 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ads-resumen__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.ads-resumen__fila:last-child { border-bottom: 0; }
+.ads-resumen__fila dt { color: var(--color-muted-foreground); }
+.ads-resumen__fila dd { margin: 0; font-weight: var(--font-weight-semibold); text-align: right; overflow-wrap: anywhere; }
+
+/* Con 16 columnas la tabla no cabe en móvil: el contenedor (.table-wrap) ya tiene overflow-x:auto, solo se fija un piso de ancho. */
+.ads-tabla .table { min-width: 1400px; }
+.ads-tabla .table td { white-space: nowrap; }

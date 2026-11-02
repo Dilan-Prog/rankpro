@@ -587,7 +587,9 @@
             <div class="field" style="margin-top: var(--space-3);">
                 <label class="field__label" for="op_estado">Estado</label>
                 <select class="select" name="estado" id="op_estado" required>
+                    <option value="pendiente">Pendiente</option>
                     <option value="en_progreso">En progreso</option>
+                    <option value="en_revision">En revisión</option>
                     <option value="completada">Completada</option>
                     <option value="pausada">Pausada</option>
                 </select>

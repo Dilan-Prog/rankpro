@@ -10,9 +10,14 @@
             <h1 class="page-header__title">Usuarios del Sistema</h1>
             <p class="page-header__subtitle" id="usuariosCountSubtitle">{{ $usuariosTotal }} usuario{{ $usuariosTotal === 1 ? '' : 's' }} · {{ $usuariosActivos }} activo{{ $usuariosActivos === 1 ? '' : 's' }} · {{ $rolesEnUso }} rol{{ $rolesEnUso === 1 ? '' : 'es' }} en uso</p>
         </div>
-        <button type="button" class="btn btn--primary" data-open-usuario-modal>
-            <i class="fa-solid fa-plus"></i> Nuevo Usuario
-        </button>
+        <div class="page-header__actions" style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+            <a class="btn btn--secondary" href="{{ route('admin.usuarios.exportar') }}" download>
+                <i class="fa-solid fa-file-csv"></i> Exportar
+            </a>
+            <button type="button" class="btn btn--primary" data-open-usuario-modal>
+                <i class="fa-solid fa-plus"></i> Nuevo Usuario
+            </button>
+        </div>
     </div>
 
     @if (session('status'))
@@ -126,6 +131,11 @@
             <div class="record-modal__tags" id="usuarioDetailCuentas"></div>
         </div>
 
+        <div class="record-modal__section" style="margin-top: var(--space-5);">
+            <div class="record-modal__section-label">Módulos a los que da acceso su rol</div>
+            <div id="usuarioDetailModulos" class="usuario-modulos"></div>
+        </div>
+
         <div class="form-actions">
             <button type="button" class="btn btn--primary" id="usuarioDetailEdit"><i class="fa-solid fa-pen"></i> Editar</button>
             <button type="button" class="btn btn--secondary" id="usuarioDetailDeactivate" style="color:var(--text-danger);"><i class="fa-solid fa-user-slash"></i> Desactivar</button>
@@ -139,7 +149,8 @@
         </x-slot:header>
         <form id="usuarioForm" novalidate
               data-store-action="{{ route('admin.usuarios.store') }}"
-              data-update-action-template="{{ route('admin.usuarios.update', ['user' => '__ID__']) }}">
+              data-update-action-template="{{ route('admin.usuarios.update', ['user' => '__ID__']) }}"
+              data-permisos-rol="{{ json_encode($permisosPorRol) }}">
             @csrf
 
             <div class="form-grid form-grid--2">
@@ -208,6 +219,12 @@
                     </select>
                     <span class="field__error" data-error-for="is_active"></span>
                 </div>
+            </div>
+
+            {{-- Solo lectura: refleja los permisos reales del rol elegido y cambia con el selector. Se edita en Roles. --}}
+            <div class="usuario-modulos-panel" style="margin-top: var(--space-4);">
+                <div class="field__label">Módulos a los que da acceso su rol</div>
+                <div id="usuarioFormModulos" class="usuario-modulos" aria-live="polite"></div>
             </div>
 
             {{-- Read-only note, edit mode only — cuentas_asignadas is derived data, never an editable input. --}}

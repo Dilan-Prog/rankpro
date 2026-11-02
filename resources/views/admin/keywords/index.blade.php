@@ -46,9 +46,14 @@
     </div>
 
     <div class="bulk-toolbar" id="listasBulkToolbar" hidden
-        data-bulk-descartar-action="{{ route('admin.keywords.listas.bulk-descartar') }}">
+        data-bulk-descartar-action="{{ route('admin.keywords.listas.bulk-descartar') }}"
+        data-exportar-seleccion-action="{{ route('admin.keywords.exportar-seleccion') }}"
+        data-exportar-lista-template="{{ route('admin.keywords.exportar-lista', ['lista' => '__ID__']) }}">
         <span id="listasBulkCount" aria-live="polite"></span>
         <div class="bulk-toolbar__actions">
+            <button type="button" class="kwx-btn kwx-btn--sm" id="listasBulkExportar">
+                <i class="fa-solid fa-file-csv"></i> Exportar keywords (CSV)
+            </button>
             <button type="button" class="kwx-btn kwx-btn--peligro kwx-btn--sm" id="listasBulkDescartar">
                 <i class="fa-solid fa-ban"></i> Descartar seleccionadas
             </button>

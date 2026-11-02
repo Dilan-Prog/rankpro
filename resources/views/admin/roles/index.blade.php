@@ -29,7 +29,9 @@
          Tab: Roles
          ================================================================== --}}
     <div data-panel-content="roles">
-        <div class="roles-grid" id="rolesGrid" data-permisos="{{ $permisos->map(fn ($p) => ['id' => $p->id, 'label' => $p->label, 'module' => $p->module])->values()->toJson() }}">
+        <div class="roles-grid" id="rolesGrid" data-rol-admin="{{ config('permisos.rol_admin', 'admin') }}"
+             data-duplicar-template="{{ route('admin.roles.duplicar', ['role' => '__ID__']) }}"
+             data-permisos="{{ $permisos->map(fn ($p) => ['id' => $p->id, 'label' => $p->label, 'module' => $p->module, 'grupo' => \App\Support\GruposPermisos::tituloDe($p->module)])->values()->toJson() }}">
             @forelse ($roles as $r)
                 <div class="card card--padded role-card" data-role-card data-role-id="{{ $r['id'] }}" data-role="{{ json_encode($r) }}">
                     <div class="role-card__header">
@@ -38,12 +40,18 @@
                             <div class="u-mono role-card__slug">{{ $r['name'] }}</div>
                         </div>
                         <div class="role-card__actions">
+                            <button type="button" class="btn--icon" title="Duplicar" data-duplicate-role="{{ $r['id'] }}">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
                             <button type="button" class="btn--icon" title="Editar" data-edit-role="{{ $r['id'] }}">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-role="{{ $r['id'] }}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            {{-- El rol admin no se elimina (lo rechaza también el servidor): no se ofrece el botón. --}}
+                            @if ($r['name'] !== config('permisos.rol_admin', 'admin'))
+                                <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-role="{{ $r['id'] }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            @endif
                         </div>
                     </div>
                     <div class="role-card__meta">
@@ -53,12 +61,16 @@
                         <p class="role-card__description">{{ $r['description'] }}</p>
                     @endif
                     <div class="role-card__chips">
-                        @foreach ($permisos as $permiso)
-                            @php $granted = in_array($permiso->module, $r['permission_modules'], true); @endphp
-                            <span class="role-chip {{ $granted ? 'role-chip--on' : 'role-chip--off' }}">
-                                <i class="fa-solid {{ $granted ? 'fa-check' : 'fa-minus' }}"></i>{{ $permiso->label }}
-                            </span>
+                        {{-- Solo los módulos concedidos: con ~30 módulos, listar también los no concedidos volvía la tarjeta ilegible. La matriz y la ficha muestran el detalle completo. --}}
+                        @php $concedidos = $permisos->filter(fn ($p) => in_array($p->module, $r['permission_modules'], true))->values(); @endphp
+                        @foreach ($concedidos->take(8) as $permiso)
+                            <span class="role-chip role-chip--on"><i class="fa-solid fa-check"></i>{{ $permiso->label }}</span>
                         @endforeach
+                        @if ($concedidos->count() > 8)
+                            <span class="role-chip">+{{ $concedidos->count() - 8 }} más</span>
+                        @elseif ($concedidos->isEmpty())
+                            <span class="role-chip role-chip--off">Sin módulos asignados</span>
+                        @endif
                     </div>
                     <div class="role-card__footer">
                         Módulos visibles ({{ count($r['permission_modules']) }}/{{ $permisos->count() }})
@@ -78,19 +90,26 @@
          ================================================================== --}}
     <div data-panel-content="matriz" hidden>
         <x-data-table :headers="$roles->pluck('label')->prepend('Permiso')->all()">
-            @forelse ($permisos as $permiso)
-                <tr>
-                    <td>{{ $permiso->label }}</td>
-                    @foreach ($roles as $role)
-                        <td>
-                            @if (in_array($permiso->id, $role['permission_ids'], true))
-                                <i class="fa-solid fa-check matrix-check" title="Concedido"></i>
-                            @else
-                                <i class="fa-solid fa-minus matrix-dash" title="No concedido"></i>
-                            @endif
-                        </td>
-                    @endforeach
+            @forelse ($gruposPermisos as $grupo)
+                <tr class="matrix-group">
+                    <td colspan="{{ $roles->count() + 1 }}">{{ $grupo['titulo'] }}</td>
                 </tr>
+                @foreach ($grupo['permisos'] as $permiso)
+                    <tr>
+                        <td>{{ $permiso->label }}</td>
+                        @foreach ($roles as $role)
+                            <td>
+                                @if (in_array($permiso->id, $role['permission_ids'], true))
+                                    <i class="fa-solid fa-check matrix-check" title="Concedido" aria-hidden="true"></i>
+                                    <span class="matrix-sr">Concedido</span>
+                                @else
+                                    <i class="fa-solid fa-minus matrix-dash" title="No concedido" aria-hidden="true"></i>
+                                    <span class="matrix-sr">No concedido</span>
+                                @endif
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
             @empty
                 <tr><td colspan="{{ $roles->count() + 1 }}" class="table__empty">No hay permisos definidos.</td></tr>
             @endforelse
@@ -119,12 +138,18 @@
         </div>
 
         <div class="record-modal__section" style="margin-top: var(--space-5);">
+            <div class="record-modal__section-label">Usuarios con este rol</div>
+            <div class="record-modal__tags" id="roleDetailUsuarios"></div>
+        </div>
+
+        <div class="record-modal__section" style="margin-top: var(--space-5);">
             <div class="record-modal__section-label">Módulos concedidos</div>
-            <div class="record-modal__tags" id="roleDetailTags"></div>
+            <div id="roleDetailTags"></div>
         </div>
 
         <div class="form-actions">
             <button type="button" class="btn btn--primary" id="roleDetailEdit"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button type="button" class="btn btn--secondary" id="roleDetailDuplicate"><i class="fa-solid fa-copy"></i> Duplicar</button>
             <button type="button" class="btn btn--secondary" id="roleDetailDelete" style="color:var(--text-danger);"><i class="fa-solid fa-trash"></i> Eliminar</button>
         </div>
     </x-modal>
@@ -160,16 +185,32 @@
             </div>
 
             <div style="margin-top: var(--space-5);">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-2);">
+                <div class="perm-toolbar">
                     <span class="field__label">Módulos visibles</span>
-                    <button type="button" class="link-action" id="roleFormToggleAll">Seleccionar todos</button>
+                    <span class="perm-toolbar__acciones">
+                        <button type="button" class="link-action" id="roleFormSelectAll">Seleccionar todos</button>
+                        <button type="button" class="link-action" id="roleFormSelectNone">Ninguno</button>
+                    </span>
                 </div>
-                <div class="checkbox-group" id="roleFormPermissions">
-                    @foreach ($permisos as $permiso)
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="permissions[]" value="{{ $permiso->id }}">
-                            {{ $permiso->label }}
-                        </label>
+                <div id="roleFormPermissions">
+                    @foreach ($gruposPermisos as $grupo)
+                        <fieldset class="perm-group">
+                            <legend class="perm-group__header">
+                                <span class="perm-group__title">{{ $grupo['titulo'] }}</span>
+                                <span class="perm-toolbar__acciones">
+                                    <button type="button" class="link-action" data-group-all>Todos</button>
+                                    <button type="button" class="link-action" data-group-none>Ninguno</button>
+                                </span>
+                            </legend>
+                            <div class="checkbox-group">
+                                @foreach ($grupo['permisos'] as $permiso)
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="permissions[]" value="{{ $permiso->id }}">
+                                        {{ $permiso->label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
                     @endforeach
                 </div>
                 <span class="field__error" data-error-for="permissions"></span>

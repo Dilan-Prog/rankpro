@@ -106,6 +106,17 @@
             <div class="record-modal__section-label">Notas internas</div>
             <div class="client-modal__notes" id="clientModalNotes"></div>
         </div>
+
+        {{-- <x-modal> no tiene slot de pie: va al final del cuerpo y el CSS lo deja pegado abajo (sticky). --}}
+        <div class="client-modal__pie">
+            <button type="button" class="btn btn--secondary" data-modal-close="clientModal">Cerrar</button>
+            <button type="button" class="btn btn--danger client-modal__pie-eliminar" id="clientModalDelete">
+                <i class="fa-solid fa-trash"></i> Eliminar
+            </button>
+            <button type="button" class="btn btn--primary" id="clientModalEdit">
+                <i class="fa-solid fa-pen"></i> Editar cliente
+            </button>
+        </div>
     </x-modal>
 
     {{-- Marcado propio (no <x-modal>) por la cabecera con subtítulo y el pie fijo; global.js lo cierra igual (overlay, Esc, [data-modal-close]). --}}

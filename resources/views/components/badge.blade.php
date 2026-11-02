@@ -43,6 +43,7 @@
         'pendiente'   => ['Pendiente',   'badge--warning'],
         'en_progreso' => ['En Progreso', 'badge--info'],
         'completada'  => ['Completada',  'badge--success'],
+        'en_revision' => ['En revisión', 'badge--orange'],
 
         // Spanish (bugs)
         'abierto'     => ['Abierto',     'badge--orange'],

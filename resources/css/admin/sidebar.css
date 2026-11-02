@@ -443,3 +443,31 @@
 :root[data-theme="light"] .topbar__menu-btn:hover {
   background: rgba(15, 23, 42, 0.06);
 }
+
+/* ---------- Selector de cliente activo (grupo «Marca») ----------
+   Se oculta con el menú colapsado: un <select> no cabe en 62px y el cliente
+   activo sigue vigente en sesión. */
+.sidebar__cliente {
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.sidebar__cliente-select {
+  width: 100%;
+  padding: 7px var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  background: var(--color-input-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+.sidebar__cliente-select:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+html.sidebar--collapsed .sidebar__cliente {
+  display: none;
+}

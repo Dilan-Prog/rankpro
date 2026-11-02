@@ -29,7 +29,7 @@
             <button type="button" class="btn btn--primary" data-open-servicio-modal>Asignar el primer servicio</button>
         </div>
     @else
-        <x-data-table :headers="['Cliente', 'Servicio', 'Tipo', 'Estado', 'Inicio', 'Precio Mensual', '']" data-paginate="15">
+        <x-data-table :headers="['Cliente', 'Servicio', 'Tipo', 'Estado', 'Responsable', 'Inicio', 'Precio Mensual', '']" data-paginate="15">
             @foreach ($servicios as $servicio)
                 <tr class="is-clickable" data-servicio-row data-servicio-row-id="{{ $servicio['id'] }}"
                     data-tipo="{{ $servicio['tipo'] }}" data-estado="{{ $servicio['estado'] }}"
@@ -38,6 +38,7 @@
                     <td>{{ $servicio['nombre'] }}</td>
                     <td>{{ \App\Support\Labels::servicioTipo($servicio['tipo']) }}</td>
                     <td><x-badge :status="$servicio['estado']" /></td>
+                    <td class="srv-responsable{{ empty($servicio['responsable_nombre']) ? ' srv-responsable--vacio' : '' }}">{{ $servicio['responsable_nombre'] ?: '—' }}</td>
                     <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ $servicio['fecha_inicio'] ?? '—' }}</span></td>
                     <td class="u-mono">{{ $servicio['precio_mensual'] > 0 ? '$'.number_format($servicio['precio_mensual']) : '—' }}</td>
                     <td>

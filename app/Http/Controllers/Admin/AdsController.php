@@ -10,6 +10,8 @@ use App\Models\AdsClic;
 use App\Models\AdsConversion;
 use App\Models\AdsKeywordColumna;
 use App\Models\Cliente;
+use App\Models\Servicio;
+use App\Support\Labels;
 use App\Support\Reglas\Ads as ReglasAds;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +31,40 @@ class AdsController extends Controller
             'pageTitle' => 'Módulo Ads',
             'campanas' => $campanas,
             'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
+            'cuentasInfo' => $this->cuentasInfo($campanas->pluck('cliente_id')->unique()->all()),
         ]);
+    }
+
+    /**
+     * Datos reales de Cliente para la tarjeta de la cuenta seleccionada (solo clientes con campañas, que son las
+     * únicas cuentas que el selector muestra). El MRR se suma en consulta y no sobre la colección: Servicio::estado
+     * es un enum y un `==` contra el string 'activo' nunca coincide en PHP, así que filtrar en memoria daría 0.
+     */
+    private function cuentasInfo(array $clienteIds): array
+    {
+        $mrrPorCliente = Servicio::whereIn('cliente_id', $clienteIds)
+            ->where('estado', 'activo')
+            ->groupBy('cliente_id')
+            ->selectRaw('cliente_id, SUM(precio_mensual) as mrr')
+            ->pluck('mrr', 'cliente_id');
+
+        return Cliente::with('servicios')->whereIn('id', $clienteIds)->get()->mapWithKeys(fn (Cliente $c) => [
+            $c->id => [
+                'nombre' => $c->nombre,
+                'contacto' => $c->contacto_nombre,
+                'email' => $c->email,
+                'telefono' => $c->telefono,
+                'mrr' => (float) ($mrrPorCliente[$c->id] ?? 0),
+                'inicio_contrato' => $c->fecha_inicio_contrato?->format('Y-m-d'),
+                'renovacion_contrato' => $c->fecha_renovacion_contrato?->format('Y-m-d'),
+                'servicios' => $c->servicios
+                    ->filter(fn ($s) => $s->estado->value === 'activo')
+                    ->map(fn ($s) => Labels::servicioTipo($s->tipo))
+                    ->unique()
+                    ->values()
+                    ->all(),
+            ],
+        ])->all();
     }
 
     public function store(Request $request): JsonResponse
@@ -125,6 +160,12 @@ class AdsController extends Controller
     {
         $inversion = (float) $campana->metricas->sum('inversion_real');
         $roas = $campana->metricas->count() ? round((float) $campana->metricas->avg('roas'), 2) : 0.0;
+        $impresiones = (int) $campana->metricas->sum('impresiones');
+        $clics = (int) $campana->metricas->sum('clics');
+        $conversiones = (int) $campana->metricas->sum('conversiones');
+
+        // Solo la métrica del mes en curso: el presupuesto es mensual, comparar contra la inversión histórica no tendría sentido.
+        $metricaMes = $campana->metricas->first(fn ($m) => (int) $m->mes === (int) now()->month && (int) $m->anio === (int) now()->year);
 
         return [
             'id' => $campana->id,
@@ -140,9 +181,15 @@ class AdsController extends Controller
             'ciclo_actual' => $campana->ciclo_actual,
             'presupuesto_mensual' => (float) $campana->presupuesto_mensual,
             'inversion' => $inversion,
-            'impresiones' => (int) $campana->metricas->sum('impresiones'),
-            'clics' => (int) $campana->metricas->sum('clics'),
-            'conversiones' => (int) $campana->metricas->sum('conversiones'),
+            'impresiones' => $impresiones,
+            'clics' => $clics,
+            'conversiones' => $conversiones,
+            // Razones calculadas de las sumas de AdsMetrica (no el promedio de las columnas ctr/cpc/cpa guardadas): null = denominador 0, la vista muestra guion.
+            'ctr' => $impresiones > 0 ? round(($clics / $impresiones) * 100, 2) : null,
+            'cpc' => $clics > 0 ? round($inversion / $clics, 2) : null,
+            'cpa' => $conversiones > 0 ? round($inversion / $conversiones, 2) : null,
+            'metricas_count' => $campana->metricas->count(),
+            'inversion_mes' => $metricaMes ? (float) $metricaMes->inversion_real : null,
             'roas' => $roas,
             'ingreso_atribuido' => round($inversion * $roas, 2),
             'fecha_inicio' => $campana->fecha_inicio?->format('Y-m-d'),

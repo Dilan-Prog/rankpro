@@ -23,6 +23,9 @@
                     <div class="cpe-bar__meta">
                         <span>Editor en vivo · <span data-resumen-bloques>{{ count($plantilla->bloques ?? []) }} bloques</span></span>
                         <span data-resumen-html {{ $htmlLibre ? '' : 'hidden' }}>· HTML propio</span>
+                        {{-- Ficha de solo lectura calculada al abrir (no se actualiza mientras se edita). --}}
+                        <span title="Aproximado, calculado al abrir el editor: el envío real suma el píxel de apertura y los enlaces de medición.">· ≈ {{ number_format($ficha['peso_bytes'] / 1024, 1) }} KB de HTML</span>
+                        <span>· {{ count($ficha['variables']) ? 'Variables: '.implode(', ', $ficha['variables']) : 'Sin variables' }}</span>
                     </div>
                 </div>
             </div>

@@ -91,7 +91,12 @@
     });
   }
 
+  // Cliente que muestra el modal de detalle; el pie (Eliminar / Editar) actúa sobre él
+  // sin volver a leer la fila, que pudo haberse reemplazado por un upsert.
+  let detailClient = null;
+
   function populateModal(client) {
+    detailClient = client;
     document.getElementById("clientModalName").textContent = client.empresa || client.nombre;
     document.getElementById("clientModalBadge").outerHTML = badgeHtml(client.estado);
     document.getElementById("clientModalContact").textContent = client.contacto_nombre || "—";
@@ -343,7 +348,32 @@
     });
   }
 
+  /** Pie del detalle: cierra el detalle antes de abrir el otro modal para no apilar overlays. */
+  function initDetailFooter() {
+    document.getElementById("clientModalEdit")?.addEventListener("click", () => {
+      if (!detailClient) return;
+      window.AgencyOS.closeModal("clientModal");
+      openClientFormModal(detailClient);
+    });
+    document.getElementById("clientModalDelete")?.addEventListener("click", () => {
+      if (!detailClient) return;
+      window.AgencyOS.closeModal("clientModal");
+      openDeleteModal(detailClient);
+    });
+  }
+
   // ---------- Delete confirmation modal ----------
+
+  // Un solo flujo de borrado (resumen de MRR + confirmación) para la fila y para el pie del detalle.
+  function openDeleteModal(client) {
+    const confirmBtn = document.getElementById("clientDeleteConfirm");
+    if (!confirmBtn) return;
+    document.getElementById("clientDeleteName").textContent = client.empresa || client.nombre;
+    document.getElementById("clientDeleteMrr").textContent = client.mrr > 0 ? formatCurrency(client.mrr) + " MXN/mes" : "—";
+    document.getElementById("clientDeleteEnd").textContent = client.fecha_renovacion_contrato || "—";
+    confirmBtn.dataset.clientId = client.id;
+    window.AgencyOS.openModal("clientDeleteModal");
+  }
 
   function initClientDelete() {
     const confirmBtn = document.getElementById("clientDeleteConfirm");
@@ -354,14 +384,7 @@
       if (!btn) return;
       const row = btn.closest("[data-client-row]");
       if (!row) return;
-      const client = JSON.parse(row.dataset.client);
-
-      document.getElementById("clientDeleteName").textContent = client.empresa || client.nombre;
-      document.getElementById("clientDeleteMrr").textContent = client.mrr > 0 ? formatCurrency(client.mrr) + " MXN/mes" : "—";
-      document.getElementById("clientDeleteEnd").textContent = client.fecha_renovacion_contrato || "—";
-      confirmBtn.dataset.clientId = client.id;
-
-      window.AgencyOS.openModal("clientDeleteModal");
+      openDeleteModal(JSON.parse(row.dataset.client));
     });
 
     confirmBtn.addEventListener("click", () => {
@@ -391,5 +414,6 @@
     initEditClientButtons();
     initClientForm();
     initClientDelete();
+    initDetailFooter();
   });
 })();

@@ -67,6 +67,7 @@ class CorreoPlantillasController extends Controller
             'kpis' => [
                 'activas' => CorreoPlantilla::where('estado', 'activa')->count(),
                 'total' => CorreoPlantilla::count(),
+                'archivadas' => CorreoPlantilla::where('estado', 'archivada')->count(),
                 'envios_mes' => CorreoEnvio::whereNotNull('enviado_en')
                     ->whereBetween('enviado_en', [now()->startOfMonth(), now()->endOfMonth()])
                     ->count(),
@@ -75,6 +76,26 @@ class CorreoPlantillasController extends Controller
                 'destinatarios' => $totalDestinatarios,
             ],
         ]);
+    }
+
+    /**
+     * Peso del HTML y variables que usa la plantilla, solo lectura. Se calcula
+     * con el renderizador tal cual (valores de ejemplo, sin tocarlo): el peso es
+     * aproximado porque el envío real suma el píxel de apertura y los enlaces de
+     * medición. Se muestra al abrir el editor; no se recalcula mientras se edita.
+     *
+     * @return array{peso_bytes: int, variables: list<string>}
+     */
+    private function ficha(CorreoPlantilla $plantilla): array
+    {
+        $html = RenderizadorCorreo::renderPlantilla($plantilla, RenderizadorCorreo::variablesEjemplo());
+        $fuente = json_encode([$plantilla->asunto, $plantilla->bloques, $plantilla->marca], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            .' '.(string) $plantilla->html_personalizado;
+
+        return [
+            'peso_bytes' => strlen($html),
+            'variables' => Variables::usadasEn($fuente),
+        ];
     }
 
     public function store(Request $request): JsonResponse
@@ -111,6 +132,7 @@ class CorreoPlantillasController extends Controller
 
         return view('admin.correo.plantillas.show', [
             'pageTitle' => $plantilla->nombre,
+            'ficha' => $this->ficha($plantilla),
             'plantilla' => $plantilla,
             // Estado inicial del editor: todo lo que el JS necesita viaja en un
             // solo JSON (misma idea que el banco de keywords de seo/show).

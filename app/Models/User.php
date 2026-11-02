@@ -60,6 +60,41 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    /**
+     * ¿Puede entrar a un módulo del panel? Se apoya en roles y role_permissions.
+     *
+     * Se memoriza por petición: el menú lo consulta una vez por enlace.
+     *
+     * @var array<string, bool>
+     */
+    private array $permisosConsultados = [];
+
+    public function tienePermiso(string $modulo): bool
+    {
+        if (! config('permisos.aplicar')) {
+            return true;
+        }
+
+        return $this->permisosConsultados[$modulo] ??= $this->calcularPermiso($modulo);
+    }
+
+    private function calcularPermiso(string $modulo): bool
+    {
+        $rol = $this->role;
+
+        if ($rol === null) {
+            return false;
+        }
+
+        // El administrador no depende de filas en role_permissions: un módulo
+        // nuevo no debe dejarlo fuera hasta que alguien reasigne permisos.
+        if ($rol->name === config('permisos.rol_admin')) {
+            return true;
+        }
+
+        return $rol->permissions->contains('name', $modulo);
+    }
+
     /** Servicios this user is the assigned responsable for — the real source for "cuentas asignadas" (which clients they work on), derived rather than free-text. */
     public function servicios(): HasMany
     {

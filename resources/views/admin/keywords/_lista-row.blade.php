@@ -68,6 +68,7 @@
                     <button type="button" role="menuitem" data-edit-lista="{{ $l['id'] }}"><i class="fa-solid fa-pen"></i> Editar lista</button>
                     <button type="button" role="menuitem" data-open-import-modal="{{ $l['id'] }}"><i class="fa-solid fa-file-import"></i> Importar keywords</button>
                     <button type="button" role="menuitem" data-open-medicion-modal="{{ $l['id'] }}"><i class="fa-solid fa-crosshairs"></i> Nueva medición</button>
+                    <button type="button" role="menuitem" data-exportar-lista="{{ $l['id'] }}"><i class="fa-solid fa-file-csv"></i> Exportar a CSV</button>
                     <button type="button" role="menuitem" class="kwx-menu__peligro" data-delete-lista="{{ $l['id'] }}"><i class="fa-solid fa-trash"></i> Eliminar lista</button>
                 </div>
             </div>

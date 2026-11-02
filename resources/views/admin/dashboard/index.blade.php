@@ -18,7 +18,7 @@
     <div class="kpi-grid">
         @foreach ($kpis as $kpi)
             <x-stat-card :label="$kpi['label']" :value="$kpi['value']" :sub="$kpi['sub']"
-                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" />
+                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" :invertir="$kpi['invertir'] ?? false" />
         @endforeach
     </div>
 

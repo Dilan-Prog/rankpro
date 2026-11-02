@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\AutomatizacionFaseController;
 use App\Http\Controllers\Admin\AutomatizacionFlujoController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BugController;
+use App\Http\Controllers\Admin\ClienteActivoController;
 use App\Http\Controllers\Admin\ClientesController;
 use App\Http\Controllers\Admin\ComunicacionController;
 use App\Http\Controllers\Admin\CorreoEnviosController;
@@ -181,10 +182,20 @@ Route::prefix('agendar')->name('agendar.')->middleware('throttle:agendar-public'
 
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::redirect('/', '/admin/dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/exportar', [DashboardController::class, 'exportarReporte'])->name('dashboard.exportar');
+    Route::middleware('permiso:dashboard')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/exportar', [DashboardController::class, 'exportarReporte'])->name('dashboard.exportar');
+    });
 
-    Route::prefix('blog')->name('blog.')->group(function () {
+    // Selector de cliente activo del menú (sección Marca): no es un módulo, solo recuerda el cliente en sesión.
+    Route::post('/cliente-activo', [ClienteActivoController::class, 'update'])->name('cliente-activo');
+
+    // Módulos nuevos de la interfaz: un archivo de rutas por módulo en routes/admin/, cada uno con su middleware `permiso:`.
+    foreach (glob(base_path('routes/admin/*.php')) ?: [] as $archivoRutas) {
+        require $archivoRutas;
+    }
+
+    Route::prefix('blog')->name('blog.')->middleware('permiso:blog')->group(function () {
         Route::get('/', [AdminBlogController::class, 'index'])->name('index');
         Route::get('/nuevo', [AdminBlogController::class, 'create'])->name('create');
         Route::post('/', [AdminBlogController::class, 'store'])->name('store');
@@ -194,7 +205,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/{articulo}', [AdminBlogController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('clientes')->name('clientes.')->group(function () {
+    Route::prefix('clientes')->name('clientes.')->middleware('permiso:clientes')->group(function () {
         Route::get('/', [ClientesController::class, 'index'])->name('index');
         Route::post('/', [ClientesController::class, 'store'])->name('store');
         Route::put('/{cliente}', [ClientesController::class, 'update'])->name('update');
@@ -217,14 +228,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{cliente}', [ClientesController::class, 'show'])->name('show');
     });
 
-    Route::prefix('servicios')->name('servicios.')->group(function () {
+    Route::prefix('servicios')->name('servicios.')->middleware('permiso:servicios')->group(function () {
         Route::get('/', [ServiciosController::class, 'index'])->name('index');
         Route::post('/', [ServiciosController::class, 'store'])->name('store');
         Route::put('/{servicio}', [ServiciosController::class, 'update'])->name('update');
         Route::delete('/{servicio}', [ServiciosController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('seo')->name('seo.')->group(function () {
+    Route::prefix('seo')->name('seo.')->middleware('permiso:seo')->group(function () {
         Route::get('/', [SeoController::class, 'index'])->name('index');
         Route::post('/', [SeoController::class, 'store'])->name('store');
         Route::put('/{campana}', [SeoController::class, 'update'])->name('update');
@@ -258,7 +269,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{campana}', [SeoController::class, 'show'])->name('show');
     });
 
-    Route::prefix('automatizaciones')->name('automatizaciones.')->group(function () {
+    Route::prefix('automatizaciones')->name('automatizaciones.')->middleware('permiso:automatizaciones')->group(function () {
         Route::get('/', [AutomatizacionController::class, 'index'])->name('index');
         Route::get('/nueva', [AutomatizacionController::class, 'create'])->name('create');
         Route::post('/', [AutomatizacionController::class, 'store'])->name('store');
@@ -280,7 +291,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{proyecto}', [AutomatizacionController::class, 'show'])->name('show');
     });
 
-    Route::prefix('keywords')->name('keywords.')->group(function () {
+    Route::prefix('keywords')->name('keywords.')->middleware('permiso:keywords')->group(function () {
         Route::get('/', [KeywordsController::class, 'index'])->name('index');
         Route::post('/', [KeywordsController::class, 'store'])->name('store');
         Route::put('/{keyword}', [KeywordsController::class, 'update'])->name('update');
@@ -305,7 +316,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{keyword}/mediciones', [KeywordMedicionController::class, 'porKeyword'])->name('mediciones');
     });
 
-    Route::prefix('conversiones')->name('conversiones.')->group(function () {
+    Route::prefix('conversiones')->name('conversiones.')->middleware('permiso:conversiones')->group(function () {
         Route::get('/', [ConversionesController::class, 'index'])->name('index');
         Route::post('/exportar-excel', [ConversionesController::class, 'exportarExcel'])->name('exportar-excel');
         Route::post('/{conversion}/etapa', [ConversionesController::class, 'asignarEtapa'])->name('etapa');
@@ -315,7 +326,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/columnas/{columna}', [AdsConversionColumnaController::class, 'destroy'])->name('columnas.destroy');
     });
 
-    Route::prefix('reportes')->name('reportes.')->group(function () {
+    Route::prefix('reportes')->name('reportes.')->middleware('permiso:reportes')->group(function () {
         Route::get('/', [ReportesController::class, 'index'])->name('index');
         Route::post('/', [ReportesController::class, 'store'])->name('store');
 
@@ -356,7 +367,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{reporte}', [ReportesController::class, 'show'])->name('show');
     });
 
-    Route::prefix('propuestas')->name('propuestas.')->group(function () {
+    Route::prefix('propuestas')->name('propuestas.')->middleware('permiso:propuestas')->group(function () {
         Route::get('/', [PropuestaController::class, 'index'])->name('index');
         Route::post('/', [PropuestaController::class, 'store'])->name('store');
         Route::put('/{propuesta}', [PropuestaController::class, 'update'])->name('update');
@@ -372,7 +383,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{propuesta}', [PropuestaController::class, 'show'])->name('show');
     });
 
-    Route::prefix('correo')->name('correo.')->group(function () {
+    Route::prefix('correo')->name('correo.')->middleware('permiso:correo')->group(function () {
         Route::prefix('plantillas')->name('plantillas.')->group(function () {
             Route::get('/', [CorreoPlantillasController::class, 'index'])->name('index');
             Route::post('/', [CorreoPlantillasController::class, 'store'])->name('store');
@@ -409,7 +420,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         });
     });
 
-    Route::prefix('ads')->name('ads.')->group(function () {
+    Route::prefix('ads')->name('ads.')->middleware('permiso:ads')->group(function () {
         Route::get('/', [AdsController::class, 'index'])->name('index');
         Route::post('/', [AdsController::class, 'store'])->name('store');
         Route::put('/{campana}', [AdsController::class, 'update'])->name('update');
@@ -449,7 +460,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{campana}', [AdsController::class, 'show'])->name('show');
     });
 
-    Route::prefix('desarrollo')->name('desarrollo.')->group(function () {
+    Route::prefix('desarrollo')->name('desarrollo.')->middleware('permiso:desarrollo')->group(function () {
         Route::get('/', [DesarrolloController::class, 'index'])->name('index');
         Route::post('/', [DesarrolloController::class, 'store'])->name('store');
         Route::put('/{proyecto}', [DesarrolloController::class, 'update'])->name('update');
@@ -478,7 +489,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{proyecto}', [DesarrolloController::class, 'show'])->name('show');
     });
 
-    Route::prefix('finanzas')->name('finanzas.')->group(function () {
+    Route::prefix('finanzas')->name('finanzas.')->middleware('permiso:finanzas')->group(function () {
         Route::get('/', [FinanzasController::class, 'index'])->name('index');
         Route::get('/exportar', [FinanzasController::class, 'exportar'])->name('exportar');
         Route::post('/', [FinanzasController::class, 'store'])->name('store');
@@ -486,7 +497,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/{finanza}', [FinanzasController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('archivos')->name('archivos.')->group(function () {
+    Route::prefix('archivos')->name('archivos.')->middleware('permiso:archivos')->group(function () {
         Route::get('/', [ArchivosController::class, 'index'])->name('index');
         Route::post('/', [ArchivosController::class, 'store'])->name('store');
         Route::get('/contratos/nuevo', [DocumentosController::class, 'createContrato'])->name('contratos.create');
@@ -501,14 +512,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     Route::get('/integraciones', [IntegracionesController::class, 'index'])->name('integraciones.index');
 
-    Route::prefix('integraciones/api')->name('integraciones.api.')->group(function () {
+    Route::prefix('integraciones/api')->name('integraciones.api.')->middleware('permiso:integraciones')->group(function () {
         Route::get('/', [IntegracionesApiController::class, 'index'])->name('index');
         Route::post('/tokens', [IntegracionesApiController::class, 'store'])->name('tokens.store');
         Route::delete('/tokens/{token}', [IntegracionesApiController::class, 'destroy'])->name('tokens.destroy');
         Route::get('/docs', [IntegracionesApiController::class, 'docs'])->name('docs');
     });
 
-    Route::prefix('integraciones/webhooks')->name('integraciones.webhooks.')->group(function () {
+    Route::prefix('integraciones/webhooks')->name('integraciones.webhooks.')->middleware('permiso:webhooks')->group(function () {
         Route::get('/', [WebhooksController::class, 'index'])->name('index');
         Route::post('/', [WebhooksController::class, 'store'])->name('store');
         Route::put('/{webhook}', [WebhooksController::class, 'update'])->name('update');
@@ -519,7 +530,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/entregas/{entrega}/reintentar', [WebhooksController::class, 'reintentar'])->name('entregas.reintentar');
     });
 
-    Route::prefix('integraciones/search-console')->name('integraciones.search-console.')->group(function () {
+    Route::prefix('integraciones/search-console')->name('integraciones.search-console.')->middleware('permiso:integraciones')->group(function () {
         Route::get('/', [SearchConsoleController::class, 'index'])->name('index');
         Route::put('/llave', [SearchConsoleController::class, 'guardarLlave'])->name('llave.guardar');
         Route::delete('/llave', [SearchConsoleController::class, 'quitarLlave'])->name('llave.quitar');
@@ -529,27 +540,29 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/propiedades/{propiedad}/sincronizar', [SearchConsoleController::class, 'sincronizar'])->name('sincronizar');
     });
 
-    Route::prefix('roles')->name('roles.')->group(function () {
+    Route::prefix('roles')->name('roles.')->middleware('permiso:roles')->group(function () {
         Route::get('/', [RolesController::class, 'index'])->name('index');
         Route::post('/', [RolesController::class, 'store'])->name('store');
+        Route::post('/{role}/duplicar', [RolesController::class, 'duplicar'])->name('duplicar');
         Route::put('/{role}', [RolesController::class, 'update'])->name('update');
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('usuarios')->name('usuarios.')->group(function () {
+    Route::prefix('usuarios')->name('usuarios.')->middleware('permiso:usuarios')->group(function () {
         Route::get('/', [UsersController::class, 'index'])->name('index');
+        Route::get('/exportar', [UsersController::class, 'exportar'])->name('exportar');
         Route::post('/', [UsersController::class, 'store'])->name('store');
         Route::put('/{user}', [UsersController::class, 'update'])->name('update');
         Route::post('/{user}/desactivar', [UsersController::class, 'deactivate'])->name('deactivate');
     });
 
-    Route::prefix('configuracion')->name('configuracion.')->group(function () {
+    Route::prefix('configuracion')->name('configuracion.')->middleware('permiso:configuracion')->group(function () {
         Route::get('/smtp', [ConfiguracionSmtpController::class, 'edit'])->name('smtp.edit');
         Route::put('/smtp', [ConfiguracionSmtpController::class, 'update'])->name('smtp.update');
         Route::post('/smtp/probar', [ConfiguracionSmtpController::class, 'probar'])->name('smtp.probar');
     });
 
-    Route::prefix('agenda')->name('agenda.')->group(function () {
+    Route::prefix('agenda')->name('agenda.')->middleware('permiso:agenda')->group(function () {
         Route::get('/', [AgendaController::class, 'index'])->name('index');
         Route::put('/configuracion', [AgendaController::class, 'actualizarConfiguracion'])->name('configuracion.update');
         Route::put('/horarios', [AgendaController::class, 'actualizarHorarios'])->name('horarios.update');
@@ -561,7 +574,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::post('/reuniones/{reunion}/cancelar', [AgendaController::class, 'cancelarReunion'])->name('reuniones.cancelar');
     });
 
-    Route::prefix('metricas')->name('metricas.')->group(function () {
+    Route::prefix('metricas')->name('metricas.')->middleware('permiso:metricas')->group(function () {
         Route::get('/', [MetricasController::class, 'index'])->name('index');
         Route::post('/valores', [MetricasController::class, 'guardarMes'])->name('valores.store');
         Route::post('/definiciones', [MetricaClienteController::class, 'store'])->name('definiciones.store');
@@ -571,7 +584,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/{metrica}', [MetricasController::class, 'show'])->name('show');
     });
 
-    Route::prefix('captura')->name('captura.')->group(function () {
+    Route::prefix('captura')->name('captura.')->middleware('permiso:captura')->group(function () {
         Route::get('/', [CapturaController::class, 'index'])->name('index');
     });
 });

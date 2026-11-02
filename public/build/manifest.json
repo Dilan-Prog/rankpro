@@ -1,6 +1,6 @@
 {
   "resources/css/admin/ads.css": {
-    "file": "assets/ads-DwYb6avH.css",
+    "file": "assets/ads-egFVSPSQ.css",
     "src": "resources/css/admin/ads.css",
     "isEntry": true
   },
@@ -12,6 +12,11 @@
   "resources/css/admin/archivos.css": {
     "file": "assets/archivos-N_pHQ4GD.css",
     "src": "resources/css/admin/archivos.css",
+    "isEntry": true
+  },
+  "resources/css/admin/audiencia.css": {
+    "file": "assets/audiencia-iW9bHH1n.css",
+    "src": "resources/css/admin/audiencia.css",
     "isEntry": true
   },
   "resources/css/admin/auth.css": {
@@ -29,8 +34,13 @@
     "src": "resources/css/admin/blog.css",
     "isEntry": true
   },
+  "resources/css/admin/calendario.css": {
+    "file": "assets/calendario-VtlUQ10q.css",
+    "src": "resources/css/admin/calendario.css",
+    "isEntry": true
+  },
   "resources/css/admin/clientes.css": {
-    "file": "assets/clientes-C2nfnzvi.css",
+    "file": "assets/clientes-C_WqmbXK.css",
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
@@ -39,13 +49,18 @@
     "src": "resources/css/admin/configuracion.css",
     "isEntry": true
   },
+  "resources/css/admin/contenido.css": {
+    "file": "assets/contenido-vnPU-WgP.css",
+    "src": "resources/css/admin/contenido.css",
+    "isEntry": true
+  },
   "resources/css/admin/correo-envios.css": {
     "file": "assets/correo-envios-B8QOEdKH.css",
     "src": "resources/css/admin/correo-envios.css",
     "isEntry": true
   },
   "resources/css/admin/correo-plantillas.css": {
-    "file": "assets/correo-plantillas-CpUYApq6.css",
+    "file": "assets/correo-plantillas-18cQ7aAM.css",
     "src": "resources/css/admin/correo-plantillas.css",
     "isEntry": true
   },
@@ -55,18 +70,28 @@
     "isEntry": true
   },
   "resources/css/admin/desarrollo.css": {
-    "file": "assets/desarrollo-Bck7QhfA.css",
+    "file": "assets/desarrollo-CPfVr-pn.css",
     "src": "resources/css/admin/desarrollo.css",
     "isEntry": true
   },
   "resources/css/admin/finanzas.css": {
-    "file": "assets/finanzas-CnZXbuv2.css",
+    "file": "assets/finanzas-AuckFyY3.css",
     "src": "resources/css/admin/finanzas.css",
     "isEntry": true
   },
   "resources/css/admin/global.css": {
-    "file": "assets/global-B5eO18nE.css",
+    "file": "assets/global-Bq0AgsvZ.css",
     "src": "resources/css/admin/global.css",
+    "isEntry": true
+  },
+  "resources/css/admin/identidad.css": {
+    "file": "assets/identidad-DIDeLlfj.css",
+    "src": "resources/css/admin/identidad.css",
+    "isEntry": true
+  },
+  "resources/css/admin/inicio.css": {
+    "file": "assets/inicio-C_e-Z-SP.css",
+    "src": "resources/css/admin/inicio.css",
     "isEntry": true
   },
   "resources/css/admin/integraciones.css": {
@@ -84,6 +109,11 @@
     "src": "resources/css/admin/metricas.css",
     "isEntry": true
   },
+  "resources/css/admin/mi-espacio.css": {
+    "file": "assets/mi-espacio-tOYLAI-5.css",
+    "src": "resources/css/admin/mi-espacio.css",
+    "isEntry": true
+  },
   "resources/css/admin/propuestas.css": {
     "file": "assets/propuestas-DggyNlbj.css",
     "src": "resources/css/admin/propuestas.css",
@@ -95,7 +125,7 @@
     "isEntry": true
   },
   "resources/css/admin/roles.css": {
-    "file": "assets/roles-88H3s6eP.css",
+    "file": "assets/roles-BisaGsaE.css",
     "src": "resources/css/admin/roles.css",
     "isEntry": true
   },
@@ -104,23 +134,33 @@
     "src": "resources/css/admin/search-console.css",
     "isEntry": true
   },
+  "resources/css/admin/seo-plan.css": {
+    "file": "assets/seo-plan-BAoqtaDX.css",
+    "src": "resources/css/admin/seo-plan.css",
+    "isEntry": true
+  },
   "resources/css/admin/seo.css": {
-    "file": "assets/seo-BBy_mmPG.css",
+    "file": "assets/seo-SkAo0lKu.css",
     "src": "resources/css/admin/seo.css",
     "isEntry": true
   },
   "resources/css/admin/servicios.css": {
-    "file": "assets/servicios-B9xOP5a4.css",
+    "file": "assets/servicios-DhsFtss-.css",
     "src": "resources/css/admin/servicios.css",
     "isEntry": true
   },
   "resources/css/admin/sidebar.css": {
-    "file": "assets/sidebar-Cs-KgY2s.css",
+    "file": "assets/sidebar-Cie2rC9M.css",
     "src": "resources/css/admin/sidebar.css",
     "isEntry": true
   },
+  "resources/css/admin/tablero.css": {
+    "file": "assets/tablero-BAbRAW2X.css",
+    "src": "resources/css/admin/tablero.css",
+    "isEntry": true
+  },
   "resources/css/admin/usuarios.css": {
-    "file": "assets/usuarios-CpEd2JCA.css",
+    "file": "assets/usuarios-BHkVZ4Hu.css",
     "src": "resources/css/admin/usuarios.css",
     "isEntry": true
   },
@@ -155,7 +195,7 @@
     "isEntry": true
   },
   "resources/js/ads.js": {
-    "file": "assets/ads-6OoYvifR.js",
+    "file": "assets/ads-CyN-Maca.js",
     "name": "ads",
     "src": "resources/js/ads.js",
     "isEntry": true
@@ -176,6 +216,12 @@
     "file": "assets/archivos-CG4TI3f_.js",
     "name": "archivos",
     "src": "resources/js/archivos.js",
+    "isEntry": true
+  },
+  "resources/js/audiencia.js": {
+    "file": "assets/audiencia-W6T-979R.js",
+    "name": "audiencia",
+    "src": "resources/js/audiencia.js",
     "isEntry": true
   },
   "resources/js/auth.js": {
@@ -202,8 +248,14 @@
     "src": "resources/js/blog.js",
     "isEntry": true
   },
+  "resources/js/calendario.js": {
+    "file": "assets/calendario-1KPncazn.js",
+    "name": "calendario",
+    "src": "resources/js/calendario.js",
+    "isEntry": true
+  },
   "resources/js/clientes.js": {
-    "file": "assets/clientes-iBJxn06O.js",
+    "file": "assets/clientes-CV3aAuVf.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
     "isEntry": true
@@ -212,6 +264,12 @@
     "file": "assets/configuracion-CLd-DsQi.js",
     "name": "configuracion",
     "src": "resources/js/configuracion.js",
+    "isEntry": true
+  },
+  "resources/js/contenido.js": {
+    "file": "assets/contenido-DqUzqV63.js",
+    "name": "contenido",
+    "src": "resources/js/contenido.js",
     "isEntry": true
   },
   "resources/js/conversiones-embudo.js": {
@@ -245,7 +303,7 @@
     "isEntry": true
   },
   "resources/js/desarrollo.js": {
-    "file": "assets/desarrollo-AG9hskmF.js",
+    "file": "assets/desarrollo-Co1T8xes.js",
     "name": "desarrollo",
     "src": "resources/js/desarrollo.js",
     "isEntry": true
@@ -257,7 +315,7 @@
     "isEntry": true
   },
   "resources/js/finanzas.js": {
-    "file": "assets/finanzas-Cza6Ts4J.js",
+    "file": "assets/finanzas-DgMpx0GM.js",
     "name": "finanzas",
     "src": "resources/js/finanzas.js",
     "isEntry": true
@@ -268,8 +326,20 @@
     "src": "resources/js/global.js",
     "isEntry": true
   },
+  "resources/js/identidad.js": {
+    "file": "assets/identidad-DeSJ8ujg.js",
+    "name": "identidad",
+    "src": "resources/js/identidad.js",
+    "isEntry": true
+  },
+  "resources/js/inicio.js": {
+    "file": "assets/inicio-CDeZZNFQ.js",
+    "name": "inicio",
+    "src": "resources/js/inicio.js",
+    "isEntry": true
+  },
   "resources/js/keywords.js": {
-    "file": "assets/keywords-Brh-IVP2.js",
+    "file": "assets/keywords-LAPhdb39.js",
     "name": "keywords",
     "src": "resources/js/keywords.js",
     "isEntry": true
@@ -278,6 +348,12 @@
     "file": "assets/metricas-BHVlppFd.js",
     "name": "metricas",
     "src": "resources/js/metricas.js",
+    "isEntry": true
+  },
+  "resources/js/mi-espacio.js": {
+    "file": "assets/mi-espacio-BBX4mZjt.js",
+    "name": "mi-espacio",
+    "src": "resources/js/mi-espacio.js",
     "isEntry": true
   },
   "resources/js/modules/agendar.js": {
@@ -305,13 +381,19 @@
     "isEntry": true
   },
   "resources/js/roles.js": {
-    "file": "assets/roles-Hh7jG6i5.js",
+    "file": "assets/roles-C2pMWInT.js",
     "name": "roles",
     "src": "resources/js/roles.js",
     "isEntry": true
   },
+  "resources/js/seo-plan.js": {
+    "file": "assets/seo-plan-Brck-j91.js",
+    "name": "seo-plan",
+    "src": "resources/js/seo-plan.js",
+    "isEntry": true
+  },
   "resources/js/seo.js": {
-    "file": "assets/seo-BceF7AyR.js",
+    "file": "assets/seo-4sjPdQrt.js",
     "name": "seo",
     "src": "resources/js/seo.js",
     "isEntry": true
@@ -323,9 +405,15 @@
     "isEntry": true
   },
   "resources/js/servicios.js": {
-    "file": "assets/servicios-BKfGYmXh.js",
+    "file": "assets/servicios-CZR2KXgN.js",
     "name": "servicios",
     "src": "resources/js/servicios.js",
+    "isEntry": true
+  },
+  "resources/js/tablero.js": {
+    "file": "assets/tablero-CO33dSXw.js",
+    "name": "tablero",
+    "src": "resources/js/tablero.js",
     "isEntry": true
   },
   "resources/js/theme.js": {
@@ -335,7 +423,7 @@
     "isEntry": true
   },
   "resources/js/usuarios.js": {
-    "file": "assets/usuarios-ceSG5T2a.js",
+    "file": "assets/usuarios-BffMAdgP.js",
     "name": "usuarios",
     "src": "resources/js/usuarios.js",
     "isEntry": true

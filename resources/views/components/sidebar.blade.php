@@ -19,6 +19,18 @@
         @foreach (\App\Support\Navigation::groups() as $groupLabel => $links)
             <div class="sidebar__group">
                 <span class="sidebar__group-label">{{ $groupLabel }}</span>
+                @if ($groupLabel === \App\Support\Navigation::GRUPO_MARCA)
+                    {{-- Cliente activo: los módulos de esta sección (Identidad, Audiencia, SEO Plan, Contenido) trabajan con él. --}}
+                    <form method="POST" action="{{ route('admin.cliente-activo') }}" class="sidebar__cliente">
+                        @csrf
+                        <select name="cliente_id" class="sidebar__cliente-select" aria-label="Cliente activo" onchange="this.form.submit()">
+                            <option value="">Todos los clientes</option>
+                            @foreach (\App\Support\ClienteActivo::opciones() as $clienteOpcion)
+                                <option value="{{ $clienteOpcion->id }}" @selected($clienteOpcion->id === \App\Support\ClienteActivo::id())>{{ $clienteOpcion->empresa ?: $clienteOpcion->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
                 <ul class="sidebar__list">
                     @foreach ($links as $link)
                         <li>

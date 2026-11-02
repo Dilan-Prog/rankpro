@@ -34,6 +34,15 @@ class PermissionSeeder extends Seeder
             ['name' => 'integraciones', 'label' => 'Integraciones', 'module' => 'integraciones'],
             ['name' => 'webhooks', 'label' => 'Webhooks', 'module' => 'webhooks'],
             ['name' => 'roles', 'label' => 'Roles y Permisos', 'module' => 'roles'],
+            ['name' => 'inicio', 'label' => 'Inicio', 'module' => 'inicio'],
+            ['name' => 'mi-espacio', 'label' => 'Mi espacio', 'module' => 'mi-espacio'],
+            ['name' => 'calendario', 'label' => 'Calendario', 'module' => 'calendario'],
+            ['name' => 'identidad', 'label' => 'Identidad de marca', 'module' => 'identidad'],
+            ['name' => 'audiencia', 'label' => 'Audiencia', 'module' => 'audiencia'],
+            ['name' => 'seo-plan', 'label' => 'SEO Plan', 'module' => 'seo-plan'],
+            ['name' => 'contenido', 'label' => 'Contenido', 'module' => 'contenido'],
+            ['name' => 'agenda', 'label' => 'Agenda', 'module' => 'agenda'],
+            ['name' => 'configuracion', 'label' => 'Configuración de correo', 'module' => 'configuracion'],
         ];
 
         foreach ($modules as $module) {

@@ -38,7 +38,7 @@ class SeoOnPageAccionController extends Controller
             'accion' => ['required', 'string', 'max:2000'],
             'fecha' => ['nullable', 'date'],
             'responsable_id' => ['nullable', 'integer', 'exists:users,id'],
-            'estado' => ['required', 'in:en_progreso,completada,pausada'],
+            'estado' => ['required', 'in:pendiente,en_progreso,en_revision,completada,pausada'],
         ]);
     }
 }

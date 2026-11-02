@@ -80,6 +80,39 @@
             </div>
         </div>
 
+        {{-- Misma serie que alimenta la gráfica (FinanzasMetrics::revenueData): una sola fuente, sin recalcular fórmulas aquí. --}}
+        <div class="card card--padded" style="margin-bottom: var(--space-6);">
+            <div class="chart-head">
+                <h2 class="card__header-title">Resumen de 6 meses</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="table resumen-6m">
+                    <thead>
+                        <tr><th>Mes</th><th class="u-right">Ingresos</th><th class="u-right">Gastos</th><th class="u-right">Balance</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($revenueData as $m)
+                            <tr>
+                                <td>{{ $m['month'] }} {{ substr($m['periodo'], 0, 4) }}</td>
+                                <td class="u-mono u-right">${{ number_format($m['income']) }}</td>
+                                <td class="u-mono u-right">${{ number_format($m['expense']) }}</td>
+                                <td class="u-mono u-right {{ $m['utilidad'] >= 0 ? 'resumen-6m__pos' : 'resumen-6m__neg' }}">{{ $m['utilidad'] < 0 ? '-' : '' }}${{ number_format(abs($m['utilidad'])) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        @php $balance6m = $ingresos6m - array_sum(array_column($revenueData, 'expense')); @endphp
+                        <tr>
+                            <th>Total</th>
+                            <th class="u-mono u-right">${{ number_format($ingresos6m) }}</th>
+                            <th class="u-mono u-right">${{ number_format(array_sum(array_column($revenueData, 'expense'))) }}</th>
+                            <th class="u-mono u-right {{ $balance6m >= 0 ? 'resumen-6m__pos' : 'resumen-6m__neg' }}">{{ $balance6m < 0 ? '-' : '' }}${{ number_format(abs($balance6m)) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
         <div class="card card--padded">
             <div class="chart-head">
                 <h2 class="card__header-title">Estado de la cartera</h2>
@@ -154,10 +187,17 @@
             @endforeach
         </x-data-table>
 
+        {{-- Totales de lo VISIBLE tras filtros (todas las páginas); ingresos y gastos separados para no mezclar signos. JS los recalcula; aquí va el valor inicial sin filtros. --}}
+        @php
+            $totIngreso = (float) $facturas->where('tipo', 'ingreso')->sum('monto');
+            $totGasto = (float) $facturas->where('tipo', 'gasto')->sum('monto');
+            $totBalance = $totIngreso - $totGasto;
+        @endphp
         <div class="finanzas-totals" data-facturas-totals>
-            <span>Ingresos: <strong class="u-mono" data-total-ingreso>$0</strong></span>
-            <span>Gastos: <strong class="u-mono" data-total-gasto>$0</strong></span>
-            <span>Balance: <strong class="u-mono" data-total-balance>$0</strong></span>
+            <span>Registros: <strong class="u-mono" data-total-count>{{ $facturas->count() }}</strong></span>
+            <span>Ingresos: <strong class="u-mono" data-total-ingreso>${{ number_format($totIngreso) }}</strong></span>
+            <span>Gastos: <strong class="u-mono" data-total-gasto>${{ number_format($totGasto) }}</strong></span>
+            <span>Balance: <strong class="u-mono" data-total-balance>{{ $totBalance < 0 ? '-' : '' }}${{ number_format(abs($totBalance)) }}</strong></span>
         </div>
     </div>
 

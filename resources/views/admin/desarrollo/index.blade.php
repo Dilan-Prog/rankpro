@@ -30,15 +30,12 @@
         // "Entrega en N días" / "Entrega vencida" — computed once server-side
         // with now(); JS doesn't need to keep this in sync with filters since
         // it never changes independent of the calendar date.
-        $entregaInfo = function (array $p) {
-            if (! $p['fecha_entrega_estimada'] || $p['fase_actual'] === 'cerrado') {
-                return null;
-            }
-            $fecha = \Illuminate\Support\Carbon::parse($p['fecha_entrega_estimada'])->startOfDay();
-            $hoy = now()->startOfDay();
+        // El cálculo vive en ProyectoProgreso (probado aparte) y llega ya en la fila.
+        $entregaInfo = fn (array $p) => $p['dias_restantes'] ?? null;
 
-            return (int) ceil(($fecha->timestamp - $hoy->timestamp) / 86400);
-        };
+        // Vista activa al cargar: ?vista= manda; si no, filas (el JS puede
+        // reemplazarla por la última que el usuario eligió en este navegador).
+        $vistaActiva = $vistaUrl ?? 'filas';
 
         // Entregas tab — initial PHP-sorted pass (fecha_entrega_estimada asc,
         // nulls last) as a non-JS fallback; renderEntregas() in desarrollo.js
@@ -97,11 +94,17 @@
                 </select>
             </div>
             <div class="view-toggle">
-                <button type="button" class="view-toggle__btn" data-view-toggle-btn="list" data-view-toggle-group="desarrolloIndex" title="Vista de lista">
+                <button type="button" class="view-toggle__btn" data-view-toggle-btn="filas" data-view-toggle-group="desarrolloIndex" title="Vista de filas">
                     <i class="fa-solid fa-list"></i>
                 </button>
                 <button type="button" class="view-toggle__btn" data-view-toggle-btn="kanban" data-view-toggle-group="desarrolloIndex" title="Vista Kanban">
                     <i class="fa-solid fa-table-columns"></i>
+                </button>
+                <button type="button" class="view-toggle__btn" data-view-toggle-btn="tabla" data-view-toggle-group="desarrolloIndex" title="Vista de tabla">
+                    <i class="fa-solid fa-table"></i>
+                </button>
+                <button type="button" class="view-toggle__btn" data-view-toggle-btn="timeline" data-view-toggle-group="desarrolloIndex" title="Línea de tiempo">
+                    <i class="fa-solid fa-chart-gantt"></i>
                 </button>
             </div>
         </div>
@@ -119,7 +122,7 @@
             <p class="empty-state__text">No hay proyectos que coincidan con los filtros actuales.</p>
         </div>
 
-        <div data-view-panel="list" data-view-toggle-group="desarrolloIndex" data-proyectos-list style="display:flex; flex-direction:column; gap: var(--space-4);">
+        <div class="proyectos-filas" data-view-panel="filas" data-view-toggle-group="desarrolloIndex" data-proyectos-list {{ $vistaActiva === 'filas' ? '' : 'hidden' }}>
             @foreach ($proyectos as $p)
                 @php $dias = $entregaInfo($p); @endphp
                 <div class="card card--padded" data-proyecto-row data-proyecto-id="{{ $p['id'] }}" data-cliente-id="{{ $p['cliente_id'] }}" data-estado="{{ $p['estado'] }}" data-proyecto="{{ json_encode($p) }}">
@@ -145,11 +148,20 @@
                                     <span>·</span><span>Responsable: {{ $p['responsable'] }}</span>
                                 @endif
                             </div>
+                            @if (! empty($p['stack']))
+                                <div class="proyecto-chips" data-proyecto-stack>
+                                    @foreach ($p['stack'] as $tecnologia)
+                                        <span class="proyecto-chip">{{ $tecnologia }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                         <div style="text-align:right; display:flex; align-items:flex-start; gap: var(--space-3);">
                             <div>
                                 <div class="u-mono" style="font-size:var(--text-2xl); font-weight:700;">{{ $p['porcentaje_avance'] }}%</div>
-                                <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);">completado</div>
+                                <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);" @if ($p['avance_origen'] === 'tareas') title="Calculado con las tareas: {{ $p['tareas_hechas'] }} de {{ $p['tareas_total'] }} hechas" @endif>
+                                    {{ $p['avance_origen'] === 'tareas' ? $p['tareas_hechas'].'/'.$p['tareas_total'].' tareas' : 'completado' }}
+                                </div>
                             </div>
                             <div style="display:flex; gap:4px;">
                                 <button type="button" class="btn--icon" title="Editar" data-edit-proyecto="{{ $p['id'] }}"><i class="fa-solid fa-pen"></i></button>
@@ -203,8 +215,16 @@
             @endforeach
         </div>
 
-        <div data-view-panel="kanban" data-view-toggle-group="desarrolloIndex" hidden>
+        <div data-view-panel="kanban" data-view-toggle-group="desarrolloIndex" {{ $vistaActiva === 'kanban' ? '' : 'hidden' }}>
             @include('admin.desarrollo._proyectos-kanban', ['proyectos' => $proyectos])
+        </div>
+
+        <div data-view-panel="tabla" data-view-toggle-group="desarrolloIndex" {{ $vistaActiva === 'tabla' ? '' : 'hidden' }}>
+            @include('admin.desarrollo._proyectos-tabla', ['proyectos' => $proyectos])
+        </div>
+
+        <div data-view-panel="timeline" data-view-toggle-group="desarrolloIndex" {{ $vistaActiva === 'timeline' ? '' : 'hidden' }}>
+            @include('admin.desarrollo._proyectos-timeline', ['proyectos' => $proyectos])
         </div>
     </div>
 

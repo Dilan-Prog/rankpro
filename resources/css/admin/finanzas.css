@@ -58,3 +58,14 @@
   font-size: var(--text-sm);
   color: var(--color-muted-foreground);
 }
+
+/* Resumen de 6 meses: el balance usa los colores semánticos del resto del módulo; el total se separa con borde para leerse como cierre. */
+.resumen-6m .u-right { text-align: right; }
+.resumen-6m tfoot th { border-top: 1px solid var(--color-border); font-weight: 600; }
+.resumen-6m__pos { color: var(--text-success); }
+.resumen-6m__neg { color: var(--text-danger); }
+
+.finanzas-totals {
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+}

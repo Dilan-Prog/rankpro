@@ -8,6 +8,11 @@
    Servicios — modales de detalle y de crear/editar (estilo del rediseño).
    Prefijo .srv-*; no toca global.css ni <x-modal> para no afectar otros módulos.
    ========================================================================== */
+/* ---- Columna Responsable de la tabla ----
+   Sin avatar de iniciales: no hay clase global equivalente y no se toca global.css. */
+.srv-responsable { font-size: var(--text-sm); white-space: nowrap; }
+.srv-responsable--vacio { color: var(--color-muted-foreground); }
+
 /* ---- Contenedor ---- */
 .srv-modal {
   max-width: 62.5rem;
