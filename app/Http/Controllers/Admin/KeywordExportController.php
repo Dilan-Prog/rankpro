@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Keyword;
 use App\Models\KeywordLista;
+use App\Support\ClienteActivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -44,7 +45,10 @@ class KeywordExportController extends Controller
         abort_if($ids->isEmpty(), 422, 'No se indicó ninguna lista válida.');
 
         // whereIn sobre el modelo respeta el borrado lógico: una lista eliminada no se exporta.
-        $listas = KeywordLista::whereIn('id', $ids)->orderBy('nombre')->get();
+        // Con cliente activo, la selección se limita a sus listas: es lo único que el banco le muestra.
+        $listas = KeywordLista::whereIn('id', $ids)
+            ->when(ClienteActivo::id(), fn ($q, $clienteId) => $q->where('cliente_id', $clienteId))
+            ->orderBy('nombre')->get();
 
         return $this->descargar($listas, 'keywords-seleccion-'.now()->format('Y-m-d').'.csv');
     }

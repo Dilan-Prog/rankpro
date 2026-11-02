@@ -88,6 +88,44 @@
     });
   }
 
+  const SIDEBAR_SCROLL_KEY = "agencyos-sidebar-scroll";
+
+  /**
+   * Recuerda hasta dónde se desplazó el menú lateral para restaurarlo al cambiar de
+   * página (el script en línea de components/sidebar.blade.php lo lee antes del primer
+   * pintado). Se escribe como mucho una vez por fotograma y al salir de la página.
+   */
+  function initSidebarScroll() {
+    const nav = document.querySelector(".sidebar__nav");
+    if (!nav) return;
+
+    const guardar = () => {
+      try {
+        localStorage.setItem(SIDEBAR_SCROLL_KEY, String(nav.scrollTop));
+      } catch (e) {
+        /* sin almacenamiento: el menú funciona igual, solo no recuerda la posición */
+      }
+    };
+
+    let pendiente = false;
+    nav.addEventListener(
+      "scroll",
+      () => {
+        if (pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(() => {
+          pendiente = false;
+          guardar();
+        });
+      },
+      { passive: true }
+    );
+
+    // Un clic en un enlace navega de inmediato: se guarda antes de salir.
+    nav.addEventListener("click", guardar);
+    window.addEventListener("pagehide", guardar);
+  }
+
   const SIDEBAR_GROUPS_KEY = "agencyos-sidebar-groups";
 
   /**
@@ -569,6 +607,7 @@
     initDeleteConfirmations();
     initSidebarCollapse();
     initSidebarGroups();
+    initSidebarScroll();
     initDropdowns();
     initCommandPalette();
     initTablePagination();

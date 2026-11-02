@@ -808,7 +808,9 @@
     finalizada: ["Finalizada", "badge--neutral"],
   };
 
-  let adsActiveCliente = "all";
+  // Con cliente activo en el menú la cuenta seleccionada es esa (la vista ya filtra las campañas a ese cliente);
+  // sin él, "all" como siempre.
+  let adsActiveCliente = document.getElementById("adsCuentaCard")?.dataset.clienteActivo || "all";
   let adsActivePlataforma = "todas";
   let adsChartInstance = null;
 
@@ -1029,7 +1031,11 @@
 
   function initAdsAccountPicker() {
     const row = document.getElementById("adsAccountRow");
-    if (!row) return;
+    // Con cliente activo no hay selector de cuentas, pero la tarjeta de esa cuenta sí debe pintarse.
+    if (!row) {
+      renderCuentaCard();
+      return;
+    }
 
     renderAccountCards();
     renderCuentaCard();
@@ -1325,6 +1331,10 @@
       form.querySelector("#cf_fecha_inicio").value = c.fecha_inicio || "";
       form.querySelector("#cf_fecha_fin").value = c.fecha_fin || "";
       form.querySelector("#cf_notas").value = c.notas || "";
+    } else {
+      // form.reset() deja el cliente preseleccionado (cliente activo del menú) pero no dispara "change": sin esto el
+      // select de servicios mostraría los de todos los clientes.
+      form.querySelector("#cliente_id")?.dispatchEvent(new Event("change"));
     }
 
     window.AgencyOS.openModal("campanaFormModal");

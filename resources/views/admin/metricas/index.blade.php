@@ -38,13 +38,20 @@
             <div class="form-status form-status--error"><span>{{ $errors->first() }}</span></div>
         @endif
 
+        <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
         <form method="GET" action="{{ route('admin.metricas.index') }}" class="filters-bar" data-metricas-filtro>
-            <select class="select" name="cliente" aria-label="Cliente" data-metricas-cliente>
-                <option value="">Selecciona un cliente…</option>
-                @foreach ($clientes as $c)
-                    <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->nombre }}</option>
-                @endforeach
-            </select>
+            @if ($clienteActivo)
+                {{-- Con cliente activo el selector del menú manda: no se ofrece otro aquí que lo contradiga. --}}
+                <input type="hidden" name="cliente" value="{{ $clienteActivo->id }}">
+            @else
+                <select class="select" name="cliente" aria-label="Cliente" data-metricas-cliente>
+                    <option value="">Selecciona un cliente…</option>
+                    @foreach ($clientes as $c)
+                        <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->nombre }}</option>
+                    @endforeach
+                </select>
+            @endif
             <input type="month" class="input" name="mes" value="{{ $mesValor }}" aria-label="Mes" data-metricas-mes>
             <button type="submit" class="btn">Ver</button>
         </form>

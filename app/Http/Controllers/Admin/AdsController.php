@@ -11,6 +11,7 @@ use App\Models\AdsConversion;
 use App\Models\AdsKeywordColumna;
 use App\Models\Cliente;
 use App\Models\Servicio;
+use App\Support\ClienteActivo;
 use App\Support\Labels;
 use App\Support\Reglas\Ads as ReglasAds;
 use Illuminate\Http\JsonResponse;
@@ -22,16 +23,24 @@ class AdsController extends Controller
 {
     public function index(): View
     {
+        // Cliente activo del menú (grupo Marca): campañas, KPIs y gráficas salen solo de sus campañas.
+        $clienteActivo = ClienteActivo::modelo();
+
         $campanas = AdsCampana::with(['cliente', 'metricas'])
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (AdsCampana $campana) => $this->toRow($campana));
 
+        // Con cliente activo su tarjeta se muestra aunque aún no tenga campañas (no depende de las filas).
+        $idsCuentas = $clienteActivo ? [$clienteActivo->id] : $campanas->pluck('cliente_id')->unique()->all();
+
         return view('admin.ads.index', [
             'pageTitle' => 'Módulo Ads',
+            'clienteActivo' => $clienteActivo,
             'campanas' => $campanas,
             'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
-            'cuentasInfo' => $this->cuentasInfo($campanas->pluck('cliente_id')->unique()->all()),
+            'cuentasInfo' => $this->cuentasInfo($idsCuentas),
         ]);
     }
 

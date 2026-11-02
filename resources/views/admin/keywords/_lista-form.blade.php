@@ -5,7 +5,7 @@
         <select class="select" name="cliente_id" id="kl_cliente_id" required>
             <option value="">— Selecciona un cliente —</option>
             @foreach ($clientes as $id => $nombre)
-                <option value="{{ $id }}" @selected((int) old('cliente_id', $lista?->cliente_id ?? '') === $id)>{{ $nombre }}</option>
+                <option value="{{ $id }}" @selected((int) old('cliente_id', $lista?->cliente_id ?? ($clienteActivo?->id ?? '')) === $id)>{{ $nombre }}</option>
             @endforeach
         </select>
         <span class="field__error" data-error-for="cliente_id">@error('cliente_id'){{ $message }}@enderror</span>

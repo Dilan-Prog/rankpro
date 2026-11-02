@@ -8,6 +8,7 @@ use App\Models\Keyword;
 use App\Models\KeywordLista;
 use App\Models\KeywordMedicion;
 use App\Models\User;
+use App\Support\ClienteActivo;
 use App\Support\Reglas\Keywords as ReglasKeywords;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,12 +20,19 @@ class KeywordsController extends Controller
 {
     public function index(): View
     {
+        // Cliente activo del menú (grupo Marca): el banco muestra solo sus listas y keywords.
+        // Los contadores del encabezado salen de estas mismas colecciones, así que ya lo reflejan.
+        $clienteActivo = ClienteActivo::modelo();
+        $clienteId = $clienteActivo?->id;
+
         $listas = KeywordLista::with(['cliente', 'responsable', 'keywords' => fn ($q) => $q->orderBy('keyword')])
+            ->when($clienteId, fn ($q) => $q->where('cliente_id', $clienteId))
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (KeywordLista $l) => $l->toRow());
 
         $keywordsSinLista = Keyword::whereNull('lista_id')
+            ->when($clienteId, fn ($q) => $q->where('cliente_id', $clienteId))
             ->with('cliente')
             ->orderBy('keyword')
             ->get()
@@ -32,6 +40,7 @@ class KeywordsController extends Controller
 
         return view('admin.keywords.index', [
             'pageTitle' => 'Banco de Keywords',
+            'clienteActivo' => $clienteActivo,
             'listas' => $listas,
             'keywordsSinLista' => $keywordsSinLista,
             'totalKeywords' => $listas->sum('keywords_count') + $keywordsSinLista->count(),

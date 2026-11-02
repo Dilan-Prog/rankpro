@@ -15,6 +15,8 @@
         </button>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     {{-- ---------- KPIs ---------- --}}
     <div class="kpi-grid">
         <x-stat-card label="Total de propuestas" value="{{ $kpis['total'] }}" sub="activas" icon="fa-file-signature" color="primary" />
@@ -28,7 +30,7 @@
         <select class="select" id="propuestaClienteFilter">
             <option value="all">Todos los clientes</option>
             @foreach ($clientes as $cliente)
-                <option value="{{ $cliente->id }}">{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->empresa ?: $cliente->nombre }}</option>
             @endforeach
         </select>
         <select class="select" id="propuestaEstadoFilter">
@@ -87,7 +89,7 @@
                 <select class="select" name="cliente_id" id="pf_cliente_id" required>
                     <option value="">— Selecciona cliente —</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}">{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->empresa ?: $cliente->nombre }}</option>
                     @endforeach
                 </select>
                 <span class="field__error" data-error-for="cliente_id"></span>

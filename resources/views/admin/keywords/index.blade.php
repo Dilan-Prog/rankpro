@@ -26,15 +26,17 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     <div class="filters-bar kwx-filtros">
         <div class="kwx-buscador">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" class="input input--search" id="listasSearch" placeholder="Buscar lista o palabra clave…" aria-label="Buscar lista o palabra clave">
         </div>
         <select class="select" id="listasClienteFilter" aria-label="Filtrar por cliente">
-            <option value="all">Todos los clientes</option>
+            <option value="all" @selected(! $clienteActivo)>Todos los clientes</option>
             @foreach ($clientes as $id => $nombre)
-                <option value="{{ $id }}">{{ $nombre }}</option>
+                <option value="{{ $id }}" @selected($id === $clienteActivo?->id)>{{ $nombre }}</option>
             @endforeach
         </select>
         <select class="select" id="listasEstadoFilter" aria-label="Filtrar por estado">
@@ -170,7 +172,7 @@
               data-store-action="{{ route('admin.keywords.listas.store') }}"
               data-update-action-template="{{ route('admin.keywords.listas.update', ['lista' => '__ID__']) }}">
             @csrf
-            @include('admin.keywords._lista-form', ['lista' => null, 'clientes' => $clientes, 'usuarios' => $usuarios])
+            @include('admin.keywords._lista-form', ['lista' => null, 'clientes' => $clientes, 'usuarios' => $usuarios, 'clienteActivo' => $clienteActivo])
             <div class="kwx-pie">
                 <button type="button" class="kwx-btn" data-modal-close="listaFormModal">Cancelar</button>
                 <button type="submit" class="kwx-btn kwx-btn--primario" id="listaFormSubmit">Crear lista</button>
@@ -201,7 +203,7 @@
               data-store-action="{{ route('admin.keywords.store') }}"
               data-update-action-template="{{ route('admin.keywords.update', ['keyword' => '__ID__']) }}">
             @csrf
-            @include('admin.keywords._form', ['keyword' => null, 'clientes' => $clientes, 'listas' => $listas])
+            @include('admin.keywords._form', ['keyword' => null, 'clientes' => $clientes, 'listas' => $listas, 'clienteActivo' => $clienteActivo])
             <div class="kwx-pie">
                 <button type="button" class="kwx-btn" data-modal-close="keywordFormModal">Cancelar</button>
                 <button type="submit" class="kwx-btn kwx-btn--primario" id="keywordFormSubmit">Guardar keyword</button>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\EstadoPropuesta;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
+use App\Support\ClienteActivo;
 use App\Models\Propuesta;
 use App\Models\SeoCampana;
 use App\Services\Propuestas\GeneradorPdf;
@@ -25,8 +26,12 @@ class PropuestaController extends Controller
     {
         $query = Propuesta::with('cliente')->orderByDesc('updated_at');
 
-        if ($request->filled('cliente_id')) {
-            $query->where('cliente_id', $request->integer('cliente_id'));
+        // Un ?cliente_id= explícito manda; si no, se usa el cliente activo del menú (grupo Marca).
+        $clienteActivo = $request->filled('cliente_id') ? null : ClienteActivo::modelo();
+        $clienteId = $request->filled('cliente_id') ? $request->integer('cliente_id') : $clienteActivo?->id;
+
+        if ($clienteId) {
+            $query->where('cliente_id', $clienteId);
         }
 
         if ($request->filled('estado')) {
@@ -60,6 +65,7 @@ class PropuestaController extends Controller
 
         return view('admin.propuestas.index', [
             'pageTitle' => 'Propuestas de Continuidad',
+            'clienteActivo' => $clienteActivo,
             'propuestas' => $propuestas->map(fn (Propuesta $p) => $p->toRow())->values(),
             'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre', 'empresa']),
             'campanasPorCliente' => $campanasPorCliente,

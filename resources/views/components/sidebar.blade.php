@@ -75,6 +75,23 @@
                     }
                 });
             } catch (e) {}
+
+            // Cada enlace del menú es una carga de página completa: sin esto la barra vuelve arriba
+            // y quien está en la sección de abajo pierde su sitio. Se restaura aquí (tras abrir o
+            // cerrar los grupos, que cambian la altura) y se guarda desde global.js.
+            try {
+                var nav = document.querySelector(".sidebar__nav");
+                var guardado = parseInt(localStorage.getItem("agencyos-sidebar-scroll") || "0", 10);
+                if (nav && guardado > 0) nav.scrollTop = guardado;
+
+                // Si aun así el enlace activo queda fuera de la vista (p. ej. se llegó por otra ruta), se trae.
+                var activo = nav && nav.querySelector(".sidebar__link.is-active");
+                if (activo) {
+                    var caja = activo.getBoundingClientRect();
+                    var marco = nav.getBoundingClientRect();
+                    if (caja.top < marco.top || caja.bottom > marco.bottom) activo.scrollIntoView({ block: "nearest" });
+                }
+            } catch (e) {}
         })();
     </script>
 

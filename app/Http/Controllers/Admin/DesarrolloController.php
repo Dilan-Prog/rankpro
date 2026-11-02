@@ -7,6 +7,7 @@ use App\Enums\FaseProyecto;
 use App\Http\Controllers\Controller;
 use App\Models\Bug;
 use App\Models\Cliente;
+use App\Support\ClienteActivo;
 use App\Models\Proyecto;
 use App\Models\ProyectoPlaneacion;
 use App\Models\User;
@@ -24,7 +25,12 @@ class DesarrolloController extends Controller
 
     public function index(Request $request): View
     {
+        // Cliente activo del menú (grupo Marca): proyectos y bugs son solo los suyos.
+        $clienteActivo = ClienteActivo::modelo();
+        $clienteId = $clienteActivo?->id;
+
         $proyectos = Proyecto::with(['cliente', 'organizacion', 'bugs' => fn ($q) => $q->select('id', 'proyecto_id', 'estado')])
+            ->when($clienteId, fn ($q) => $q->where('cliente_id', $clienteId))
             // Conteos en la misma consulta para calcular el avance por tareas sin N+1.
             ->withCount(['tareas', 'tareas as tareas_hechas_count' => fn ($q) => $q->where('estado', EstadoTarea::Completada->value)])
             ->orderBy('created_at', 'desc')
@@ -32,13 +38,14 @@ class DesarrolloController extends Controller
             ->map(fn (Proyecto $p) => $this->toRow($p));
 
         $bugs = Bug::with(['proyecto:id,nombre', 'responsable:id,name'])
-            ->whereHas('proyecto')
+            ->whereHas('proyecto', fn ($q) => $clienteId ? $q->where('cliente_id', $clienteId) : $q)
             ->latest('created_at')
             ->get()
             ->map(fn (Bug $b) => $this->bugToRow($b));
 
         return view('admin.desarrollo.index', [
             'pageTitle' => 'Módulo de Desarrollo',
+            'clienteActivo' => $clienteActivo,
             // Null = el usuario no pidió vista: el JS usa la recordada en localStorage.
             'vistaUrl' => in_array($request->query('vista'), self::VISTAS, true) ? $request->query('vista') : null,
             'proyectos' => $proyectos,

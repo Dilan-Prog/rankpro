@@ -53,6 +53,8 @@
         </button>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
@@ -82,7 +84,7 @@
                 <select class="select" id="desarrolloClienteFilter" style="min-width:200px;">
                     <option value="all">Todos los clientes</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
                     @endforeach
                 </select>
                 <select class="select" id="desarrolloEstadoFilter" style="min-width:160px;">
@@ -340,7 +342,7 @@
                     <select class="select" name="cliente_id" id="pf_cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

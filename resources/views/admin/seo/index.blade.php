@@ -22,6 +22,8 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
@@ -55,7 +57,7 @@
                     <select class="select" name="cliente_id" id="cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $c)
-                            <option value="{{ $c['cliente_id'] }}">{{ $c['cliente'] }}</option>
+                            <option value="{{ $c['cliente_id'] }}" @selected($c['cliente_id'] === $clienteActivo?->id)>{{ $c['cliente'] }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

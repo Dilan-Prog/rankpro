@@ -47,7 +47,7 @@
     <select class="select" name="cliente_id" id="kw_cliente_id" required>
         <option value="">— Selecciona un cliente —</option>
         @foreach ($clientes as $id => $nombre)
-            <option value="{{ $id }}" @selected((int) old('cliente_id', $keyword?->cliente_id ?? '') === $id)>{{ $nombre }}</option>
+            <option value="{{ $id }}" @selected((int) old('cliente_id', $keyword?->cliente_id ?? ($clienteActivo?->id ?? '')) === $id)>{{ $nombre }}</option>
         @endforeach
     </select>
     <span class="field__hint">Una keyword sin lista necesita saber de qué cliente es.</span>

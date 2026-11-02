@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\MetricaCliente;
 use App\Models\MetricaClienteValor;
+use App\Support\ClienteActivo;
 use App\Support\Metricas\GuardadorValores;
 use App\Support\Metricas\Semaforo;
 use App\Support\Reglas\Metricas as ReglasMetricas;
@@ -26,6 +27,12 @@ class MetricasController extends Controller
         $clientes = Cliente::query()->orderBy('nombre')->get(['id', 'nombre']);
         $clienteId = $request->query('cliente');
         $cliente = is_string($clienteId) && ctype_digit($clienteId) ? $clientes->firstWhere('id', (int) $clienteId) : null;
+
+        // Sin ?cliente= válido, manda el cliente activo del menú (mismo criterio que el tablero de Reportes).
+        $clienteActivo = ClienteActivo::modelo();
+        $cliente ??= $clienteActivo ? $clientes->firstWhere('id', $clienteActivo->id) : null;
+        // El aviso solo es cierto si lo que se ve es el cliente activo; con un ?cliente= ajeno se muestra el selector.
+        $avisoActivo = $clienteActivo && $cliente && $cliente->id === $clienteActivo->id ? $clienteActivo : null;
         $mes = $this->resolverMes($request->query('mes'));
         $mesAnterior = $mes->copy()->subMonthNoOverflow();
 
@@ -66,6 +73,7 @@ class MetricasController extends Controller
             'pageTitle' => 'Métricas',
             'clientes' => $clientes,
             'cliente' => $cliente,
+            'clienteActivo' => $avisoActivo,
             'mes' => $mes,
             'mesAnterior' => $mesAnterior,
             'filas' => $filas,

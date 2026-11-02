@@ -903,6 +903,9 @@
     } else if (clienteRow) {
       clienteSelect.value = String(clienteRow.cliente_id);
       clienteSelect.dispatchEvent(new Event("change"));
+    } else {
+      // form.reset() deja el cliente activo preseleccionado (atributo selected) pero no dispara «change»: sin esto el select de servicio no se filtra.
+      clienteSelect.dispatchEvent(new Event("change"));
     }
 
     window.AgencyOS.openModal("seoCampanaFormModal");

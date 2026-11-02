@@ -55,13 +55,18 @@
         </button>
     </div>
 
-    {{-- ---------- Account picker: "Todas las cuentas" + one card per cliente with >=1 campaign ---------- --}}
-    <input type="search" class="input input--search ads-account-search" id="adsAccountSearch" placeholder="Buscar cuenta...">
-    <div class="ads-account-row" id="adsAccountRow"></div>
-    <div class="ads-account-empty" id="adsAccountEmpty" hidden>No se encontraron cuentas para "<span id="adsAccountEmptyQuery"></span>".</div>
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
+    {{-- Selector de cuentas: con cliente activo se omite del DOM (la cuenta queda fija en ese cliente y el aviso ofrece «Ver todos»); ads.js ya tolera que no exista. --}}
+    @unless ($clienteActivo)
+        {{-- ---------- Account picker: "Todas las cuentas" + one card per cliente with >=1 campaign ---------- --}}
+        <input type="search" class="input input--search ads-account-search" id="adsAccountSearch" placeholder="Buscar cuenta...">
+        <div class="ads-account-row" id="adsAccountRow"></div>
+        <div class="ads-account-empty" id="adsAccountEmpty" hidden>No se encontraron cuentas para "<span id="adsAccountEmptyQuery"></span>".</div>
+    @endunless
 
     {{-- Tarjeta de la cuenta seleccionada: ads.js la llena con estos datos reales de Cliente y la oculta en "Todas las cuentas". --}}
-    <section class="card card--padded ads-cuenta" id="adsCuentaCard" data-cuentas="{{ json_encode($cuentasInfo) }}" hidden aria-live="polite"></section>
+    <section class="card card--padded ads-cuenta" id="adsCuentaCard" data-cuentas="{{ json_encode($cuentasInfo) }}" @if ($clienteActivo) data-cliente-activo="{{ $clienteActivo->id }}" @endif hidden aria-live="polite"></section>
 
     {{-- ---------- Platform tabs (client-side only — no page reload) ---------- --}}
     <div class="ads-platform-tabs" id="adsPlatformTabs">
@@ -149,7 +154,7 @@
                     <select class="select" name="cliente_id" id="cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

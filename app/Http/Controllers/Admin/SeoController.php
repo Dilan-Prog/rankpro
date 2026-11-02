@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\SeoCampana;
 use App\Models\User;
+use App\Support\ClienteActivo;
 use App\Support\Reglas\SeoCampanas as ReglasSeoCampanas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,13 +19,16 @@ class SeoController extends Controller
 {
     public function index(): View
     {
-        $clientes = $this->cuentas();
+        // Cliente activo del menú (grupo Marca): cuentas, contadores y KPIs son solo los suyos.
+        $clienteActivo = ClienteActivo::modelo();
+        $clientes = $this->cuentas($clienteActivo?->id);
 
         $scores = $clientes->pluck('seo_score')->filter(fn ($s) => $s !== null);
         $trafico = $clientes->pluck('trafico_actual')->filter(fn ($t) => $t !== null);
 
         return view('admin.seo.index', [
             'pageTitle' => 'Módulo SEO',
+            'clienteActivo' => $clienteActivo,
             'clientes' => $clientes,
             'clientesConSeo' => $clientes->count(),
             'campanasActivas' => $clientes->where('estado', 'activa')->count(),
@@ -119,9 +123,10 @@ class SeoController extends Controller
     }
 
     /** Una fila por cliente con servicio SEO; la comparten el índice y el selector de cuentas del detalle. */
-    private function cuentas(): Collection
+    private function cuentas(?int $clienteId = null): Collection
     {
         return Cliente::whereHas('servicios', fn ($q) => $q->where('tipo', 'seo'))
+            ->when($clienteId, fn ($q) => $q->whereKey($clienteId))
             ->with([
                 'servicios' => fn ($q) => $q->where('tipo', 'seo')->with('responsable'),
                 'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
