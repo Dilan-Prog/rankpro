@@ -26,11 +26,21 @@ class CalendarioController extends Controller
 
     public function index(Request $request): View
     {
+        return view('admin.calendario.index', ['pageTitle' => 'Calendario'] + $this->datosDeVista($request));
+    }
+
+    /**
+     * Variables de la cuadrícula (parcial `_calendario`). Es pública porque la pestaña
+     * «Calendario» de Inicio incrusta el mismo parcial y necesita los mismos datos.
+     *
+     * @return array<string, mixed>
+     */
+    public function datosDeVista(Request $request): array
+    {
         $mes = $this->resolverMes($request->query('mes'));
         [$desde, $hasta] = $this->rangoDeCuadricula($mes);
 
-        return view('admin.calendario.index', [
-            'pageTitle' => 'Calendario',
+        return [
             'mes' => $mes->format('Y-m'),
             'hoy' => now()->toDateString(),
             'eventos' => $this->eventosEntre($desde, $hasta, $request->user()),
@@ -38,7 +48,7 @@ class CalendarioController extends Controller
             // «Campaña» se alimenta sola desde Ads y SEO: no se ofrece al crear a mano.
             'tiposManuales' => collect(self::tiposManuales())->map(fn ($t) => ['valor' => $t->value, 'etiqueta' => $t->label()])->values(),
             'clientes' => Cliente::query()->orderBy('nombre')->get(['id', 'nombre']),
-        ]);
+        ];
     }
 
     /** JSON para navegar entre meses sin recargar. */

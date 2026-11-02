@@ -66,12 +66,12 @@ class InicioTest extends TestCase
 
     public function test_invitado_es_redirigido_al_login(): void
     {
-        $this->get(route('admin.inicio'))->assertRedirect(route('login'));
+        $this->get(route('admin.inicio', ['tab' => 'resumen']))->assertRedirect(route('login'));
     }
 
     public function test_sin_el_permiso_inicio_responde_403(): void
     {
-        $this->actingAs($this->usuarioCon(['clientes']))->get(route('admin.inicio'))->assertForbidden();
+        $this->actingAs($this->usuarioCon(['clientes']))->get(route('admin.inicio', ['tab' => 'resumen']))->assertForbidden();
     }
 
     public function test_saludo_segun_la_hora_con_el_primer_nombre_y_fecha_larga(): void
@@ -80,7 +80,7 @@ class InicioTest extends TestCase
 
         foreach (['2026-11-02 08:00' => 'Buenos días', '2026-11-02 15:30' => 'Buenas tardes', '2026-11-02 21:00' => 'Buenas noches', '2026-11-02 02:00' => 'Buenas noches'] as $hora => $saludo) {
             Carbon::setTestNow(Carbon::parse($hora));
-            $this->actingAs($user)->get(route('admin.inicio'))
+            $this->actingAs($user)->get(route('admin.inicio', ['tab' => 'resumen']))
                 ->assertOk()
                 ->assertSee($saludo.', Laura', false)
                 ->assertSee('Lunes, 2 de noviembre de 2026', false);
@@ -89,11 +89,11 @@ class InicioTest extends TestCase
 
     public function test_los_kpis_solo_se_muestran_con_permiso_de_finanzas(): void
     {
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertDontSee('MRR Activo');
 
-        $this->actingAs($this->usuarioCon(['inicio', 'finanzas']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'finanzas']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSee('MRR Activo')
             ->assertSee('Pagos Pendientes')
@@ -106,14 +106,14 @@ class InicioTest extends TestCase
 
     public function test_accesos_rapidos_se_filtran_por_permiso(): void
     {
-        $this->actingAs($this->usuarioCon(['inicio', 'calendario', 'reportes']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'calendario', 'reportes']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSee(route('admin.calendario.index'), false)
             ->assertSee(route('admin.reportes.index'), false)
             ->assertDontSee(route('admin.keywords.index'), false)
             ->assertDontSee(route('admin.agenda.index'), false);
 
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertDontSee('Accesos rápidos');
     }
 
@@ -126,19 +126,19 @@ class InicioTest extends TestCase
             'mes' => now()->month, 'anio' => now()->year,
         ]);
 
-        $this->actingAs($this->usuarioCon(['inicio', 'finanzas']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'finanzas']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSee('Pago vencido: Hotel Aurora')
             ->assertSee(route('admin.finanzas.index'), false);
 
-        $this->actingAs($this->usuarioCon(['inicio', 'clientes']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'clientes']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertDontSee('Pago vencido');
     }
 
     public function test_alertas_sin_nada_urgente_muestran_estado_vacio(): void
     {
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('Nada urgente por ahora.');
     }
 
@@ -150,17 +150,17 @@ class InicioTest extends TestCase
         EventoCalendario::create(['titulo' => 'Llamada matutina', 'tipo' => 'otro', 'fecha' => '2026-11-02', 'hora' => '09:00']);
         EventoCalendario::create(['titulo' => 'Evento de mañana', 'tipo' => 'otro', 'fecha' => '2026-11-03']);
 
-        $this->actingAs($this->usuarioCon(['inicio', 'agenda', 'calendario']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'agenda', 'calendario']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSeeInOrder(['Llamada matutina', 'Reunión con Marta'])
             ->assertDontSee('Evento de mañana');
 
         // Sin permiso de agenda, la reunión no aparece.
-        $this->actingAs($this->usuarioCon(['inicio', 'calendario']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'calendario']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('Llamada matutina')
             ->assertDontSee('Reunión con Marta');
 
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('No hay eventos para hoy.');
     }
 
@@ -172,7 +172,7 @@ class InicioTest extends TestCase
         $this->tarea($yo, ['titulo' => 'Ya hecha mía', 'estado' => 'completada']);
         $this->tarea($otro, ['titulo' => 'Tarea ajena secreta']);
 
-        $this->actingAs($yo)->get(route('admin.inicio'))
+        $this->actingAs($yo)->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSee('Pendiente mía')
             ->assertDontSee('Ya hecha mía')
@@ -183,11 +183,11 @@ class InicioTest extends TestCase
 
     public function test_mis_tareas_vacio_y_oculto_sin_permiso_de_mi_espacio(): void
     {
-        $this->actingAs($this->usuarioCon(['inicio', 'mi-espacio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'mi-espacio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('No tienes tareas pendientes.')
             ->assertSee('0 de 0 hechas');
 
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertDontSee('Mis tareas');
     }
 
@@ -241,15 +241,15 @@ class InicioTest extends TestCase
         $destinatario = CorreoDestinatario::factory()->create(['nombre' => 'Pedro']);
         CorreoEvento::create(['destinatario_id' => $destinatario->id, 'tipo' => 'apertura', 'created_at' => now()->subMinutes(5)]);
 
-        $this->actingAs($this->usuarioCon(['inicio', 'servicios', 'correo']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'servicios', 'correo']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertOk()
             ->assertSeeInOrder(['Apertura de un correo: Pedro', 'Servicio pausado']);
 
-        $this->actingAs($this->usuarioCon(['inicio', 'servicios']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio', 'servicios']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('Servicio pausado')
             ->assertDontSee('Apertura de un correo');
 
-        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio'))
+        $this->actingAs($this->usuarioCon(['inicio']))->get(route('admin.inicio', ['tab' => 'resumen']))
             ->assertSee('Aún no hay actividad registrada.');
     }
 }

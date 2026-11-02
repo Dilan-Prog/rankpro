@@ -118,3 +118,68 @@
 .inicio__bloque .empty-state {
   padding: var(--space-6) var(--space-3);
 }
+
+/* ---------- Barra de pestañas de Inicio ----------
+   Resumen, Calendario y los accesos a otros módulos; la pestaña activa lleva el verde de marca. */
+.inicio-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  margin-bottom: var(--space-5);
+  padding: 6px;
+  overflow-x: auto;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+}
+
+.inicio-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.inicio-tab:hover {
+  color: var(--color-foreground);
+  background: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+}
+
+.inicio-tab.is-activa {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.inicio-proximamente {
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  color: var(--color-muted-foreground);
+}
+
+.inicio-proximamente__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-xl);
+  background: var(--color-secondary);
+}
+
+.inicio-proximamente__titulo {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
+  margin-bottom: var(--space-1);
+}

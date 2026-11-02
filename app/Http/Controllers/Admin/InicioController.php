@@ -35,22 +35,88 @@ class InicioController extends Controller
         /** @var User $usuario */
         $usuario = $request->user();
         $ahora = now();
+        $tab = $this->resolverPestana($request->query('tab'), $usuario);
 
-        $verTareas = $usuario->tienePermiso('mi-espacio');
-
-        return view('admin.inicio.index', [
+        $datos = [
             'pageTitle' => 'Inicio',
-            'saludo' => self::saludoPara($ahora).', '.$this->primerNombre($usuario),
-            'fechaLarga' => ucfirst($ahora->clone()->locale('es')->translatedFormat('l, j \d\e F \d\e Y')),
-            'kpis' => $usuario->tienePermiso('finanzas') ? $this->kpisVisibles($usuario, $ahora) : [],
-            'accesos' => AccesosRapidos::para($usuario),
-            'alertas' => ResumenAgencia::alertas($ahora, $usuario),
-            'agenda' => $this->agendaDeHoy($usuario, $ahora),
-            'verTareas' => $verTareas,
-            'tareas' => $verTareas ? $this->tareasPendientes($usuario) : collect(),
-            'progreso' => $verTareas ? $this->progreso($usuario) : ['hechas' => 0, 'total' => 0, 'porcentaje' => 0],
-            'actividad' => (new ActividadReciente)->ultimos($usuario),
-        ]);
+            'tab' => $tab,
+            'pestanas' => $this->pestanas($usuario),
+        ];
+
+        // Solo se calcula lo de la pestaña que se ve: el resumen hace varias consultas y el calendario otras.
+        if ($tab === 'resumen') {
+            $verTareas = $usuario->tienePermiso('mi-espacio');
+
+            $datos += [
+                'saludo' => self::saludoPara($ahora).', '.$this->primerNombre($usuario),
+                'fechaLarga' => ucfirst($ahora->clone()->locale('es')->translatedFormat('l, j \d\e F \d\e Y')),
+                'kpis' => $usuario->tienePermiso('finanzas') ? $this->kpisVisibles($usuario, $ahora) : [],
+                'accesos' => AccesosRapidos::para($usuario),
+                'alertas' => ResumenAgencia::alertas($ahora, $usuario),
+                'agenda' => $this->agendaDeHoy($usuario, $ahora),
+                'verTareas' => $verTareas,
+                'tareas' => $verTareas ? $this->tareasPendientes($usuario) : collect(),
+                'progreso' => $verTareas ? $this->progreso($usuario) : ['hechas' => 0, 'total' => 0, 'porcentaje' => 0],
+                'actividad' => (new ActividadReciente)->ultimos($usuario),
+            ];
+        }
+
+        if ($tab === 'calendario') {
+            // Mismo parcial que la página «Calendario»: eventos, filtros y formulario son los mismos.
+            $datos += app(CalendarioController::class)->datosDeVista($request) + ['incrustado' => true];
+        }
+
+        return view('admin.inicio.index', $datos);
+    }
+
+    /** Pestañas que son una pantalla propia de Inicio; el resto abre su módulo o es «próximamente». */
+    private const PESTANAS_PROPIAS = ['resumen', 'calendario', 'ideas', 'mensajes', 'analytics', 'links'];
+
+    /**
+     * Pestaña a mostrar. Sin ?tab= se abre el Calendario (como en el diseño) si el usuario
+     * puede verlo, y si no el Resumen; una pestaña a la que no tiene acceso cae al Resumen.
+     */
+    private function resolverPestana(mixed $pedida, User $usuario): string
+    {
+        $verCalendario = $usuario->tienePermiso('calendario');
+
+        if (! is_string($pedida) || ! in_array($pedida, self::PESTANAS_PROPIAS, true)) {
+            return $verCalendario ? 'calendario' : 'resumen';
+        }
+
+        return $pedida === 'calendario' && ! $verCalendario ? 'resumen' : $pedida;
+    }
+
+    /**
+     * Barra de pestañas de Inicio. «Tableros» y «Reportes» abren su módulo real (solo con su
+     * permiso); Ideas, Mensajes, Analytics y Links no existen todavía y muestran «próximamente».
+     *
+     * @return list<array{id: string, etiqueta: string, icono: string, url: string}>
+     */
+    private function pestanas(User $usuario): array
+    {
+        $pestanas = [
+            ['id' => 'resumen', 'etiqueta' => 'Resumen', 'icono' => 'fa-house', 'url' => route('admin.inicio', ['tab' => 'resumen'])],
+        ];
+
+        if ($usuario->tienePermiso('calendario')) {
+            $pestanas[] = ['id' => 'calendario', 'etiqueta' => 'Calendario', 'icono' => 'fa-calendar-days', 'url' => route('admin.inicio', ['tab' => 'calendario'])];
+        }
+
+        foreach ([['ideas', 'Ideas', 'fa-wand-magic-sparkles'], ['mensajes', 'Mensajes', 'fa-comment'], ['analytics', 'Analytics', 'fa-chart-line']] as [$id, $etiqueta, $icono]) {
+            $pestanas[] = ['id' => $id, 'etiqueta' => $etiqueta, 'icono' => $icono, 'url' => route('admin.inicio', ['tab' => $id])];
+        }
+
+        if ($usuario->tienePermiso('reportes')) {
+            if (Route::has('admin.reportes.tablero.index')) {
+                $pestanas[] = ['id' => 'tableros', 'etiqueta' => 'Tableros', 'icono' => 'fa-table-columns', 'url' => route('admin.reportes.tablero.index')];
+            }
+            $pestanas[] = ['id' => 'reportes', 'etiqueta' => 'Reportes', 'icono' => 'fa-file-lines', 'url' => route('admin.reportes.index')];
+        }
+
+        $pestanas[] = ['id' => 'links', 'etiqueta' => 'Links', 'icono' => 'fa-link', 'url' => route('admin.inicio', ['tab' => 'links'])];
+
+        return $pestanas;
     }
 
     /**
