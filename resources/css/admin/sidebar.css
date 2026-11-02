@@ -519,3 +519,53 @@ html.sidebar--collapsed .sidebar__cliente {
 :root.sidebar--collapsed .sidebar__brand-link {
   justify-content: center;
 }
+
+/* ---------- Grupos del menú desplegables ----------
+   El encabezado de cada grupo es un botón que abre o cierra su lista. El
+   estado se guarda en localStorage («agencyos-sidebar-groups», nombres de los
+   grupos cerrados). Con el menú colapsado (solo iconos) los grupos siempre se
+   ven abiertos: cerrados dejarían al usuario sin iconos que pulsar. */
+.sidebar__group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 10px 0 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+}
+
+.sidebar__group-toggle:hover .sidebar__group-label {
+  opacity: 1;
+}
+
+.sidebar__group-toggle:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+.sidebar__group-chevron {
+  font-size: 10px;
+  color: var(--color-muted-foreground);
+  transition: transform var(--transition-base);
+}
+
+.sidebar__group.is-cerrado .sidebar__group-chevron {
+  transform: rotate(-90deg);
+}
+
+.sidebar__group.is-cerrado .sidebar__group-body {
+  display: none;
+}
+
+:root.sidebar--collapsed .sidebar__group-chevron {
+  display: none;
+}
+
+:root.sidebar--collapsed .sidebar__group.is-cerrado .sidebar__group-body {
+  display: block;
+}

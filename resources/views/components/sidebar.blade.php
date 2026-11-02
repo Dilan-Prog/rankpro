@@ -23,8 +23,17 @@
 
     <nav class="sidebar__nav" aria-label="Navegación principal">
         @foreach (\App\Support\Navigation::groups() as $groupLabel => $links)
-            <div class="sidebar__group">
-                <span class="sidebar__group-label">{{ $groupLabel }}</span>
+            @php
+                $grupoId = 'grupo-' . \Illuminate\Support\Str::slug($groupLabel);
+                // El grupo donde estás nunca arranca cerrado: perderías de vista el enlace activo.
+                $tieneActivo = collect($links)->contains(fn (array $enlace): bool => request()->routeIs($enlace['active']));
+            @endphp
+            <div class="sidebar__group" data-grupo="{{ $groupLabel }}" @if ($tieneActivo) data-tiene-activo @endif>
+                <button type="button" class="sidebar__group-toggle" aria-expanded="true" aria-controls="{{ $grupoId }}">
+                    <span class="sidebar__group-label">{{ $groupLabel }}</span>
+                    <i class="fa-solid fa-chevron-down sidebar__group-chevron" aria-hidden="true"></i>
+                </button>
+                <div class="sidebar__group-body" id="{{ $grupoId }}">
                 @if ($groupLabel === \App\Support\Navigation::GRUPO_MARCA)
                     {{-- Cliente activo: los módulos de esta sección (Identidad, Audiencia, SEO Plan, Contenido) trabajan con él. --}}
                     <form method="POST" action="{{ route('admin.cliente-activo') }}" class="sidebar__cliente">
@@ -49,9 +58,25 @@
                         </li>
                     @endforeach
                 </ul>
+                </div>
             </div>
         @endforeach
     </nav>
+
+    {{-- Aplica los grupos cerrados antes del primer pintado para que el menú no «salte» al cargar (mismo patrón que el tema y el colapso). --}}
+    <script>
+        (function () {
+            try {
+                var cerrados = JSON.parse(localStorage.getItem("agencyos-sidebar-groups") || "[]");
+                document.querySelectorAll(".sidebar__group").forEach(function (grupo) {
+                    if (cerrados.indexOf(grupo.dataset.grupo) !== -1 && !grupo.hasAttribute("data-tiene-activo")) {
+                        grupo.classList.add("is-cerrado");
+                        grupo.querySelector(".sidebar__group-toggle").setAttribute("aria-expanded", "false");
+                    }
+                });
+            } catch (e) {}
+        })();
+    </script>
 
     <button type="button" class="sidebar__collapse-toggle" id="sidebarCollapseToggle" title="Colapsar menú" aria-label="Colapsar menú">
         <i class="fa-solid fa-angles-left"></i>

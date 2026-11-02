@@ -88,6 +88,48 @@
     });
   }
 
+  const SIDEBAR_GROUPS_KEY = "agencyos-sidebar-groups";
+
+  /**
+   * Grupos del menú (General, Agencia, Marca…) desplegables. El estado inicial
+   * lo aplica un script en línea de components/sidebar.blade.php antes del
+   * primer pintado; aquí solo se cablea el clic y se guarda la lista de
+   * grupos cerrados. Los grupos que este usuario no ve (por permisos) se
+   * conservan en la lista para que reaparezcan cerrados si un rol cambia.
+   */
+  function initSidebarGroups() {
+    const grupos = Array.from(document.querySelectorAll(".sidebar__group"));
+    if (!grupos.length) return;
+
+    function guardar() {
+      let previos = [];
+      try {
+        previos = JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_KEY) || "[]");
+      } catch (e) {
+        previos = [];
+      }
+      const presentes = grupos.map((g) => g.dataset.grupo);
+      const cerrados = grupos.filter((g) => g.classList.contains("is-cerrado")).map((g) => g.dataset.grupo);
+      const ausentes = previos.filter((nombre) => !presentes.includes(nombre));
+      try {
+        localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify([...ausentes, ...cerrados]));
+      } catch (e) {
+        /* sin almacenamiento (modo privado): el menú funciona igual, solo no recuerda */
+      }
+    }
+
+    grupos.forEach((grupo) => {
+      const toggle = grupo.querySelector(".sidebar__group-toggle");
+      if (!toggle) return;
+
+      toggle.addEventListener("click", () => {
+        const cerrado = grupo.classList.toggle("is-cerrado");
+        toggle.setAttribute("aria-expanded", cerrado ? "false" : "true");
+        guardar();
+      });
+    });
+  }
+
   /**
    * Generic [data-dropdown-trigger="panelId"] / [data-dropdown-panel] wiring
    * reused by the notifications panel and the user menu(s): click toggles,
@@ -526,6 +568,7 @@
     initModalDismissals();
     initDeleteConfirmations();
     initSidebarCollapse();
+    initSidebarGroups();
     initDropdowns();
     initCommandPalette();
     initTablePagination();
