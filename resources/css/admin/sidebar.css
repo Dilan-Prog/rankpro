@@ -471,3 +471,51 @@
 html.sidebar--collapsed .sidebar__cliente {
   display: none;
 }
+
+/* ---------- Logotipo de RankPro en el menú ----------
+   Sustituye al cohete + «AgencyOS / Pro Plan». Dos versiones del logotipo
+   horizontal (blanco para el tema oscuro, negro para el claro) y el icono
+   cuadrado para el menú colapsado. */
+.sidebar__brand-link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.sidebar__logo-full img {
+  display: block;
+  width: 140px;
+  height: auto;
+}
+
+.sidebar__logo-full--claro {
+  display: none;
+}
+
+:root[data-theme="light"] .sidebar__logo-full--oscuro {
+  display: none;
+}
+
+:root[data-theme="light"] .sidebar__logo-full--claro {
+  display: block;
+}
+
+.sidebar__logo-icon {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+}
+
+/* !important: el selector del tema claro tiene la misma especificidad y, sin él, volvería a mostrar el logotipo ancho. */
+:root.sidebar--collapsed .sidebar__logo-full {
+  display: none !important;
+}
+
+:root.sidebar--collapsed .sidebar__logo-icon {
+  display: block;
+}
+
+:root.sidebar--collapsed .sidebar__brand-link {
+  justify-content: center;
+}

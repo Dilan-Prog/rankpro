@@ -6,13 +6,19 @@
 --}}
 <aside class="sidebar" id="sidebar">
     <div class="sidebar__brand">
-        <div class="sidebar__brand-row">
-            <span class="sidebar__logo"><i class="fa-solid fa-rocket"></i></span>
-            <div>
-                <div class="sidebar__brand-name">AgencyOS</div>
-                <div class="sidebar__brand-plan">Pro Plan</div>
-            </div>
-        </div>
+        {{-- /admin redirige al Dashboard; enlazar a una ruta concreta daria 403 a quien no tenga ese permiso. --}}
+        <a href="{{ url('/admin') }}" class="sidebar__brand-link" aria-label="RankPro: ir al inicio">
+            {{-- El logotipo negro es para el tema claro y el blanco para el oscuro; con el menu colapsado (62px) solo cabe el icono. --}}
+            <picture class="sidebar__logo-full sidebar__logo-full--oscuro">
+                <source srcset="{{ asset('images/rankpro-logo-white.webp') }}" type="image/webp">
+                <img src="{{ asset('images/rankpro-logo-white.png') }}" alt="RankPro" width="493" height="160">
+            </picture>
+            <picture class="sidebar__logo-full sidebar__logo-full--claro">
+                <source srcset="{{ asset('images/rankpro-logo-black.webp') }}" type="image/webp">
+                <img src="{{ asset('images/rankpro-logo-black.png') }}" alt="RankPro" width="493" height="160">
+            </picture>
+            <img class="sidebar__logo-icon" src="{{ asset('images/icon-192.png') }}" alt="RankPro" width="32" height="32">
+        </a>
     </div>
 
     <nav class="sidebar__nav" aria-label="Navegación principal">
