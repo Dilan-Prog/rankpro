@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BuyerPersona;
 use App\Models\Cliente;
+use App\Support\Audiencia\GeneradorPersonas;
 use App\Support\ClienteActivo;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 /**
  * Buyer personas del cliente activo del menú: captura manual con tarjetas y
@@ -41,6 +44,40 @@ class AudienciaController extends Controller
         $cliente->buyerPersonas()->create($data);
 
         return redirect()->route('admin.audiencia.index')->with('status', 'Buyer persona creada.');
+    }
+
+    /**
+     * Cuestionario de 4 pasos: devuelve 3 borradores armados con una plantilla de
+     * texto (ver GeneradorPersonas). NO guarda nada: el usuario carga el que quiera
+     * en el formulario, lo edita y lo guarda con el store de siempre.
+     */
+    public function generar(Request $request, GeneradorPersonas $generador): JsonResponse
+    {
+        if (! ClienteActivo::modelo()) {
+            return response()->json(['message' => 'Elige un cliente en el selector del menú antes de generar borradores.'], 422);
+        }
+
+        $limites = GeneradorPersonas::LIMITES;
+        $data = $request->validate([
+            'producto' => ['required', 'string', 'max:'.$limites['producto']],
+            'publico' => ['required', 'string', 'max:'.$limites['publico']],
+            'dolor' => ['required', 'string', 'max:'.$limites['dolor']],
+            'donde' => ['required', 'string', 'max:'.$limites['donde']],
+        ], [
+            'producto.required' => 'Cuéntanos qué vende o hace la marca.',
+            'publico.required' => 'Cuéntanos a quién le vende.',
+            'dolor.required' => 'Escribe al menos un problema o dolor.',
+            'donde.required' => 'Indica dónde se le encuentra.',
+        ]);
+
+        try {
+            $personas = $generador->generar($data);
+        } catch (InvalidArgumentException $e) {
+            // Pasó «required» pero quedó vacío al limpiarlo (solo etiquetas, solo separadores…).
+            return response()->json(['message' => 'Revisa las respuestas: alguna quedó vacía.', 'errors' => ['respuestas' => [$e->getMessage()]]], 422);
+        }
+
+        return response()->json(['personas' => $personas]);
     }
 
     public function update(Request $request, BuyerPersona $persona): RedirectResponse

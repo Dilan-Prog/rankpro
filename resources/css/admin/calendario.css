@@ -242,6 +242,17 @@ a.cal-item__titulo:hover {
   gap: var(--space-2);
 }
 
+.cal-form__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cal-item__acciones {
+  display: flex;
+  gap: var(--space-1);
+}
+
 /* ---------- Móvil ---------- */
 @media (max-width: 960px) {
   .cal-layout {

@@ -7,17 +7,22 @@ use App\Enums\EstadoReunion;
 use App\Enums\EstadoFinanza;
 use App\Enums\EstadoTarea;
 use App\Enums\TipoEventoCalendario;
+use App\Models\AdsCampana;
+use App\Models\AdsLanzamiento;
 use App\Models\Finanza;
 use App\Models\Proyecto;
 use App\Models\Reunion;
+use App\Models\SeoCampana;
 use App\Models\Tarea;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 /**
  * Junta, de solo lectura, lo que otros módulos ya saben y que el Calendario
  * debe mostrar: reuniones de Agenda, vencimientos de tareas, entrega estimada
- * de proyectos y vencimientos de cobros. No copia nada a `eventos_calendario`:
+ * de proyectos, vencimientos de cobros y, como tipo «campaña», el inicio de las
+campañas de Ads y SEO y el lanzamiento registrado en Ads. No copia nada a `eventos_calendario`:
  * así un cambio en el módulo de origen se refleja solo y no hay datos duplicados.
  *
  * Cada evento es un arreglo con la misma forma que los manuales (ver
@@ -37,6 +42,7 @@ class AgregadorEventos
             ->merge($this->tareas($desde, $hasta, $userId))
             ->merge($this->proyectos($desde, $hasta))
             ->merge($this->finanzas($desde, $hasta))
+            ->merge($this->campanas($desde, $hasta, $userId))
             ->values();
     }
 
@@ -122,6 +128,80 @@ class AgregadorEventos
                 origen: 'finanza',
                 url: route('admin.finanzas.index'),
             ));
+    }
+
+    /**
+     * Fechas de campañas, de solo lectura. Cada origen se muestra solo si el
+     * usuario tiene el permiso de ese módulo (`ads`, `seo`): el calendario no
+     * debe ser una puerta lateral a datos de módulos que el rol no puede abrir.
+     * Sin usuario no se sabe qué puede ver, así que no se agrega nada.
+     *
+     * Solo hay fechas reales: `fecha_inicio` de AdsCampana y SeoCampana, y
+     * `fecha_lanzamiento` de AdsLanzamiento (hito de la fase de lanzamiento).
+     * SEO no tiene hito de lanzamiento propio.
+     */
+    private function campanas(CarbonInterface $desde, CarbonInterface $hasta, ?int $userId): Collection
+    {
+        $usuario = $userId !== null ? User::find($userId) : null;
+        if ($usuario === null) {
+            return collect();
+        }
+
+        $rango = [$desde->toDateString(), $hasta->toDateString()];
+        $eventos = collect();
+
+        if ($usuario->tienePermiso('ads')) {
+            // Las campañas con borrado suave quedan fuera por su scope global (también en whereHas).
+            $eventos = $eventos
+                ->merge(AdsCampana::query()
+                    ->with('cliente:id,nombre')
+                    ->whereBetween('fecha_inicio', $rango)
+                    ->get()
+                    ->map(fn (AdsCampana $c) => $this->evento(
+                        id: 'ads-inicio-'.$c->id,
+                        titulo: 'Inicio de campaña Ads: '.$c->nombre,
+                        tipo: TipoEventoCalendario::Campana,
+                        fecha: $c->fecha_inicio->toDateString(),
+                        hora: null,
+                        cliente: $c->cliente?->nombre,
+                        origen: 'ads',
+                        url: route('admin.ads.show', $c->id),
+                    )))
+                ->merge(AdsLanzamiento::query()
+                    ->with('adsCampana.cliente:id,nombre')
+                    ->whereHas('adsCampana')
+                    ->whereBetween('fecha_lanzamiento', $rango)
+                    ->get()
+                    ->map(fn (AdsLanzamiento $l) => $this->evento(
+                        id: 'ads-lanzamiento-'.$l->id,
+                        titulo: 'Lanzamiento Ads: '.$l->adsCampana->nombre,
+                        tipo: TipoEventoCalendario::Campana,
+                        fecha: $l->fecha_lanzamiento->toDateString(),
+                        hora: null,
+                        cliente: $l->adsCampana->cliente?->nombre,
+                        origen: 'ads',
+                        url: route('admin.ads.show', $l->ads_campana_id),
+                    )));
+        }
+
+        if ($usuario->tienePermiso('seo')) {
+            $eventos = $eventos->merge(SeoCampana::query()
+                ->with('cliente:id,nombre')
+                ->whereBetween('fecha_inicio', $rango)
+                ->get()
+                ->map(fn (SeoCampana $c) => $this->evento(
+                    id: 'seo-inicio-'.$c->id,
+                    titulo: 'Inicio de campaña SEO: '.$c->nombre,
+                    tipo: TipoEventoCalendario::Campana,
+                    fecha: $c->fecha_inicio->toDateString(),
+                    hora: null,
+                    cliente: $c->cliente?->nombre,
+                    origen: 'seo',
+                    url: route('admin.seo.show', $c->id),
+                )));
+        }
+
+        return $eventos;
     }
 
     /** @return array<string, mixed> */

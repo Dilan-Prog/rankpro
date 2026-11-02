@@ -103,6 +103,20 @@ class IdentidadController extends Controller
         return redirect()->route('admin.identidad.index')->with('status', 'Identidad de marca guardada.');
     }
 
+    /** Quita el logo del cliente activo: borra el archivo del disco privado y vacía el campo. */
+    public function quitarLogo(): RedirectResponse
+    {
+        $identidad = ClienteActivo::modelo()?->identidad;
+
+        if (! $identidad?->logo_ruta) {
+            return redirect()->route('admin.identidad.index')->withErrors(['logo' => 'Este cliente no tiene un logo que quitar.']);
+        }
+
+        $identidad->quitarLogo();
+
+        return redirect()->route('admin.identidad.index')->with('status', 'Logo eliminado.');
+    }
+
     /** Sirve el logo del cliente activo; el disco es privado, por eso pasa por una ruta autenticada. */
     public function logo(): Response
     {

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\FuenteMarca;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Ficha de identidad de marca de un cliente (una por cliente).
@@ -38,5 +39,39 @@ class IdentidadMarca extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    /**
+     * Borra el archivo del logo del disco privado y vacía el campo. Primero se
+     * guarda la fila y luego se borra el archivo: si el guardado fallara no se
+     * pierde el logo vigente (mismo orden que usa el guardado de la ficha).
+     */
+    public function quitarLogo(): void
+    {
+        $ruta = $this->logo_ruta;
+        if (! $ruta) {
+            return;
+        }
+
+        $this->forceFill(['logo_ruta' => null])->save();
+        $this->borrarArchivo($ruta);
+    }
+
+    /**
+     * Solo borra el archivo (la fila la elimina la cascada de la BD). Lo usa la
+     * eliminación definitiva del cliente, donde guardar la fila ya no tiene sentido.
+     */
+    public function borrarArchivoDelLogo(): void
+    {
+        if ($this->logo_ruta) {
+            $this->borrarArchivo($this->logo_ruta);
+        }
+    }
+
+    private function borrarArchivo(string $ruta): void
+    {
+        if (Storage::disk('local')->exists($ruta)) {
+            Storage::disk('local')->delete($ruta);
+        }
     }
 }

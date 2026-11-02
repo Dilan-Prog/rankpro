@@ -70,11 +70,24 @@ class MiEspacioController extends Controller
         return response()->json(self::serializar($tarea->fresh('cliente:id,nombre')));
     }
 
+    /** Borrado suave: el toast «Deshacer» del front llama a `restaurar` durante unos segundos. */
     public function destroy(Request $request, int $tarea): JsonResponse
     {
         $this->propia($request, $tarea)->delete();
 
         return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Deshace un borrado. Solo tareas propias: una ajena (o inexistente) es 404,
+     * igual que en el resto de acciones. Es idempotente si la tarea no estaba borrada.
+     */
+    public function restaurar(Request $request, int $tarea): JsonResponse
+    {
+        $registro = Tarea::withTrashed()->where('user_id', $request->user()->id)->findOrFail($tarea);
+        $registro->restore();
+
+        return response()->json(self::serializar($registro->fresh('cliente:id,nombre')));
     }
 
     /**

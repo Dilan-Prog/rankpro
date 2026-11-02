@@ -613,10 +613,11 @@
     const kanbanBoard = document.querySelector("[data-bugs-kanban]");
 
     function rowHtml(b) {
-      return `<tr data-bug-id="${b.id}" data-bug-titulo="${escapeHtml(b.titulo)}" data-bug-descripcion="${escapeHtml(b.descripcion || "")}" data-bug-prioridad="${b.prioridad}" data-bug-estado="${b.estado}" data-bug-fecha-resolucion="${dateOnly(b.fecha_resolucion) || ""}">
+      return `<tr data-bug-id="${b.id}" data-bug-titulo="${escapeHtml(b.titulo)}" data-bug-descripcion="${escapeHtml(b.descripcion || "")}" data-bug-prioridad="${b.prioridad}" data-bug-estado="${b.estado}" data-bug-responsable-id="${b.responsable_id || ""}" data-bug-fecha-resolucion="${dateOnly(b.fecha_resolucion) || ""}">
         <td>${escapeHtml(b.titulo)}</td>
         <td>${badge(b.prioridad)}</td>
         <td data-bug-estado-cell>${badge(b.estado)}</td>
+        <td>${escapeHtml(b.responsable_nombre || "—")}</td>
         <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.fecha_resolucion) || "—"}</td>
         <td><div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-bug="${b.id}"><i class="fa-solid fa-pen"></i></button>
@@ -626,13 +627,14 @@
     }
 
     function cardHtml(b) {
-      return `<div class="kanban__card" draggable="true" data-kanban-card data-bug-id="${b.id}" data-bug-titulo="${escapeHtml(b.titulo)}" data-bug-descripcion="${escapeHtml(b.descripcion || "")}" data-bug-prioridad="${b.prioridad}" data-bug-estado="${b.estado}" data-bug-fecha-resolucion="${dateOnly(b.fecha_resolucion) || ""}">
+      return `<div class="kanban__card" draggable="true" data-kanban-card data-bug-id="${b.id}" data-bug-titulo="${escapeHtml(b.titulo)}" data-bug-descripcion="${escapeHtml(b.descripcion || "")}" data-bug-prioridad="${b.prioridad}" data-bug-estado="${b.estado}" data-bug-responsable-id="${b.responsable_id || ""}" data-bug-fecha-resolucion="${dateOnly(b.fecha_resolucion) || ""}">
         <div class="kanban__card-top">
           <span class="kanban__card-title" title="${escapeHtml(b.titulo)}">${escapeHtml(b.titulo)}</span>
           ${badge(b.prioridad)}
         </div>
         <div class="kanban__card-meta">
           <span class="u-mono">${dateOnly(b.fecha_resolucion) || "Sin fecha de resolución"}</span>
+          <span>${escapeHtml(b.responsable_nombre || "Sin asignar")}</span>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:4px; margin-top:var(--space-2);">
           <button type="button" class="btn--icon" title="Editar" data-edit-bug="${b.id}"><i class="fa-solid fa-pen"></i></button>
@@ -712,6 +714,7 @@
         form.querySelector("#b_descripcion").value = source.dataset.bugDescripcion || "";
         form.querySelector("#b_prioridad").value = source.dataset.bugPrioridad;
         form.querySelector("#b_estado").value = source.dataset.bugEstado;
+        form.querySelector("#b_responsable_id").value = source.dataset.bugResponsableId || "";
         form.querySelector("#b_fecha").value = source.dataset.bugFechaResolucion || "";
         if (modalTitle) modalTitle.textContent = "Editar Bug";
         if (submitLabel) submitLabel.textContent = "Guardar Cambios";
@@ -1193,22 +1196,166 @@
         headers.forEach((h) => h.setAttribute("aria-sort", "none"));
         th.setAttribute("aria-sort", dir);
 
-        const factor = dir === "ascending" ? 1 : -1;
-        const rows = Array.from(body.querySelectorAll("tr[data-vista-item]"));
-        const valor = (tr) => tr.children[col]?.dataset.sort ?? "";
-        rows.sort((a, b) => {
-          const va = valor(a);
-          const vb = valor(b);
-          if (va === "" && vb !== "") return 1;
-          if (vb === "" && va !== "") return -1;
-          const na = Number(va);
-          const nb = Number(vb);
-          const numeric = va !== "" && vb !== "" && !Number.isNaN(na) && !Number.isNaN(nb);
-          return factor * (numeric ? na - nb : va.localeCompare(vb, "es"));
-        });
-        rows.forEach((tr) => body.appendChild(tr));
+        tablaOrdenActual = { col, dir };
+        ordenarTabla(body, col, dir);
       });
     });
+  }
+
+  // ---------- Vistas tabla y línea de tiempo en vivo ----------
+  // Se reconstruyen desde el JSON de las filas (data-proyecto) tras crear,
+  // editar o borrar, igual que filas y kanban, para no exigir recarga. La
+  // geometría del Gantt replica ProyectoProgreso::lineaTiempo() (PX_DIA = 6):
+  // si cambia allá, cambia aquí.
+  const TL_PX_DIA = 6;
+  const TL_MESES = ["", "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  let tablaOrdenActual = null; // { col, dir } para conservar el orden elegido al repintar
+
+  function fechaLocal(iso) {
+    const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function diasEntre(a, b) {
+    return Math.round((b.getTime() - a.getTime()) / 86400000);
+  }
+
+  function vistaItemAttrs(p) {
+    return `data-vista-item data-cliente-id="${p.cliente_id}" data-estado="${escapeHtml(p.estado)}"`;
+  }
+
+  function tablaFilaHtml(p) {
+    const dias = p.dias_restantes ?? null;
+    let entrega = '<span style="color:var(--color-muted-foreground);">—</span>';
+    if (p.fecha_entrega_estimada) {
+      let extra = "";
+      if (dias !== null) {
+        if (dias < 0) extra = `<span class="badge badge--danger">Vencida (${Math.abs(dias)}d)</span>`;
+        else if (dias === 0) extra = '<span class="badge badge--warning">Hoy</span>';
+        else extra = `<span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">en ${dias} d</span>`;
+      }
+      entrega = `<span class="u-mono" style="font-size:var(--text-xs);">${escapeHtml(p.fecha_entrega_estimada)}</span> ${extra}`;
+    }
+    const titulo = p.avance_origen === "tareas" ? `${p.tareas_hechas} de ${p.tareas_total} tareas` : "Avance de la fase de Dirección";
+    return `<tr ${vistaItemAttrs(p)}>
+      <td data-sort="${escapeHtml(String(p.cliente).toLowerCase())}">${escapeHtml(p.cliente)}</td>
+      <td data-sort="${escapeHtml(String(p.nombre).toLowerCase())}"><a href="${p.show_url}" style="color:var(--color-foreground); font-weight:500;">${escapeHtml(p.nombre)}</a></td>
+      <td data-sort="${p.fase_orden}">${badge(p.fase_actual)}</td>
+      <td data-sort="${escapeHtml(p.estado)}">${badge(p.estado)}</td>
+      <td data-sort="${escapeHtml(p.fecha_entrega_estimada || "")}">${entrega}</td>
+      <td data-sort="${p.porcentaje_avance}">
+        <div class="tabla-progreso" title="${titulo}">
+          <div class="progress-bar"><div class="progress-bar__fill" style="width:${p.porcentaje_avance}%;"></div></div>
+          <span class="u-mono">${p.porcentaje_avance}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function ordenarTabla(body, col, dir) {
+    const factor = dir === "ascending" ? 1 : -1;
+    const rows = Array.from(body.querySelectorAll("tr[data-vista-item]"));
+    const valor = (tr) => tr.children[col]?.dataset.sort ?? "";
+    rows.sort((a, b) => {
+      const va = valor(a);
+      const vb = valor(b);
+      if (va === "" && vb !== "") return 1;
+      if (vb === "" && va !== "") return -1;
+      const na = Number(va);
+      const nb = Number(vb);
+      const numeric = va !== "" && vb !== "" && !Number.isNaN(na) && !Number.isNaN(nb);
+      return factor * (numeric ? na - nb : va.localeCompare(vb, "es"));
+    });
+    rows.forEach((tr) => body.appendChild(tr));
+  }
+
+  function renderTablaProyectos(proyectos) {
+    const body = document.querySelector("[data-proyectos-tabla] [data-tabla-cuerpo]");
+    if (!body) return;
+    body.innerHTML = proyectos.length
+      ? proyectos.map(tablaFilaHtml).join("")
+      : '<tr><td colspan="6" class="table__empty">Aún no hay proyectos.</td></tr>';
+    if (tablaOrdenActual && proyectos.length) ordenarTabla(body, tablaOrdenActual.col, tablaOrdenActual.dir);
+  }
+
+  function renderTimelineProyectos(proyectos) {
+    const host = document.querySelector("[data-proyectos-timeline]");
+    if (!host) return;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const con = [];
+    const sin = [];
+    proyectos.forEach((p) => {
+      if (!p.fecha_inicio || !p.fecha_entrega_estimada) {
+        sin.push(p);
+        return;
+      }
+      let ini = fechaLocal(p.fecha_inicio);
+      let fin = fechaLocal(p.fecha_entrega_estimada);
+      if (fin < ini) [ini, fin] = [fin, ini]; // fechas capturadas al revés
+      con.push({ p, ini, fin });
+    });
+
+    let html = "";
+    if (!con.length) {
+      html = `<div class="empty-state"><div class="empty-state__icon"><i class="fa-solid fa-chart-gantt"></i></div>
+        <p class="empty-state__text">Ningún proyecto tiene fecha de inicio y de entrega estimada para dibujar la línea de tiempo.</p></div>`;
+    } else {
+      const min = new Date(Math.min(hoy.getTime(), ...con.map((c) => c.ini.getTime())));
+      const max = new Date(Math.max(hoy.getTime(), ...con.map((c) => c.fin.getTime())));
+      const desde = new Date(min.getFullYear(), min.getMonth(), 1);
+      const hasta = new Date(max.getFullYear(), max.getMonth() + 1, 0);
+      const ancho = (diasEntre(desde, hasta) + 1) * TL_PX_DIA;
+
+      let meses = "";
+      for (let m = new Date(desde); m <= hasta; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+        const dias = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+        meses += `<span class="timeline__mes" style="left: ${diasEntre(desde, m) * TL_PX_DIA}px; width: ${dias * TL_PX_DIA}px;">${TL_MESES[m.getMonth() + 1]} ${m.getFullYear()}</span>`;
+      }
+
+      const filas = con
+        .map(({ p, ini, fin }) => {
+          const left = diasEntre(desde, ini) * TL_PX_DIA;
+          const width = (diasEntre(ini, fin) + 1) * TL_PX_DIA;
+          const avance = Math.max(0, Math.min(100, parseInt(p.porcentaje_avance, 10) || 0));
+          const vencido = p.dias_restantes != null && p.dias_restantes < 0;
+          return `<div class="timeline__fila" ${vistaItemAttrs(p)}>
+            <div class="timeline__etiqueta"><a href="${p.show_url}" title="${escapeHtml(p.nombre)}">${escapeHtml(p.nombre)}</a><small>${escapeHtml(p.cliente)}</small></div>
+            <div class="timeline__pista" style="width: ${ancho}px;">
+              <div class="timeline__barra ${vencido ? "timeline__barra--vencida" : ""}" style="left: ${left}px; width: ${width}px;"
+                title="${escapeHtml(p.nombre)}: ${escapeHtml(p.fecha_inicio)} a ${escapeHtml(p.fecha_entrega_estimada)} · ${avance}%">
+                <span class="timeline__avance" style="width: ${avance}%;"></span><span class="timeline__texto">${avance}%</span>
+              </div>
+            </div>
+          </div>`;
+        })
+        .join("");
+
+      const hoyLeft = diasEntre(desde, hoy) * TL_PX_DIA + Math.floor(TL_PX_DIA / 2);
+      html = `<div class="timeline card"><div class="timeline__scroll">
+        <div class="timeline__inner" style="width: calc(var(--timeline-etiqueta) + ${ancho}px);">
+          <div class="timeline__fila timeline__fila--cabecera">
+            <div class="timeline__etiqueta">Proyecto</div>
+            <div class="timeline__pista" style="width: ${ancho}px;">${meses}</div>
+          </div>
+          ${filas}
+          <div class="timeline__hoy" style="left: calc(var(--timeline-etiqueta) + ${hoyLeft}px);" title="Hoy"><span>Hoy</span></div>
+        </div></div></div>`;
+    }
+
+    if (sin.length) {
+      html += `<p class="timeline__nota">Sin fechas para dibujar: ${sin
+        .map((p, i) => `<a href="${p.show_url}">${escapeHtml(p.nombre)}</a>${i === sin.length - 1 ? "." : ","}`)
+        .join(" ")}</p>`;
+    }
+    host.innerHTML = html;
+  }
+
+  function renderVistasProyectos() {
+    const proyectos = allProyectos();
+    renderTablaProyectos(proyectos);
+    renderTimelineProyectos(proyectos);
   }
 
   // ---------- KPI / chart aggregates (Proyectos tab) ----------
@@ -1366,6 +1513,7 @@
     else list.insertBefore(newRow, list.firstChild);
 
     updateDesarrolloSubtitle();
+    renderVistasProyectos();
     applyDesarrolloFilters();
   }
 
@@ -1425,6 +1573,7 @@
         .then(() => {
           row.remove();
           updateDesarrolloSubtitle();
+          renderVistasProyectos();
           applyDesarrolloFilters();
           toast("Proyecto eliminado.", "success");
         })
@@ -1483,6 +1632,7 @@
       <td>${escapeHtml(b.titulo)}</td>
       <td>${badge(b.prioridad)}</td>
       <td>${badge(b.estado)}</td>
+      <td>${escapeHtml(b.responsable_nombre || "—")}</td>
       <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.created_at) || "—"}</td>
       <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.fecha_resolucion) || "—"}</td>
       <td class="u-mono">${dias}</td>
@@ -1528,6 +1678,8 @@
       form.querySelector("#gb_descripcion").value = b.descripcion || "";
       form.querySelector("#gb_prioridad").value = b.prioridad;
       form.querySelector("#gb_estado").value = b.estado;
+      // Si el responsable ya no es un usuario activo no esta en la lista y el select queda en "Sin asignar".
+      form.querySelector("#gb_responsable_id").value = b.responsable_id ? String(b.responsable_id) : "";
       form.querySelector("#gb_fecha_resolucion").value = b.fecha_resolucion || "";
     }
     // proyecto_id only exists to build the create URL (POST

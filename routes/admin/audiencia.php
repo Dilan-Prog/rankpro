@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('audiencia')->name('audiencia.')->middleware('permiso:audiencia')->group(function () {
     Route::get('/', [AudienciaController::class, 'index'])->name('index');
     Route::post('/', [AudienciaController::class, 'store'])->name('store');
+    Route::post('/generar', [AudienciaController::class, 'generar'])->name('generar');
     Route::put('/{persona}', [AudienciaController::class, 'update'])->name('update');
     Route::delete('/{persona}', [AudienciaController::class, 'destroy'])->name('destroy');
     Route::post('/{persona}/mover', [AudienciaController::class, 'mover'])->name('mover');

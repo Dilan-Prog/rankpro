@@ -15,7 +15,7 @@
     "isEntry": true
   },
   "resources/css/admin/audiencia.css": {
-    "file": "assets/audiencia-iW9bHH1n.css",
+    "file": "assets/audiencia-5QtDUfwe.css",
     "src": "resources/css/admin/audiencia.css",
     "isEntry": true
   },
@@ -35,7 +35,7 @@
     "isEntry": true
   },
   "resources/css/admin/calendario.css": {
-    "file": "assets/calendario-VtlUQ10q.css",
+    "file": "assets/calendario-BJTc_eP0.css",
     "src": "resources/css/admin/calendario.css",
     "isEntry": true
   },
@@ -50,7 +50,7 @@
     "isEntry": true
   },
   "resources/css/admin/contenido.css": {
-    "file": "assets/contenido-vnPU-WgP.css",
+    "file": "assets/contenido-iXOigJX0.css",
     "src": "resources/css/admin/contenido.css",
     "isEntry": true
   },
@@ -100,7 +100,7 @@
     "isEntry": true
   },
   "resources/css/admin/keywords.css": {
-    "file": "assets/keywords-DXPcoEQV.css",
+    "file": "assets/keywords-CDCcUnNF.css",
     "src": "resources/css/admin/keywords.css",
     "isEntry": true
   },
@@ -112,6 +112,11 @@
   "resources/css/admin/mi-espacio.css": {
     "file": "assets/mi-espacio-tOYLAI-5.css",
     "src": "resources/css/admin/mi-espacio.css",
+    "isEntry": true
+  },
+  "resources/css/admin/pizarra.css": {
+    "file": "assets/pizarra-i52EWcxh.css",
+    "src": "resources/css/admin/pizarra.css",
     "isEntry": true
   },
   "resources/css/admin/propuestas.css": {
@@ -135,7 +140,7 @@
     "isEntry": true
   },
   "resources/css/admin/seo-plan.css": {
-    "file": "assets/seo-plan-BAoqtaDX.css",
+    "file": "assets/seo-plan-BgCP83F2.css",
     "src": "resources/css/admin/seo-plan.css",
     "isEntry": true
   },
@@ -219,7 +224,7 @@
     "isEntry": true
   },
   "resources/js/audiencia.js": {
-    "file": "assets/audiencia-W6T-979R.js",
+    "file": "assets/audiencia-ClW_irO0.js",
     "name": "audiencia",
     "src": "resources/js/audiencia.js",
     "isEntry": true
@@ -249,7 +254,7 @@
     "isEntry": true
   },
   "resources/js/calendario.js": {
-    "file": "assets/calendario-1KPncazn.js",
+    "file": "assets/calendario-DufJg5rO.js",
     "name": "calendario",
     "src": "resources/js/calendario.js",
     "isEntry": true
@@ -267,7 +272,7 @@
     "isEntry": true
   },
   "resources/js/contenido.js": {
-    "file": "assets/contenido-DqUzqV63.js",
+    "file": "assets/contenido-kdXfYYfe.js",
     "name": "contenido",
     "src": "resources/js/contenido.js",
     "isEntry": true
@@ -303,7 +308,7 @@
     "isEntry": true
   },
   "resources/js/desarrollo.js": {
-    "file": "assets/desarrollo-Co1T8xes.js",
+    "file": "assets/desarrollo-dSZSeOOF.js",
     "name": "desarrollo",
     "src": "resources/js/desarrollo.js",
     "isEntry": true
@@ -327,7 +332,7 @@
     "isEntry": true
   },
   "resources/js/identidad.js": {
-    "file": "assets/identidad-DeSJ8ujg.js",
+    "file": "assets/identidad-BL2FeAst.js",
     "name": "identidad",
     "src": "resources/js/identidad.js",
     "isEntry": true
@@ -351,7 +356,7 @@
     "isEntry": true
   },
   "resources/js/mi-espacio.js": {
-    "file": "assets/mi-espacio-BBX4mZjt.js",
+    "file": "assets/mi-espacio--bufUa-H.js",
     "name": "mi-espacio",
     "src": "resources/js/mi-espacio.js",
     "isEntry": true
@@ -360,6 +365,12 @@
     "file": "assets/agendar-CvAtlbCA.js",
     "name": "agendar",
     "src": "resources/js/modules/agendar.js",
+    "isEntry": true
+  },
+  "resources/js/pizarra.js": {
+    "file": "assets/pizarra-BjvPgQre.js",
+    "name": "pizarra",
+    "src": "resources/js/pizarra.js",
     "isEntry": true
   },
   "resources/js/propuestas.js": {
@@ -387,7 +398,7 @@
     "isEntry": true
   },
   "resources/js/seo-plan.js": {
-    "file": "assets/seo-plan-Brck-j91.js",
+    "file": "assets/seo-plan-D9Whm1p9.js",
     "name": "seo-plan",
     "src": "resources/js/seo-plan.js",
     "isEntry": true
@@ -423,7 +434,7 @@
     "isEntry": true
   },
   "resources/js/usuarios.js": {
-    "file": "assets/usuarios-BffMAdgP.js",
+    "file": "assets/usuarios-Dov5l6bO.js",
     "name": "usuarios",
     "src": "resources/js/usuarios.js",
     "isEntry": true

@@ -12,7 +12,7 @@
     Mi espacio: tareas personales del usuario en 5 vistas (tarjetas, kanban,
     tabla, calendario, timeline). Los datos viajan embebidos como JSON y el JS
     pinta cada vista en cliente: buscar, filtrar y cambiar de vista no pide nada
-    al servidor; solo crear/editar/borrar/mover lo hacen (fetch JSON).
+    al servidor; solo crear/editar/borrar/restaurar/mover lo hacen (fetch JSON).
 --}}
 @php
     $banderas = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE;
@@ -60,6 +60,9 @@
         </div>
 
         <div class="me-contenido" data-me-contenido></div>
+
+        {{-- Anuncios para lector de pantalla al mover tarjetas con el teclado. --}}
+        <div class="u-visually-hidden" role="status" aria-live="polite" data-me-anuncio></div>
 
         <script type="application/json" data-me-datos>{!! json_encode(['tareas' => $tareas, 'clientes' => $clientes], $banderas) !!}</script>
 

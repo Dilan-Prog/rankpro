@@ -13,6 +13,7 @@ class Bug extends Model
 
     protected $fillable = [
         'proyecto_id',
+        'responsable_id',
         'titulo',
         'descripcion',
         'prioridad',
@@ -28,5 +29,11 @@ class Bug extends Model
     public function proyecto(): BelongsTo
     {
         return $this->belongsTo(Proyecto::class);
+    }
+
+    /** Usuario del panel a cargo del bug; null = sin asignar. */
+    public function responsable(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsable_id');
     }
 }

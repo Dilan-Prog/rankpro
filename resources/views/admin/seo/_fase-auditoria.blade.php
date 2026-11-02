@@ -40,20 +40,25 @@
         </div>
 
         <h3 class="fase-form__section-title" style="margin-top: var(--space-5);">Core Web Vitals</h3>
+        <p class="field__hint">Unidades: LCP en segundos; FID, INP y TTFB en milisegundos; CLS sin unidad. FID quedó como dato histórico: Google lo reemplazó por INP.</p>
         <div class="form-grid form-grid--2">
             <div class="field"><label class="field__label" style="font-weight:600;">Mobile</label></div>
             <div class="field"><label class="field__label" style="font-weight:600;">Desktop</label></div>
         </div>
         <div class="form-grid form-grid--2" style="margin-top: var(--space-2);">
-            <div style="display:flex; gap: var(--space-2);">
-                <div class="field"><label class="field__label" for="lcp_mobile">LCP</label><input class="input" type="number" step="0.01" min="0" name="lcp_mobile" id="lcp_mobile" data-autosave value="{{ $auditoria->lcp_mobile }}"></div>
-                <div class="field"><label class="field__label" for="fid_mobile">FID</label><input class="input" type="number" step="0.01" min="0" name="fid_mobile" id="fid_mobile" data-autosave value="{{ $auditoria->fid_mobile }}"></div>
-                <div class="field"><label class="field__label" for="cls_mobile">CLS</label><input class="input" type="number" step="0.001" min="0" name="cls_mobile" id="cls_mobile" data-autosave value="{{ $auditoria->cls_mobile }}"></div>
+            <div style="display:flex; flex-wrap:wrap; gap: var(--space-2);">
+                <div class="field"><label class="field__label" for="lcp_mobile">LCP (segundos)</label><input class="input" type="number" step="0.01" min="0" name="lcp_mobile" id="lcp_mobile" data-autosave value="{{ $auditoria->lcp_mobile }}"></div>
+                <div class="field"><label class="field__label" for="fid_mobile">FID (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="fid_mobile" id="fid_mobile" data-autosave value="{{ $auditoria->fid_mobile }}"></div>
+                <div class="field"><label class="field__label" for="cls_mobile">CLS (sin unidad)</label><input class="input" type="number" step="0.001" min="0" name="cls_mobile" id="cls_mobile" data-autosave value="{{ $auditoria->cls_mobile }}"></div>
+                <div class="field"><label class="field__label" for="inp_mobile">INP (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="inp_mobile" id="inp_mobile" data-autosave value="{{ $auditoria->inp_mobile }}"></div>
+                <div class="field"><label class="field__label" for="ttfb_mobile">TTFB (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="ttfb_mobile" id="ttfb_mobile" data-autosave value="{{ $auditoria->ttfb_mobile }}"></div>
             </div>
-            <div style="display:flex; gap: var(--space-2);">
-                <div class="field"><label class="field__label" for="lcp_desktop">LCP</label><input class="input" type="number" step="0.01" min="0" name="lcp_desktop" id="lcp_desktop" data-autosave value="{{ $auditoria->lcp_desktop }}"></div>
-                <div class="field"><label class="field__label" for="fid_desktop">FID</label><input class="input" type="number" step="0.01" min="0" name="fid_desktop" id="fid_desktop" data-autosave value="{{ $auditoria->fid_desktop }}"></div>
-                <div class="field"><label class="field__label" for="cls_desktop">CLS</label><input class="input" type="number" step="0.001" min="0" name="cls_desktop" id="cls_desktop" data-autosave value="{{ $auditoria->cls_desktop }}"></div>
+            <div style="display:flex; flex-wrap:wrap; gap: var(--space-2);">
+                <div class="field"><label class="field__label" for="lcp_desktop">LCP (segundos)</label><input class="input" type="number" step="0.01" min="0" name="lcp_desktop" id="lcp_desktop" data-autosave value="{{ $auditoria->lcp_desktop }}"></div>
+                <div class="field"><label class="field__label" for="fid_desktop">FID (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="fid_desktop" id="fid_desktop" data-autosave value="{{ $auditoria->fid_desktop }}"></div>
+                <div class="field"><label class="field__label" for="cls_desktop">CLS (sin unidad)</label><input class="input" type="number" step="0.001" min="0" name="cls_desktop" id="cls_desktop" data-autosave value="{{ $auditoria->cls_desktop }}"></div>
+                <div class="field"><label class="field__label" for="inp_desktop">INP (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="inp_desktop" id="inp_desktop" data-autosave value="{{ $auditoria->inp_desktop }}"></div>
+                <div class="field"><label class="field__label" for="ttfb_desktop">TTFB (milisegundos)</label><input class="input" type="number" step="0.01" min="0" name="ttfb_desktop" id="ttfb_desktop" data-autosave value="{{ $auditoria->ttfb_desktop }}"></div>
             </div>
         </div>
 

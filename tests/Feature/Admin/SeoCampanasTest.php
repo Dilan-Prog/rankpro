@@ -674,6 +674,59 @@ class SeoCampanasTest extends TestCase
         $this->assertStringContainsString('Mejorar</span>', $html);
         $this->assertStringContainsString('Malo</span>', $html);
         $this->assertStringContainsString('Sin dato</span>', $html);
-        $this->assertStringNotContainsString('INP', $html);
+    }
+
+    public function test_auditoria_evalua_inp_y_ttfb_con_los_umbrales_de_google(): void
+    {
+        [$cliente, $servicio] = $this->clienteConServicioSeo();
+        $campana = $this->campana($cliente, $servicio);
+        // INP 200 ms = límite exacto (bueno) y TTFB 1800 ms = límite exacto (mejorar) en móvil; escritorio: INP 501 (malo), TTFB 801 (mejorar).
+        $campana->auditorias()->create([
+            'ciclo' => 1, 'checklist' => [],
+            'inp_mobile' => 200, 'ttfb_mobile' => 1800,
+            'inp_desktop' => 501, 'ttfb_desktop' => 801,
+        ]);
+
+        $html = $this->actingAs(User::factory()->create())->get(route('admin.seo.show', $campana->id))->assertOk()->getContent();
+
+        $this->assertStringContainsString('≤ 200 ms bueno · ≤ 500 ms mejorar', $html);
+        $this->assertStringContainsString('≤ 800 ms bueno · ≤ 1800 ms mejorar', $html);
+        $this->assertStringContainsString('200 ms', $html);
+        $this->assertStringContainsString('1800 ms', $html);
+        $this->assertSame(1, substr_count($html, 'Bueno</span>'));   // solo INP móvil
+        $this->assertSame(2, substr_count($html, 'Mejorar</span>')); // TTFB móvil y TTFB escritorio
+        $this->assertSame(1, substr_count($html, 'Malo</span>'));    // INP escritorio
+    }
+
+    public function test_auditoria_sin_inp_ni_ttfb_los_muestra_como_sin_dato(): void
+    {
+        [$cliente, $servicio] = $this->clienteConServicioSeo();
+        $campana = $this->campana($cliente, $servicio);
+        $campana->auditorias()->create(['ciclo' => 1, 'checklist' => [], 'lcp_mobile' => 2.0]);
+
+        $html = $this->actingAs(User::factory()->create())->get(route('admin.seo.show', $campana->id))->assertOk()->getContent();
+
+        $this->assertStringContainsString('INP</span>', $html);
+        $this->assertStringContainsString('TTFB</span>', $html);
+        // 5 filas x 2 dispositivos, solo LCP móvil con dato.
+        $this->assertSame(9, substr_count($html, 'Sin dato</span>'));
+    }
+
+    public function test_guardar_auditoria_acepta_inp_y_ttfb_y_rechaza_negativos(): void
+    {
+        [$cliente, $servicio] = $this->clienteConServicioSeo();
+        $campana = $this->campana($cliente, $servicio);
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson("/admin/seo/{$campana->id}/fase/guardar", [
+            'inp_mobile' => 180.5, 'inp_desktop' => 90, 'ttfb_mobile' => 650, 'ttfb_desktop' => 300,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('seo_fase_auditoria', [
+            'seo_campana_id' => $campana->id, 'inp_mobile' => 180.5, 'inp_desktop' => 90, 'ttfb_mobile' => 650, 'ttfb_desktop' => 300,
+        ]);
+
+        $this->postJson("/admin/seo/{$campana->id}/fase/guardar", ['inp_mobile' => -1])->assertStatus(422);
+        $this->postJson("/admin/seo/{$campana->id}/fase/guardar", ['ttfb_mobile' => 'rápido'])->assertStatus(422);
     }
 }

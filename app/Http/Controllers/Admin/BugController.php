@@ -8,13 +8,14 @@ use App\Models\Bug;
 use App\Models\Proyecto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BugController extends Controller
 {
     /** Global cross-project bug list — complements the per-project nested view in Proyecto::show(), same table, no schema change (mirrors ConversionesController's relationship to IntegracionesController::conversiones()). */
     public function index(Request $request): JsonResponse
     {
-        $query = Bug::with('proyecto:id,nombre')
+        $query = Bug::with(['proyecto:id,nombre', 'responsable:id,name'])
             ->whereHas('proyecto')
             ->latest('created_at');
 
@@ -35,14 +36,14 @@ class BugController extends Controller
     {
         $bug = $proyecto->bugs()->create($this->validated($request));
 
-        return response()->json($this->toRow($bug->fresh()->load('proyecto:id,nombre')), 201);
+        return response()->json($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])), 201);
     }
 
     public function update(Request $request, Bug $bug): JsonResponse
     {
         $bug->update($this->validated($request));
 
-        return response()->json($this->toRow($bug->fresh()->load('proyecto:id,nombre')));
+        return response()->json($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])));
     }
 
     public function destroy(Bug $bug): JsonResponse
@@ -59,6 +60,8 @@ class BugController extends Controller
             'id' => $b->id,
             'proyecto_id' => $b->proyecto_id,
             'proyecto_nombre' => $b->proyecto->nombre,
+            'responsable_id' => $b->responsable_id,
+            'responsable_nombre' => $b->responsable?->name,
             'titulo' => $b->titulo,
             'descripcion' => $b->descripcion,
             'prioridad' => $b->prioridad,
@@ -77,6 +80,8 @@ class BugController extends Controller
             'prioridad' => ['required', 'in:alta,media,baja'],
             'estado' => ['required', 'in:abierto,en_progreso,resuelto'],
             'fecha_resolucion' => ['nullable', 'date'],
+            // Opcional y solo si viene: el arrastre del kanban no lo manda y no debe desasignar.
+            'responsable_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where('is_active', true)],
         ]);
     }
 }

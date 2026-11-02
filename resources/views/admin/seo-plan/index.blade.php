@@ -116,6 +116,8 @@
                         <div class="spl-vistas" role="group" aria-label="Vista">
                             <button type="button" class="btn btn--sm is-active" data-spl-vista="kanban" aria-pressed="true"><i class="fa-solid fa-table-columns"></i> Kanban</button>
                             <button type="button" class="btn btn--sm" data-spl-vista="lista" aria-pressed="false"><i class="fa-solid fa-list"></i> Lista</button>
+                            <button type="button" class="btn btn--sm" data-spl-vista="linea" aria-pressed="false"><i class="fa-solid fa-chart-gantt"></i> Línea de tiempo</button>
+                            <button type="button" class="btn btn--sm" data-spl-vista="calendario" aria-pressed="false"><i class="fa-regular fa-calendar"></i> Calendario</button>
                         </div>
                         @if ($campanas->isEmpty())
                             <a class="btn btn--primary btn--sm" href="{{ route('admin.seo.index') }}">Crear campaña SEO</a>
@@ -166,7 +168,7 @@
                     </div>
                 @else
                     {{-- Kanban: una columna por estado. El orden de las tarjetas persiste con PATCH al soltar. --}}
-                    <div class="spl-kanban" data-spl-kanban data-url-mover="{{ route('admin.seo-plan.actividades.mover', ['accion' => '__ID__']) }}">
+                    <div class="spl-kanban" data-spl-kanban data-spl-vista-panel="kanban" data-url-mover="{{ route('admin.seo-plan.actividades.mover', ['accion' => '__ID__']) }}">
                         @foreach ($columnas as $col)
                             @php
  $enColumna = $actividades->filter(fn ($a) => $a->estado === $col)->values();
@@ -187,7 +189,7 @@
                         @endforeach
                     </div>
 
-                    <div data-spl-lista hidden>
+                    <div data-spl-lista data-spl-vista-panel="lista" hidden>
                         <x-data-table :headers="['Actividad', 'Tipo', 'Clúster', 'Responsable', 'Fecha límite', 'Estado']">
                             @foreach ($actividades as $a)
                                 @include('admin.seo-plan._actividad-fila', ['a' => $a])
@@ -195,6 +197,9 @@
                             <tr data-spl-lista-vacia hidden><td colspan="6" class="table__empty">Ninguna actividad coincide con los filtros.</td></tr>
                         </x-data-table>
                     </div>
+
+                    @include('admin.seo-plan._vista-linea')
+                    @include('admin.seo-plan._vista-calendario')
                 @endif
             </section>
 

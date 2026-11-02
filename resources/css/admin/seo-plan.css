@@ -323,3 +323,260 @@
     flex-basis: 85%;
   }
 }
+
+/* ---------- Línea de tiempo y calendario (solo lectura) ----------
+   Posiciones y anchos en px vienen de VistasActividades::lineaTiempo();
+   la columna de etiquetas queda fija mientras la pista hace scroll horizontal.
+   El color de cada barra/evento sale del estado (--spl-c), igual que los puntos del kanban. */
+.spl-lt__barra--pendiente, .spl-cal__ev--pendiente { --spl-c: var(--color-muted-foreground); }
+.spl-lt__barra--en_progreso, .spl-cal__ev--en_progreso { --spl-c: var(--color-info); }
+.spl-lt__barra--en_revision, .spl-cal__ev--en_revision { --spl-c: var(--color-warning); }
+.spl-lt__barra--completada, .spl-cal__ev--completada { --spl-c: var(--color-primary); }
+.spl-lt__barra--pausada, .spl-cal__ev--pausada { --spl-c: var(--color-orange); }
+
+.spl-lt {
+  --spl-lt-etiqueta: 220px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.spl-lt__scroll { overflow-x: auto; }
+
+.spl-lt__inner {
+  position: relative;
+  min-width: 100%;
+}
+
+.spl-lt__fila {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.spl-lt__fila[hidden] { display: none; }
+
+.spl-lt__etiqueta {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: 0 0 var(--spl-lt-etiqueta);
+  width: var(--spl-lt-etiqueta);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-card);
+  border-right: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  overflow: hidden;
+}
+
+.spl-lt__etiqueta small {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spl-lt__fila--cabecera .spl-lt__etiqueta {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+}
+
+.spl-lt__enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-foreground);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spl-lt__enlace:hover { color: var(--color-primary); }
+
+.spl-lt__enlace--inline {
+  color: var(--color-primary);
+  font-weight: 400;
+  margin-right: var(--space-2);
+}
+
+.spl-lt__enlace--inline[hidden] { display: none; }
+
+.spl-lt__pista {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 44px;
+}
+
+.spl-lt__fila--cabecera .spl-lt__pista { min-height: 44px; }
+
+.spl-lt__mes {
+  position: absolute;
+  top: 0;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  border-left: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.spl-lt__semana {
+  position: absolute;
+  top: 24px;
+  padding-left: 3px;
+  font-size: 10px;
+  line-height: 18px;
+  color: var(--color-muted-foreground);
+  border-left: 1px dotted var(--color-border);
+}
+
+.spl-lt__barra {
+  --spl-c: var(--color-primary);
+  position: absolute;
+  top: 10px;
+  height: 24px;
+  min-width: 8px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--spl-c) 28%, transparent);
+  border: 1px solid var(--spl-c);
+  border-radius: var(--radius-md);
+}
+
+.spl-lt__barra--vencida {
+  border-color: var(--text-danger);
+  border-style: dashed;
+}
+
+.spl-lt__texto {
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  color: var(--color-foreground);
+}
+
+.spl-lt__hoy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 0;
+  border-left: 2px solid var(--text-danger);
+  pointer-events: none;
+}
+
+.spl-lt__hoy span {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+  color: #fff;
+  background: var(--text-danger);
+  border-radius: var(--radius-sm);
+}
+
+.spl-lt__nota {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+/* Calendario mensual */
+.spl-cal__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.spl-cal__titulo {
+  flex: 1;
+  text-align: center;
+  font-size: var(--text-lg);
+}
+
+.spl-cal__mes[hidden] { display: none; }
+
+.spl-cal__scroll { overflow-x: auto; }
+
+.spl-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(110px, 1fr));
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
+
+.spl-cal__dow {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  background: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.spl-cal__dia {
+  min-height: 92px;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.spl-cal__dia.is-fuera { background: var(--color-muted); opacity: 0.6; }
+
+.spl-cal__dia.is-hoy .spl-cal__num {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground, #fff);
+  border-radius: 999px;
+}
+
+.spl-cal__num {
+  align-self: flex-start;
+  min-width: 22px;
+  padding: 0 4px;
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.spl-cal__ev {
+  --spl-c: var(--color-primary);
+  width: 100%;
+  padding: 2px 6px;
+  border: 0;
+  border-left: 3px solid var(--spl-c);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--spl-c) 20%, transparent);
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spl-cal__ev[hidden] { display: none; }
+.spl-cal__ev.is-vencida { border-left-color: var(--text-danger); }
+
+@media (max-width: 640px) {
+  .spl-lt { --spl-lt-etiqueta: 130px; }
+}

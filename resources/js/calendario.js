@@ -1,9 +1,9 @@
 /**
  * Módulo «Calendario» (admin): cuadrícula mensual, filtro por tipo, panel del
- * día y alta/baja de eventos manuales. El mes inicial llega embebido; al cambiar
+ * día y alta/edición/baja de eventos manuales. El mes inicial llega embebido; al cambiar
  * de mes se pide el rango de 42 días al servidor y se guarda en caché por mes.
- * Los eventos que no son manuales (reunión, tarea, proyecto, cobro) son de solo
- * lectura y enlazan a su módulo.
+ * Los eventos que no son manuales (reunión, tarea, proyecto, cobro, campañas de
+ * Ads y SEO) son de solo lectura y enlazan a su módulo.
  *
  * Los textos libres entran al DOM con textContent, nunca con innerHTML.
  */
@@ -31,6 +31,10 @@
   const lista = root.querySelector("[data-cal-lista]");
   const form = root.querySelector("[data-cal-form]");
   const errorForm = root.querySelector("[data-cal-error]");
+  const botonGuardar = root.querySelector("[data-cal-guardar]");
+  const botonCancelar = root.querySelector("[data-cal-cancelar]");
+  const tituloForm = root.querySelector("[data-cal-form-titulo]");
+  let editando = null; // evento manual en edición (null = alta)
 
   function el(tag, props, ...hijos) {
     const nodo = document.createElement(tag);
@@ -101,7 +105,7 @@
           type: "button",
           class: `cal-dia ${dia.slice(0, 7) !== estado.mes ? "is-fuera" : ""} ${dia === HOY ? "is-hoy" : ""} ${dia === estado.dia ? "is-seleccionado" : ""}`,
           "aria-label": `${parsear(dia).getDate()} de ${MESES[parsear(dia).getMonth()]}, ${delDia.length} eventos`,
-          onclick: () => { estado.dia = dia; renderCuadricula(); renderPanel(); },
+          onclick: () => { estado.dia = dia; if (!editando) form.elements.fecha.value = dia; renderCuadricula(); renderPanel(); },
         },
         el("span", { class: "cal-dia__n", text: String(parsear(dia).getDate()) }),
         delDia.slice(0, 3).map((e) => el("span", { class: "cal-evento", dataset: { tipo: e.tipo }, text: `${e.hora ? e.hora + " " : ""}${e.titulo}` })),
@@ -134,18 +138,63 @@
           titulo,
           el("span", { class: "cal-item__meta", text: [ETIQUETA_TIPO[e.tipo], e.cliente].filter(Boolean).join(" · ") + (e.editable ? "" : " · desde su módulo") })),
         e.editable
-          ? el("button", { type: "button", class: "btn btn--icon", "aria-label": `Eliminar ${e.titulo}`, onclick: () => borrar(e) }, el("i", { class: "fa-solid fa-trash" }))
+          ? el("div", { class: "cal-item__acciones" },
+            el("button", { type: "button", class: "btn btn--icon", "aria-label": `Editar ${e.titulo}`, onclick: () => empezarEdicion(e) }, el("i", { class: "fa-solid fa-pen" })),
+            el("button", { type: "button", class: "btn btn--icon", "aria-label": `Eliminar ${e.titulo}`, onclick: () => borrar(e) }, el("i", { class: "fa-solid fa-trash" })))
           : null
       );
     }));
+  }
+
+  /** Carga el evento en el formulario del panel; guardar hace PUT en lugar de POST. */
+  function empezarEdicion(evento) {
+    editando = evento;
+    errorForm.hidden = true;
+    form.elements.titulo.value = evento.titulo;
+    form.elements.fecha.value = evento.fecha;
+    form.elements.hora.value = evento.hora || "";
+    form.elements.cliente_id.value = evento.cliente_id || "";
+    // Un evento «campaña» heredado no está entre las opciones manuales: se añade solo mientras se edita.
+    const select = form.elements.tipo;
+    if (![...select.options].some((o) => o.value === evento.tipo)) {
+      select.append(el("option", { value: evento.tipo, text: ETIQUETA_TIPO[evento.tipo] || evento.tipo, dataset: { temporal: "1" } }));
+    }
+    select.value = evento.tipo;
+    tituloForm.textContent = "Editar evento";
+    botonGuardar.textContent = "Guardar cambios";
+    botonCancelar.hidden = false;
+    form.elements.titulo.focus();
+  }
+
+  function terminarEdicion() {
+    editando = null;
+    form.reset();
+    form.querySelectorAll("option[data-temporal]").forEach((o) => o.remove());
+    form.elements.fecha.value = estado.dia;
+    tituloForm.textContent = "Agregar evento";
+    botonGuardar.textContent = "Agregar al día";
+    botonCancelar.hidden = true;
+  }
+
+  /** Quita el evento de todos los meses en caché (puede estar en dos por los días de relleno de la cuadrícula). */
+  function quitarDeCache(id) {
+    Object.keys(estado.cache).forEach((m) => { estado.cache[m] = estado.cache[m].filter((e) => e.id !== id); });
+  }
+
+  /** Mete el evento en la caché de cada mes cargado cuya cuadrícula incluye su fecha. */
+  function ponerEnCache(evento) {
+    Object.keys(estado.cache).forEach((m) => {
+      const ini = inicioCuadricula(m);
+      if (evento.fecha >= ini && evento.fecha <= sumarDias(ini, 41)) estado.cache[m].push(evento);
+    });
   }
 
   async function borrar(evento) {
     if (!window.confirm(`¿Eliminar «${evento.titulo}»?`)) return;
     try {
       await api(`${root.dataset.urlBorrar}/${evento.evento_id}`, "DELETE");
-      // Un evento puede estar en la caché de dos meses (días de relleno de la cuadrícula).
-      Object.keys(estado.cache).forEach((m) => { estado.cache[m] = estado.cache[m].filter((e) => e.id !== evento.id); });
+      quitarDeCache(evento.id);
+      if (editando && editando.id === evento.id) terminarEdicion();
       renderCuadricula();
       renderPanel();
     } catch (err) {
@@ -192,19 +241,28 @@
       errorForm.hidden = false;
       return;
     }
+    const fecha = form.elements.fecha.value;
+    if (!fecha) {
+      errorForm.textContent = "Elige una fecha.";
+      errorForm.hidden = false;
+      return;
+    }
+    const cuerpo = {
+      titulo,
+      tipo: form.elements.tipo.value,
+      fecha,
+      hora: form.elements.hora.value || null,
+      cliente_id: form.elements.cliente_id.value || null,
+    };
     try {
-      const nuevo = await api(root.dataset.urlCrear, "POST", {
-        titulo,
-        tipo: form.elements.tipo.value,
-        fecha: estado.dia,
-        hora: form.elements.hora.value || null,
-        cliente_id: form.elements.cliente_id.value || null,
-      });
-      (estado.cache[estado.mes] ||= []).push(nuevo);
-      // Si el día cae en un mes vecino y ya está en caché, también debe aparecer allí.
-      const mesDelDia = estado.dia.slice(0, 7);
-      if (mesDelDia !== estado.mes && estado.cache[mesDelDia]) estado.cache[mesDelDia].push(nuevo);
-      form.reset();
+      const guardado = editando
+        ? await api(`${root.dataset.urlEditar}/${editando.evento_id}`, "PUT", cuerpo)
+        : await api(root.dataset.urlCrear, "POST", cuerpo);
+      // Al editar puede cambiar la fecha (y con ella los meses en que aparece): se quita y se vuelve a poner.
+      if (editando) quitarDeCache(editando.id);
+      ponerEnCache(guardado);
+      if (editando) terminarEdicion();
+      else { form.reset(); form.elements.fecha.value = estado.dia; }
       renderCuadricula();
       renderPanel();
     } catch (err) {
@@ -213,6 +271,9 @@
     }
   });
 
+  botonCancelar.addEventListener("click", terminarEdicion);
+
+  form.elements.fecha.value = estado.dia;
   renderCuadricula();
   renderPanel();
 })();

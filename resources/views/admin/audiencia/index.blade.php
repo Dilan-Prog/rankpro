@@ -26,7 +26,10 @@
                 </p>
             </div>
             @if ($cliente)
-                <button type="button" class="btn btn--primary" data-persona-nueva><i class="fa-solid fa-plus"></i> Agregar</button>
+                <div class="audiencia__acciones-cabecera">
+                    <button type="button" class="btn" data-generador-abrir data-url="{{ route('admin.audiencia.generar') }}"><i class="fa-solid fa-list-check"></i> Armar con 4 preguntas</button>
+                    <button type="button" class="btn btn--primary" data-persona-nueva><i class="fa-solid fa-plus"></i> Agregar</button>
+                </div>
             @endif
         </div>
 
@@ -47,7 +50,10 @@
             <div class="card card--padded empty-state" data-audiencia-sin-personas>
                 <i class="fa-solid fa-users empty-state__icon"></i>
                 <p class="empty-state__text">Este cliente todavía no tiene buyer personas. Describe a quién le vende: quién es, qué le duele y qué decirle.</p>
-                <button type="button" class="btn btn--primary" data-persona-nueva>Agregar la primera</button>
+                <div class="audiencia__acciones-cabecera">
+                    <button type="button" class="btn" data-generador-abrir data-url="{{ route('admin.audiencia.generar') }}"><i class="fa-solid fa-list-check"></i> Armar con 4 preguntas</button>
+                    <button type="button" class="btn btn--primary" data-persona-nueva>Agregar la primera</button>
+                </div>
             </div>
         @else
             <div class="audiencia__grid">
@@ -114,6 +120,7 @@
         @if ($cliente)
             <x-modal id="personaModal">
                 <x-slot:header><h2 data-persona-modal-titulo>Nueva buyer persona</h2></x-slot:header>
+                <p class="audiencia__aviso" data-persona-aviso-borrador hidden>Borrador armado desde una plantilla: revísalo y edítalo antes de guardar. No se guarda hasta que pulses Guardar.</p>
                 <form method="POST" action="{{ route('admin.audiencia.store') }}" data-persona-form
                       data-url-crear="{{ route('admin.audiencia.store') }}">
                     @csrf
@@ -151,6 +158,55 @@
                     @csrf
                     @method('DELETE')
                 </form>
+            </x-modal>
+
+            <x-modal id="generadorModal">
+                <x-slot:header><h2>Armar buyer personas con 4 preguntas</h2></x-slot:header>
+
+                <p class="audiencia__aviso">
+                    Son <strong>borradores a partir de una plantilla, no un análisis de mercado</strong>: reordenan lo que
+                    escribas dentro de frases fijas, sin IA ni datos externos. Revísalos y edítalos; nada se guarda solo.
+                </p>
+
+                <form data-generador-form novalidate>
+                    @csrf
+                    <div class="audiencia__progreso" aria-hidden="true"><span data-generador-barra></span></div>
+                    <p class="audiencia__paso-num" data-generador-num>Pregunta 1 de 4</p>
+
+                    <div class="audiencia__paso is-activo" data-generador-paso>
+                        <label class="field__label" for="gen_producto">¿Qué vende o hace la marca?</label>
+                        <input type="text" class="input" id="gen_producto" name="producto" maxlength="120" placeholder="Ej. clínica dental, ropa deportiva, software de facturación">
+                    </div>
+                    <div class="audiencia__paso" data-generador-paso>
+                        <label class="field__label" for="gen_publico">¿A quién le vende?</label>
+                        <textarea class="input textarea" id="gen_publico" name="publico" rows="3" maxlength="300" placeholder="Lo que sepas: ocupación, ciudad, tipo de negocio…"></textarea>
+                    </div>
+                    <div class="audiencia__paso" data-generador-paso>
+                        <label class="field__label" for="gen_dolor">¿Qué problemas o dolores resuelve?</label>
+                        <textarea class="input textarea" id="gen_dolor" name="dolor" rows="3" maxlength="500" placeholder="Sepáralos con comas o un renglón por dolor"></textarea>
+                        <span class="field__hint">Se usan hasta 3 de ellos, uno por cada buyer persona.</span>
+                    </div>
+                    <div class="audiencia__paso" data-generador-paso>
+                        <label class="field__label" for="gen_donde">¿Dónde se le encuentra?</label>
+                        <input type="text" class="input" id="gen_donde" name="donde" maxlength="200" placeholder="Ej. Instagram, Google, referidos, WhatsApp">
+                    </div>
+
+                    <p class="audiencia__error" data-generador-error role="alert" hidden></p>
+
+                    <div class="audiencia__modal-pie">
+                        <button type="button" class="btn" data-generador-atras>Cancelar</button>
+                        <button type="button" class="btn btn--primary" data-generador-siguiente>Siguiente</button>
+                    </div>
+                </form>
+
+                <div class="audiencia__resultado" data-generador-resultado hidden>
+                    <p class="audiencia__paso-num">Tres borradores. Elige uno para cargarlo en el formulario y editarlo.</p>
+                    <div class="audiencia__borradores" data-generador-lista></div>
+                    <div class="audiencia__modal-pie">
+                        <button type="button" class="btn" data-generador-reiniciar>Volver a las preguntas</button>
+                        <button type="button" class="btn" data-modal-close="generadorModal">Cerrar</button>
+                    </div>
+                </div>
             </x-modal>
         @endif
     </div>

@@ -154,7 +154,7 @@
 
         <div class="kwx-pie">
             <a id="listaDetailIrCliente" href="#" class="kwx-btn"
-                data-href-template="{{ route('admin.clientes.show', ['cliente' => '__ID__']) }}">Ir al cliente</a>
+                data-href-template="{{ route('admin.keywords.cliente', ['cliente' => '__ID__']) }}">Ir al cliente</a>
             <button type="button" id="listaDetailImportar" class="kwx-btn">Importar keywords</button>
             <button type="button" id="listaDetailAddKeyword" class="kwx-btn">Añadir palabra clave</button>
             <button type="button" id="listaDetailEditar" class="kwx-btn kwx-btn--primario">Editar lista</button>

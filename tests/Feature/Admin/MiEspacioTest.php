@@ -158,7 +158,72 @@ class MiEspacioTest extends TestCase
         $t = $this->tarea($yo);
 
         $this->actingAs($yo)->deleteJson(route('admin.mi-espacio.destroy', $t))->assertOk()->assertJson(['deleted' => true]);
-        $this->assertDatabaseMissing('tareas', ['id' => $t->id]);
+        // Borrado suave: permite deshacer.
+        $this->assertSoftDeleted('tareas', ['id' => $t->id]);
+    }
+
+    public function test_deshacer_el_borrado_restaura_la_tarea_propia(): void
+    {
+        $yo = User::factory()->create();
+        $t = $this->tarea($yo, ['titulo' => 'Recuperable']);
+
+        $this->actingAs($yo)->deleteJson(route('admin.mi-espacio.destroy', $t))->assertOk();
+        $this->assertSame(0, Tarea::query()->where('user_id', $yo->id)->count());
+
+        $this->actingAs($yo)->patchJson(route('admin.mi-espacio.restaurar', $t))
+            ->assertOk()->assertJsonPath('titulo', 'Recuperable');
+
+        $this->assertNotSoftDeleted('tareas', ['id' => $t->id]);
+        $this->actingAs($yo)->get(route('admin.mi-espacio.index'))->assertSee('Recuperable');
+    }
+
+    public function test_no_se_puede_restaurar_la_tarea_de_otro_ni_una_inexistente(): void
+    {
+        $yo = User::factory()->create();
+        $otro = User::factory()->create();
+        $ajena = $this->tarea($otro, ['titulo' => 'Ajena']);
+        $ajena->delete();
+
+        $this->actingAs($yo)->patchJson(route('admin.mi-espacio.restaurar', $ajena))->assertNotFound();
+        $this->actingAs($yo)->patchJson(route('admin.mi-espacio.restaurar', 999999))->assertNotFound();
+        $this->assertSoftDeleted('tareas', ['id' => $ajena->id]);
+    }
+
+    public function test_una_tarea_borrada_no_cuenta_ni_se_lista_en_ningun_lado(): void
+    {
+        $yo = User::factory()->create();
+        $this->tarea($yo, ['titulo' => 'Viva']);
+        $borrada = $this->tarea($yo, ['titulo' => 'Fantasma']);
+        $borrada->delete();
+
+        $this->actingAs($yo)->get(route('admin.mi-espacio.index'))->assertSee('Viva')->assertDontSee('Fantasma');
+        $this->assertSame(1, Tarea::query()->where('user_id', $yo->id)->count());
+        // Mover/editar una borrada es 404 (la ruta no la ve).
+        $this->actingAs($yo)->patchJson(route('admin.mi-espacio.mover', $borrada), ['estado' => 'completada', 'orden' => 0])->assertNotFound();
+    }
+
+    public function test_mover_con_posicion_exacta_cuenta_todas_las_tareas_de_la_columna(): void
+    {
+        // Con un filtro activo el front solo ve algunas tarjetas, pero `orden` es un índice sobre la columna completa.
+        $yo = User::factory()->create();
+        $a = $this->tarea($yo, ['titulo' => 'A', 'estado' => 'en_progreso', 'orden' => 0]);
+        $b = $this->tarea($yo, ['titulo' => 'B oculta', 'estado' => 'en_progreso', 'orden' => 1]);
+        $c = $this->tarea($yo, ['titulo' => 'C', 'estado' => 'en_progreso', 'orden' => 2]);
+        $x = $this->tarea($yo, ['titulo' => 'X', 'estado' => 'pendiente', 'orden' => 0]);
+
+        // Soltada justo después de A (visible), antes de la oculta B: posición 1.
+        $this->actingAs($yo)->patchJson(route('admin.mi-espacio.mover', $x), ['estado' => 'en_progreso', 'orden' => 1])->assertOk();
+
+        $ordenadas = Tarea::query()->where('estado', 'en_progreso')->orderBy('orden')->pluck('titulo')->all();
+        $this->assertSame(['A', 'X', 'B oculta', 'C'], $ordenadas);
+    }
+
+    public function test_la_vista_incluye_el_soporte_de_teclado_y_el_anuncio(): void
+    {
+        $yo = User::factory()->create();
+
+        $this->actingAs($yo)->get(route('admin.mi-espacio.index', ['vista' => 'kanban']))
+            ->assertOk()->assertSee('data-me-anuncio', false)->assertSee('aria-live="polite"', false);
     }
 
     public function test_borrar_al_usuario_deja_la_tarea_sin_dueno_en_vez_de_borrarla(): void

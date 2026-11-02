@@ -216,6 +216,9 @@
           <button type="button" class="btn--icon" title="Editar" data-edit-usuario="${u.id}">
             <i class="fa-solid fa-pen"></i>
           </button>
+          <button type="button" class="btn--icon" title="Enviar enlace para restablecer contraseña" data-restablecer-usuario="${u.id}" ${u.is_active ? "" : "hidden"}>
+            <i class="fa-solid fa-key"></i>
+          </button>
           <button type="button" class="btn--icon" title="Desactivar" style="color:var(--text-danger);" data-deactivate-usuario="${u.id}" ${canDeactivate ? "" : "hidden"}>
             <i class="fa-solid fa-user-slash"></i>
           </button>
@@ -268,6 +271,12 @@
     const editBtn = document.getElementById("usuarioDetailEdit");
     if (editBtn) editBtn.dataset.editUsuario = String(u.id);
 
+    const restablecerBtn = document.getElementById("usuarioDetailRestablecer");
+    if (restablecerBtn) {
+      restablecerBtn.hidden = !u.is_active;
+      restablecerBtn.dataset.restablecerUsuario = String(u.id);
+    }
+
     const deactivateBtn = document.getElementById("usuarioDetailDeactivate");
     if (deactivateBtn) {
       const canDeactivate = !u.is_self && u.is_active;
@@ -280,7 +289,7 @@
 
   function initUsuarioRowClicks() {
     document.addEventListener("click", (e) => {
-      if (e.target.closest("[data-edit-usuario], [data-deactivate-usuario]")) return;
+      if (e.target.closest("[data-edit-usuario], [data-deactivate-usuario], [data-restablecer-usuario]")) return;
       const row = e.target.closest("[data-usuario-row]");
       if (!row) return;
       openUsuarioDetailModal(JSON.parse(row.dataset.usuario));
@@ -428,7 +437,35 @@
     });
   }
 
+  // ---------- Restablecer contraseña — manda el enlace del broker al correo; nunca muestra ni fija una contraseña ----------
+
+  function restablecerContrasena(id, btn) {
+    const row = document.querySelector(`[data-usuario-row][data-usuario-id="${id}"]`);
+    const u = row ? JSON.parse(row.dataset.usuario) : null;
+    const quien = u ? `${u.name} (${u.email})` : "este usuario";
+
+    if (!window.confirm(`¿Enviar a ${quien} un enlace para restablecer su contraseña?`)) return;
+
+    if (btn) btn.disabled = true;
+    usuarioRequest(`/admin/usuarios/${id}/restablecer-contrasena`, "POST")
+      .then((data) => toast(data.message || "Enlace enviado.", "success"))
+      .catch((err) => toast(err.data && err.data.message ? err.data.message : "No se pudo enviar el enlace.", "error"))
+      .finally(() => {
+        if (btn) btn.disabled = false;
+      });
+  }
+
+  function initUsuarioRestablecer() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-restablecer-usuario]");
+      if (!btn) return;
+      e.stopPropagation();
+      restablecerContrasena(btn.dataset.restablecerUsuario, btn);
+    });
+  }
+
   document.addEventListener("shell:ready", () => {
+    initUsuarioRestablecer();
     initUsuarioFilters();
     initUsuarioRowClicks();
     initUsuarioForm();

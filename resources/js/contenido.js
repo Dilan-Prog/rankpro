@@ -111,7 +111,7 @@
     let accionNombre = null;
     let filaMover = null;
 
-    const titulos = { carpeta: "Nueva carpeta", documento: "Nuevo documento", tabla: "Nueva tabla" };
+    const titulos = { carpeta: "Nueva carpeta", documento: "Nuevo documento", tabla: "Nueva tabla", pizarra: "Nueva pizarra" };
 
     raiz.querySelectorAll("[data-cm-crear]").forEach((boton) => {
       boton.addEventListener("click", () => {
@@ -119,7 +119,7 @@
         const plantilla = boton.dataset.plantilla || null;
         accionNombre = { modo: "crear", tipo, plantilla };
         tituloNombre.textContent = plantilla === "calendario" ? "Nuevo calendario de contenido" : titulos[tipo];
-        inputNombre.value = plantilla === "calendario" ? "Calendario de contenido" : "";
+        inputNombre.value = plantilla === "calendario" ? "Calendario de contenido" : tipo === "pizarra" ? "Pizarra" : "";
         mostrarError(errorNombre, "");
         document.querySelectorAll("[data-dropdown-panel]").forEach((p) => (p.hidden = true));
         window.AgencyOS.openModal("cmNombreModal");
@@ -343,6 +343,18 @@
     }
     estado.columnas = estado.columnas || [];
     estado.filas = estado.filas || [];
+    estado.columnas_visibles = estado.columnas_visibles || [];
+
+    let fuentes = [];
+    let fuentesEtiquetas = {};
+    try {
+      fuentes = JSON.parse(raiz.dataset.fuentes || "[]");
+      fuentesEtiquetas = JSON.parse(raiz.dataset.fuentesEtiquetas || "{}");
+    } catch (e) {
+      // sin fuentes: el menú «Llenar desde...» ni existe en la vista
+    }
+    const hoy = new Date();
+    let mesVisible = { a: hoy.getFullYear(), m: hoy.getMonth() }; // m: 0-11
 
     const filtros = {}; // colId -> texto/valor del filtro
     let orden = { col: null, dir: 1 };
@@ -356,8 +368,18 @@
     const selectorKanban = raiz.querySelector("[data-cm-kanban-selector]");
     const selectKanban = raiz.querySelector("[data-cm-kanban-columna]");
     const botonesVista = raiz.querySelectorAll("[data-cm-vista]");
+    const panelCalendario = raiz.querySelector("[data-cm-panel-calendario]");
+    const panelGaleria = raiz.querySelector("[data-cm-panel-galeria]");
+    const selectorFecha = raiz.querySelector("[data-cm-fecha-selector]");
+    const selectFecha = raiz.querySelector("[data-cm-fecha-columna]");
+    const selectorTitulo = raiz.querySelector("[data-cm-titulo-selector]");
+    const selectTitulo = raiz.querySelector("[data-cm-titulo-columna]");
+    const detalleVisibles = raiz.querySelector("[data-cm-visibles]");
+    const listaVisibles = raiz.querySelector("[data-cm-visibles-lista]");
+    const avisoOrigen = raiz.querySelector("[data-cm-origen]");
 
     let cuerpoTabla = null;
+    let filaArrastrada = null; // id de la fila que se arrastra en la vista tabla
 
     // ---------- Estado ----------
 
@@ -494,6 +516,7 @@
         encabezado.appendChild(el("th", {}, [el("div", { class: "cm-th" }, [ordenar, editar])]));
       });
       encabezado.appendChild(el("th", { class: "cm-col-acciones", "aria-label": "Acciones" }));
+      encabezado.insertBefore(el("th", { class: "cm-col-asa", "aria-label": "Reordenar" }), encabezado.firstChild);
 
       const filaFiltros = el("tr", { class: "cm-filtros" });
       estado.columnas.forEach((col) => {
@@ -524,6 +547,7 @@
         filaFiltros.appendChild(el("th", {}, [control]));
       });
       filaFiltros.appendChild(el("th"));
+      filaFiltros.insertBefore(el("th"), filaFiltros.firstChild);
 
       cuerpoTabla = el("tbody");
       const tabla = el("table", { class: "table cm-grid" }, [el("thead", {}, [encabezado, filaFiltros]), cuerpoTabla]);
@@ -538,12 +562,13 @@
 
       if (!filas.length) {
         const mensaje = estado.filas.length ? "Ninguna fila coincide con los filtros." : "Sin filas todavía. Usa «+ Fila» para agregar la primera.";
-        cuerpoTabla.appendChild(el("tr", {}, [el("td", { class: "table__empty", colspan: String(estado.columnas.length + 1), text: mensaje })]));
+        cuerpoTabla.appendChild(el("tr", {}, [el("td", { class: "table__empty", colspan: String(estado.columnas.length + 2), text: mensaje })]));
         return;
       }
 
       filas.forEach((fila) => {
         const tr = el("tr", { "data-fila-id": fila.id });
+        tr.appendChild(el("td", { class: "cm-col-asa" }, [crearAsa(fila, tr)]));
         estado.columnas.forEach((col) => tr.appendChild(el("td", {}, [crearControl(col, fila)])));
         const borrar = el("button", { type: "button", class: "btn btn--ghost btn--sm btn--icon", title: "Eliminar fila", "aria-label": "Eliminar fila" }, [el("i", { class: "fa-solid fa-trash" })]);
         borrar.addEventListener("click", () => {
@@ -554,6 +579,89 @@
         tr.appendChild(el("td", { class: "cm-col-acciones" }, [borrar]));
         cuerpoTabla.appendChild(tr);
       });
+    }
+
+    // ---------- Reordenar filas (arrastrar) ----------
+
+    /** Mueve `fila` justo antes o después de `destino` dentro del orden COMPLETO (aunque haya filtros). */
+    function moverFila(filaId, destinoId, despues) {
+      if (filaId === destinoId) return false;
+      const origen = estado.filas.findIndex((f) => f.id === filaId);
+      if (origen < 0) return false;
+      const [fila] = estado.filas.splice(origen, 1);
+      let pos = estado.filas.findIndex((f) => f.id === destinoId);
+      if (pos < 0) {
+        estado.filas.splice(origen, 0, fila);
+        return false;
+      }
+      if (despues) pos += 1;
+      estado.filas.splice(pos, 0, fila);
+      marcarSucio();
+      return true;
+    }
+
+    /**
+     * Asa de arrastre. Solo el asa es `draggable` (no la fila): si lo fuera, no se podría
+     * seleccionar texto dentro de los campos. Con un orden por columna activo el orden
+     * manual no se ve, así que se desactiva. Alt+↑/↓ hace lo mismo con teclado.
+     */
+    function crearAsa(fila, tr) {
+      const bloqueado = Boolean(orden.col);
+      const asa = el("button", {
+        type: "button",
+        class: "cm-asa",
+        title: bloqueado ? "Quita el orden por columna para reordenar filas" : "Arrastra para reordenar (o Alt + flechas)",
+        "aria-label": "Reordenar fila",
+        draggable: bloqueado ? null : "true",
+        disabled: bloqueado ? "" : null,
+      }, [el("i", { class: "fa-solid fa-grip-vertical" })]);
+
+      asa.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", fila.id);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setDragImage(tr, 0, 0);
+        filaArrastrada = fila.id;
+        tr.classList.add("is-arrastrando");
+      });
+      asa.addEventListener("dragend", () => {
+        filaArrastrada = null;
+        tr.classList.remove("is-arrastrando");
+        cuerpoTabla.querySelectorAll(".is-destino-antes, .is-destino-despues").forEach((n) => n.classList.remove("is-destino-antes", "is-destino-despues"));
+      });
+      asa.addEventListener("keydown", (e) => {
+        if (!e.altKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+        e.preventDefault();
+        const visibles = filasVisibles();
+        const i = visibles.findIndex((f) => f.id === fila.id);
+        const vecina = visibles[i + (e.key === "ArrowUp" ? -1 : 1)];
+        if (vecina && moverFila(fila.id, vecina.id, e.key === "ArrowDown")) {
+          renderCuerpo();
+          const nueva = cuerpoTabla.querySelector(`tr[data-fila-id="${fila.id}"] .cm-asa`);
+          if (nueva) nueva.focus();
+        }
+      });
+
+      tr.addEventListener("dragover", (e) => {
+        if (!filaArrastrada || filaArrastrada === fila.id) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const caja = tr.getBoundingClientRect();
+        const despues = e.clientY > caja.top + caja.height / 2;
+        tr.classList.toggle("is-destino-antes", !despues);
+        tr.classList.toggle("is-destino-despues", despues);
+      });
+      tr.addEventListener("dragleave", () => tr.classList.remove("is-destino-antes", "is-destino-despues"));
+      tr.addEventListener("drop", (e) => {
+        if (!filaArrastrada) return;
+        e.preventDefault();
+        const caja = tr.getBoundingClientRect();
+        const despues = e.clientY > caja.top + caja.height / 2;
+        const id = filaArrastrada;
+        filaArrastrada = null;
+        if (moverFila(id, fila.id, despues)) renderCuerpo();
+      });
+
+      return asa;
     }
 
     // ---------- Vista Kanban ----------
@@ -653,24 +761,291 @@
 
     // ---------- Vistas ----------
 
+    // ---------- Vista Calendario ----------
+
+    const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    const dos = (n) => String(n).padStart(2, "0");
+    const claveDia = (a, m, d) => `${a}-${dos(m + 1)}-${dos(d)}`;
+
+    function fechaIsoValida(v) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+      const d = new Date(`${v}T00:00:00`);
+      return !Number.isNaN(d.getTime()) && claveDia(d.getFullYear(), d.getMonth(), d.getDate()) === v;
+    }
+
+    const columnasFecha = () => estado.columnas.filter((c) => c.tipo === "fecha");
+
+    /** Garantiza que la columna del calendario sea una fecha existente. */
+    function validarFecha() {
+      const actual = columnaPorId(estado.columna_fecha);
+      if (!actual || actual.tipo !== "fecha") {
+        const primera = columnasFecha()[0];
+        estado.columna_fecha = primera ? primera.id : null;
+      }
+    }
+
+    /** Columna que da el título a cada tarjeta/evento: la elegida, o la primera de texto, o la primera que haya. */
+    function columnaTituloPref() {
+      return (
+        columnaPorId(estado.columna_titulo) ||
+        estado.columnas.find((c) => c.tipo === "texto") ||
+        estado.columnas.find((c) => c.tipo !== "fecha") ||
+        estado.columnas[0] ||
+        null
+      );
+    }
+
+    const tituloDeFila = (fila, colTitulo) => (colTitulo && valorCelda(fila, colTitulo)) || "(sin título)";
+
+    function estadoVacio(icono, texto) {
+      return el("div", { class: "card empty-state" }, [
+        el("div", { class: "empty-state__icon" }, [el("i", { class: `fa-solid ${icono}` })]),
+        el("p", { class: "empty-state__text", text: texto }),
+      ]);
+    }
+
+    function nuevaFilaConFecha(colFecha, dia) {
+      if (estado.filas.length >= 2000) {
+        toast("Una tabla admite como máximo 2000 filas.", "error");
+        return;
+      }
+      const fila = { id: nuevoId("f", estado.filas), celdas: { [colFecha.id]: dia } };
+      estado.filas.push(fila);
+      marcarSucio();
+      renderCalendario();
+      abrirFila(fila);
+    }
+
+    function renderCalendario() {
+      panelCalendario.replaceChildren();
+      const colFecha = columnaPorId(estado.columna_fecha);
+
+      if (!colFecha) {
+        panelCalendario.appendChild(estadoVacio("fa-calendar-days", "Para usar el calendario agrega una columna de tipo Fecha: cada fila aparecerá en su día."));
+        return;
+      }
+
+      const colTitulo = columnaTituloPref();
+      const porDia = new Map();
+      const sinFecha = [];
+      estado.filas.forEach((fila) => {
+        const v = valorCelda(fila, colFecha);
+        if (fechaIsoValida(v)) {
+          if (!porDia.has(v)) porDia.set(v, []);
+          porDia.get(v).push(fila);
+        } else {
+          sinFecha.push(fila);
+        }
+      });
+
+      const { a, m } = mesVisible;
+      const mover = (delta) => {
+        const f = new Date(a, m + delta, 1);
+        mesVisible = { a: f.getFullYear(), m: f.getMonth() };
+        renderCalendario();
+      };
+      const botonNav = (icono, etiqueta, accion) => {
+        const b = el("button", { type: "button", class: "btn btn--secondary btn--sm btn--icon", title: etiqueta, "aria-label": etiqueta }, [el("i", { class: `fa-solid ${icono}` })]);
+        b.addEventListener("click", accion);
+        return b;
+      };
+      const botonHoy = el("button", { type: "button", class: "btn btn--secondary btn--sm", text: "Hoy" });
+      botonHoy.addEventListener("click", () => {
+        const ahora = new Date();
+        mesVisible = { a: ahora.getFullYear(), m: ahora.getMonth() };
+        renderCalendario();
+      });
+
+      panelCalendario.appendChild(
+        el("div", { class: "cm-cal__nav" }, [
+          botonNav("fa-chevron-left", "Mes anterior", () => mover(-1)),
+          el("strong", { class: "cm-cal__mes", text: `${MESES[m]} ${a}` }),
+          botonNav("fa-chevron-right", "Mes siguiente", () => mover(1)),
+          botonHoy,
+        ])
+      );
+
+      const rejilla = el("div", { class: "cm-cal" });
+      DIAS_SEMANA.forEach((d) => rejilla.appendChild(el("div", { class: "cm-cal__semana", text: d })));
+
+      const desfase = (new Date(a, m, 1).getDay() + 6) % 7; // semana desde el lunes
+      for (let i = 0; i < desfase; i += 1) rejilla.appendChild(el("div", { class: "cm-cal__dia cm-cal__dia--fuera" }));
+
+      const claveHoy = claveDia(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      const totalDias = new Date(a, m + 1, 0).getDate();
+
+      for (let d = 1; d <= totalDias; d += 1) {
+        const clave = claveDia(a, m, d);
+        const filas = porDia.get(clave) || [];
+        const agregar = el("button", { type: "button", class: "cm-cal__agregar", title: `Agregar fila el ${d} de ${MESES[m].toLowerCase()}`, "aria-label": `Agregar fila el ${clave}` }, [el("i", { class: "fa-solid fa-plus" })]);
+        agregar.addEventListener("click", () => nuevaFilaConFecha(colFecha, clave));
+
+        const celda = el("div", { class: `cm-cal__dia${clave === claveHoy ? " is-hoy" : ""}`, "data-dia": clave }, [
+          el("div", { class: "cm-cal__cabecera" }, [el("span", { class: "cm-cal__numero", text: String(d) }), agregar]),
+        ]);
+
+        filas.forEach((fila) => {
+          const evento = el("button", { type: "button", class: "cm-cal__evento", draggable: "true", title: tituloDeFila(fila, colTitulo), text: tituloDeFila(fila, colTitulo) });
+          evento.addEventListener("click", () => abrirFila(fila));
+          evento.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", fila.id);
+            e.dataTransfer.effectAllowed = "move";
+          });
+          celda.appendChild(evento);
+        });
+
+        // Soltar un evento en otro día cambia su fecha.
+        celda.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          celda.classList.add("is-destino");
+        });
+        celda.addEventListener("dragleave", (e) => {
+          if (!celda.contains(e.relatedTarget)) celda.classList.remove("is-destino");
+        });
+        celda.addEventListener("drop", (e) => {
+          e.preventDefault();
+          celda.classList.remove("is-destino");
+          const fila = estado.filas.find((f) => f.id === e.dataTransfer.getData("text/plain"));
+          if (!fila || valorCelda(fila, colFecha) === clave) return;
+          fijarCelda(fila, colFecha, clave);
+          renderCalendario();
+        });
+
+        rejilla.appendChild(celda);
+      }
+      panelCalendario.appendChild(rejilla);
+
+      if (sinFecha.length) {
+        const lista = el("div", { class: "cm-cal__sin-fecha-lista" });
+        sinFecha.forEach((fila) => {
+          const chip = el("button", { type: "button", class: "cm-cal__evento", text: tituloDeFila(fila, colTitulo) });
+          chip.addEventListener("click", () => abrirFila(fila));
+          lista.appendChild(chip);
+        });
+        panelCalendario.appendChild(
+          el("div", { class: "cm-cal__sin-fecha" }, [
+            el("strong", { text: `Sin fecha en «${colFecha.nombre}» (${sinFecha.length})` }),
+            el("span", { class: "field__hint", text: "Ábrelas y asígnales una fecha para verlas en el calendario." }),
+            lista,
+          ])
+        );
+      }
+    }
+
+    // ---------- Vista Galería ----------
+
+    function columnasGaleria() {
+      const ids = estado.columnas_visibles || [];
+      return ids.length ? estado.columnas.filter((c) => ids.includes(c.id)) : estado.columnas;
+    }
+
+    function renderGaleria() {
+      panelGaleria.replaceChildren();
+
+      if (!estado.filas.length) {
+        panelGaleria.appendChild(estadoVacio("fa-border-all", "Sin filas todavía. Usa «+ Fila» para agregar la primera."));
+        return;
+      }
+
+      const colTitulo = columnaTituloPref();
+      const visibles = columnasGaleria().filter((c) => c !== colTitulo);
+      const rejilla = el("div", { class: "cm-galeria" });
+
+      estado.filas.forEach((fila) => {
+        const tarjeta = el("div", { class: "cm-ficha", tabindex: "0", role: "button", "data-fila-id": fila.id }, [
+          el("div", { class: "cm-ficha__titulo", text: tituloDeFila(fila, colTitulo) }),
+        ]);
+        visibles.forEach((c) => {
+          const v = valorCelda(fila, c);
+          if (!v) return;
+          tarjeta.appendChild(el("div", { class: "cm-ficha__dato" }, [el("span", { class: "cm-ficha__etiqueta", text: c.nombre }), el("span", { text: v })]));
+        });
+        tarjeta.addEventListener("click", () => abrirFila(fila));
+        tarjeta.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            abrirFila(fila);
+          }
+        });
+        rejilla.appendChild(tarjeta);
+      });
+
+      panelGaleria.appendChild(rejilla);
+    }
+
+    /** Casillas de «Columnas visibles»: vacío en el estado = todas. */
+    function renderVisibles() {
+      listaVisibles.replaceChildren();
+      const ids = estado.columnas_visibles || [];
+      estado.columnas.forEach((c) => {
+        const caja = el("input", { type: "checkbox" });
+        caja.checked = !ids.length || ids.includes(c.id);
+        caja.addEventListener("change", () => {
+          const marcadas = Array.from(listaVisibles.querySelectorAll("input")).map((n, i) => (n.checked ? estado.columnas[i].id : null)).filter(Boolean);
+          estado.columnas_visibles = marcadas.length === estado.columnas.length || !marcadas.length ? [] : marcadas;
+          if (!marcadas.length) caja.checked = true; // al menos una: sin columnas la tarjeta no diría nada
+          marcarSucio();
+          renderGaleria();
+        });
+        listaVisibles.appendChild(el("label", { class: "cm-radio" }, [caja, ` ${c.nombre}`]));
+      });
+    }
+
+    // ---------- Origen («foto» de una fuente real) ----------
+
+    function formatoFechaHora(s) {
+      const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/.exec(s || "");
+      return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : s || "";
+    }
+
+    function renderOrigen() {
+      const o = estado.origen;
+      avisoOrigen.hidden = !o;
+      if (!o) return;
+      const nombre = fuentesEtiquetas[o.clave] || o.clave;
+      avisoOrigen.querySelector("[data-cm-origen-texto]").textContent =
+        `Foto de los datos del ${formatoFechaHora(o.fecha)} (${nombre}). No se actualiza sola: usa «Llenar desde...» para tomar una foto nueva.`;
+    }
+
+    // ---------- Vistas ----------
+
+    function llenarSelector(select, columnas, valor, vacio) {
+      select.replaceChildren();
+      if (vacio) select.appendChild(el("option", { value: "", text: vacio }));
+      columnas.forEach((c) => select.appendChild(el("option", { value: c.id, text: c.nombre })));
+      select.value = valor || "";
+    }
+
     function renderVista() {
       validarKanban();
+      validarFecha();
       sinColumnas.hidden = estado.columnas.length > 0;
       botonesVista.forEach((b) => b.classList.toggle("is-activa", b.dataset.cmVista === estado.vista));
 
-      const enKanban = estado.vista === "kanban";
-      panelTabla.hidden = enKanban;
-      panelKanban.hidden = !enKanban;
-      selectorKanban.hidden = !enKanban || columnasSeleccion().length < 2;
+      const v = estado.vista;
+      panelTabla.hidden = v !== "tabla";
+      panelKanban.hidden = v !== "kanban";
+      panelCalendario.hidden = v !== "calendario";
+      panelGaleria.hidden = v !== "galeria";
+      selectorKanban.hidden = v !== "kanban" || columnasSeleccion().length < 2;
+      selectorFecha.hidden = v !== "calendario" || columnasFecha().length < 2;
+      selectorTitulo.hidden = (v !== "calendario" && v !== "galeria") || estado.columnas.length < 2;
+      detalleVisibles.hidden = v !== "galeria" || !estado.columnas.length;
 
-      selectKanban.replaceChildren();
-      columnasSeleccion().forEach((c) => selectKanban.appendChild(el("option", { value: c.id, text: c.nombre })));
-      selectKanban.value = estado.columna_kanban || "";
+      llenarSelector(selectKanban, columnasSeleccion(), estado.columna_kanban);
+      llenarSelector(selectFecha, columnasFecha(), estado.columna_fecha);
+      llenarSelector(selectTitulo, estado.columnas, estado.columna_titulo, "Automático");
+      renderOrigen();
 
-      if (enKanban) renderKanban();
-      else renderTabla();
+      if (v === "kanban") renderKanban();
+      else if (v === "calendario") renderCalendario();
+      else if (v === "galeria") {
+        renderVisibles();
+        renderGaleria();
+      } else renderTabla();
     }
-
     botonesVista.forEach((boton) => {
       boton.addEventListener("click", () => {
         estado.vista = boton.dataset.cmVista;
@@ -679,6 +1054,16 @@
     });
     selectKanban.addEventListener("change", () => {
       estado.columna_kanban = selectKanban.value;
+      renderVista();
+    });
+    selectFecha.addEventListener("change", () => {
+      estado.columna_fecha = selectFecha.value || null;
+      marcarSucio();
+      renderVista();
+    });
+    selectTitulo.addEventListener("change", () => {
+      estado.columna_titulo = selectTitulo.value || null;
+      marcarSucio();
       renderVista();
     });
 
@@ -694,8 +1079,15 @@
     const botonColBorrar = modalColumna.querySelector("[data-cm-columna-borrar]");
     let columnaEditada = null;
 
+    const avisoTipo = modalColumna.querySelector("[data-cm-tipo-aviso]");
+
+    /** En una columna existente que no era selección, las opciones salen solas de los valores que ya tiene. */
+    function actualizarCampoOpciones() {
+      campoOpciones.hidden = selectColTipo.value !== "seleccion" || Boolean(columnaEditada && columnaEditada.tipo !== "seleccion");
+    }
     selectColTipo.addEventListener("change", () => {
-      campoOpciones.hidden = selectColTipo.value !== "seleccion";
+      actualizarCampoOpciones();
+      avisoTipo.hidden = !columnaEditada || selectColTipo.value === columnaEditada.tipo;
     });
 
     function abrirColumna(col) {
@@ -703,9 +1095,9 @@
       modalColumna.querySelector("[data-cm-columna-titulo]").textContent = col ? "Editar columna" : "Nueva columna";
       inputColNombre.value = col ? col.nombre : "";
       selectColTipo.value = col ? col.tipo : "texto";
-      selectColTipo.disabled = Boolean(col);
       areaColOpciones.value = col ? col.opciones.join("\n") : "";
-      campoOpciones.hidden = selectColTipo.value !== "seleccion";
+      avisoTipo.hidden = true;
+      actualizarCampoOpciones();
       botonColBorrar.hidden = !col;
       mostrarError(errorColumna, "");
       window.AgencyOS.openModal("cmColumnaModal");
@@ -720,7 +1112,7 @@
       abrirColumna(null);
     });
 
-    formColumna.addEventListener("submit", (e) => {
+    formColumna.addEventListener("submit", async (e) => {
       e.preventDefault();
       const nombre = inputColNombre.value.trim();
       if (!nombre) {
@@ -728,6 +1120,29 @@
         return;
       }
       const tipo = selectColTipo.value;
+      const cambiaTipo = Boolean(columnaEditada) && tipo !== columnaEditada.tipo;
+
+      // Cambiar el tipo de una columna ya creada: el servidor convierte solo si TODAS las celdas encajan.
+      if (cambiaTipo) {
+        const id = columnaEditada.id;
+        const res = await api(raiz.dataset.urlConvertir, "POST", { ...cargaTabla(), columna: id, tipo });
+        if (!res.ok) {
+          mostrarError(errorColumna, mensajeError(res));
+          return;
+        }
+        estado = res.datos.datos;
+        estado.columnas_visibles = estado.columnas_visibles || [];
+        const convertida = columnaPorId(id);
+        if (convertida) convertida.nombre = nombre;
+        delete filtros[id];
+        if (orden.col === id) orden = { col: null, dir: 1 };
+        marcarSucio();
+        window.AgencyOS.closeModal("cmColumnaModal");
+        renderVista();
+        toast("Columna convertida. Recuerda guardar la tabla.");
+        return;
+      }
+
       const opciones = tipo === "seleccion"
         ? Array.from(new Set(areaColOpciones.value.split("\n").map((o) => o.trim()).filter(Boolean)))
         : [];
@@ -842,16 +1257,25 @@
 
     // ---------- Guardar ----------
 
-    async function guardar() {
-      if (botonGuardar.disabled) return true;
-      botonGuardar.disabled = true;
-      estadoTexto.textContent = "Guardando...";
-      const res = await api(raiz.dataset.urlGuardar, "PUT", {
+    /** Lo que viaja al servidor: la tabla completa (el orden de `filas` es el orden persistente). */
+    function cargaTabla() {
+      return {
         columnas: estado.columnas,
         filas: estado.filas,
         vista: estado.vista,
         columna_kanban: estado.columna_kanban,
-      });
+        columna_fecha: estado.columna_fecha || null,
+        columna_titulo: estado.columna_titulo || null,
+        columnas_visibles: estado.columnas_visibles || [],
+        origen: estado.origen || null,
+      };
+    }
+
+    async function guardar() {
+      if (botonGuardar.disabled) return true;
+      botonGuardar.disabled = true;
+      estadoTexto.textContent = "Guardando...";
+      const res = await api(raiz.dataset.urlGuardar, "PUT", cargaTabla());
       botonGuardar.disabled = false;
 
       if (!res.ok) {
@@ -939,6 +1363,68 @@
       const ignoradas = res.datos.ignoradas ? ` (${res.datos.ignoradas} columna(s) del CSV no coincidían y se ignoraron)` : "";
       toast(`${res.datos.importadas} fila(s) importada(s)${ignoradas}`);
     });
+
+    // ---------- Llenar desde... (foto de una fuente real) ----------
+
+    const botonLlenar = raiz.querySelector("[data-cm-llenar-abrir]");
+    if (botonLlenar) {
+      const modalLlenar = document.getElementById("cmLlenarModal");
+      const formLlenar = modalLlenar.querySelector("[data-cm-llenar-form]");
+      const listaFuentes = modalLlenar.querySelector("[data-cm-llenar-fuentes]");
+      const errorLlenar = modalLlenar.querySelector("[data-cm-llenar-error]");
+
+      fuentes.forEach((f, i) => {
+        const radio = el("input", { type: "radio", name: "cmLlenarFuente", value: f.clave });
+        radio.checked = i === 0;
+        listaFuentes.appendChild(
+          el("label", { class: "cm-radio" }, [radio, el("span", {}, [el("strong", { text: ` ${f.etiqueta}` }), el("span", { class: "field__hint", text: ` — ${f.descripcion}` })])])
+        );
+      });
+
+      botonLlenar.addEventListener("click", () => {
+        mostrarError(errorLlenar, "");
+        window.AgencyOS.openModal("cmLlenarModal");
+      });
+
+      formLlenar.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const marcada = formLlenar.querySelector('input[name="cmLlenarFuente"]:checked');
+        if (!marcada) {
+          mostrarError(errorLlenar, "Elige una fuente.");
+          return;
+        }
+        const modo = formLlenar.querySelector('input[name="cmLlenarModo"]:checked').value;
+        const nombre = fuentesEtiquetas[marcada.value] || marcada.value;
+        const aviso = modo === "reemplazar"
+          ? `Se reemplazarán todas las columnas y filas actuales por una foto de «${nombre}». ¿Continuar?`
+          : `Se agregarán a la tabla las filas de «${nombre}» (foto de hoy, sin sincronización). ¿Continuar?`;
+        if (!window.confirm(aviso)) return;
+
+        // Llenar trabaja sobre lo guardado: primero se guardan los cambios pendientes.
+        if (sucio && !(await guardar())) {
+          mostrarError(errorLlenar, "No se pudieron guardar los cambios pendientes antes de llenar.");
+          return;
+        }
+
+        const res = await api(raiz.dataset.urlLlenar, "POST", { fuente: marcada.value, modo });
+        if (!res.ok) {
+          mostrarError(errorLlenar, mensajeError(res));
+          return;
+        }
+
+        estado = res.datos.datos;
+        estado.columnas_visibles = estado.columnas_visibles || [];
+        Object.keys(filtros).forEach((k) => delete filtros[k]);
+        orden = { col: null, dir: 1 };
+        sucio = false;
+        estadoTexto.classList.remove("is-sucio");
+        estadoTexto.textContent = `Llenado a las ${horaActual()}`;
+        window.AgencyOS.closeModal("cmLlenarModal");
+        renderVista();
+        const omitidas = res.datos.omitidas ? ` (${res.datos.omitidas} no cupieron en el máximo de 2000 filas)` : "";
+        toast(`${res.datos.importadas} fila(s) copiada(s)${omitidas}`);
+      });
+    }
 
     renderVista();
   }

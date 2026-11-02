@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\KeywordClienteController;
 use App\Http\Controllers\Admin\KeywordExportController;
 use Illuminate\Support\Facades\Route;
 
@@ -7,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 // grupos comparten prefijo y nombre: las rutas de aquí son GET con segmentos literales (`exportar`) y no
 // chocan con los comodines existentes (`PUT|DELETE /{keyword}`, `GET /{keyword}/mediciones`).
 Route::prefix('keywords')->name('keywords.')->middleware('permiso:keywords')->group(function () {
+    // Literal `cliente/` antes que cualquier comodín; solo lectura.
+    Route::get('/cliente/{cliente}', [KeywordClienteController::class, 'show'])->name('cliente');
     Route::get('/exportar', [KeywordExportController::class, 'seleccion'])->name('exportar-seleccion');
     Route::get('/listas/{lista}/exportar', [KeywordExportController::class, 'lista'])->name('exportar-lista');
 });

@@ -203,6 +203,96 @@ class IdentidadTest extends TestCase
         $this->comoUsuarioCon($cliente)->get(route('admin.identidad.logo'))->assertNotFound();
     }
 
+    private function clienteConLogo(): array
+    {
+        Storage::fake('local');
+        $cliente = Cliente::factory()->create();
+        $this->comoUsuarioCon($cliente)->put(route('admin.identidad.guardar'), [
+            'slogan' => 'Hola',
+            'logo' => UploadedFile::fake()->image('logo.png'),
+        ]);
+
+        return [$cliente, $cliente->fresh()->identidad->logo_ruta];
+    }
+
+    public function test_quitar_logo_borra_archivo_y_campo_y_conserva_el_resto(): void
+    {
+        [$cliente, $ruta] = $this->clienteConLogo();
+        Storage::disk('local')->assertExists($ruta);
+
+        $this->comoUsuarioCon($cliente)->delete(route('admin.identidad.logo.quitar'))
+            ->assertRedirect(route('admin.identidad.index'))
+            ->assertSessionHas('status');
+
+        Storage::disk('local')->assertMissing($ruta);
+        $identidad = $cliente->fresh()->identidad;
+        $this->assertNull($identidad->logo_ruta);
+        $this->assertSame('Hola', $identidad->slogan);
+    }
+
+    public function test_quitar_logo_sin_logo_da_error_claro(): void
+    {
+        Storage::fake('local');
+        $cliente = Cliente::factory()->create();
+
+        $this->comoUsuarioCon($cliente)->delete(route('admin.identidad.logo.quitar'))
+            ->assertSessionHasErrors('logo');
+        $this->comoUsuarioCon(null)->delete(route('admin.identidad.logo.quitar'))
+            ->assertSessionHasErrors('logo');
+    }
+
+    public function test_quitar_logo_solo_afecta_al_cliente_activo(): void
+    {
+        [$a, $rutaA] = $this->clienteConLogo();
+        $b = Cliente::factory()->create();
+        $this->comoUsuarioCon($b)->put(route('admin.identidad.guardar'), ['logo' => UploadedFile::fake()->image('b.png')]);
+        $rutaB = $b->fresh()->identidad->logo_ruta;
+
+        $this->comoUsuarioCon($a)->delete(route('admin.identidad.logo.quitar'));
+
+        Storage::disk('local')->assertMissing($rutaA);
+        Storage::disk('local')->assertExists($rutaB);
+    }
+
+    public function test_invitado_no_puede_quitar_logo(): void
+    {
+        $this->delete(route('admin.identidad.logo.quitar'))->assertRedirect(route('login'));
+    }
+
+    public function test_boton_quitar_logo_solo_aparece_si_hay_logo(): void
+    {
+        Storage::fake('local');
+        $cliente = Cliente::factory()->create();
+        $this->comoUsuarioCon($cliente)->get(route('admin.identidad.index'))->assertDontSee('Quitar logo');
+
+        $this->comoUsuarioCon($cliente)->put(route('admin.identidad.guardar'), ['logo' => UploadedFile::fake()->image('l.png')]);
+        $this->comoUsuarioCon($cliente)->get(route('admin.identidad.index'))->assertSee('Quitar logo');
+    }
+
+    public function test_soft_delete_del_cliente_conserva_el_logo_y_force_delete_lo_borra(): void
+    {
+        [$cliente, $ruta] = $this->clienteConLogo();
+
+        $cliente->delete();
+        Storage::disk('local')->assertExists($ruta);
+        $this->assertSame($ruta, IdentidadMarca::where('cliente_id', $cliente->id)->value('logo_ruta'));
+
+        // Restaurado, recupera su logo intacto.
+        $cliente->restore();
+        Storage::disk('local')->assertExists($ruta);
+
+        $cliente->forceDelete();
+        Storage::disk('local')->assertMissing($ruta);
+        $this->assertSame(0, IdentidadMarca::where('cliente_id', $cliente->id)->count());
+    }
+
+    public function test_force_delete_de_cliente_sin_identidad_no_falla(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $cliente->forceDelete();
+        $this->assertDatabaseMissing('clientes', ['id' => $cliente->id]);
+    }
+
     public function test_rechaza_logo_que_no_es_imagen_o_pesa_demasiado(): void
     {
         Storage::fake('local');

@@ -16,6 +16,7 @@
         $kw = $datos['keywords'];
         $media = $datos['posicion_media'];
         $tareas = $datos['tareas'];
+        $seoAct = $datos['actividades_seo'];
 
         // Gráfica de la serie: eje invertido (posición 1 arriba), igual que la de Keywords.
         $serie = $datos['serie'];
@@ -99,6 +100,10 @@
             <x-stat-card label="Tareas vencidas" :value="$tareas['vencidas']"
                 :sub="$tareas['abiertas'] > 0 ? 'de '.$tareas['abiertas'].' abiertas de Desarrollo' : 'sin tareas abiertas de Desarrollo'"
                 icon="fa-clock" color="{{ $tareas['vencidas'] > 0 ? 'red' : 'teal' }}" />
+            <x-stat-card label="Actividades SEO a tiempo"
+                :value="$seoAct['porcentaje_a_tiempo'] !== null ? $fmt($seoAct['porcentaje_a_tiempo']).'%' : '—'"
+                :sub="$seoAct['con_fecha_limite'] > 0 ? $seoAct['a_tiempo'].' de '.$seoAct['con_fecha_limite'].' cerradas con fecha límite' : 'Sin actividades con fecha límite'"
+                icon="fa-list-check" color="{{ $seoAct['porcentaje_a_tiempo'] !== null && $seoAct['porcentaje_a_tiempo'] < 50 ? 'red' : 'emerald' }}" />
         </div>
 
         @if ($kw['seguimiento'] === 0)

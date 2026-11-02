@@ -5,6 +5,9 @@ namespace Tests\Feature\Admin;
 use App\Models\Cliente;
 use App\Models\Keyword;
 use App\Models\KeywordMedicion;
+use App\Models\SeoCampana;
+use App\Models\SeoOnPageAccion;
+use App\Models\Servicio;
 use App\Models\User;
 use App\Support\ClienteActivo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,5 +85,40 @@ class TableroTest extends TestCase
             ->get(route('admin.reportes.index'))
             ->assertOk()
             ->assertSee(route('admin.reportes.tablero.index'), false);
+    }
+
+    public function test_kpi_actividades_seo_a_tiempo_y_estado_sin_fecha_limite(): void
+    {
+        $c = Cliente::factory()->create();
+        $usuario = User::factory()->create();
+
+        $this->actingAs($usuario)
+            ->get(route('admin.reportes.tablero.index', ['cliente' => $c->id]))
+            ->assertOk()
+            ->assertSee('Actividades SEO a tiempo')
+            ->assertSee('Sin actividades con fecha límite');
+
+        $campana = SeoCampana::create([
+            'cliente_id' => $c->id,
+            'servicio_id' => Servicio::factory()->create()->id,
+            'nombre' => 'Campaña SEO',
+            'url_sitio' => 'https://ejemplo.com',
+            'estado' => 'activa',
+            'fase_actual' => 'auditoria',
+            'ciclo_actual' => 1,
+            'fecha_inicio' => now()->subMonth(),
+        ]);
+        foreach (['2026-10-05', '2026-10-20'] as $cierre) {
+            SeoOnPageAccion::create([
+                'seo_campana_id' => $campana->id, 'tipo' => 'on_page', 'url_pagina' => '', 'accion' => 'X',
+                'estado' => 'completada', 'fecha_limite' => '2026-10-10', 'cerrada_en' => $cierre,
+            ]);
+        }
+
+        $this->actingAs($usuario)
+            ->get(route('admin.reportes.tablero.index', ['cliente' => $c->id]))
+            ->assertOk()
+            ->assertSee('50.0%')
+            ->assertSee('1 de 2 cerradas con fecha límite');
     }
 }

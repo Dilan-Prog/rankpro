@@ -9,6 +9,7 @@ use App\Models\Proyecto;
 use App\Support\Api\Respuesta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Bugs. `index` es global (todos los proyectos), igual que
@@ -20,7 +21,7 @@ class BugsApiController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Bug::with('proyecto:id,nombre')->whereHas('proyecto')->latest('created_at');
+        $query = Bug::with(['proyecto:id,nombre', 'responsable:id,name'])->whereHas('proyecto')->latest('created_at');
 
         if ($request->filled('proyecto_id')) {
             $query->where('proyecto_id', $request->integer('proyecto_id'));
@@ -39,14 +40,14 @@ class BugsApiController extends Controller
     {
         $bug = $proyecto->bugs()->create($this->validated($request));
 
-        return Respuesta::recurso($this->toRow($bug->fresh()->load('proyecto:id,nombre')), 201);
+        return Respuesta::recurso($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])), 201);
     }
 
     public function update(Request $request, Bug $bug): JsonResponse
     {
         $bug->update($this->validated($request));
 
-        return Respuesta::recurso($this->toRow($bug->fresh()->load('proyecto:id,nombre')));
+        return Respuesta::recurso($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])));
     }
 
     public function destroy(Bug $bug): JsonResponse
@@ -63,7 +64,7 @@ class BugsApiController extends Controller
             'fecha_resolucion' => $bug->fecha_resolucion ?? now()->toDateString(),
         ]);
 
-        return Respuesta::recurso($this->toRow($bug->fresh()->load('proyecto:id,nombre')));
+        return Respuesta::recurso($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])));
     }
 
     /** Misma forma que Admin\DesarrolloController::bugToRow() / Admin\BugController::toRow(). */
@@ -73,6 +74,8 @@ class BugsApiController extends Controller
             'id' => $b->id,
             'proyecto_id' => $b->proyecto_id,
             'proyecto_nombre' => $b->proyecto->nombre,
+            'responsable_id' => $b->responsable_id,
+            'responsable_nombre' => $b->responsable?->name,
             'titulo' => $b->titulo,
             'descripcion' => $b->descripcion,
             'prioridad' => $b->prioridad,
@@ -91,6 +94,8 @@ class BugsApiController extends Controller
             'prioridad' => ['required', 'in:alta,media,baja'],
             'estado' => ['required', 'in:abierto,en_progreso,resuelto'],
             'fecha_resolucion' => ['nullable', 'date'],
+            // Opcional y solo si viene: el arrastre del kanban no lo manda y no debe desasignar.
+            'responsable_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where('is_active', true)],
         ]);
     }
 }

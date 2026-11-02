@@ -10,9 +10,16 @@
     <div class="cm" data-cm-tabla
          data-datos="{{ json_encode($datos, JSON_UNESCAPED_UNICODE) }}"
          data-url-guardar="{{ $urlGuardar }}"
-         data-url-importar="{{ $urlImportar }}">
+         data-url-importar="{{ $urlImportar }}"
+         data-url-convertir="{{ $urlConvertirColumna }}"
+         data-url-llenar="{{ $urlLlenar }}"
+         data-fuentes="{{ json_encode($fuentes, JSON_UNESCAPED_UNICODE) }}"
+         data-fuentes-etiquetas="{{ json_encode($fuentesEtiquetas, JSON_UNESCAPED_UNICODE) }}">
 
         <x-contenido.cabecera :elemento="$elemento" :migas="$migas" :url-volver="$urlVolver" :url-renombrar="$urlRenombrar">
+            @if (count($fuentes))
+                <button type="button" class="btn btn--secondary" data-cm-llenar-abrir><i class="fa-solid fa-plug"></i> Llenar desde...</button>
+            @endif
             <button type="button" class="btn btn--secondary" data-cm-importar-abrir><i class="fa-solid fa-file-import"></i> Importar CSV</button>
             <a href="{{ $urlExportar }}" class="btn btn--secondary" data-cm-exportar><i class="fa-solid fa-file-export"></i> Exportar CSV</a>
             <button type="button" class="btn btn--primary" data-cm-guardar><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
@@ -22,15 +29,31 @@
             <div class="cm-vistas" role="tablist" aria-label="Vista">
                 <button type="button" class="cm-vistas__op" role="tab" data-cm-vista="tabla"><i class="fa-solid fa-table"></i> Tabla</button>
                 <button type="button" class="cm-vistas__op" role="tab" data-cm-vista="kanban"><i class="fa-solid fa-table-columns"></i> Kanban</button>
+                <button type="button" class="cm-vistas__op" role="tab" data-cm-vista="calendario"><i class="fa-solid fa-calendar-days"></i> Calendario</button>
+                <button type="button" class="cm-vistas__op" role="tab" data-cm-vista="galeria"><i class="fa-solid fa-border-all"></i> Galería</button>
             </div>
             <label class="cm-barra__kanban" data-cm-kanban-selector hidden>
                 <span>Agrupar por</span>
                 <select class="select" data-cm-kanban-columna aria-label="Columna para agrupar"></select>
             </label>
+            <label class="cm-barra__kanban" data-cm-fecha-selector hidden>
+                <span>Fecha</span>
+                <select class="select" data-cm-fecha-columna aria-label="Columna de fecha del calendario"></select>
+            </label>
+            <label class="cm-barra__kanban" data-cm-titulo-selector hidden>
+                <span>Título</span>
+                <select class="select" data-cm-titulo-columna aria-label="Columna usada como título"></select>
+            </label>
+            <details class="cm-visibles" data-cm-visibles hidden>
+                <summary class="btn btn--secondary btn--sm"><i class="fa-solid fa-eye"></i> Columnas visibles</summary>
+                <div class="cm-visibles__lista" data-cm-visibles-lista></div>
+            </details>
             <div class="cm-barra__espacio"></div>
             <button type="button" class="btn btn--secondary btn--sm" data-cm-columna-nueva><i class="fa-solid fa-plus"></i> Columna</button>
             <button type="button" class="btn btn--secondary btn--sm" data-cm-fila-nueva><i class="fa-solid fa-plus"></i> Fila</button>
         </div>
+
+        <p class="cm-origen" data-cm-origen hidden><i class="fa-solid fa-camera"></i> <span data-cm-origen-texto></span></p>
 
         <div class="cm-vacio card empty-state" data-cm-sin-columnas hidden>
             <div class="empty-state__icon"><i class="fa-solid fa-table"></i></div>
@@ -39,9 +62,11 @@
 
         <div data-cm-panel-tabla></div>
         <div data-cm-panel-kanban hidden></div>
+        <div data-cm-panel-calendario hidden></div>
+        <div data-cm-panel-galeria hidden></div>
     </div>
 
-    {{-- Columna: crear o editar (el tipo solo se elige al crear: cambiarlo después invalidaría los valores ya escritos). --}}
+    {{-- Columna: crear o editar. Cambiar el tipo de una columna ya creada lo valida el servidor (convierte solo si todas las celdas encajan). --}}
     <x-modal id="cmColumnaModal">
         <x-slot:header><h2 data-cm-columna-titulo>Nueva columna</h2></x-slot:header>
         <form data-cm-columna-form novalidate>
@@ -63,6 +88,7 @@
                 <textarea class="textarea" id="cmColumnaOpciones" rows="5"></textarea>
                 <span class="field__hint">Si quitas una opción, las filas que la usaban quedan sin valor.</span>
             </div>
+            <span class="field__hint" data-cm-tipo-aviso hidden>Al cambiar el tipo se convierten los valores de la columna. Pasar a Número, Fecha o Selección solo es posible si todas las celdas llenas encajan; a Texto siempre se puede.</span>
             <span class="field__error" data-cm-columna-error hidden></span>
             <div class="cm-modal-acciones">
                 <button type="button" class="btn btn--danger" data-cm-columna-borrar hidden>Eliminar columna</button>
@@ -103,6 +129,28 @@
             <div class="cm-modal-acciones">
                 <button type="button" class="btn btn--secondary" data-modal-close="cmImportarModal">Cancelar</button>
                 <button type="submit" class="btn btn--primary">Importar</button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{-- Llenar desde una fuente real: foto de solo lectura, con confirmación. --}}
+    <x-modal id="cmLlenarModal">
+        <x-slot:header><h2>Llenar desde...</h2></x-slot:header>
+        <form data-cm-llenar-form novalidate>
+            <p class="field__hint">Copia una <strong>foto</strong> de los datos reales de este cliente en columnas de la tabla. No se sincroniza: si los datos cambian, vuelve a llenar. La tabla guarda la fecha de la foto.</p>
+            <div class="field" style="margin-top: var(--space-3);">
+                <span class="field__label">Fuente</span>
+                <div data-cm-llenar-fuentes></div>
+            </div>
+            <div class="field" style="margin-top: var(--space-3);">
+                <span class="field__label">Qué hacer con los datos actuales</span>
+                <label class="cm-radio"><input type="radio" name="cmLlenarModo" value="agregar" checked> Agregar las filas (se emparejan columnas por nombre)</label>
+                <label class="cm-radio"><input type="radio" name="cmLlenarModo" value="reemplazar"> Reemplazar toda la tabla</label>
+            </div>
+            <span class="field__error" data-cm-llenar-error hidden></span>
+            <div class="cm-modal-acciones">
+                <button type="button" class="btn btn--secondary" data-modal-close="cmLlenarModal">Cancelar</button>
+                <button type="submit" class="btn btn--primary">Llenar</button>
             </div>
         </form>
     </x-modal>

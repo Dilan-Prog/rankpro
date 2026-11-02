@@ -72,9 +72,8 @@
                             <span class="field__hint">PNG, JPG, WEBP o SVG, hasta 2 MB.</span>
                         </div>
                         @if ($identidad?->logo_ruta)
-                            <label class="identidad__check">
-                                <input type="checkbox" name="quitar_logo" value="1"> Quitar el logo actual
-                            </label>
+                            {{-- El botón pertenece a un formulario aparte (abajo) con el atributo form: un <form> no puede anidarse en el de guardado. --}}
+                            <button type="submit" class="btn btn--sm btn--danger" form="identidad-quitar-logo" data-identidad-quitar-logo><i class="fa-solid fa-trash"></i> Quitar logo</button>
                         @endif
                         <div class="field">
                             <label class="field__label" for="identidad_slogan">Slogan</label>
@@ -172,6 +171,13 @@
                     <span class="field__hint" data-identidad-sucio hidden>Hay cambios sin guardar.</span>
                 </div>
             </form>
+
+            @if ($identidad?->logo_ruta)
+                <form method="POST" action="{{ route('admin.identidad.logo.quitar') }}" id="identidad-quitar-logo" data-identidad-quitar-logo-form>
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
         @endif
     </div>
 @endsection

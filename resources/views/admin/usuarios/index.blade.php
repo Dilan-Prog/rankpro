@@ -88,6 +88,9 @@
                         <button type="button" class="btn--icon" title="Editar" data-edit-usuario="{{ $u['id'] }}">
                             <i class="fa-solid fa-pen"></i>
                         </button>
+                        <button type="button" class="btn--icon" title="Enviar enlace para restablecer contraseña" data-restablecer-usuario="{{ $u['id'] }}" @if (! $u['is_active']) hidden @endif>
+                            <i class="fa-solid fa-key"></i>
+                        </button>
                         <button type="button" class="btn--icon" title="Desactivar" style="color:var(--text-danger);" data-deactivate-usuario="{{ $u['id'] }}" @if ($u['is_self'] || ! $u['is_active']) hidden @endif>
                             <i class="fa-solid fa-user-slash"></i>
                         </button>
@@ -138,6 +141,7 @@
 
         <div class="form-actions">
             <button type="button" class="btn btn--primary" id="usuarioDetailEdit"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button type="button" class="btn btn--secondary" id="usuarioDetailRestablecer" title="Envía al correo del usuario un enlace para que elija una contraseña nueva"><i class="fa-solid fa-key"></i> Restablecer contraseña</button>
             <button type="button" class="btn btn--secondary" id="usuarioDetailDeactivate" style="color:var(--text-danger);"><i class="fa-solid fa-user-slash"></i> Desactivar</button>
         </div>
     </x-modal>

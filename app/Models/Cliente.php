@@ -141,5 +141,13 @@ class Cliente extends Model
             $cliente->adsConversiones()->delete();
             $cliente->embudoEtapas()->delete();
         });
+
+        // El logo de Identidad se conserva mientras el cliente exista en soft delete (puede
+        // restaurarse y recuperar su ficha completa); solo se limpia al eliminarlo
+        // definitivamente. Va en «forceDeleting» (antes del DELETE) porque la cascada de la
+        // BD borra la fila de identidad con el cliente y ya no habría ruta que leer.
+        static::forceDeleting(function (Cliente $cliente) {
+            $cliente->identidad?->borrarArchivoDelLogo();
+        });
     }
 }

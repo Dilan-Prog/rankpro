@@ -9,5 +9,6 @@ Route::prefix('mi-espacio')->name('mi-espacio.')->middleware('permiso:mi-espacio
     Route::post('/tareas', [MiEspacioController::class, 'store'])->name('store');
     Route::put('/tareas/{tarea}', [MiEspacioController::class, 'update'])->whereNumber('tarea')->name('update');
     Route::patch('/tareas/{tarea}/mover', [MiEspacioController::class, 'mover'])->whereNumber('tarea')->name('mover');
+    Route::patch('/tareas/{tarea}/restaurar', [MiEspacioController::class, 'restaurar'])->whereNumber('tarea')->name('restaurar');
     Route::delete('/tareas/{tarea}', [MiEspacioController::class, 'destroy'])->whereNumber('tarea')->name('destroy');
 });

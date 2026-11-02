@@ -9,6 +9,7 @@ enum TipoElementoContenido: string
     case Documento = 'documento';
     case Tabla = 'tabla';
     case Archivo = 'archivo';
+    case Pizarra = 'pizarra';
 
     public function label(): string
     {
@@ -17,6 +18,7 @@ enum TipoElementoContenido: string
             self::Documento => 'Documento',
             self::Tabla => 'Tabla',
             self::Archivo => 'Archivo',
+            self::Pizarra => 'Pizarra',
         };
     }
 
@@ -28,6 +30,7 @@ enum TipoElementoContenido: string
             self::Documento => 'fa-file-lines',
             self::Tabla => 'fa-table',
             self::Archivo => 'fa-file',
+            self::Pizarra => 'fa-chalkboard',
         };
     }
 }

@@ -252,6 +252,15 @@
                 </div>
             </div>
             <div class="field" style="margin-top: var(--space-3);">
+                <label class="field__label" for="b_responsable_id">Asignado a</label>
+                <select class="select" name="responsable_id" id="b_responsable_id">
+                    <option value="">Sin asignar</option>
+                    @foreach ($usuarios as $u)
+                        <option value="{{ $u->id }}">{{ $u->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="field" style="margin-top: var(--space-3);">
                 <label class="field__label" for="b_fecha">Fecha de resolución (si aplica)</label>
                 <input class="input" type="date" name="fecha_resolucion" id="b_fecha">
             </div>

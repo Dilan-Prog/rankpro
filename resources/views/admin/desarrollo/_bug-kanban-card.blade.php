@@ -8,6 +8,7 @@
     data-bug-descripcion="{{ $bug->descripcion }}"
     data-bug-prioridad="{{ $bug->prioridad }}"
     data-bug-estado="{{ $bug->estado->value }}"
+    data-bug-responsable-id="{{ $bug->responsable_id }}"
     data-bug-fecha-resolucion="{{ $bug->fecha_resolucion?->format('Y-m-d') }}">
     <div class="kanban__card-top">
         <span class="kanban__card-title" title="{{ $bug->titulo }}">{{ $bug->titulo }}</span>
@@ -15,6 +16,7 @@
     </div>
     <div class="kanban__card-meta">
         <span class="u-mono">{{ $bug->fecha_resolucion?->format('d/m/y') ?? 'Sin fecha de resolución' }}</span>
+        <span>{{ $bug->responsable?->name ?? 'Sin asignar' }}</span>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:4px; margin-top: var(--space-2);">
         <button type="button" class="btn--icon" title="Editar" data-edit-bug="{{ $bug->id }}">

@@ -71,6 +71,9 @@
                         <button type="button" class="cm-crear__op" data-cm-crear="documento"><i class="fa-solid fa-file-lines"></i> Documento</button>
                         <button type="button" class="cm-crear__op" data-cm-crear="tabla"><i class="fa-solid fa-table"></i> Tabla</button>
                         <button type="button" class="cm-crear__op" data-cm-crear="tabla" data-plantilla="calendario"><i class="fa-solid fa-calendar-days"></i> Calendario de contenido</button>
+                        <button type="button" class="cm-crear__op" data-cm-crear="pizarra"><i class="fa-solid fa-chalkboard"></i> Pizarra en blanco</button>
+                        <button type="button" class="cm-crear__op" data-cm-crear="pizarra" data-plantilla="lluvia_ideas"><i class="fa-solid fa-lightbulb"></i> Pizarra: lluvia de ideas</button>
+                        <button type="button" class="cm-crear__op" data-cm-crear="pizarra" data-plantilla="flujo"><i class="fa-solid fa-diagram-project"></i> Pizarra: flujo de 3 pasos</button>
                         <button type="button" class="cm-crear__op" data-cm-subir><i class="fa-solid fa-upload"></i> Subir archivo</button>
                     </div>
                 </div>

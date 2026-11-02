@@ -68,22 +68,58 @@
     if (guardada && pestanas.some((t) => t.dataset.splTab === guardada)) activarPestana(guardada);
   } catch (e) { /* ignorar */ }
 
-  // ---------- Vista kanban / lista ----------
+  // ---------- Vistas: kanban / lista / línea de tiempo / calendario ----------
   const kanban = root.querySelector("[data-spl-kanban]");
   const lista = root.querySelector("[data-spl-lista]");
+  const panelesVista = [...root.querySelectorAll("[data-spl-vista-panel]")];
+  const botonesVista = [...root.querySelectorAll("[data-spl-vista]")];
+  // La vista elegida es una preferencia de cada persona, no un dato: va en localStorage y sin él se queda el kanban.
+  const CLAVE_VISTA = "seoPlanVista";
 
-  root.querySelectorAll("[data-spl-vista]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      const esLista = boton.dataset.splVista === "lista";
-      if (kanban) kanban.hidden = esLista;
-      if (lista) lista.hidden = !esLista;
-      root.querySelectorAll("[data-spl-vista]").forEach((b) => {
-        const activo = b === boton;
-        b.classList.toggle("is-active", activo);
-        b.setAttribute("aria-pressed", activo ? "true" : "false");
-      });
+  // Calendario: el servidor pinta todos los meses del rango y aquí solo se alterna cuál se ve.
+  const cal = root.querySelector("[data-spl-cal]");
+  const mesesCal = cal ? [...cal.querySelectorAll("[data-spl-cal-mes]")] : [];
+  const calHoy = cal ? Number(cal.dataset.indiceHoy) || 0 : 0;
+  let calIndice = calHoy;
+
+  function mostrarMes(i) {
+    if (!mesesCal.length) return;
+    calIndice = Math.max(0, Math.min(mesesCal.length - 1, i));
+    mesesCal.forEach((m, k) => { m.hidden = k !== calIndice; });
+    cal.querySelector("[data-spl-cal-titulo]").textContent = mesesCal[calIndice].dataset.etiqueta;
+    cal.querySelector("[data-spl-cal-prev]").disabled = calIndice === 0;
+    cal.querySelector("[data-spl-cal-sig]").disabled = calIndice === mesesCal.length - 1;
+  }
+
+  cal?.querySelector("[data-spl-cal-prev]").addEventListener("click", () => mostrarMes(calIndice - 1));
+  cal?.querySelector("[data-spl-cal-sig]").addEventListener("click", () => mostrarMes(calIndice + 1));
+  cal?.querySelector("[data-spl-cal-hoy]").addEventListener("click", () => mostrarMes(calHoy));
+
+  function activarVista(nombre) {
+    panelesVista.forEach((p) => { p.hidden = p.dataset.splVistaPanel !== nombre; });
+    botonesVista.forEach((b) => {
+      const activo = b.dataset.splVista === nombre;
+      b.classList.toggle("is-active", activo);
+      b.setAttribute("aria-pressed", activo ? "true" : "false");
     });
-  });
+    if (nombre === "calendario") mostrarMes(calIndice);
+    try { localStorage.setItem(CLAVE_VISTA, nombre); } catch (e) { /* sin storage: no se recuerda */ }
+  }
+
+  botonesVista.forEach((boton) => boton.addEventListener("click", () => activarVista(boton.dataset.splVista)));
+
+  try {
+    const vistaGuardada = localStorage.getItem(CLAVE_VISTA);
+    if (vistaGuardada && botonesVista.some((b) => b.dataset.splVista === vistaGuardada)) activarVista(vistaGuardada);
+  } catch (e) { /* ignorar */ }
+
+  // Tras mover una tarjeta, la línea de tiempo y el calendario (pintados en servidor) se alinean sin recargar.
+  function sincronizarVistas(id, estado, actividad) {
+    root.querySelectorAll(`[data-spl-vista-item][data-id="${id}"]`).forEach((el) => { el.dataset.estado = estado; });
+    root.querySelectorAll("[data-spl-abrir]").forEach((b) => {
+      try { if (JSON.parse(b.dataset.actividad).id === Number(id)) b.dataset.actividad = actividad; } catch (e) { /* ignorar */ }
+    });
+  }
 
   // ---------- Filtros (en el navegador: son pocas actividades por cliente) ----------
   const filtros = [...root.querySelectorAll("[data-spl-filtro]")];
@@ -91,7 +127,7 @@
 
   function aplicarFiltros() {
     const activos = filtros.filter((f) => f.value !== "");
-    root.querySelectorAll("[data-spl-item], [data-spl-fila]").forEach((el) => {
+    root.querySelectorAll("[data-spl-item], [data-spl-fila], [data-spl-vista-item]").forEach((el) => {
       el.hidden = !activos.every((f) => el.dataset[f.dataset.splFiltro] === f.value);
     });
     if (botonLimpiar) botonLimpiar.hidden = activos.length === 0;
@@ -148,6 +184,7 @@
         fila.dataset.estado = estado;
         fila.dataset.actividad = tarjeta.dataset.actividad;
       }
+      sincronizarVistas(tarjeta.dataset.id, estado, tarjeta.dataset.actividad);
     } catch (e) {
       avisar(e.message, "error");
       window.location.reload();
@@ -304,7 +341,7 @@
   root.querySelector("[data-spl-actividad-nueva]")?.addEventListener("click", abrirNueva);
 
   root.addEventListener("click", (e) => {
-    const elemento = e.target.closest("[data-spl-item], [data-spl-fila]");
+    const elemento = e.target.closest("[data-spl-item], [data-spl-fila], [data-spl-abrir]");
     if (elemento) abrirActividad(elemento);
   });
 

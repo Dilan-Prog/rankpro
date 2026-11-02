@@ -10,8 +10,8 @@
 
 {{--
     Calendario: cuadrícula mensual + panel del día. Los eventos manuales se
-    crean y borran aquí; reuniones, entregas y pagos vienen de su módulo (solo
-    lectura, con enlace). El mes inicial viaja embebido; al navegar, el JS pide
+    crean, editan y borran aquí; reuniones, entregas, pagos y campañas vienen de su módulo
+    (solo lectura, con enlace). El mes inicial viaja embebido; al navegar, el JS pide
     el rango de 42 días a la ruta `eventos`.
 --}}
 @php
@@ -24,7 +24,8 @@
          data-hoy="{{ $hoy }}"
          data-url-eventos="{{ route('admin.calendario.eventos') }}"
          data-url-crear="{{ route('admin.calendario.store') }}"
-         data-url-borrar="{{ url('admin/calendario/eventos') }}">
+         data-url-borrar="{{ url('admin/calendario/eventos') }}"
+         data-url-editar="{{ url('admin/calendario/eventos') }}">
         <div class="page-header">
             <div>
                 <h1 class="page-header__title">Calendario</h1>
@@ -58,16 +59,20 @@
                 <ul class="cal-lista" data-cal-lista></ul>
 
                 <form class="cal-form" data-cal-form novalidate>
-                    <h3 class="cal-form__titulo">Agregar evento</h3>
+                    <h3 class="cal-form__titulo" data-cal-form-titulo>Agregar evento</h3>
                     <div class="field">
                         <label class="field__label" for="cal-titulo">Título</label>
                         <input class="input" id="cal-titulo" name="titulo" maxlength="255" required>
+                    </div>
+                    <div class="field">
+                        <label class="field__label" for="cal-fecha">Fecha</label>
+                        <input class="input" type="date" id="cal-fecha" name="fecha" required>
                     </div>
                     <div class="cal-form__fila">
                         <div class="field">
                             <label class="field__label" for="cal-tipo">Tipo</label>
                             <select class="select" id="cal-tipo" name="tipo">
-                                @foreach ($tipos as $tipo)
+                                @foreach ($tiposManuales as $tipo)
                                     <option value="{{ $tipo['valor'] }}" @selected($tipo['valor'] === 'otro')>{{ $tipo['etiqueta'] }}</option>
                                 @endforeach
                             </select>
@@ -87,7 +92,10 @@
                         </select>
                     </div>
                     <p class="field__error" data-cal-error hidden></p>
-                    <button type="submit" class="btn btn--primary">Agregar al día</button>
+                    <div class="cal-form__acciones">
+                        <button type="submit" class="btn btn--primary" data-cal-guardar>Agregar al día</button>
+                        <button type="button" class="btn" data-cal-cancelar hidden>Cancelar edición</button>
+                    </div>
                 </form>
             </aside>
         </div>

@@ -6,10 +6,12 @@ use App\Enums\EstadoTarea;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tarea extends Model
 {
-    use HasFactory;
+    // SoftDeletes: «Mi espacio» ofrece deshacer el borrado; el scope global mantiene fuera de todo conteo lo borrado.
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'proyecto_id',

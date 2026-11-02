@@ -3,11 +3,11 @@
     $aud = $campana->faseAuditoria;
     $num = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
     $indexacionVerificada = (bool) ($aud?->checklist['indexacion_verificada'] ?? false);
-    $hayCwv = $aud && ($aud->lcp_mobile !== null || $aud->cls_mobile !== null || $aud->fid_mobile !== null);
+    $hayCwv = $aud && ($aud->lcp_mobile !== null || $aud->cls_mobile !== null || $aud->fid_mobile !== null || $aud->inp_mobile !== null || $aud->ttfb_mobile !== null);
 
     // Umbrales publicados por Google (web.dev/vitals): [bueno hasta, mejorar hasta]. Se evalúa al mostrar, no se guarda,
-    // para que un cambio de criterio no obligue a migrar datos. El modelo guarda FID (no INP): se asume FID en ms y LCP en s.
-    $umbralesCwv = ['lcp' => [2.5, 4.0], 'cls' => [0.1, 0.25], 'fid' => [100, 300]];
+    // para que un cambio de criterio no obligue a migrar datos. Unidades que asume el panel: LCP en segundos; FID, INP y TTFB en milisegundos. FID se conserva por las auditorías ya capturadas.
+    $umbralesCwv = ['lcp' => [2.5, 4.0], 'cls' => [0.1, 0.25], 'fid' => [100, 300], 'inp' => [200, 500], 'ttfb' => [800, 1800]];
     $evaluarCwv = function (string $metrica, $valor) use ($umbralesCwv): array {
         if ($valor === null) {
             return ['Sin dato', 'badge--neutral'];
@@ -19,9 +19,11 @@
     $filasCwv = [
         ['lcp', 'LCP', 'Carga del contenido principal', ' s', '≤ 2.5 s bueno · ≤ 4 s mejorar'],
         ['cls', 'CLS', 'Estabilidad visual', '', '≤ 0.1 bueno · ≤ 0.25 mejorar'],
-        ['fid', 'FID', 'Retardo de la primera interacción', ' ms', '≤ 100 ms bueno · ≤ 300 ms mejorar'],
+        ['inp', 'INP', 'Respuesta a las interacciones', ' ms', '≤ 200 ms bueno · ≤ 500 ms mejorar'],
+        ['ttfb', 'TTFB', 'Tiempo hasta el primer byte', ' ms', '≤ 800 ms bueno · ≤ 1800 ms mejorar'],
+        ['fid', 'FID (histórico)', 'Retardo de la primera interacción', ' ms', '≤ 100 ms bueno · ≤ 300 ms mejorar'],
     ];
-    $hayCwvEscritorio = $aud && ($aud->lcp_desktop !== null || $aud->cls_desktop !== null || $aud->fid_desktop !== null);
+    $hayCwvEscritorio = $aud && ($aud->lcp_desktop !== null || $aud->cls_desktop !== null || $aud->fid_desktop !== null || $aud->inp_desktop !== null || $aud->ttfb_desktop !== null);
 @endphp
 
 <div class="seo-kpis">
@@ -74,7 +76,7 @@
         </div>
         @if ($hayCwv)
             <div class="seo-kpi__valor">{{ $aud->lcp_mobile !== null ? $num($aud->lcp_mobile).'s' : '—' }}<span class="seo-kpi__unidad"> LCP</span></div>
-            <p class="seo-kpi__sub">móvil · CLS {{ $aud->cls_mobile !== null ? $num($aud->cls_mobile) : '—' }} · FID {{ $aud->fid_mobile !== null ? $num($aud->fid_mobile) : '—' }}</p>
+            <p class="seo-kpi__sub">móvil · CLS {{ $aud->cls_mobile !== null ? $num($aud->cls_mobile) : '—' }} · INP {{ $aud->inp_mobile !== null ? $num($aud->inp_mobile).' ms' : '—' }} · TTFB {{ $aud->ttfb_mobile !== null ? $num($aud->ttfb_mobile).' ms' : '—' }}</p>
         @else
             <div class="seo-kpi__valor seo-kpi__valor--vacio">—</div>
             <p class="seo-kpi__sub">Sin dato todavía</p>

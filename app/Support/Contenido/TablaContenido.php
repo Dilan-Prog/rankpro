@@ -12,8 +12,12 @@ use InvalidArgumentException;
  *   {
  *     "columnas": [{"id": "c1", "nombre": "Título", "tipo": "texto|numero|fecha|seleccion", "opciones": ["A", "B"]}],
  *     "filas":    [{"id": "f1", "celdas": {"c1": "valor"}}],
- *     "vista":    "tabla|kanban",
- *     "columna_kanban": "c3" | null
+ *     "vista":    "tabla|kanban|calendario|galeria",
+ *     "columna_kanban": "c3" | null,
+ *     "columna_fecha": "c2" | null,       (columna de tipo fecha que ubica cada fila en el calendario)
+ *     "columna_titulo": "c1" | null,      (texto que encabeza cada tarjeta/evento)
+ *     "columnas_visibles": ["c1", "c2"],  (columnas que muestra la galería; vacío = todas)
+ *     "origen": {"clave": "ads_campanas", "fecha": "2026-11-01 14:30"} | null   (de qué «foto» de datos reales se llenó)
  *   }
  *
  * Todo valor llega del navegador, así que `normalizar()` es la única puerta de
@@ -24,7 +28,7 @@ use InvalidArgumentException;
 class TablaContenido
 {
     public const TIPOS = ['texto', 'numero', 'fecha', 'seleccion'];
-    public const VISTAS = ['tabla', 'kanban'];
+    public const VISTAS = ['tabla', 'kanban', 'calendario', 'galeria'];
 
     public const MAX_COLUMNAS = 30;
     public const MAX_FILAS = 2000;
@@ -39,7 +43,10 @@ class TablaContenido
 
     public static function vacia(): array
     {
-        return ['columnas' => [], 'filas' => [], 'vista' => 'tabla', 'columna_kanban' => null];
+        return [
+            'columnas' => [], 'filas' => [], 'vista' => 'tabla', 'columna_kanban' => null,
+            'columna_fecha' => null, 'columna_titulo' => null, 'columnas_visibles' => [], 'origen' => null,
+        ];
     }
 
     /**
@@ -59,6 +66,10 @@ class TablaContenido
             'filas' => [],
             'vista' => 'tabla',
             'columna_kanban' => 'c4',
+            'columna_fecha' => 'c3',
+            'columna_titulo' => 'c1',
+            'columnas_visibles' => [],
+            'origen' => null,
         ];
     }
 
@@ -195,13 +206,240 @@ class TablaContenido
             $vista = 'tabla';
         }
 
-        $tabla = ['columnas' => $columnas, 'filas' => $filas, 'vista' => $vista, 'columna_kanban' => $kanban];
+        // Igual que el kanban: si la columna de fecha ya no es una fecha se descarta, no se rechaza el guardado.
+        $colFecha = $entrada['columna_fecha'] ?? null;
+        if ($colFecha !== null && (! is_string($colFecha) || ($porId[$colFecha]['tipo'] ?? null) !== 'fecha')) {
+            $colFecha = null;
+        }
+        if ($vista === 'calendario' && $colFecha === null) {
+            $vista = 'tabla';
+        }
+
+        $colTitulo = $entrada['columna_titulo'] ?? null;
+        if ($colTitulo !== null && (! is_string($colTitulo) || ! isset($porId[$colTitulo]))) {
+            $colTitulo = null;
+        }
+
+        $visibles = [];
+        $visiblesEntrada = $entrada['columnas_visibles'] ?? [];
+        if (is_array($visiblesEntrada)) {
+            foreach ($visiblesEntrada as $idVisible) {
+                if (is_string($idVisible) && isset($porId[$idVisible]) && ! in_array($idVisible, $visibles, true)) {
+                    $visibles[] = $idVisible;
+                }
+            }
+        }
+
+        $tabla = [
+            'columnas' => $columnas,
+            'filas' => $filas,
+            'vista' => $vista,
+            'columna_kanban' => $kanban,
+            'columna_fecha' => $colFecha,
+            'columna_titulo' => $colTitulo,
+            'columnas_visibles' => $visibles,
+            'origen' => self::origen($entrada['origen'] ?? null),
+        ];
 
         if (strlen((string) json_encode($tabla, JSON_UNESCAPED_UNICODE)) > self::MAX_BYTES) {
             throw new InvalidArgumentException('La tabla es demasiado grande para guardarse.');
         }
 
         return $tabla;
+    }
+
+    // ------------------------------------------------------------------
+    // Cambio de tipo de una columna ya creada
+    // ------------------------------------------------------------------
+
+    /**
+     * Cambia el tipo de una columna convirtiendo sus celdas SIN perder datos.
+     *
+     * Hacia «texto» siempre se puede (todo valor ya es texto). Hacia número,
+     * fecha o selección solo si TODAS las celdas llenas encajan: convertir lo
+     * que sí cabe y vaciar el resto destruiría datos en silencio, así que se
+     * rechaza con un mensaje que dice cuántas celdas lo impiden. Pasar a
+     * selección arma las opciones con los valores distintos que ya hay.
+     *
+     * @throws InvalidArgumentException con un mensaje apto para mostrar al usuario
+     */
+    public static function cambiarTipoColumna(mixed $entrada, string $colId, string $tipoNuevo): array
+    {
+        $tabla = self::normalizar($entrada);
+
+        if (! in_array($tipoNuevo, self::TIPOS, true)) {
+            throw new InvalidArgumentException('El tipo elegido no es válido.');
+        }
+
+        $pos = array_search($colId, array_column($tabla['columnas'], 'id'), true);
+        if ($pos === false) {
+            throw new InvalidArgumentException('La columna ya no existe.');
+        }
+
+        $col = $tabla['columnas'][$pos];
+        if ($col['tipo'] === $tipoNuevo) {
+            return $tabla;
+        }
+
+        $valores = [];
+        foreach ($tabla['filas'] as $fila) {
+            $valor = (string) ($fila['celdas'][$colId] ?? '');
+            if ($valor !== '') {
+                $valores[] = $valor;
+            }
+        }
+
+        $opciones = [];
+        if ($tipoNuevo !== 'texto') {
+            $nombreTipo = ['numero' => 'Número', 'fecha' => 'Fecha', 'seleccion' => 'Selección'][$tipoNuevo];
+            $malas = [];
+
+            foreach ($valores as $valor) {
+                $encaja = match ($tipoNuevo) {
+                    'numero' => is_numeric($valor) && strlen($valor) <= 30,
+                    'fecha' => self::fechaValida($valor),
+                    default => mb_strlen($valor) <= self::MAX_NOMBRE,
+                };
+                if (! $encaja) {
+                    $malas[] = $valor;
+                }
+            }
+
+            if ($malas) {
+                $ejemplo = mb_substr($malas[0], 0, 40);
+                throw new InvalidArgumentException(
+                    "No se puede convertir «{$col['nombre']}» a {$nombreTipo}: ".count($malas)." celda(s) no encajan (p. ej. «{$ejemplo}»). Corrígelas o déjalas vacías y vuelve a intentarlo."
+                );
+            }
+
+            if ($tipoNuevo === 'seleccion') {
+                $opciones = array_values(array_unique($valores));
+                if (count($opciones) > self::MAX_OPCIONES) {
+                    throw new InvalidArgumentException(
+                        "No se puede convertir «{$col['nombre']}» a Selección: tiene ".count($opciones).' valores distintos y el máximo es '.self::MAX_OPCIONES.'.'
+                    );
+                }
+            }
+        }
+
+        $tabla['columnas'][$pos]['tipo'] = $tipoNuevo;
+        $tabla['columnas'][$pos]['opciones'] = $opciones;
+
+        return self::normalizar($tabla);
+    }
+
+    // ------------------------------------------------------------------
+    // «Llenar desde...»: foto de una fuente real de solo lectura
+    // ------------------------------------------------------------------
+
+    /**
+     * Vuelca una foto de datos reales en la tabla.
+     *
+     * `$foto` = ['columnas' => [['nombre','tipo','opciones'?]], 'filas' => [[valor, ...]]].
+     * «reemplazar» sustituye columnas y filas; «agregar» empareja columnas por
+     * nombre (sin distinguir mayúsculas) y crea las que falten. Pasa por
+     * `normalizar()`, así que valores y topes se validan igual que cualquier
+     * guardado. Lo que no cabe en el tope de filas se omite y se informa.
+     *
+     * @return array{tabla: array, importadas: int, omitidas: int}
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function llenarDesdeFoto(mixed $entrada, array $foto, string $modo, string $clave, string $cuando): array
+    {
+        $tabla = $modo === 'agregar' ? self::normalizar($entrada) : self::vacia();
+        $total = max((int) ($foto['total'] ?? 0), count($foto['filas']));
+
+        // posicion de la foto -> id de columna de la tabla
+        $destino = [];
+        foreach ($foto['columnas'] as $i => $def) {
+            $hallada = null;
+            foreach ($tabla['columnas'] as $k => $col) {
+                if (mb_strtolower($col['nombre']) === mb_strtolower($def['nombre'])) {
+                    $hallada = $k;
+                    break;
+                }
+            }
+
+            if ($hallada === null) {
+                if (count($tabla['columnas']) >= self::MAX_COLUMNAS) {
+                    throw new InvalidArgumentException('No caben las columnas de la fuente: una tabla admite como máximo '.self::MAX_COLUMNAS.' columnas.');
+                }
+                $nuevoId = self::idLibre('c', array_column($tabla['columnas'], 'id'));
+                $tabla['columnas'][] = ['id' => $nuevoId, 'nombre' => $def['nombre'], 'tipo' => $def['tipo'], 'opciones' => $def['opciones'] ?? []];
+                $hallada = count($tabla['columnas']) - 1;
+            }
+
+            $destino[$i] = $hallada;
+        }
+
+        $espacio = self::MAX_FILAS - count($tabla['filas']);
+        if ($total > 0 && $espacio <= 0) {
+            throw new InvalidArgumentException('La tabla ya tiene el máximo de '.self::MAX_FILAS.' filas.');
+        }
+
+        $usados = array_column($tabla['filas'], 'id');
+        $agregadas = 0;
+
+        foreach (array_slice($foto['filas'], 0, max(0, $espacio)) as $registro) {
+            $celdas = [];
+            foreach ($destino as $i => $k) {
+                $col = &$tabla['columnas'][$k];
+                $valor = trim((string) ($registro[$i] ?? ''));
+
+                // Columna existente de otro tipo: lo que no encaja queda vacío en vez de romper el guardado.
+                $valor = match ($col['tipo']) {
+                    'numero' => is_numeric($valor) ? $valor : '',
+                    'fecha' => self::fechaValida($valor) ? $valor : '',
+                    default => mb_substr($valor, 0, $col['tipo'] === 'seleccion' ? self::MAX_NOMBRE : self::MAX_TEXTO),
+                };
+
+                if ($col['tipo'] === 'seleccion' && $valor !== '' && ! in_array($valor, $col['opciones'], true)) {
+                    $col['opciones'][] = $valor;
+                }
+                unset($col);
+
+                $celdas[$tabla['columnas'][$k]['id']] = $valor;
+            }
+
+            $id = self::idLibre('f', $usados);
+            $usados[] = $id;
+            $tabla['filas'][] = ['id' => $id, 'celdas' => $celdas];
+            $agregadas++;
+        }
+
+        $tabla['origen'] = ['clave' => $clave, 'fecha' => $cuando];
+
+        return ['tabla' => self::normalizar($tabla), 'importadas' => $agregadas, 'omitidas' => $total - $agregadas];
+    }
+
+    /** Primer id «<prefijo><n>» que no esté en uso. */
+    private static function idLibre(string $prefijo, array $usados): string
+    {
+        $n = count($usados) + 1;
+        while (in_array($prefijo.$n, $usados, true)) {
+            $n++;
+        }
+
+        return $prefijo.$n;
+    }
+
+    /** Marca de «de dónde salió la foto»: clave y fecha con forma fija, o nada. */
+    private static function origen(mixed $origen): ?array
+    {
+        if (! is_array($origen)) {
+            return null;
+        }
+
+        $clave = $origen['clave'] ?? null;
+        $fecha = $origen['fecha'] ?? null;
+
+        if (! is_string($clave) || ! preg_match('/^[a-z_]{1,40}$/', $clave)
+            || ! is_string($fecha) || ! preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $fecha)) {
+            return null;
+        }
+
+        return ['clave' => $clave, 'fecha' => $fecha];
     }
 
     // ------------------------------------------------------------------

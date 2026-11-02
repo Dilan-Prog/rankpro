@@ -11,6 +11,7 @@
                 <th>Título</th>
                 <th>Prioridad</th>
                 <th>Estado</th>
+                <th>Asignado</th>
                 <th>Resuelto</th>
                 <th></th>
             </tr>

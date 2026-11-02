@@ -30,7 +30,7 @@ class TareasApiController extends Controller
 
     public function destroy(Tarea $tarea): JsonResponse
     {
-        $tarea->delete();
+        $tarea->forceDelete(); // Desarrollo no tiene «deshacer»: se conserva el borrado definitivo previo al SoftDeletes de Tarea.
 
         return Respuesta::eliminado();
     }

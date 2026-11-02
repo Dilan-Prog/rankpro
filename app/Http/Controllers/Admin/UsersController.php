@@ -13,6 +13,7 @@ use App\Support\ProteccionAdmin;
 use App\Support\Reglas\Usuarios as ReglasUsuarios;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
 
@@ -146,6 +147,35 @@ class UsersController extends Controller
         $user->update(['is_active' => false]);
 
         return response()->json($this->toRow($user->fresh('role'), $request->user()));
+    }
+
+    /**
+     * Envía al correo del usuario el enlace de restablecimiento del broker de Laravel (el mismo de
+     * «Olvidé mi contraseña»). Nunca muestra ni fija una contraseña: el administrador no debe conocerla,
+     * y el broker ya aplica su throttle por usuario. Un usuario inactivo no puede entrar, así que no se
+     * le manda un enlace que sería inútil (y que reactivaría su acceso a medias).
+     */
+    public function restablecerContrasena(User $user): JsonResponse
+    {
+        if (! $user->is_active) {
+            return response()->json(['message' => 'El usuario está inactivo: actívalo antes de enviarle un enlace.'], 422);
+        }
+
+        if (blank($user->email)) {
+            return response()->json(['message' => 'El usuario no tiene correo registrado.'], 422);
+        }
+
+        $estado = Password::sendResetLink(['email' => $user->email]);
+
+        if ($estado === Password::RESET_LINK_SENT) {
+            return response()->json(['message' => "Enlace de restablecimiento enviado a {$user->email}."]);
+        }
+
+        if ($estado === Password::RESET_THROTTLED) {
+            return response()->json(['message' => 'Ya se envió un enlace hace poco. Espera un minuto antes de reenviarlo.'], 429);
+        }
+
+        return response()->json(['message' => 'No se pudo enviar el enlace de restablecimiento.'], 422);
     }
 
     /** Shared shape for index()'s server-rendered rows and store()/update()/deactivate()'s AJAX responses. */

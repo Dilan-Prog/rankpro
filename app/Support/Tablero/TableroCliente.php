@@ -3,10 +3,12 @@
 namespace App\Support\Tablero;
 
 use App\Enums\EstadoKeyword;
+use App\Enums\EstadoOnPageAccion;
 use App\Enums\EstadoTarea;
 use App\Models\Cliente;
 use App\Models\Keyword;
 use App\Models\KeywordMedicion;
+use App\Models\SeoOnPageAccion;
 use App\Models\Tarea;
 use Carbon\CarbonInterface;
 
@@ -85,6 +87,7 @@ class TableroCliente
             'nombre' => $cliente->empresa ?: $cliente->nombre,
         ];
         $datos['tareas'] = $this->tareas($cliente);
+        $datos['actividades_seo'] = $this->actividadesSeo($cliente);
 
         return $datos;
     }
@@ -111,6 +114,32 @@ class TableroCliente
             'abiertas' => $totalAbiertas,
             'vencidas' => $vencidas,
             'porcentaje_vencidas' => self::porcentaje($vencidas, $totalAbiertas),
+        ];
+    }
+
+    /**
+     * Actividades del SEO Plan del cliente (cuelgan de sus campañas SEO). Solo
+     * cuentan las cerradas CON fecha límite: sin ella no hay contra qué medir
+     * «a tiempo», y contarlas falsearía el porcentaje. A tiempo = cerrada_en <=
+     * fecha_limite (cerrar el mismo día límite cuenta como a tiempo).
+     *
+     * @return array{con_fecha_limite: int, a_tiempo: int, porcentaje_a_tiempo: ?float}
+     */
+    private function actividadesSeo(Cliente $cliente): array
+    {
+        $cerradas = SeoOnPageAccion::query()
+            ->whereHas('seoCampana', fn ($q) => $q->where('cliente_id', $cliente->id))
+            ->where('estado', EstadoOnPageAccion::Completada->value)
+            ->whereNotNull('fecha_limite')
+            ->whereNotNull('cerrada_en');
+
+        $total = (clone $cerradas)->count();
+        $aTiempo = (clone $cerradas)->whereColumn('cerrada_en', '<=', 'fecha_limite')->count();
+
+        return [
+            'con_fecha_limite' => $total,
+            'a_tiempo' => $aTiempo,
+            'porcentaje_a_tiempo' => self::porcentaje($aTiempo, $total),
         ];
     }
 

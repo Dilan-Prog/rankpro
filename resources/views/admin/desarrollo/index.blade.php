@@ -269,13 +269,14 @@
             <div class="empty-state__icon"><i class="fa-solid fa-bug"></i></div>
             <p class="empty-state__text">No hay bugs que coincidan con los filtros actuales.</p>
         </div>
-        <x-data-table :headers="['Proyecto', 'Descripción', 'Prioridad', 'Estado', 'Creado', 'Resuelto', 'Días abierto', '']" data-paginate="15" data-desarrollo-bugs-table :hidden="$bugs->isEmpty()">
+        <x-data-table :headers="['Proyecto', 'Descripción', 'Prioridad', 'Estado', 'Asignado', 'Creado', 'Resuelto', 'Días abierto', '']" data-paginate="15" data-desarrollo-bugs-table :hidden="$bugs->isEmpty()">
             @foreach ($bugs as $b)
                 <tr data-bug-row data-bug-id="{{ $b['id'] }}" data-proyecto-id="{{ $b['proyecto_id'] }}" data-prioridad="{{ $b['prioridad'] }}" data-estado="{{ $b['estado'] }}" data-bug="{{ json_encode($b) }}">
                     <td><a href="{{ route('admin.desarrollo.show', $b['proyecto_id']) }}" style="color:var(--color-foreground); font-weight:500;">{{ $b['proyecto_nombre'] }}</a></td>
                     <td>{{ $b['titulo'] }}</td>
                     <td><x-badge :status="$b['prioridad']" /></td>
                     <td><x-badge :status="$b['estado']" /></td>
+                    <td>{{ $b['responsable_nombre'] ?? '—' }}</td>
                     <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $b['created_at'] }}</td>
                     <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $b['fecha_resolucion'] ?? '—' }}</td>
                     <td class="u-mono">{{ $b['dias_abierto'] ?? '—' }}</td>
@@ -489,6 +490,17 @@
                     </select>
                     <span class="field__error" data-error-for="estado"></span>
                 </div>
+            </div>
+
+            <div class="field" style="margin-top: var(--space-4);">
+                <label class="field__label" for="gb_responsable_id">Asignado a</label>
+                <select class="select" name="responsable_id" id="gb_responsable_id">
+                    <option value="">Sin asignar</option>
+                    @foreach ($usuarios as $u)
+                        <option value="{{ $u->id }}">{{ $u->name }}</option>
+                    @endforeach
+                </select>
+                <span class="field__error" data-error-for="responsable_id"></span>
             </div>
 
             <div class="field" style="margin-top: var(--space-4);">

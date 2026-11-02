@@ -126,6 +126,19 @@
     img.src = URL.createObjectURL(archivo);
   });
 
+  // ---- Quitar logo: borra el archivo del servidor, así que pide confirmación ----
+  const formQuitarLogo = document.querySelector("[data-identidad-quitar-logo-form]");
+  if (formQuitarLogo) {
+    formQuitarLogo.addEventListener("submit", (e) => {
+      if (!window.confirm("Se borrará el logo del servidor. ¿Continuar?")) {
+        e.preventDefault();
+        return;
+      }
+      // Es un envío aparte del formulario principal: no debe avisar de cambios sin guardar.
+      sucio = false;
+    });
+  }
+
   // ---- Cambios sin guardar ----
   const aviso = form.querySelector("[data-identidad-sucio]");
   let sucio = false;

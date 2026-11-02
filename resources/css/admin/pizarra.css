@@ -1,0 +1,186 @@
+/* Módulo «contenido» → Pizarra (lienzo libre). La cabecera y las migas vienen de contenido.css;
+   aquí solo la barra de herramientas y el lienzo. Todo con tokens para que sirva en claro y oscuro. */
+
+.pz-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-3);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+}
+
+.pz-grupo { display: flex; align-items: center; gap: 2px; }
+.pz-grupo + .pz-grupo { padding-left: var(--space-3); border-left: 1px solid var(--color-border); }
+.pz-grupo[hidden] { display: none; }
+.pz-grupo--fin { margin-left: auto; }
+
+.pz-herr,
+.pz-zoom-valor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    color: var(--color-secondary-foreground);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.pz-herr:hover:not(:disabled),
+.pz-zoom-valor:hover { background: var(--color-secondary); color: var(--color-foreground); }
+.pz-herr:disabled { opacity: 0.35; cursor: not-allowed; }
+.pz-herr.is-activa { background: color-mix(in srgb, var(--color-primary) 18%, transparent); color: var(--color-primary); }
+.pz-herr--peligro:hover:not(:disabled) { color: var(--color-destructive); }
+.pz-herr:focus-visible,
+.pz-zoom-valor:focus-visible,
+.pz-lienzo:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 1px; }
+.pz-zoom-valor { min-width: 52px; }
+
+.pz-color {
+    width: 22px;
+    height: 22px;
+    margin: 0 3px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+.pz-color.is-activo { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* ---------- Lienzo ---------- */
+
+.pz-lienzo {
+    position: relative;
+    height: calc(100vh - 300px);
+    min-height: 420px;
+    overflow: hidden;
+    background-color: var(--color-background);
+    /* Puntos de guía; el JS mueve y escala el fondo para que acompañe al pan y al zoom. */
+    background-image: radial-gradient(circle, var(--color-muted-foreground) 1px, transparent 1.2px);
+    background-size: 24px 24px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+.pz-lienzo.is-pan { cursor: grabbing; }
+.pz-lienzo.is-crear { cursor: crosshair; }
+
+.pz-mundo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+}
+
+.pz-flechas { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.pz-flecha__linea { stroke-width: 2.5; fill: none; marker-end: url(#pzPunta); pointer-events: none; }
+.pz-flecha__zona { stroke: transparent; stroke-width: 18; fill: none; pointer-events: stroke; cursor: pointer; }
+.pz-lienzo.is-crear .pz-flecha__zona { pointer-events: none; }
+.pz-flecha.is-sel .pz-flecha__linea { stroke-width: 4; }
+.pz-flecha.is-sel { filter: drop-shadow(0 0 3px var(--color-primary)); }
+
+.pz-el {
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: move;
+    color: var(--color-foreground);
+}
+.pz-el.is-sel { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.pz-el--nota {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 12px;
+    border-radius: 6px;
+    /* Las notas llevan color pastel fijo: el texto oscuro se lee igual en tema claro y oscuro. */
+    color: #1F2937;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+.pz-el--texto { padding: 4px; font-weight: var(--font-weight-bold); }
+.pz-el--rectangulo { border: 2px solid; border-radius: 14px; }
+.pz-el--elipse { border: 2px solid; border-radius: 50%; }
+
+.pz-el__texto {
+    width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    font-size: var(--text-base);
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.pz-el--nota .pz-el__texto { text-align: left; height: 100%; }
+.pz-el__texto:empty::before { content: attr(data-vacio); opacity: 0.45; }
+
+.pz-el__editor {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: inherit;
+    resize: none;
+    border: 0;
+    outline: 2px dashed var(--color-primary);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--text-base);
+    line-height: 1.35;
+    text-align: inherit;
+    border-radius: inherit;
+}
+
+.pz-el__asa {
+    position: absolute;
+    right: -7px;
+    bottom: -7px;
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    background: var(--color-primary);
+    cursor: nwse-resize;
+}
+
+.pz-vacio {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    pointer-events: none;
+}
+.pz-vacio[hidden] { display: none; }
+
+@media (max-width: 720px) {
+    .pz-lienzo { height: calc(100vh - 340px); min-height: 360px; }
+    .pz-grupo--fin { margin-left: 0; }
+    .pz-grupo + .pz-grupo { padding-left: 0; border-left: 0; }
+}
+
+/* Mientras se edita, el texto lo muestra el area de texto y no el div (evita verlo duplicado). */
+.pz-el.is-editando .pz-el__texto { visibility: hidden; }

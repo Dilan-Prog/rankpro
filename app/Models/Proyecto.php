@@ -102,7 +102,7 @@ class Proyecto extends Model
     protected static function booted(): void
     {
         static::deleting(function (Proyecto $proyecto) {
-            $proyecto->tareas()->delete();
+            $proyecto->tareas()->forceDelete(); // Tarea usa SoftDeletes solo para el «deshacer» de Mi espacio; aquí sigue siendo borrado definitivo.
             $proyecto->bugs()->delete();
             $proyecto->comunicaciones()->delete();
             $proyecto->qa()->delete();

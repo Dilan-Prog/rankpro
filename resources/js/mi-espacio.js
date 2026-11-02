@@ -194,6 +194,7 @@
         el("div", { class: "me-columna__cuerpo" }, tarjetas.map((t) => {
           const nodo = tarjeta(t);
           nodo.draggable = true;
+          nodo.setAttribute("aria-label", `${t.titulo}. Columna ${e.etiqueta}. Flechas para mover.`);
           return nodo;
         }))
       );
@@ -201,7 +202,9 @@
     });
     const tablero = el("div", { class: "me-kanban" }, columnas);
     enlazarArrastre(tablero);
-    return tablero;
+    return el("div", { class: "me-kanban-envoltorio" },
+      el("p", { class: "field__hint", text: "Con el foco en una tarjeta: flechas izquierda y derecha la cambian de columna; arriba y abajo la reordenan. Enter la abre." }),
+      tablero);
   }
 
   /** HTML5 nativo: la posición de soltado se decide por el punto medio vertical de cada tarjeta. */
@@ -248,31 +251,92 @@
       e.preventDefault();
       const id = Number(arrastrada.dataset.id);
       const destino = cuerpo.closest(".me-columna").dataset.estado;
-      const vecino = arrastrada.nextElementSibling?.classList.contains("me-tarjeta") ? Number(arrastrada.nextElementSibling.dataset.id) : null;
-      mover(id, destino, vecino);
+      // Vecinos visibles en el DOM; con filtros activos hay tarjetas ocultas entre ellos y mover() resuelve la posición contra la columna completa.
+      const hermano = (n) => (n?.classList.contains("me-tarjeta") ? Number(n.dataset.id) : null);
+      mover(id, destino, { antesDeId: hermano(arrastrada.nextElementSibling), despuesDeId: hermano(arrastrada.previousElementSibling) });
     });
   }
 
-  /** Coloca la tarea antes de `antesDeId` (o al final) en la columna destino, igual que lo hará el servidor. */
-  async function mover(id, destino, antesDeId) {
+  /**
+   * Coloca la tarea en la columna destino calculando la posición contra TODAS las
+   * tareas de la columna (también las que un filtro oculta), igual que el servidor:
+   * `orden` es un índice sobre la columna completa. Con filtros, lo que el usuario
+   * ve junto a la tarjeta soltada son solo los vecinos visibles, así que se prefiere
+   * quedar justo después del vecino visible anterior; si no hay, justo antes del
+   * siguiente; y si la columna visible está vacía, al final.
+   *
+   * `ref`: { antesDeId, despuesDeId } (vecinos visibles) o { posicion } (índice exacto, teclado).
+   */
+  async function mover(id, destino, ref = {}) {
     const respaldo = estado.tareas.map((t) => ({ ...t }));
     const tarea = estado.tareas.find((t) => t.id === id);
+    if (!tarea) return;
     const columna = ordenarColumna(destino).filter((t) => t.id !== id);
-    let pos = antesDeId === null ? columna.length : columna.findIndex((t) => t.id === antesDeId);
-    if (pos < 0) pos = columna.length;
+    const indiceDe = (otroId) => columna.findIndex((t) => t.id === otroId);
+
+    let pos = columna.length;
+    if (Number.isInteger(ref.posicion)) pos = Math.max(0, Math.min(ref.posicion, columna.length));
+    else if (ref.despuesDeId != null && indiceDe(ref.despuesDeId) >= 0) pos = indiceDe(ref.despuesDeId) + 1;
+    else if (ref.antesDeId != null && indiceDe(ref.antesDeId) >= 0) pos = indiceDe(ref.antesDeId);
 
     columna.splice(pos, 0, tarea);
     tarea.estado = destino;
     columna.forEach((t, i) => { t.orden = i; });
     render();
+    enfocarTarjeta(id);
 
     try {
       await api(`${URL_TAREA}/${id}/mover`, "PATCH", { estado: destino, orden: pos });
     } catch (err) {
       estado.tareas = respaldo;
       render();
+      enfocarTarjeta(id);
       avisar(err.message, "error");
     }
+  }
+
+  /** Tras repintar, el foco vuelve a la tarjeta movida para poder seguir con el teclado. */
+  function enfocarTarjeta(id) {
+    contenido.querySelector(`.me-tarjeta[data-id="${id}"]`)?.focus();
+  }
+
+  const anuncio = root.querySelector("[data-me-anuncio]");
+  function anunciar(texto) {
+    // Vaciar primero fuerza a los lectores a releer un mensaje idéntico al anterior.
+    anuncio.textContent = "";
+    setTimeout(() => { anuncio.textContent = texto; }, 30);
+  }
+
+  /** Flechas sobre una tarjeta del kanban. */
+  function moverConTeclado(tecla, id) {
+    const tarea = estado.tareas.find((t) => t.id === id);
+    if (!tarea) return;
+
+    if (tecla === "ArrowLeft" || tecla === "ArrowRight") {
+      const i = ESTADOS.findIndex((e) => e.id === tarea.estado) + (tecla === "ArrowRight" ? 1 : -1);
+      if (i < 0 || i >= ESTADOS.length) { anunciar(`${tarea.titulo} ya está en la ${i < 0 ? "primera" : "última"} columna.`); return; }
+      const destino = ESTADOS[i];
+      // Conserva el índice que tenía en su columna (acotado) para no saltar al final.
+      const actual = ordenarColumna(tarea.estado).findIndex((t) => t.id === id);
+      const total = ordenarColumna(destino.id).length;
+      const posicion = Math.min(actual, total);
+      anunciar(`${tarea.titulo} movida a ${destino.etiqueta}, posición ${posicion + 1} de ${total + 1}.`);
+      mover(id, destino.id, { posicion });
+      return;
+    }
+
+    // Arriba/abajo: se intercambia con el vecino VISIBLE; la posición real se calcula en la columna completa.
+    const idsVisibles = new Set(visibles().map((t) => t.id));
+    const completa = ordenarColumna(tarea.estado);
+    const visiblesCol = completa.filter((t) => idsVisibles.has(t.id));
+    const k = visiblesCol.findIndex((t) => t.id === id);
+    const vecino = visiblesCol[k + (tecla === "ArrowDown" ? 1 : -1)];
+    if (!vecino) { anunciar(`${tarea.titulo} ya está ${tecla === "ArrowDown" ? "al final" : "al inicio"} de la columna.`); return; }
+
+    const sinEsta = completa.filter((t) => t.id !== id);
+    const posicion = sinEsta.findIndex((t) => t.id === vecino.id) + (tecla === "ArrowDown" ? 1 : 0);
+    anunciar(`${tarea.titulo} movida ${tecla === "ArrowDown" ? "hacia abajo" : "hacia arriba"}, posición ${posicion + 1} de ${completa.length}.`);
+    mover(id, tarea.estado, { posicion });
   }
 
   function vistaTabla(lista) {
@@ -500,13 +564,42 @@
     }
   });
 
-  botonBorrar.addEventListener("click", async () => {
-    if (!editando || !window.confirm("¿Eliminar esta tarea? No se puede deshacer.")) return;
+  /** Toast con botón «Deshacer» (el de AgencyOS no admite acciones). Dura unos segundos. */
+  function toastDeshacer(mensaje, alDeshacer) {
+    let region = document.querySelector(".toast-region");
+    if (!region) {
+      region = el("div", { class: "toast-region" });
+      document.body.append(region);
+    }
+    const nodo = el("div", { class: "toast", role: "status" },
+      el("i", { class: "fa-solid fa-circle-check", style: "color:var(--text-success)" }),
+      el("span", { text: mensaje }),
+      el("button", { type: "button", class: "btn btn--sm", onclick: () => { clearTimeout(timer); nodo.remove(); alDeshacer(); } }, "Deshacer"));
+    const timer = setTimeout(() => nodo.remove(), 8000);
+    region.append(nodo);
+  }
+
+  async function restaurar(id) {
     try {
-      await api(`${URL_TAREA}/${editando.id}`, "DELETE");
-      estado.tareas = estado.tareas.filter((t) => t.id !== editando.id);
+      const tarea = await api(`${URL_TAREA}/${id}/restaurar`, "PATCH");
+      estado.tareas.push(tarea);
+      render();
+      avisar("Tarea restaurada.", "success");
+    } catch (err) {
+      avisar(err.message, "error");
+    }
+  }
+
+  botonBorrar.addEventListener("click", async () => {
+    // Sin confirm(): el borrado es suave y el toast permite deshacerlo.
+    if (!editando) return;
+    const borrada = editando;
+    try {
+      await api(`${URL_TAREA}/${borrada.id}`, "DELETE");
+      estado.tareas = estado.tareas.filter((t) => t.id !== borrada.id);
       window.AgencyOS.closeModal("tareaModal");
       render();
+      toastDeshacer("Tarea eliminada", () => restaurar(borrada.id));
     } catch (err) {
       errorForm.textContent = err.message;
       errorForm.hidden = false;
@@ -537,9 +630,18 @@
     if (t) abrirModal(t);
   });
   contenido.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" || !e.target.classList?.contains("me-tarjeta")) return;
-    const t = estado.tareas.find((x) => x.id === Number(e.target.dataset.id));
-    if (t) abrirModal(t);
+    if (!e.target.classList?.contains("me-tarjeta")) return;
+    const id = Number(e.target.dataset.id);
+    if (e.key === "Enter") {
+      const t = estado.tareas.find((x) => x.id === id);
+      if (t) abrirModal(t);
+      return;
+    }
+    // Solo en el kanban: en las otras vistas las flechas siguen desplazando la página.
+    if (estado.vista === "kanban" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      moverConTeclado(e.key, id);
+    }
   });
 
   render();

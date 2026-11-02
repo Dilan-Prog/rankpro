@@ -8,4 +8,5 @@ Route::prefix('identidad')->name('identidad.')->middleware('permiso:identidad')-
     Route::get('/', [IdentidadController::class, 'index'])->name('index');
     Route::put('/', [IdentidadController::class, 'guardar'])->name('guardar');
     Route::get('/logo', [IdentidadController::class, 'logo'])->name('logo');
+    Route::delete('/logo', [IdentidadController::class, 'quitarLogo'])->name('logo.quitar');
 });

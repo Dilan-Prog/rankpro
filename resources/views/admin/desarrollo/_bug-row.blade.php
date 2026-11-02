@@ -3,10 +3,12 @@
     data-bug-descripcion="{{ $bug->descripcion }}"
     data-bug-prioridad="{{ $bug->prioridad }}"
     data-bug-estado="{{ $bug->estado->value }}"
+    data-bug-responsable-id="{{ $bug->responsable_id }}"
     data-bug-fecha-resolucion="{{ $bug->fecha_resolucion?->format('Y-m-d') }}">
     <td>{{ $bug->titulo }}</td>
     <td><x-badge :status="$bug->prioridad" /></td>
     <td data-bug-estado-cell><x-badge :status="$bug->estado" /></td>
+    <td>{{ $bug->responsable?->name ?? '—' }}</td>
     <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $bug->fecha_resolucion?->format('Y-m-d') ?? '—' }}</td>
     <td>
         <div style="display:flex; gap:4px;">

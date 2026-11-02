@@ -9,6 +9,7 @@ use App\Models\Bug;
 use App\Models\Cliente;
 use App\Models\Proyecto;
 use App\Models\ProyectoPlaneacion;
+use App\Models\User;
 use App\Enums\EstadoTarea;
 use App\Support\ProyectoProgreso;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class DesarrolloController extends Controller
             ->get()
             ->map(fn (Proyecto $p) => $this->toRow($p));
 
-        $bugs = Bug::with('proyecto:id,nombre')
+        $bugs = Bug::with(['proyecto:id,nombre', 'responsable:id,name'])
             ->whereHas('proyecto')
             ->latest('created_at')
             ->get()
@@ -44,6 +45,7 @@ class DesarrolloController extends Controller
             'bugs' => $bugs,
             'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->count(),
             'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
+            'usuarios' => $this->usuariosActivos(),
         ]);
     }
 
@@ -101,10 +103,11 @@ class DesarrolloController extends Controller
                 'direccion',
                 'control',
                 'tareas',
-                'bugs',
+                'bugs.responsable',
                 'comunicaciones',
                 'qa'
             ),
+            'usuarios' => $this->usuariosActivos(),
         ]);
     }
 
@@ -136,6 +139,12 @@ class DesarrolloController extends Controller
         $proyecto->delete();
 
         return response()->json(['deleted' => true]);
+    }
+
+    /** Candidatos a «Asignado a» de un bug: solo usuarios activos (la validación de BugController exige lo mismo). */
+    private function usuariosActivos()
+    {
+        return User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
     }
 
     /** Shared shape for index()'s server-rendered cards and store()/update()'s AJAX responses. */
@@ -188,6 +197,8 @@ class DesarrolloController extends Controller
             'id' => $b->id,
             'proyecto_id' => $b->proyecto_id,
             'proyecto_nombre' => $b->proyecto->nombre,
+            'responsable_id' => $b->responsable_id,
+            'responsable_nombre' => $b->responsable?->name,
             'titulo' => $b->titulo,
             'descripcion' => $b->descripcion,
             'prioridad' => $b->prioridad,

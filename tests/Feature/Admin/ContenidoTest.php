@@ -415,7 +415,7 @@ class ContenidoTest extends TestCase
             'fecha inválida' => [function (&$d) { $d['filas'][0]['celdas']['c3'] = '2026-13-45'; }],
             'opción que no existe' => [function (&$d) { $d['filas'][0]['celdas']['c4'] = 'Inventada'; }],
             'id de fila repetido' => [function (&$d) { $d['filas'][] = $d['filas'][0]; }],
-            'vista inválida' => [function (&$d) { $d['vista'] = 'galeria'; }],
+            'vista inválida' => [function (&$d) { $d['vista'] = 'mosaico'; }],
             'demasiadas columnas' => [function (&$d) {
                 $d['columnas'] = array_map(fn ($i) => ['id' => "k$i", 'nombre' => "C$i", 'tipo' => 'texto', 'opciones' => []], range(1, 31));
                 $d['filas'] = [];

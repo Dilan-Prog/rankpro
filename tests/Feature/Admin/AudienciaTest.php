@@ -186,4 +186,100 @@ class AudienciaTest extends TestCase
             ->assertOk()
             ->assertSee('Elige un cliente en el selector');
     }
+
+    private function respuestasCuestionario(array $cambios = []): array
+    {
+        return array_merge([
+            'producto' => 'Clínica dental',
+            'publico' => 'Familias de la zona',
+            'dolor' => 'Miedo al dentista, precios poco claros, falta de tiempo',
+            'donde' => 'Google, Instagram',
+        ], $cambios);
+    }
+
+    public function test_generar_devuelve_tres_borradores_y_no_guarda_nada(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario())
+            ->assertOk()
+            ->assertJsonCount(3, 'personas')
+            ->assertJsonPath('personas.0.nombre', 'El decisor práctico')
+            ->assertJsonStructure(['personas' => [['nombre', 'perfil', 'dolores', 'mensaje', 'canales']]]);
+
+        $this->assertSame(0, BuyerPersona::count());
+    }
+
+    public function test_generar_exige_las_cuatro_respuestas(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        foreach (['producto', 'publico', 'dolor', 'donde'] as $campo) {
+            $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario([$campo => '']))
+                ->assertStatus(422)
+                ->assertJsonValidationErrors($campo);
+        }
+    }
+
+    public function test_generar_rechaza_respuestas_que_quedan_vacias_al_limpiarlas(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario(['donde' => '<b></b>']))
+            ->assertStatus(422);
+    }
+
+    public function test_generar_limita_la_longitud_de_las_respuestas(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario(['producto' => str_repeat('a', 121)]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('producto');
+    }
+
+    public function test_generar_no_devuelve_marcado_html(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $respuesta = $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario([
+            'producto' => '<script>alert(1)</script>Tienda',
+        ]))->assertOk();
+
+        $this->assertStringNotContainsString('<script', $respuesta->getContent());
+    }
+
+    public function test_generar_sin_cliente_activo_da_422(): void
+    {
+        $this->comoUsuarioCon(null)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario())
+            ->assertStatus(422);
+    }
+
+    public function test_generar_requiere_sesion(): void
+    {
+        $this->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario())->assertUnauthorized();
+    }
+
+    public function test_un_borrador_se_guarda_solo_con_el_store_normal(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $borrador = $this->comoUsuarioCon($cliente)->postJson(route('admin.audiencia.generar'), $this->respuestasCuestionario())
+            ->json('personas.1');
+
+        $this->comoUsuarioCon($cliente)->post(route('admin.audiencia.store'), $borrador)
+            ->assertRedirect(route('admin.audiencia.index'))->assertSessionHasNoErrors();
+
+        $this->assertSame(['El explorador cuidadoso'], $this->nombresEnOrden($cliente));
+    }
+
+    public function test_la_pantalla_rotula_que_son_borradores_de_plantilla(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->comoUsuarioCon($cliente)->get(route('admin.audiencia.index'))
+            ->assertOk()
+            ->assertSee('Armar con 4 preguntas')
+            ->assertSee('borradores a partir de una plantilla, no un análisis de mercado', false);
+    }
 }

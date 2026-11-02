@@ -84,6 +84,8 @@ export default defineConfig({
                 'resources/js/contenido.js',
                 'resources/css/admin/tablero.css',
                 'resources/js/tablero.js',
+                'resources/css/admin/pizarra.css',
+                'resources/js/pizarra.js',
                 'resources/css/admin/propuestas.css',
                 'resources/js/propuestas.js',
                 'resources/css/admin/correo-plantillas.css',

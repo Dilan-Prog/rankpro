@@ -21,7 +21,6 @@ class CasosExitoTest extends TestCase
     private const INVENTADO = [
         'Mac del Norte',
         'macdelnorte',
-        'Fichas de habitación',
         'Google Business Profile',
         'Dirección general',
         'Fabricante industrial',
@@ -74,7 +73,9 @@ class CasosExitoTest extends TestCase
         $this->assertStringContainsString('Industrial B2B', $listado);
 
         $fratelli = $this->get('/casos-de-exito/hotel-fratelli')->getContent();
-        $this->assertStringContainsString('href="https://hotelfratelli.com.mx/"', $fratelli);
+        // Enlaza a su landing real (e5c5b47), no a la raíz del dominio.
+        $this->assertStringContainsString('href="https://hotelfratelli.com.mx/hoteles-en-aguascalientes"', $fratelli);
+        $this->assertStringContainsString('Fichas de habitación', $fratelli);
 
         $equiterm = $this->get('/casos-de-exito/equiterm-industries')->getContent();
         $this->assertStringContainsString('href="https://equitermindustries.com.mx/"', $equiterm);
@@ -91,7 +92,7 @@ class CasosExitoTest extends TestCase
         foreach (['hotel-fratelli', 'equiterm-industries'] as $slug) {
             $html = $this->get('/casos-de-exito/'.$slug)->assertOk()->getContent();
 
-            preg_match_all('/<a[^>]+href="https:\/\/(?:hotelfratelli|equitermindustries)\.com\.mx\/"[^>]*>/', $html, $enlaces);
+            preg_match_all('/<a[^>]+href="https:\/\/(?:hotelfratelli|equitermindustries)\.com\.mx\/[^"]*"[^>]*>/', $html, $enlaces);
 
             $this->assertNotEmpty($enlaces[0], "Sin enlace al cliente en {$slug}");
 
@@ -111,9 +112,10 @@ class CasosExitoTest extends TestCase
         $this->assertStringContainsString('Google Search Console', $html);
         $this->assertStringContainsString('datos del cliente', $html);
 
-        // La solución por servicio no está documentada por el cliente: la
-        // sección no debe existir, y menos con tácticas de relleno.
-        $this->assertStringNotContainsString('La solución', $html);
+        // Desde eb45151 este caso sí documenta su solución por servicio (e-commerce,
+        // automatizaciones, estructura SEO/AEO); lo que sigue sin datos es la
+        // evolución mensual, y ese bloque vacío debe omitirse.
+        $this->assertStringContainsString('La solución', $html);
         $this->assertStringNotContainsString('Evolución', $html);
     }
 

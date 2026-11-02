@@ -6,6 +6,8 @@ use App\Enums\TipoElementoContenido;
 use App\Models\ElementoContenido;
 use App\Support\ClienteActivo;
 use App\Support\Contenido\ArbolContenido;
+use App\Support\Contenido\FuentesTabla;
+use App\Support\Contenido\PizarraContenido;
 use App\Support\Contenido\TablaContenido;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -93,10 +95,10 @@ class ContenidoController extends ContenidoBaseController
         $clienteId = $this->clienteActivoObligatorio();
 
         $data = $request->validate([
-            'tipo' => ['required', Rule::in(['carpeta', 'documento', 'tabla'])],
+            'tipo' => ['required', Rule::in(['carpeta', 'documento', 'tabla', 'pizarra'])],
             'nombre' => ['required', 'string', 'max:255'],
             'parent_id' => ['nullable', 'integer'],
-            'plantilla' => ['nullable', Rule::in(['calendario'])],
+            'plantilla' => ['nullable', Rule::in(array_merge(['calendario'], PizarraContenido::PLANTILLAS))],
         ]);
 
         if ($error = ArbolContenido::errorDePadre($clienteId, $data['parent_id'] ?? null)) {
@@ -109,6 +111,7 @@ class ContenidoController extends ContenidoBaseController
                 ($data['plantilla'] ?? null) === 'calendario' ? TablaContenido::plantillaCalendario() : TablaContenido::vacia(),
                 JSON_UNESCAPED_UNICODE
             ),
+            'pizarra' => json_encode(PizarraContenido::plantilla($data['plantilla'] ?? null), JSON_UNESCAPED_UNICODE),
             default => null,
         };
 
@@ -229,11 +232,16 @@ class ContenidoController extends ContenidoBaseController
                 'urlGuardar' => route('admin.contenido.documento.guardar', $elemento),
                 'urlPrevia' => route('admin.contenido.previsualizar'),
             ]),
+            TipoElementoContenido::Pizarra => redirect()->route('admin.contenido.pizarra', $elemento),
             TipoElementoContenido::Tabla => $this->vistaEditor('admin.contenido.tabla', $elemento, [
                 'datos' => TablaContenido::decodificar($elemento->contenido),
                 'urlGuardar' => route('admin.contenido.tabla.guardar', $elemento),
                 'urlImportar' => route('admin.contenido.tabla.importar', $elemento),
                 'urlExportar' => route('admin.contenido.tabla.exportar', $elemento),
+                'urlConvertirColumna' => route('admin.contenido.tabla.convertir-columna', $elemento),
+                'urlLlenar' => route('admin.contenido.tabla.llenar', $elemento),
+                'fuentes' => FuentesTabla::disponibles(auth()->user()),
+                'fuentesEtiquetas' => FuentesTabla::etiquetas(),
             ]),
         };
     }

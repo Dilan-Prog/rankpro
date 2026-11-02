@@ -7,6 +7,9 @@ use App\Models\Cliente;
 use App\Models\Keyword;
 use App\Models\KeywordMedicion;
 use App\Models\Proyecto;
+use App\Models\SeoCampana;
+use App\Models\SeoOnPageAccion;
+use App\Models\Servicio;
 use App\Models\Tarea;
 use App\Support\Tablero\TableroCliente;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -188,5 +191,64 @@ class TableroClienteTest extends TestCase
         $this->assertNull($r['posicion_media']['mejora']);
         $this->assertSame(0, $r['tareas']['vencidas']);
         $this->assertNull($r['tareas']['porcentaje_vencidas']);
+    }
+
+    private function accionSeo(SeoCampana $campana, array $extra): SeoOnPageAccion
+    {
+        return SeoOnPageAccion::create($extra + [
+            'seo_campana_id' => $campana->id,
+            'tipo' => 'on_page',
+            'url_pagina' => '',
+            'accion' => 'Optimizar títulos',
+            'estado' => 'pendiente',
+        ]);
+    }
+
+    private function campanaSeo(Cliente $cliente): SeoCampana
+    {
+        return SeoCampana::create([
+            'cliente_id' => $cliente->id,
+            'servicio_id' => Servicio::factory()->create()->id,
+            'nombre' => 'Campaña SEO',
+            'url_sitio' => 'https://ejemplo.com',
+            'estado' => 'activa',
+            'fase_actual' => 'auditoria',
+            'ciclo_actual' => 1,
+            'fecha_inicio' => now()->subMonth(),
+        ]);
+    }
+
+    public function test_actividades_seo_a_tiempo_cuenta_solo_cerradas_con_fecha_limite_del_cliente(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $otro = Cliente::factory()->create();
+        $campana = $this->campanaSeo($cliente);
+
+        // a tiempo (antes del límite y el mismo día)
+        $this->accionSeo($campana, ['estado' => 'completada', 'fecha_limite' => '2026-10-10', 'cerrada_en' => '2026-10-05']);
+        $this->accionSeo($campana, ['estado' => 'completada', 'fecha_limite' => '2026-10-10', 'cerrada_en' => '2026-10-10']);
+        // tarde
+        $this->accionSeo($campana, ['estado' => 'completada', 'fecha_limite' => '2026-10-10', 'cerrada_en' => '2026-10-12']);
+        // no cuentan: sin fecha límite, abierta, y de otro cliente
+        $this->accionSeo($campana, ['estado' => 'completada', 'cerrada_en' => '2026-10-12']);
+        $this->accionSeo($campana, ['estado' => 'pendiente', 'fecha_limite' => '2026-10-10']);
+        $this->accionSeo($this->campanaSeo($otro), ['estado' => 'completada', 'fecha_limite' => '2026-10-10', 'cerrada_en' => '2026-10-01']);
+
+        $r = (new TableroCliente())->calcular($cliente)['actividades_seo'];
+
+        $this->assertSame(3, $r['con_fecha_limite']);
+        $this->assertSame(2, $r['a_tiempo']);
+        $this->assertSame(66.7, $r['porcentaje_a_tiempo']);
+    }
+
+    public function test_actividades_seo_sin_cerradas_con_fecha_limite_devuelve_null_sin_dividir_entre_cero(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $this->accionSeo($this->campanaSeo($cliente), ['estado' => 'completada']);
+
+        $r = (new TableroCliente())->calcular($cliente)['actividades_seo'];
+
+        $this->assertSame(0, $r['con_fecha_limite']);
+        $this->assertNull($r['porcentaje_a_tiempo']);
     }
 }
