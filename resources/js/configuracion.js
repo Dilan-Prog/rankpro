@@ -98,5 +98,175 @@
     }
   }
 
+  /**
+   * Medición del sitio: detecta en vivo los IDs de Google dentro de lo que la
+   * persona pega y rellena los campos. Seguridad: el texto pegado solo se lee
+   * con regex; nunca se evalúa ni se inserta como HTML (chips con textContent).
+   * Las regex son equivalentes a las del servidor (App\Support\Medicion).
+   * La detección solo AYUDA: guardar funciona igual sin JS.
+   */
+  const PATRONES_MEDICION = {
+    gtm: /(?:^|[^A-Za-z0-9_-])(GTM-[A-Z0-9]{6,8})(?![A-Za-z0-9_-])/g,
+    ga4: /(?:^|[^A-Za-z0-9_-])(G-[A-Z0-9]{6,12})(?![A-Za-z0-9_-])/g,
+    ads: /(?:^|[^A-Za-z0-9_-])(AW-\d{6,12})(?:\/([A-Za-z0-9_-]{6,}))?(?![A-Za-z0-9_-])/g,
+  };
+
+  const NOMBRES_MEDICION = {
+    gtm: "Google Tag Manager",
+    ga4: "Google Analytics 4",
+    ads: "Google Ads",
+    conversion: "Etiqueta de conversión",
+  };
+
+  function detectarMedicion(texto) {
+    const hallado = { gtm: [], ga4: [], ads: [], conversion: [] };
+    const agregar = (lista, valor) => {
+      if (!lista.includes(valor)) lista.push(valor);
+    };
+
+    for (const m of texto.matchAll(PATRONES_MEDICION.gtm)) agregar(hallado.gtm, m[1]);
+    for (const m of texto.matchAll(PATRONES_MEDICION.ga4)) agregar(hallado.ga4, m[1]);
+    for (const m of texto.matchAll(PATRONES_MEDICION.ads)) {
+      agregar(hallado.ads, m[1]);
+      if (m[2]) agregar(hallado.conversion, `${m[1]}/${m[2]}`);
+    }
+
+    return hallado;
+  }
+
+  function initMedicion() {
+    const root = document.querySelector("[data-configuracion-medicion]");
+    if (!root) return;
+
+    const form = root.querySelector("[data-med-form]");
+    const codigo = root.querySelector("[data-med-codigo]");
+    const chips = root.querySelector("[data-med-chips]");
+    const titulo = root.querySelector("[data-med-detectado-titulo]");
+    const btnLimpiar = root.querySelector("[data-med-limpiar]");
+    const campos = {
+      gtm: root.querySelector('[data-med-campo="gtm"]'),
+      ga4: root.querySelector('[data-med-campo="ga4"]'),
+      ads: root.querySelector('[data-med-campo="ads"]'),
+    };
+    const btnGuardar = root.querySelector("[data-med-guardar]");
+    const textoGuardar = root.querySelector("[data-med-guardar-texto]");
+    const avisoSinGuardar = root.querySelector("[data-med-sin-guardar]");
+
+    let sucio = false;
+    let enviando = false;
+
+    const marcarSucio = () => {
+      sucio = true;
+      if (avisoSinGuardar) avisoSinGuardar.hidden = false;
+    };
+
+    function pintarChip(tipo, valor) {
+      const chip = document.createElement("span");
+      chip.className = "cfg-med__chip u-mono";
+      const etiqueta = document.createElement("strong");
+      etiqueta.textContent = NOMBRES_MEDICION[tipo] + ":";
+      chip.append(etiqueta, " ", document.createTextNode(valor));
+      chips.appendChild(chip);
+    }
+
+    function alPegar() {
+      const hallado = detectarMedicion(codigo.value);
+      chips.textContent = "";
+
+      let total = 0;
+      for (const tipo of ["gtm", "ga4", "ads", "conversion"]) {
+        hallado[tipo].forEach((valor) => {
+          pintarChip(tipo, valor);
+          total++;
+        });
+      }
+
+      btnLimpiar.hidden = codigo.value.trim() === "";
+
+      if (total === 0) {
+        titulo.textContent = codigo.value.trim() === ""
+          ? "Aún no hemos detectado nada."
+          : "No encontramos ningún ID. Revisa que hayas copiado el código completo.";
+        return;
+      }
+
+      titulo.textContent = hallado.conversion.length
+        ? "Detectamos (la etiqueta de conversión pégala tú en la conversión que corresponda):"
+        : "Detectamos:";
+
+      // Solo se rellena lo detectado; si hay varios del mismo tipo gana el primero.
+      for (const tipo of ["gtm", "ga4", "ads"]) {
+        if (hallado[tipo].length && campos[tipo] && campos[tipo].value !== hallado[tipo][0]) {
+          campos[tipo].value = hallado[tipo][0];
+          marcarSucio();
+        }
+      }
+    }
+
+    if (codigo) {
+      codigo.addEventListener("input", alPegar);
+      alPegar();
+    }
+
+    if (btnLimpiar) {
+      btnLimpiar.addEventListener("click", () => {
+        codigo.value = "";
+        alPegar();
+        codigo.focus();
+      });
+    }
+
+    // Copiar los nombres de evento para Tag Manager.
+    root.querySelectorAll("[data-med-copiar]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const valor = btn.dataset.medCopiar;
+        try {
+          await navigator.clipboard.writeText(valor);
+          toast(`Copiado: ${valor}`, "success");
+        } catch (e) {
+          // Sin permiso de portapapeles (http o navegador viejo): se pide copiarlo a mano.
+          toast(`No se pudo copiar. Escríbelo así: ${valor}`, "warning");
+        }
+      });
+    });
+
+    if (form) {
+      // Cambios sin guardar: cualquier edición real (el cuadro de pegado no se guarda).
+      const alCambiar = (e) => {
+        if (e.target !== codigo) marcarSucio();
+      };
+      form.addEventListener("input", alCambiar);
+      form.addEventListener("change", alCambiar);
+
+      form.addEventListener("submit", (e) => {
+        if (enviando) {
+          e.preventDefault();
+          return;
+        }
+        enviando = true;
+        sucio = false;
+        if (btnGuardar) btnGuardar.disabled = true;
+        if (textoGuardar) textoGuardar.textContent = "Guardando...";
+      });
+
+      window.addEventListener("beforeunload", (e) => {
+        if (sucio && !enviando) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+
+      // Volver atrás (bfcache) no debe dejar el botón bloqueado.
+      window.addEventListener("pageshow", (e) => {
+        if (e.persisted) {
+          enviando = false;
+          if (btnGuardar) btnGuardar.disabled = false;
+          if (textoGuardar) textoGuardar.textContent = "Guardar";
+        }
+      });
+    }
+  }
+
   document.addEventListener("shell:ready", initSmtp);
+  document.addEventListener("shell:ready", initMedicion);
 })();

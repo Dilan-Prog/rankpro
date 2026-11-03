@@ -8,8 +8,10 @@
     {{-- Medicion: Consent Mode v2 + GTM. Va antes que nada para que el estado de
          consentimiento se declare antes de cargar cualquier etiqueta. --}}
     @include('components.analytics.gtm')
-    {{-- Google Ads (gtag.js directo): solo si no hay GTM; ver config/analytics.php. --}}
-    @include('components.analytics.google-ads')
+    {{-- gtag.js directo (GA4 y/o Google Ads): solo si no hay GTM; ver App\Support\Medicion. --}}
+    @include('components.analytics.gtag')
+    {{-- Datos para el JS publico (modo y etiquetas de conversion); va tras gtm/gtag. --}}
+    @include('components.analytics.config')
 
     {{-- Orígenes externos realmente usados: Google Fonts (Manrope). Va como <link> y no como @import del CSS para no encadenar peticiones. --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">

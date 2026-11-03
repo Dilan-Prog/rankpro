@@ -70,7 +70,7 @@ class AgendarController extends Controller
     public function agendar(Request $request): JsonResponse
     {
         if (filled($request->input('sitio_alterno'))) {
-            return response()->json(['ok' => true, 'mensaje' => self::MENSAJE_CONFIRMADA]);
+            return response()->json(['ok' => true, 'mensaje' => self::MENSAJE_CONFIRMADA, 'creada' => false]);
         }
 
         $data = $request->validate([
@@ -149,7 +149,7 @@ class AgendarController extends Controller
 
         $this->enviarCorreos($reunion, $config);
 
-        return $this->respuestaDeReunion($reunion, true);
+        return $this->respuestaDeReunion($reunion, true, creada: true);
     }
 
     /** @return array{0: ?Reunion, 1: bool} la reunión y si se halló por su clave de idempotencia */
@@ -170,15 +170,19 @@ class AgendarController extends Controller
         return [$natural, false];
     }
 
-    /** $conClave: la petición presentó la clave de la reserva, única prueba de que es quien la hizo. */
-    private function respuestaDeReunion(Reunion $reunion, bool $conClave): JsonResponse
+    /**
+     * $conClave: la petición presentó la clave de la reserva, única prueba de que es quien la hizo.
+     * $creada: la reunión se creó en ESTA petición (no es un reintento ni una carrera perdida). El sitio
+     * lo usa para disparar la conversión de Google Ads una sola vez por reserva.
+     */
+    private function respuestaDeReunion(Reunion $reunion, bool $conClave, bool $creada = false): JsonResponse
     {
         // Reintento con la clave de una reunión que ya se canceló: no se resucita.
         if ($reunion->estado === EstadoReunion::Cancelada) {
             return response()->json(['message' => 'Esa reunión ya fue cancelada, agenda una nueva.'], 422);
         }
 
-        $respuesta = ['ok' => true, 'mensaje' => self::MENSAJE_CONFIRMADA];
+        $respuesta = ['ok' => true, 'mensaje' => self::MENSAJE_CONFIRMADA, 'creada' => $creada];
         if ($conClave) {
             $respuesta['cancelar_url'] = route('agendar.cancelar', $reunion->token);
         }

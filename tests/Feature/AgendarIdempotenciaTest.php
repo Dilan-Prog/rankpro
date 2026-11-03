@@ -81,7 +81,13 @@ class AgendarIdempotenciaTest extends TestCase
 
         $primera->assertOk()->assertJson(['ok' => true]);
         $segunda->assertOk()->assertJson(['ok' => true]);
-        $this->assertSame($primera->json(), $segunda->json());
+        // Misma respuesta salvo `creada`: solo la primera creó la reunión (el sitio dispara la conversión una vez).
+        $this->assertTrue($primera->json('creada'));
+        $this->assertFalse($segunda->json('creada'));
+        $this->assertSame(
+            collect($primera->json())->except('creada')->all(),
+            collect($segunda->json())->except('creada')->all()
+        );
 
         $this->assertSame(1, Reunion::count());
         Mail::assertSent(ReunionConfirmadaMail::class, 1);

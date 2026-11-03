@@ -10,7 +10,7 @@
     y pedir permiso para nada seria ruido.
 --}}
 @php
-    // GTM o la etiqueta directa de Google Ads: cualquiera de las dos necesita consentimiento.
+    // GTM o gtag directo (GA4 / Google Ads): cualquiera de los dos necesita consentimiento.
     $hayMedicion = \App\Support\Medicion::hayMedicion();
 @endphp
 

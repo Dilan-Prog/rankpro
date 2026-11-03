@@ -6,15 +6,12 @@
     que GTM cargue cualquier etiqueta, o las primeras peticiones salen sin
     senal de consentimiento y Google las descarta.
 
-    Si no hay GTM_ID, o el entorno no esta en config('analytics.entornos'),
-    no se emite absolutamente nada.
+    Solo se emite en modo 'gtm' de App\Support\Medicion (ID de GTM valido y
+    medicion activa); si no, no se emite absolutamente nada.
 --}}
-@php
-    $gtmId = config('analytics.gtm_id');
-    $gtmActivo = \App\Support\Medicion::gtmActivo();
-@endphp
+@if (\App\Support\Medicion::gtmActivo())
+    @php($gtmId = \App\Support\Medicion::gtmId())
 
-@if ($gtmActivo)
     {{-- 1. Consent Mode v2: estado por defecto ANTES de cargar GTM --}}
     @include('components.analytics.consent-default')
 

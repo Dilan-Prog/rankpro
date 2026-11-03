@@ -68,7 +68,8 @@ class Navigation
                 ['route' => 'admin.usuarios.index', 'active' => 'admin.usuarios.*', 'icon' => 'fa-users-gear', 'label' => 'Usuarios', 'permiso' => 'usuarios'],
                 ['route' => 'admin.roles.index', 'active' => 'admin.roles.*', 'icon' => 'fa-user-shield', 'label' => 'Roles', 'permiso' => 'roles'],
                 ['route' => 'admin.integraciones.index', 'active' => 'admin.integraciones.*', 'icon' => 'fa-plug', 'label' => 'Integraciones', 'permiso' => 'integraciones'],
-                ['route' => 'admin.configuracion.smtp.edit', 'active' => 'admin.configuracion.*', 'icon' => 'fa-server', 'label' => 'Configuración de correo', 'permiso' => 'configuracion'],
+                ['route' => 'admin.configuracion.smtp.edit', 'active' => 'admin.configuracion.smtp.*', 'icon' => 'fa-server', 'label' => 'Configuración de correo', 'permiso' => 'configuracion'],
+                ['route' => 'admin.configuracion.medicion.edit', 'active' => 'admin.configuracion.medicion.*', 'icon' => 'fa-chart-pie', 'label' => 'Medición y Google', 'permiso' => 'configuracion'],
             ],
         ];
     }

@@ -376,6 +376,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
+                    // Medicion: solo si el servidor creo la reserva en ESTA peticion. El
+                    // servidor responde igual (ok:true) ante un reintento idempotente o el
+                    // honeypot, asi que se exige `creada === true` si el servidor lo informa,
+                    // se ignora el honeypot y se deduplica por clave de idempotencia.
+                    registrarReservaCompletada(data, payload);
+
                     mostrarConfirmacion(data, datos);
                 })
                 .catch(() => {
@@ -390,6 +396,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
         });
+    }
+
+    // ---------- Medición: evento de reserva completada ----------
+
+    const clavesMedidas = new Set();
+
+    function registrarReservaCompletada(data, payload) {
+        if (typeof window.rankproEvento !== 'function') {
+            return; // sin medicion configurada (o analytics.js no cargó)
+        }
+        if (payload.sitio_alterno) {
+            return; // honeypot: es un bot, la respuesta de éxito es falsa
+        }
+        if (data.creada === false) {
+            return; // reintento idempotente: la reserva ya existía
+        }
+        // Defensa extra: la misma clave no cuenta dos veces aunque el servidor no informe `creada`.
+        const clave = payload.clave_idempotencia;
+        if (clave) {
+            if (clavesMedidas.has(clave)) {
+                return;
+            }
+            clavesMedidas.add(clave);
+        }
+
+        // Sin datos personales: ni nombre, ni correo, ni teléfono, ni notas.
+        window.rankproEvento('agendar_completado');
     }
 
     // ---------- Confirmación: resumen + Google Calendar + .ics ----------

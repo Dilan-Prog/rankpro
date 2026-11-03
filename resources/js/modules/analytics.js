@@ -13,15 +13,49 @@
  *   click_email             · enlaces mailto:
  *   envio_formulario_contacto · envio del formulario de /contacto
  *   scroll_90               · lectura completa (util para medir los articulos)
+ *   agendar_completado      · reserva creada en /agendar (lo emite agendar.js)
+ *
+ * Dos modos segun window.rankproMedicion (lo imprime el servidor solo si hay
+ * medicion configurada en el panel):
+ *   gtm / sin variable -> dataLayer.push (comportamiento original)
+ *   gtag               -> gtag('event', ...) y, si hay etiqueta, la conversion
  *
  * NOTA: no se envia ningun dato personal al dataLayer. De los enlaces mailto y
  * tel solo se registra su ubicacion en la pagina, nunca la direccion ni el
  * numero, para no filtrar datos de contacto a la analitica.
  */
 const push = (evento, datos = {}) => {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: evento, ...datos });
+    const medicion = window.rankproMedicion;
+
+    // Sin la variable no hay medicion configurada en el panel: el comportamiento es
+    // el de siempre (dataLayer, que GTM recoge si el contenedor viene del .env).
+    if (!medicion || medicion.modo !== 'gtag') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: evento, ...datos });
+
+        return;
+    }
+
+    // Modo gtag (sin Tag Manager): gtag.js ya cargo y definio window.gtag. Si aun
+    // no existe (bloqueador de anuncios, carga lenta) se descarta en silencio en
+    // vez de romper la pagina.
+    if (typeof window.gtag !== 'function') {
+        return;
+    }
+
+    window.gtag('event', evento, datos);
+
+    // Conversion de Google Ads: solo si el panel tiene la etiqueta de ese evento.
+    const etiqueta = medicion.conversiones && medicion.conversiones[evento];
+
+    if (etiqueta) {
+        window.gtag('event', 'conversion', { send_to: etiqueta });
+    }
 };
+
+// Publica la misma logica para otros scripts (p. ej. agendar.js emite
+// 'agendar_completado'). Nunca debe recibir datos personales.
+window.rankproEvento = push;
 
 /** Ubicacion legible del enlace, para poder comparar que CTA funciona mejor. */
 const ubicacion = (elemento) => {

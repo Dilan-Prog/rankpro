@@ -7,7 +7,7 @@
     etiqueta de Google (GTM o gtag.js), o las primeras peticiones salen sin
     senal de consentimiento y Google las descarta.
 
-    Lo incluyen components/analytics/gtm y components/analytics/google-ads.
+    Lo incluyen components/analytics/gtm y components/analytics/gtag.
 --}}
 <script>
     window.dataLayer = window.dataLayer || [];
