@@ -92,10 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return x;
     }
 
-    /** "2026-09-23" -> "martes 23 de septiembre" */
+    /** Solo la primera letra en mayúscula: en español "de" y los meses van en minúscula dentro de la frase. */
+    function primeraMayuscula(texto) {
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
+    }
+
+    /** "2026-09-23" -> "Martes 23 de septiembre" */
     function formatearFechaLarga(fechaISO) {
         const fecha = parseYmd(fechaISO);
-        return fecha.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+        return primeraMayuscula(fecha.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }));
     }
 
     /** "09:00" -> "9:00 AM" */
@@ -137,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------- Calendario de mes ----------
 
     function pintarCalendario() {
-        elMesTitulo.textContent = `${MESES[mesActual.getMonth()]} ${mesActual.getFullYear()}`;
+        elMesTitulo.textContent = `${primeraMayuscula(MESES[mesActual.getMonth()])} ${mesActual.getFullYear()}`;
 
         const primerDiaSemana = (mesActual.getDay() + 6) % 7; // semana inicia en lunes
         const diasEnMes = new Date(mesActual.getFullYear(), mesActual.getMonth() + 1, 0).getDate();

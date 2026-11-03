@@ -90,7 +90,7 @@
 
   function renderCuadricula() {
     const [anio, mes] = estado.mes.split("-").map(Number);
-    root.querySelector("[data-cal-titulo]").textContent = `${MESES[mes - 1]} ${anio}`;
+    root.querySelector("[data-cal-titulo]").textContent = `${MESES[mes - 1].charAt(0).toUpperCase()}${MESES[mes - 1].slice(1)} ${anio}`;
 
     const eventos = eventosVisibles();
     const inicio = inicioCuadricula(estado.mes);

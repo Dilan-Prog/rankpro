@@ -36,7 +36,6 @@
 .cal-nav__titulo {
   min-width: 160px;
   text-align: center;
-  text-transform: capitalize;
   color: var(--color-foreground);
 }
 
@@ -169,7 +168,6 @@
 .cal-panel__titulo {
   margin: 0;
   font-size: var(--text-base, 16px);
-  text-transform: capitalize;
   color: var(--color-foreground);
 }
 
