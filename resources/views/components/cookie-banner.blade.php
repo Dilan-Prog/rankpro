@@ -6,15 +6,15 @@
     decision vigente en localStorage. Asi no hay parpadeo ni salto de layout
     (el banner esta en position: fixed, fuera del flujo).
 
-    Solo se emite si la medicion esta activa: sin GTM no hay nada que consentir
+    Solo se emite si la medicion esta activa: sin GTM ni Google Ads no hay nada que consentir
     y pedir permiso para nada seria ruido.
 --}}
 @php
-    $gtmActivo = config('analytics.gtm_id')
-        && in_array(config('app.env'), config('analytics.entornos'), true);
+    // GTM o la etiqueta directa de Google Ads: cualquiera de las dos necesita consentimiento.
+    $hayMedicion = \App\Support\Medicion::hayMedicion();
 @endphp
 
-@if ($gtmActivo)
+@if ($hayMedicion)
     <div class="cookie-banner"
          data-cookie-banner
          data-dias="{{ config('analytics.consent_dias') }}"
