@@ -81,12 +81,10 @@
                         se dice en el mes en que pasa, no en la junta de renovación.
                     </p>
                     <p>
-                        Hoy acumulamos <strong>4 años de experiencia en México</strong>, hemos trabajado con
-                        <strong>más de 200 clientes</strong> y sostenemos una <strong>tasa de retención del 98%</strong>,
-                        con <strong>más de $120M en ventas generadas</strong> para los negocios que atendemos.
-                        Esas cifras nos importan menos por lo que dicen de nosotros que por lo que
-                        implican: que la mayoría de nuestros clientes se quedan porque el trabajo se
-                        sostiene en el tiempo.
+                        Esa forma de trabajar se sostiene en cosas verificables: acceso del cliente a sus
+                        propias cuentas, reportes que explican qué se hizo y por qué, y acuerdos claros
+                        desde el inicio. Preferimos que la relación continúe porque el trabajo se entiende
+                        y se sostiene en el tiempo, no por un contrato que cuesta cancelar.
                     </p>
 
                     <h2>Cómo trabajamos</h2>

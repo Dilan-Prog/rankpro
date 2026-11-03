@@ -34,14 +34,14 @@ class BugController extends Controller
 
     public function store(Request $request, Proyecto $proyecto): JsonResponse
     {
-        $bug = $proyecto->bugs()->create($this->validated($request));
+        $bug = $proyecto->bugs()->create($this->validated($request, null));
 
         return response()->json($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])), 201);
     }
 
     public function update(Request $request, Bug $bug): JsonResponse
     {
-        $bug->update($this->validated($request));
+        $bug->update($this->validated($request, $bug));
 
         return response()->json($this->toRow($bug->fresh()->load(['proyecto:id,nombre', 'responsable:id,name'])));
     }
@@ -72,9 +72,9 @@ class BugController extends Controller
         ];
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Bug $bug): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:2000'],
             'prioridad' => ['required', 'in:alta,media,baja'],
@@ -83,5 +83,14 @@ class BugController extends Controller
             // Opcional y solo si viene: el arrastre del kanban no lo manda y no debe desasignar.
             'responsable_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where('is_active', true)],
         ]);
+
+        // El arrastre del kanban solo manda `estado`: la fecha la deriva el servidor.
+        // Al pasar a resuelto se rellena (sin pisar una ya existente) y al sacarlo
+        // se limpia, para no conservar la fecha de una resolucion anterior.
+        $data['fecha_resolucion'] = $data['estado'] === 'resuelto'
+            ? ($data['fecha_resolucion'] ?? $bug?->fecha_resolucion?->toDateString() ?? now()->toDateString())
+            : null;
+
+        return $data;
     }
 }

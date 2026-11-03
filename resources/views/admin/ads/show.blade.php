@@ -148,9 +148,11 @@
 
         <div class="card" style="margin-top: var(--space-6);">
             <div class="card__header">
-                <h2 class="card__header-title">Conversiones (tracking)</h2>
+                <h2 class="card__header-title">Conversiones del cliente (tracking)</h2>
                 <a href="{{ route('admin.clientes.conversiones', $campana->cliente_id) }}" class="btn btn--ghost">Ver todo con filtros</a>
             </div>
+            {{-- Una conversión puede llegar sin clic enlazado, así que no se puede atribuir a una campaña con certeza: se listan las del cliente (últimas 50, de todas sus campañas). --}}
+            <p class="field__hint" style="padding: 0 var(--space-4);">Últimas 50 conversiones del cliente, de todas sus campañas (no solo de «{{ $campana->nombre }}»).</p>
             @include('admin.ads._conversiones-tabla', ['conversiones' => $conversiones])
         </div>
     @endif

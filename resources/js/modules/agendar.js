@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fechaElegida = null;
     let horaElegida = null;
     let temaElegido = null;
+    let enviando = false;
 
     function pad(n) {
         return String(n).padStart(2, '0');
@@ -334,11 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 nombre: datos.get('nombre'),
                 email: datos.get('email'),
                 telefono: datos.get('telefono') || null,
+                empresa: (datos.get('empresa') || '').trim() || null,
+                sitio_alterno: datos.get('sitio_alterno') || '',
                 notas: notas || null,
                 inicia_en: `${fechaElegida} ${horaElegida}`,
+                clave_idempotencia: datos.get('clave_idempotencia') || null,
             };
 
+            // Segundo envio mientras el primero vuela (doble clic / Enter repetido): se ignora.
+            if (enviando) {
+                return;
+            }
+            enviando = true;
             btnEnviar.disabled = true;
+            btnEnviar.dataset.textoOriginal = btnEnviar.innerHTML;
+            btnEnviar.textContent = 'Enviando...';
 
             fetch(urlAgendar, {
                 method: 'POST',
@@ -367,7 +378,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     elAviso.textContent = 'No pudimos agendar tu reunión, intenta de nuevo.';
                 })
                 .finally(() => {
+                    enviando = false;
                     btnEnviar.disabled = false;
+                    if (btnEnviar.dataset.textoOriginal) {
+                        btnEnviar.innerHTML = btnEnviar.dataset.textoOriginal;
+                    }
                 });
         });
     }
@@ -504,6 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
         elSiguiente.hidden = true;
         actualizarResumenLateral();
         form.reset();
+        // reset() devolveria la clave anterior: una reserva nueva necesita clave nueva
+        // (si no, el servidor la trataria como reintento de la anterior).
+        const campoClave = form.querySelector('[data-agendar-clave]');
+        if (campoClave && window.crypto && typeof window.crypto.randomUUID === 'function') {
+            campoClave.value = window.crypto.randomUUID();
+        }
         limpiarErrores();
         mesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
         pintarCalendario();

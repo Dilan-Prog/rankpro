@@ -98,6 +98,7 @@ class SeoController extends Controller
     public function update(Request $request, SeoCampana $campana): JsonResponse
     {
         $data = $this->validated($request, forUpdate: true);
+        \App\Support\Reglas\CoherenciaEstadoFase::validar($campana, $data['estado']);
 
         $campana->update($data);
 
@@ -225,7 +226,8 @@ class SeoController extends Controller
             'cliente' => $cliente->nombre,
             'contacto' => $cliente->contacto_nombre,
             'responsable' => $cliente->servicios->pluck('responsable.name')->filter()->first(),
-            'mrr' => (float) $cliente->servicios->sum('precio_mensual'),
+            // Solo servicios activos (igual que Clientes y Ads): un servicio pausado o cancelado ya no es ingreso recurrente.
+            'mrr' => (float) $cliente->servicios->filter(fn ($s) => $s->estado === \App\Enums\EstadoClienteServicio::Activo)->sum('precio_mensual'),
             'servicios_seo' => $cliente->servicios->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre])->values(),
             'campana_id' => $campana?->id,
             'campana_nombre' => $campana?->nombre,

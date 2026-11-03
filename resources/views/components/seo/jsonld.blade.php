@@ -35,6 +35,8 @@
     $seoOrganizationId = url('/#organization');
     $seoWebsiteId = url('/#website');
     $seoHomeWebPageId = url('/#webpage');
+    // Misma forma que la canonical de la portada (con barra final).
+    $seoHomeUrl = rtrim(url('/'), '/').'/';
 
     // Áreas de expertise: los nombres del catálogo (fuente única de verdad) más los
     // términos por los que se nos busca. Sin duplicados y sin inventar disciplinas.
@@ -66,7 +68,7 @@
         '@id' => $seoOrganizationId,
         'name' => 'RankPro',
         'alternateName' => 'RankPro Solutions',
-        'url' => url('/'),
+        'url' => $seoHomeUrl,
         'logo' => [
             '@type' => 'ImageObject',
             'url' => asset('images/rankpro-logo-black.png'),
@@ -93,8 +95,8 @@
     ];
 
     // NO se incluye foundingDate: en el repo no hay una fecha de fundación
-    // declarada (nosotros.blade.php solo dice "4 años de experiencia", que no es
-    // una fecha verificable). Añadirla cuando el dueño la confirme.
+    // declarada (nosotros.blade.php ya no cita años de experiencia: no hay una
+    // fecha verificable). Añadirla cuando el dueño la confirme.
 
     if ($seoSameAs !== []) {
         $seoBusiness['sameAs'] = $seoSameAs;
@@ -109,7 +111,7 @@
                 '@id' => $seoWebsiteId,
                 'name' => 'RankPro',
                 'alternateName' => 'RankPro Solutions',
-                'url' => url('/'),
+                'url' => $seoHomeUrl,
                 'inLanguage' => 'es-MX',
                 'publisher' => [
                     '@id' => $seoOrganizationId,
@@ -126,7 +128,7 @@
         $seoGraph['@graph'][] = [
             '@type' => 'WebPage',
             '@id' => $seoHomeWebPageId,
-            'url' => url('/'),
+            'url' => $seoHomeUrl,
             'name' => 'RankPro | Agencia de Marketing Digital en México',
             'description' => 'Agencia de marketing digital en México: SEM, SEO, desarrollo web y optimización de velocidad.',
             'inLanguage' => 'es-MX',

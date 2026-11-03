@@ -148,7 +148,7 @@
                                 <span class="u-mono" style="font-size:var(--text-xs);" title="{{ $identificador }}">{{ $identificador ? \Illuminate\Support\Str::limit($identificador, 16) : '—' }}</span>
                             </td>
                             <td>{{ $conversion->adsClic?->adsCampana?->nombre ?? '—' }}</td>
-                            <td class="u-mono" data-editable-cell data-field="valor">{{ $conversion->valor !== null ? number_format($conversion->valor, 2) : '—' }}</td>
+                            <td class="u-mono" data-editable-cell data-field="valor" @if ($conversion->valor !== null) data-valor="{{ $conversion->valor }}" @endif>{{ $conversion->valor !== null ? number_format($conversion->valor, 2) : '—' }}</td>
                             <td><x-badge :status="$conversion->estado" /></td>
                             <td>
                                 <form method="POST" action="{{ route('admin.conversiones.etapa', $conversion) }}">

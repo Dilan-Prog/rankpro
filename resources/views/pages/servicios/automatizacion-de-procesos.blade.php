@@ -12,8 +12,8 @@
       2. El telefono del prototipo (+52 55 1234 5678) y el correo (hola@rankpro.mx)
          eran marcadores de posicion; aqui se usan los datos reales de RankPro.
 
-    La cifra "-70% en tiempo de respuesta" y los testimonios anonimos vienen del
-    diseno y NO estan verificados: revisalos antes de publicar.
+    La cifra "-70% en tiempo de respuesta" y los testimonios anonimos del diseno
+    se ELIMINARON (no eran verificables); no los reintroduzcas sin fuente.
 --}}
 @extends('layouts.app')
 
@@ -54,12 +54,6 @@
         ['n' => '02', 'title' => 'Diseño del flujo', 'desc' => 'Te entregamos el diagrama del flujo propuesto, los sistemas que conecta y el ahorro estimado.'],
         ['n' => '03', 'title' => 'Implementación con n8n', 'desc' => 'Construimos, probamos y ponemos en marcha en tu propia instancia. Tú eres dueño del flujo.'],
         ['n' => '04', 'title' => 'Monitoreo y optimización', 'desc' => 'Alertas si algo falla, ajustes continuos y nuevos flujos conforme crece la operación.'],
-    ];
-
-    $testimonios = [
-        ['quote' => 'Pasamos de contestar en 4 horas a 3 minutos. Se nota en el cierre.', 'who' => 'Dirección Comercial', 'where' => 'Grupo inmobiliario'],
-        ['quote' => 'Dejamos de capturar leads a mano. Nadie extraña ese Excel.', 'who' => 'Gerencia de Marketing', 'where' => 'Retail nacional'],
-        ['quote' => 'El reporte de los lunes ya llega hecho. Recuperamos dos días al mes.', 'who' => 'Operaciones', 'where' => 'Agencia B2B'],
     ];
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
@@ -215,31 +209,6 @@
                         {!! $nodo($icoCampana, 'Notificación', 'al vendedor correcto') !!}
                     </div>
                     <p class="cv-dark-p" style="max-width:42rem;margin-top:2rem;">Cada paso queda registrado: si algo falla, se reintenta y se avisa. Ningún lead se queda en un correo sin abrir.</p>
-                </div>
-            </div>
-        </section>
-
-        {{-- -------------------------------------------------- prueba social --}}
-        <section class="cv-dark-sec">
-            <div class="container">
-                <div class="cv-proof-split">
-                    <div>
-                        <div class="cv-bignum">-70%</div>
-                        <div style="margin-top:.5rem;font-size:1.25rem;font-weight:700;color:#fff;">en tiempo de respuesta a leads</div>
-                        <p class="cv-dark-p" style="max-width:28rem;font-size:.875rem;">Promedio de las operaciones que automatizamos en su primer trimestre, medido desde que entra el lead hasta el primer contacto humano.</p>
-                    </div>
-
-                    <div class="cv-quotes">
-                        @foreach ($testimonios as $t)
-                            <figure class="cv-quote">
-                                <blockquote>“{{ $t['quote'] }}”</blockquote>
-                                <figcaption>
-                                    <div class="cv-quote__who">{{ $t['who'] }}</div>
-                                    <div class="cv-quote__where">{{ $t['where'] }}</div>
-                                </figcaption>
-                            </figure>
-                        @endforeach
-                    </div>
                 </div>
             </div>
         </section>

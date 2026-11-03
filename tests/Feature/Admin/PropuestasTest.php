@@ -748,6 +748,21 @@ class PropuestasTest extends TestCase
         $this->assertNotNull($consultas->firstWhere('consulta', 'keyword del banco'));
     }
 
+    public function test_sugerir_consultas_dos_clics_no_duplican_filas(): void
+    {
+        [$cliente, $campana] = $this->clienteConCampana();
+        $propuesta = $this->propuesta($cliente, ['seo_campana_id' => $campana->id]);
+        $this->keyword($cliente, ['keyword' => 'keyword del banco', 'posicion_actual' => 7]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->postJson(route('admin.propuestas.sugerir-consultas', $propuesta))->assertOk();
+        $segundo = $this->actingAs($user)->postJson(route('admin.propuestas.sugerir-consultas', $propuesta));
+
+        $segundo->assertOk()->assertJsonPath('agregadas', 0);
+        $filas = collect($propuesta->fresh()->situacion_actual['tabla_consultas'])->where('consulta', 'keyword del banco');
+        $this->assertCount(1, $filas);
+    }
+
     public function test_sugerir_consultas_with_empty_keyword_bank_returns_422(): void
     {
         [$cliente, $campana] = $this->clienteConCampana();
@@ -786,6 +801,23 @@ class PropuestasTest extends TestCase
         $this->assertSame(TipoArchivo::Propuesta, $archivo->tipo);
         $this->assertSame($propuesta->cliente_id, $archivo->cliente_id);
         $this->assertSame($user->id, $archivo->subido_por);
+    }
+
+    public function test_generar_pdf_folio_no_se_repite_tras_borrar_una_propuesta(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $user = User::factory()->create();
+        $p1 = $this->propuesta($cliente);
+        $p2 = $this->propuesta($cliente);
+
+        $this->actingAs($user)->post(route('admin.propuestas.pdf', $p1))->assertOk();
+        $this->actingAs($user)->post(route('admin.propuestas.pdf', $p2))->assertOk();
+        $p1->delete();
+
+        $p3 = $this->propuesta($cliente);
+        $this->actingAs($user)->post(route('admin.propuestas.pdf', $p3))->assertOk();
+
+        $this->assertSame('PROP-CONT-'.now()->format('Y').'-0003', $p3->refresh()->folio);
     }
 
     public function test_generar_pdf_second_call_keeps_the_same_folio(): void

@@ -40,14 +40,14 @@ class FinanzasApiController extends ControladorApi
 
     public function store(Request $request)
     {
-        $finanza = Finanza::create($request->validate(ReglasFinanzas::guardar()));
+        $finanza = Finanza::create(ReglasFinanzas::validar($request));
 
         return Respuesta::recurso(Serializador::modelo($finanza->fresh()), 201);
     }
 
     public function update(Request $request, Finanza $finanza)
     {
-        $finanza->update($request->validate(ReglasFinanzas::guardar()));
+        $finanza->update(ReglasFinanzas::validar($request));
 
         return Respuesta::recurso(Serializador::modelo($finanza->fresh()));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 
@@ -25,6 +26,73 @@ class ProteccionAdmin
     public static function esRolAdmin(?Role $rol): bool
     {
         return $rol !== null && $rol->name === self::nombreRolAdmin();
+    }
+
+    /**
+     * ¿Quien ejecuta la acción es administrador? Con los permisos apagados
+     * (tests / PERMISOS_APLICAR=false) no hay jerarquía que proteger, igual que
+     * User::tienePermiso(), que deja pasar todo en ese modo.
+     */
+    public static function esAdmin(?User $usuario): bool
+    {
+        if (! config('permisos.aplicar')) {
+            return true;
+        }
+
+        return $usuario !== null && self::esRolAdmin($usuario->role);
+    }
+
+    /**
+     * Autoescalada por usuarios: solo un admin puede dar el rol admin. Sin esto,
+     * quien tiene «usuarios» (pero no es admin) se asignaría el rol admin a sí mismo.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    public static function alAsignarRol(User $editor, ?int $rolId): ?array
+    {
+        if ($rolId === null || self::esAdmin($editor)) {
+            return null;
+        }
+
+        return self::esRolAdmin(Role::find($rolId))
+            ? ['role_id', 'Solo un administrador puede asignar el rol admin.']
+            : null;
+    }
+
+    /** Un usuario no admin tampoco puede tocar la cuenta de un admin (cambiarle el correo equivale a tomarla). */
+    public static function alTocarUsuario(User $editor, User $objetivo): ?string
+    {
+        return ! self::esAdmin($editor) && self::esRolAdmin($objetivo->role)
+            ? 'Solo un administrador puede modificar a otro administrador.'
+            : null;
+    }
+
+    /**
+     * Autoescalada por roles: quien edita un rol solo puede AGREGARLE permisos
+     * que él mismo tiene. Los que el rol ya traía se respetan (no se le exige
+     * tenerlos para renombrarlo o quitarlos).
+     *
+     * @param  array<int, int|string>  $permisosIds  los que quedarán en el rol
+     * @return array{0: string, 1: string}|null
+     */
+    public static function alConcederPermisos(User $editor, ?Role $rol, array $permisosIds): ?array
+    {
+        if (self::esAdmin($editor)) {
+            return null;
+        }
+
+        $yaTenia = $rol ? $rol->permissions()->pluck('permissions.id')->all() : [];
+        $nuevos = array_diff(array_map('intval', $permisosIds), $yaTenia);
+        if ($nuevos === []) {
+            return null;
+        }
+
+        $faltan = Permission::whereIn('id', $nuevos)->pluck('name')
+            ->reject(fn (string $modulo) => $editor->tienePermiso($modulo));
+
+        return $faltan->isEmpty()
+            ? null
+            : ['permissions', 'No puedes conceder permisos que tú no tienes: '.$faltan->implode(', ').'.'];
     }
 
     /** ¿Existe otro usuario activo con rol admin, distinto de $excluir? */

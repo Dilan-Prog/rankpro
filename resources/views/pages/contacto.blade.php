@@ -20,27 +20,9 @@
                     'description' => 'Canales de contacto directo con RankPro: WhatsApp y correo electrónico.',
                     'about' => ['@id' => url('/#organization')],
                 ],
-                [
-                    '@type' => 'Organization',
-                    '@id' => url('/#organization'),
-                    'contactPoint' => [
-                        [
-                            '@type' => 'ContactPoint',
-                            'contactType' => 'ventas',
-                            'telephone' => '+52-734-103-6410',
-                            'email' => 'administracion@rankprosolutions.com.mx',
-                            'areaServed' => 'MX',
-                            'availableLanguage' => ['es-MX'],
-                        ],
-                        [
-                            '@type' => 'ContactPoint',
-                            'contactType' => 'atención al cliente',
-                            'email' => 'administracion@rankprosolutions.com.mx',
-                            'areaServed' => 'MX',
-                            'availableLanguage' => ['es-MX'],
-                        ],
-                    ],
-                ],
+                // La Organization (con su unico contactPoint E.164) vive solo en
+                // components/seo/jsonld.blade.php: duplicarla aqui con otro formato de
+                // telefono daba dos nodos con el mismo @id y datos contradictorios.
                 [
                     '@type' => 'BreadcrumbList',
                     'itemListElement' => [

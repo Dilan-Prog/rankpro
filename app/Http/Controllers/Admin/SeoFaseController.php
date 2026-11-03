@@ -55,6 +55,7 @@ class SeoFaseController extends Controller
         }
 
         $registro->update($data);
+        $this->maquina->revocarAprobacionSiIncompleta($registro, $fase);
 
         // $registro already IS the Auditoria row when $fase is Auditoria — reuse it directly
         // rather than re-reading $campana->faseAuditoria, whose relation cache registroFase()

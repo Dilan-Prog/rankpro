@@ -20,7 +20,7 @@ class Reunion extends Model
     protected $table = 'reuniones';
 
     protected $fillable = [
-        'cliente_id', 'nombre', 'email', 'telefono', 'notas', 'inicia_en', 'termina_en', 'estado', 'token',
+        'cliente_id', 'nombre', 'email', 'telefono', 'empresa', 'notas', 'inicia_en', 'termina_en', 'estado', 'token', 'clave_idempotencia',
     ];
 
     protected $casts = [

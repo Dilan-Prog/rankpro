@@ -35,7 +35,8 @@ class AutomatizacionController extends Controller
         return view('admin.automatizaciones.index', [
             'pageTitle' => 'Automatizaciones',
             'proyectos' => $proyectos,
-            'enProceso' => $proyectos->count(),
+            // Solo los activos: contar pausados y finalizados inflaba el KPI "en proceso".
+            'enProceso' => $proyectos->where('estado', 'activa')->count(),
         ]);
     }
 
@@ -102,6 +103,7 @@ class AutomatizacionController extends Controller
     public function update(Request $request, AutomatizacionProyecto $proyecto): RedirectResponse
     {
         $data = $request->validate(ReglasAutomatizaciones::actualizar());
+        \App\Support\Reglas\CoherenciaEstadoFase::validar($proyecto, $data['estado']);
 
         $proyecto->update($data);
 

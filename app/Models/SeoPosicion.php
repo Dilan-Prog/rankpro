@@ -31,6 +31,20 @@ class SeoPosicion extends Model
         'fecha_registro' => 'date',
     ];
 
+    /**
+     * Variación de ranking (positivo = mejoró). NULL si falta alguna de las dos
+     * posiciones o es 0 ("sin ranking"): restar con `?? 0` inventaba -5 con una
+     * posición nueva y +10 al salir del ranking.
+     */
+    public static function calcularVariacion(?int $anterior, ?int $actual): ?int
+    {
+        if (! $anterior || ! $actual) {
+            return null;
+        }
+
+        return $anterior - $actual;
+    }
+
     public function seoCampana(): BelongsTo
     {
         return $this->belongsTo(SeoCampana::class, 'seo_campana_id');

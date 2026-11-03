@@ -94,6 +94,24 @@ class CorreoEnvio extends Model
         ];
     }
 
+    /** Minutos en 'enviando' sin movimiento tras los que se considera interrumpido y se puede reanudar. */
+    public const MINUTOS_ATASCADO = 10;
+
+    /** Interrumpido a mitad: sigue en 'enviando' pero hace rato que nada lo toca. */
+    public function reanudable(): bool
+    {
+        return $this->estado === EstadoEnvioCorreo::Enviando
+            && $this->updated_at !== null
+            && $this->updated_at->lte(now()->subMinutes(self::MINUTOS_ATASCADO));
+    }
+
+    /** Envíos interrumpidos en 'enviando': el scheduler los reanuda. */
+    public function scopeAtascados($query)
+    {
+        return $query->where('estado', EstadoEnvioCorreo::Enviando)
+            ->where('updated_at', '<=', now()->subMinutes(self::MINUTOS_ATASCADO));
+    }
+
     /** Envíos programados cuya hora ya venció: lo que consume el scheduler. */
     public function scopeVencidos($query)
     {
@@ -124,6 +142,7 @@ class CorreoEnvio extends Model
             'estado' => $this->estado->value,
             'estado_label' => $this->estado->label(),
             'editable' => $this->estado->editable(),
+            'reanudable' => $this->reanudable(),
             'personalizado' => $this->personalizado(),
             'destinatarios' => $total,
             'enviados' => $enviados,

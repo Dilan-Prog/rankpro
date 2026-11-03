@@ -27,6 +27,10 @@ class RolesApiController extends ControladorApi
     {
         $data = $request->validate(ReglasRoles::guardar(), ReglasRoles::mensajes());
 
+        if ($error = ProteccionAdmin::alConcederPermisos($request->user(), null, $data['permissions'] ?? [])) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
+
         $role = Role::create([
             'name' => $data['name'],
             'label' => $data['label'],
@@ -40,6 +44,10 @@ class RolesApiController extends ControladorApi
     public function update(Request $request, Role $role)
     {
         $data = $request->validate(ReglasRoles::guardar($role), ReglasRoles::mensajes());
+
+        if ($error = ProteccionAdmin::alConcederPermisos($request->user(), $role, $data['permissions'] ?? [])) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
 
         if ($error = ProteccionAdmin::alEditarRol($role, $data['name'], $data['permissions'] ?? [])) {
             throw new ErrorDeDominio($error[1], $error[0]);

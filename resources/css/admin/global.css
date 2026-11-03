@@ -1818,3 +1818,9 @@ a.kpi {
   margin-right: var(--space-2);
   color: var(--color-primary);
 }
+
+/* Filas de otras páginas de una tabla paginada (global.js). Clase propia y no style.display:
+   así los filtros por JS siguen siendo los únicos dueños de style.display. */
+.table tbody tr.is-pag-oculta {
+  display: none;
+}

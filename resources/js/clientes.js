@@ -290,7 +290,7 @@
     }
 
     row.dataset.clientRowId = String(client.id);
-    row.dataset.search = ((client.empresa || "") + " " + (client.contacto_nombre || "")).toLowerCase();
+    row.dataset.search = [client.nombre, client.empresa, client.contacto_nombre, client.email].filter(Boolean).join(" ").toLowerCase();
     row.dataset.estado = client.estado;
     row.dataset.client = JSON.stringify(client);
     row.innerHTML = clientRowHtml(client);

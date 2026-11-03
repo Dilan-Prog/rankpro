@@ -23,6 +23,9 @@ class TareasApiController extends Controller
 
     public function update(Request $request, Tarea $tarea): JsonResponse
     {
+        // Las tareas personales de Mi espacio (proyecto_id NULL) no pertenecen a Desarrollo: 404 para no exponerlas por id.
+        abort_if($tarea->proyecto_id === null, 404);
+
         $tarea->update($this->validated($request));
 
         return Respuesta::recurso(Serializador::modelo($tarea->fresh()));
@@ -30,6 +33,9 @@ class TareasApiController extends Controller
 
     public function destroy(Tarea $tarea): JsonResponse
     {
+        // Las tareas personales de Mi espacio (proyecto_id NULL) no pertenecen a Desarrollo: 404 para no exponerlas por id.
+        abort_if($tarea->proyecto_id === null, 404);
+
         $tarea->forceDelete(); // Desarrollo no tiene «deshacer»: se conserva el borrado definitivo previo al SoftDeletes de Tarea.
 
         return Respuesta::eliminado();
@@ -38,6 +44,9 @@ class TareasApiController extends Controller
     /** Atajo del contrato: marca la tarea como completada sin mandar el resto del payload. */
     public function completar(Tarea $tarea): JsonResponse
     {
+        // Las tareas personales de Mi espacio (proyecto_id NULL) no pertenecen a Desarrollo: 404 para no exponerlas por id.
+        abort_if($tarea->proyecto_id === null, 404);
+
         $tarea->update(['estado' => EstadoTarea::Completada->value]);
 
         return Respuesta::recurso(Serializador::modelo($tarea->fresh()));

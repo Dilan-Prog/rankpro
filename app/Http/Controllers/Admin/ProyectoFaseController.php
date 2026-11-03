@@ -45,8 +45,8 @@ class ProyectoFaseController extends Controller
                 'stack_tecnologico' => ['nullable', 'string', 'max:255'],
                 'arquitectura' => ['nullable', 'string', 'max:5000'],
                 'herramientas' => ['nullable', 'string', 'max:500'],
-                'url_repositorio' => ['nullable', 'string', 'max:255'],
-                'url_staging' => ['nullable', 'string', 'max:255'],
+                'url_repositorio' => ['nullable', 'url:http,https', 'max:255'], // url:http,https: se pinta en href, javascript: sería XSS
+                'url_staging' => ['nullable', 'url:http,https', 'max:255'],
                 'equipo_nombre' => ['nullable', 'array'],
                 'equipo_nombre.*' => ['nullable', 'string', 'max:255'],
                 'equipo_rol' => ['nullable', 'array'],
@@ -61,7 +61,7 @@ class ProyectoFaseController extends Controller
                 'checklist.*' => ['boolean'],
             ]),
             FaseProyecto::Control => $request->validate([
-                'url_produccion' => ['nullable', 'string', 'max:255'],
+                'url_produccion' => ['nullable', 'url:http,https', 'max:255'],
                 'credenciales_entregadas' => ['nullable', 'boolean'],
                 'manual_entregado' => ['nullable', 'boolean'],
                 'capacitacion_realizada' => ['nullable', 'boolean'],

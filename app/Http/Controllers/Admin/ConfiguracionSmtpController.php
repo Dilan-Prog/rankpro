@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -42,6 +43,14 @@ class ConfiguracionSmtpController extends Controller
         $data = $this->validated($request);
 
         $config = ConfiguracionSmtp::query()->find(1) ?? new ConfiguracionSmtp();
+
+        // Activa sin contraseña (ni escrita ni guardada) haria fallar todos los
+        // correos del panel sin avisar, porque pisa el .env: se exige.
+        if ($data['activa'] && ! filled($data['password'] ?? null) && blank($config->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Escribe la contraseña del SMTP para poder activar esta configuración.',
+            ]);
+        }
 
         // Contraseña en blanco = "no la toques": así no hace falta re-escribirla
         // en cada guardado solo por cambiar el host o el puerto.

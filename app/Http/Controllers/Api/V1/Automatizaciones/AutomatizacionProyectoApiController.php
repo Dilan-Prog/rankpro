@@ -70,6 +70,7 @@ class AutomatizacionProyectoApiController extends ControladorApi
     public function update(Request $request, AutomatizacionProyecto $proyecto)
     {
         $data = $request->validate(ReglasAutomatizaciones::actualizar());
+        \App\Support\Reglas\CoherenciaEstadoFase::validar($proyecto, $data['estado']);
 
         $proyecto->update($data);
 

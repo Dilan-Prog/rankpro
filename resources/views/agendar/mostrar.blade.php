@@ -152,29 +152,37 @@
                                     <p class="agendar__form-subtitulo">Solo lo necesario para enviarte el enlace de la videollamada.</p>
 
                                     <form class="agendar__form" data-agendar-form novalidate>
+                                        {{-- Clave de idempotencia: la genera el servidor al pintar; evita reuniones/correos duplicados en doble clic o reintento. No es un secreto ni sustituye al CSRF. --}}
+                                        <input type="hidden" name="clave_idempotencia" value="{{ (string) \Illuminate\Support\Str::uuid() }}" data-agendar-clave>
                                         <div class="field field--full">
                                             <label class="field__label" for="agendar_nombre">Nombre <span class="agendar__requerido">*</span></label>
-                                            <input class="input" type="text" name="nombre" id="agendar_nombre" maxlength="255" placeholder="Juan García" required>
+                                            <input class="input" type="text" name="nombre" id="agendar_nombre" maxlength="255" autocomplete="name" placeholder="Juan García" required>
                                             <span class="field__error" data-error-for="nombre"></span>
                                         </div>
                                         <div class="field">
                                             <label class="field__label" for="agendar_email">Correo <span class="agendar__requerido">*</span></label>
-                                            <input class="input" type="email" name="email" id="agendar_email" maxlength="255" placeholder="juan@empresa.com" required>
+                                            <input class="input" type="email" name="email" id="agendar_email" maxlength="255" autocomplete="email" placeholder="juan@empresa.com" required>
                                             <span class="field__error" data-error-for="email"></span>
                                         </div>
                                         <div class="field">
                                             <label class="field__label" for="agendar_telefono">WhatsApp <span class="agendar__requerido">*</span></label>
-                                            <input class="input" type="tel" name="telefono" id="agendar_telefono" maxlength="30" placeholder="+52 55 1234 5678" required>
+                                            <input class="input" type="tel" name="telefono" id="agendar_telefono" maxlength="30" autocomplete="tel" placeholder="+52 55 1234 5678" required>
                                             <span class="field__error" data-error-for="telefono"></span>
                                         </div>
                                         <div class="field field--full">
                                             <label class="field__label" for="agendar_empresa">Empresa o sitio web <span class="agendar__opcional">(opcional)</span></label>
-                                            <input class="input" type="text" name="empresa" id="agendar_empresa" maxlength="255" placeholder="miempresa.com">
+                                            <input class="input" type="text" name="empresa" id="agendar_empresa" maxlength="255" autocomplete="organization" placeholder="miempresa.com">
                                         </div>
                                         <div class="field field--full">
                                             <label class="field__label" for="agendar_notas">¿Algo que debamos saber? <span class="agendar__opcional">(opcional)</span></label>
                                             <textarea class="input" name="notas" id="agendar_notas" rows="2" maxlength="1000" placeholder="Tu objetivo principal…"></textarea>
                                             <span class="field__error" data-error-for="notas"></span>
+                                        </div>
+
+                                        {{-- Honeypot: invisible para personas y lectores de pantalla; un bot que lo llena recibe un éxito falso. --}}
+                                        <div style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+                                            <label for="agendar_sitio_alterno">No llenar este campo</label>
+                                            <input type="text" name="sitio_alterno" id="agendar_sitio_alterno" tabindex="-1" autocomplete="off" value="">
                                         </div>
 
                                         <div class="agendar__aviso" data-agendar-aviso hidden></div>

@@ -29,6 +29,12 @@
      son indexables: nada de noindex ni de canonica apuntando a la pagina 1. --}}
 @section('canonical', $urlPagina($paginaActual))
 
+{{-- Sin articulos publicados el listado esta vacio: contenido delgado que no
+     debe indexarse (si siguen los enlaces, por eso "follow"). --}}
+@if ($articulos->total() === 0)
+    @section('robots', 'noindex, follow')
+@endif
+
 @push('styles')
     @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css'])
 @endpush

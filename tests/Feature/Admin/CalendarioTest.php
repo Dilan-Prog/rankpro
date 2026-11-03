@@ -340,4 +340,24 @@ class CalendarioTest extends TestCase
         $this->assertSame(['Todo el día', 'Temprano'], array_slice(array_column($json, 'titulo'), 0, 2));
         $this->assertSame('agenda', $json[2]['origen']);
     }
+
+    public function test_un_rol_solo_con_calendario_no_ve_cobros_reuniones_ni_entregas(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $proyecto = $this->proyecto($cliente, ['fecha_entrega_estimada' => '2026-11-20']);
+        Reunion::factory()->create(['nombre' => 'Ana', 'inicia_en' => '2026-11-10 16:00:00', 'termina_en' => '2026-11-10 16:30:00']);
+        Tarea::create(['proyecto_id' => $proyecto->id, 'titulo' => 'Maquetar', 'prioridad' => 'alta', 'estado' => 'pendiente', 'fecha_limite' => '2026-11-15']);
+        Finanza::create(['cliente_id' => $cliente->id, 'concepto' => 'Minuta noviembre', 'tipo' => 'ingreso', 'monto' => 100, 'estado' => 'pendiente', 'fecha_vencimiento' => '2026-11-25', 'mes' => 11, 'anio' => 2026]);
+
+        $solo = $this->usuarioCon(['calendario'], 'solo-calendario');
+        $respuesta = $this->actingAs($solo)->getJson(route('admin.calendario.eventos', ['desde' => '2026-11-01', 'hasta' => '2026-11-30']))->assertOk();
+        $this->assertSame([], $respuesta->json('eventos'));
+
+        $rango = [Carbon::parse('2026-11-01'), Carbon::parse('2026-11-30')];
+        $origenes = fn (User $u) => app(AgregadorEventos::class)->entre($rango[0], $rango[1], $u->id)->pluck('origen')->unique()->sort()->values()->all();
+
+        $this->assertSame(['agenda'], $origenes($this->usuarioCon(['calendario', 'agenda'], 'con-agenda')));
+        $this->assertSame(['finanza'], $origenes($this->usuarioCon(['calendario', 'finanzas'], 'con-finanzas')));
+        $this->assertSame(['proyecto', 'tarea'], $origenes($this->usuarioCon(['calendario', 'desarrollo'], 'con-desarrollo')));
+    }
 }

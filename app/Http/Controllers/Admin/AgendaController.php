@@ -124,6 +124,13 @@ class AgendaController extends Controller
             'estado' => ['required', Rule::enum(EstadoReunion::class)->except(EstadoReunion::Cancelada)],
         ]);
 
+        // Sacar una cita de 'cancelada' la vuelve a ocupar su horario: si en el
+        // ínterin otra persona lo tomó, reactivarla dejaría dos citas empalmadas.
+        if ($reunion->estado === EstadoReunion::Cancelada
+            && app(CalculadorDisponibilidad::class)->hayTraslape($reunion->inicia_en, $reunion->termina_en, $reunion->id)) {
+            return back()->withErrors(['estado' => 'Ese horario ya lo ocupa otra cita, no se puede reactivar.']);
+        }
+
         $reunion->update(['estado' => $data['estado']]);
 
         return redirect()->route('admin.agenda.index')->with('status', 'Estado actualizado.');
@@ -176,7 +183,8 @@ class AgendaController extends Controller
 
         $data = $request->validate([
             'dias' => ['required', 'array', 'size:7'],
-            'dias.*.dia_semana' => ['required', 'integer', 'min:0', 'max:6'],
+            // distinct: un día repetido dejaría dos filas del mismo día_semana y el calendario tomaría una al azar.
+            'dias.*.dia_semana' => ['required', 'integer', 'min:0', 'max:6', 'distinct'],
             // Solo obligatorio si ese día quedó activo — uno inactivo no
             // necesita horario real, CalculadorDisponibilidad ni lo mira.
             'dias.*.hora_inicio' => ['nullable', 'required_if:dias.*.activo,1', 'date_format:H:i'],

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Archivos de clientes vía API: además de multipart, acepta JSON con
@@ -48,6 +49,18 @@ class ArchivosApiController extends ControladorApi
         } else {
             $data = $request->validate(ReglasArchivos::base64());
             $file = $this->archivoDesdeBase64($data['contenido_base64'], $data['nombre'] ?? null);
+
+            // El base64 se saltaba el tope y la lista de tipos del multipart: se aplican las mismas reglas
+            // al archivo ya decodificado (el MIME se detecta por contenido, no por lo que diga el nombre).
+            $validador = Validator::make(['archivo' => $file], ['archivo' => ReglasArchivos::multipart()['archivo']], [
+                'archivo.max' => 'El archivo no puede pesar más de 100 MB.',
+                'archivo.mimes' => 'El tipo de archivo no está permitido.',
+            ]);
+            if ($validador->fails()) {
+                @unlink($file->getPathname());
+
+                throw new ErrorDeDominio($validador->errors()->first('archivo'), 'contenido_base64');
+            }
         }
 
         $archivo = $this->guardarArchivo($data, $file, $request->user()->id);
@@ -82,28 +95,28 @@ class ArchivosApiController extends ControladorApi
 
     private function archivoDesdeBase64(string $base64, ?string $nombreOriginal): UploadedFile
     {
+        // Tope duro antes de decodificar: 100 MB reales ocupan ~137 MB de base64; no hace falta cargar más en memoria.
+        if (strlen($base64) > 140 * 1024 * 1024) {
+            throw new ErrorDeDominio('El archivo no puede pesar más de 100 MB.', 'contenido_base64');
+        }
+
         $binario = base64_decode($base64, true);
         if ($binario === false) {
             throw new ErrorDeDominio('El contenido base64 no es válido.', 'contenido_base64');
         }
 
-        $extension = $nombreOriginal ? pathinfo($nombreOriginal, PATHINFO_EXTENSION) : '';
+        // El temporal va SIN extensión: la que se guarda sale del MIME detectado, no del nombre que mande el cliente.
         $tmpPath = tempnam(sys_get_temp_dir(), 'archivo_api_');
         file_put_contents($tmpPath, $binario);
 
-        if ($extension) {
-            $conExtension = $tmpPath.'.'.$extension;
-            rename($tmpPath, $conExtension);
-            $tmpPath = $conExtension;
-        }
-
-        return new UploadedFile($tmpPath, $nombreOriginal ?? basename($tmpPath), null, null, true);
+        return new UploadedFile($tmpPath, $nombreOriginal ? basename($nombreOriginal) : basename($tmpPath), null, null, true);
     }
 
     /** Mismo flujo de guardado que Admin\ArchivosController::store(). */
     private function guardarArchivo(array $data, UploadedFile $file, int $usuarioId): Archivo
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
+        // Extensión del MIME validado (guessExtension), nunca del nombre del cliente.
+        $extension = strtolower($file->extension() ?? '');
         $nombre = filled($data['nombre'] ?? null) ? $data['nombre'] : $file->getClientOriginalName();
 
         $path = $file->store("clientes/{$data['cliente_id']}/archivos", 'local');

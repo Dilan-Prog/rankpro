@@ -54,13 +54,13 @@ class SitemapController extends Controller
      */
     private const FECHAS_VISTA = [
         'pages.index'                                => '2026-11-01',
-        'pages.nosotros'                             => '2026-09-03',
+        'pages.nosotros'                             => '2026-11-02',
         'pages.servicios.index'                      => '2026-09-03',
         'pages.servicios.sem-google-ads'             => '2026-11-01',
         'pages.servicios.seo-organico'               => '2026-11-01',
-        'pages.servicios.desarrollo-web'             => '2026-09-22',
-        'pages.servicios.automatizacion-de-procesos' => '2026-09-03',
-        'pages.servicios.show'                       => '2026-09-03',
+        'pages.servicios.desarrollo-web'             => '2026-11-02',
+        'pages.servicios.automatizacion-de-procesos' => '2026-11-02',
+        'pages.servicios.show'                       => '2026-11-02',
         'pages.casos.index'                          => '2026-09-22',
         'pages.casos.show'                           => '2026-09-22',
         'pages.contacto'                             => '2026-09-03',
@@ -193,7 +193,11 @@ class SitemapController extends Controller
         $paginas = [];
 
         // Indice del blog: se actualiza cada vez que se publica o se revisa algo.
-        $paginas['/blog'] = ['weekly', '0.8', 'pages.blog.index', $this->fechaMasReciente($articulos)];
+        // Sin articulos publicados es un listado vacio (contenido delgado, y la
+        // vista lo marca noindex), asi que no se ofrece a los buscadores.
+        if ($articulos->isNotEmpty()) {
+            $paginas['/blog'] = ['weekly', '0.8', 'pages.blog.index', $this->fechaMasReciente($articulos)];
+        }
 
         foreach (Clusters::slugs() as $cluster) {
             $delCluster = $articulos->where('cluster', $cluster);

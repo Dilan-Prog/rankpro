@@ -64,8 +64,8 @@
     <div class="box">
         <h3>Vigencia</h3>
         Inicio: {{ $fechaInicio }} &middot; Vencimiento: {{ $fechaFin ?: 'Indefinido, renovación automática' }}
-        &middot; Forma de pago: {{ \App\Support\Labels::formaPago($cliente->forma_pago) }}
-        &middot; Método de pago: {{ \App\Support\Labels::metodoPago($cliente->metodo_pago) }}
+        &middot; Forma de pago: {{ \App\Support\Labels::formaPago($cliente->forma_pago?->value) }}
+        &middot; Método de pago: {{ \App\Support\Labels::metodoPago($cliente->metodo_pago?->value) }}
     </div>
 
     <div class="terms">

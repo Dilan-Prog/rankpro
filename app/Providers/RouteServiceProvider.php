@@ -44,7 +44,17 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         // /agendar es pública y sin sesión: mismo criterio que tracking-public, por IP.
+        // Reservar (POST /agendar) es mucho más caro que consultar: crea una reunión y manda
+        // correo a la dirección que el visitante escriba, así que se limita aparte y fuerte
+        // (6/min y 30/hora por IP). El calendario sigue usando el límite holgado de lectura.
         RateLimiter::for('agendar-public', function (Request $request) {
+            if ($request->isMethod('POST') && $request->routeIs('agendar.agendar')) {
+                return [
+                    Limit::perMinute(6)->by('reservar-min|'.$request->ip()),
+                    Limit::perHour(30)->by('reservar-hora|'.$request->ip()),
+                ];
+            }
+
             return Limit::perMinute(60)->by($request->ip());
         });
 

@@ -699,6 +699,9 @@ class TablaContenido
 
                 return $valor;
             case 'seleccion':
+                // Las opciones se recortan a MAX_NOMBRE al normalizar la columna; la celda debe recortarse igual
+                // o una opción larga (que el cliente guarda entera) nunca coincidiría y todo el guardado daría 422.
+                $valor = mb_substr($valor, 0, self::MAX_NOMBRE);
                 if (! in_array($valor, $opciones, true)) {
                     throw new InvalidArgumentException("«{$valor}» no es una de las opciones de la columna.");
                 }

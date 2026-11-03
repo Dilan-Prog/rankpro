@@ -31,7 +31,12 @@ class SearchConsoleController extends Controller
         $conexion = GscConexion::actual();
 
         $clientes = Cliente::query()->orderBy('nombre')->get(['id', 'nombre', 'empresa', 'estado']);
-        $propiedades = GscPropiedad::query()->with(['metricas' => fn ($q) => $q->limit(6)])->get()->keyBy('cliente_id');
+        $propiedades = GscPropiedad::query()->with('metricas')->get()
+            // Un limit() dentro del with() es GLOBAL (6 filas entre todas las
+            // propiedades), no por propiedad: se recortan los ultimos 6 meses
+            // de cada una ya cargadas (la relacion viene ordenada por periodo desc).
+            ->each(fn (GscPropiedad $p) => $p->setRelation('metricas', $p->metricas->take(6)))
+            ->keyBy('cliente_id');
 
         return view('admin.integraciones.search-console', [
             'pageTitle' => 'Search Console',

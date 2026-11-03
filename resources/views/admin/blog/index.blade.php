@@ -8,7 +8,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-header__title">Blog</h1>
-            <p class="page-header__subtitle">{{ $articulos->total() }} artículos · contenido hub-and-spoke</p>
+            <p class="page-header__subtitle">{{ $articulos->count() }} artículos · contenido hub-and-spoke</p>
         </div>
         <a href="{{ route('admin.blog.create') }}" class="btn btn--primary">
             <i class="fa-solid fa-plus"></i> Nuevo Artículo
@@ -94,7 +94,6 @@
 
             <p class="table__empty" id="blogNoResults" hidden>Sin resultados para los filtros seleccionados.</p>
 
-            @include('admin.integraciones._paginacion', ['paginator' => $articulos])
         </div>
     @endif
 @endsection

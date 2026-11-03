@@ -260,6 +260,25 @@
 
     document.querySelector("[data-open-finanza-modal]")?.addEventListener("click", () => openFinanzaFormModal(null));
 
+    // El servidor exige fecha de pago cuando el estado es «pagado» y la rechaza en cualquier otro
+    // (Reglas\Finanzas): se rellena sola con hoy al marcar pagado y se limpia al salir de ese estado,
+    // para que cambiar el estado siga siendo un solo paso y no un 422.
+    const selectEstado = form.querySelector("#ff_estado");
+    const inputFechaPago = form.querySelector("#ff_fecha_pago");
+    selectEstado?.addEventListener("change", () => {
+      if (!inputFechaPago) return;
+      if (selectEstado.value === "pagado") {
+        if (!inputFechaPago.value) {
+          const hoy = new Date();
+          const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+          const dia = String(hoy.getDate()).padStart(2, "0");
+          inputFechaPago.value = `${hoy.getFullYear()}-${mes}-${dia}`;
+        }
+      } else {
+        inputFechaPago.value = "";
+      }
+    });
+
     document.addEventListener("click", (e) => {
       const editBtn = e.target.closest("[data-edit-finanza]");
       if (!editBtn) return;

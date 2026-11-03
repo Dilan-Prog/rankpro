@@ -210,6 +210,9 @@
   /** HTML5 nativo: la posición de soltado se decide por el punto medio vertical de cada tarjeta. */
   function enlazarArrastre(tablero) {
     let arrastrada = null;
+    // dragover reubica la tarjeta en vivo; si el arrastre se cancela (Esc o soltar fuera de una
+    // columna) no hay drop ni mover(), y sin repintar la tarjeta se quedaría en otra columna.
+    let soltada = false;
 
     function siguiente(cuerpo, y) {
       return [...cuerpo.querySelectorAll(".me-tarjeta:not(.is-arrastrando)")].find((n) => {
@@ -222,6 +225,7 @@
       const nodo = e.target.closest?.(".me-tarjeta");
       if (!nodo) return;
       arrastrada = nodo;
+      soltada = false;
       nodo.classList.add("is-arrastrando");
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", nodo.dataset.id);
@@ -231,6 +235,7 @@
       arrastrada?.classList.remove("is-arrastrando");
       tablero.querySelectorAll(".is-sobre").forEach((n) => n.classList.remove("is-sobre"));
       arrastrada = null;
+      if (!soltada) render();
     });
 
     tablero.addEventListener("dragover", (e) => {
@@ -249,6 +254,7 @@
       const cuerpo = e.target.closest?.(".me-columna__cuerpo");
       if (!cuerpo || !arrastrada) return;
       e.preventDefault();
+      soltada = true;
       const id = Number(arrastrada.dataset.id);
       const destino = cuerpo.closest(".me-columna").dataset.estado;
       // Vecinos visibles en el DOM; con filtros activos hay tarjetas ocultas entre ellos y mover() resuelve la posición contra la columna completa.

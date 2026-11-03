@@ -17,18 +17,31 @@ class ClienteActivo
 {
     public const CLAVE = 'cliente_activo_id';
 
+    /**
+     * Id del cliente activo, solo si el cliente aún existe. Si se borró (borrado suave incluido)
+     * entre una visita y otra se limpia la sesión: así id() y modelo() nunca discrepan, y quien
+     * compara contra id() (Contenido, SEO Plan, exportar keywords) no queda con un id huérfano.
+     */
     public static function id(): ?int
     {
-        $id = session(self::CLAVE);
-
-        return $id ? (int) $id : null;
+        return self::modelo()?->id;
     }
 
     public static function modelo(): ?Cliente
     {
-        $id = self::id();
+        $id = session(self::CLAVE);
 
-        return $id ? Cliente::query()->find($id) : null;
+        if (! $id) {
+            return null;
+        }
+
+        $cliente = Cliente::query()->find((int) $id);
+
+        if ($cliente === null) {
+            session()->forget(self::CLAVE);
+        }
+
+        return $cliente;
     }
 
     public static function establecer(?int $id): void

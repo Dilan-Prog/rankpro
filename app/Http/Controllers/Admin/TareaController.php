@@ -21,6 +21,9 @@ class TareaController extends Controller
 
     public function update(Request $request, Tarea $tarea): JsonResponse
     {
+        // Las tareas personales de Mi espacio (proyecto_id NULL) no pertenecen a Desarrollo: 404 para no exponerlas por id.
+        abort_if($tarea->proyecto_id === null, 404);
+
         $data = $this->validated($request);
 
         $tarea->update($data);
@@ -30,6 +33,9 @@ class TareaController extends Controller
 
     public function destroy(Tarea $tarea): JsonResponse
     {
+        // Las tareas personales de Mi espacio (proyecto_id NULL) no pertenecen a Desarrollo: 404 para no exponerlas por id.
+        abort_if($tarea->proyecto_id === null, 404);
+
         $tarea->forceDelete(); // Desarrollo no tiene «deshacer»: se conserva el borrado definitivo previo al SoftDeletes de Tarea.
 
         return response()->json(['deleted' => true]);

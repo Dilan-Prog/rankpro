@@ -77,6 +77,8 @@
 
   const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
   const redondear = (v) => Math.round(v * 10) / 10;
+  // Punto libre de una flecha: se acota a ±COORD como el resto de coordenadas; el servidor rechaza TODO el guardado si uno se pasa.
+  const puntoLibre = (p) => ({ x: redondear(limitar(p.x, -COORD, COORD)), y: redondear(limitar(p.y, -COORD, COORD)) });
   const esEditable = (nodo) => nodo && /^(input|textarea|select)$/i.test(nodo.tagName);
 
   function nuevoId() {
@@ -497,7 +499,7 @@
     const elDiana = idDiana ? porId(idDiana) : null;
 
     if (herramienta === "flecha") {
-      const desde = elDiana && elDiana.tipo !== "flecha" ? elDiana.id : { x: redondear(p.x), y: redondear(p.y) };
+      const desde = elDiana && elDiana.tipo !== "flecha" ? elDiana.id : puntoLibre(p);
       arrastre = { tipo: "flecha", desde, g: crearGrupoFlecha() };
       arrastre.borrador = { desde, hasta: { x: p.x, y: p.y }, color: COLOR_INICIAL.flecha };
       pintarGeometriaFlecha(arrastre.g, arrastre.borrador);
@@ -587,7 +589,7 @@
       const diana = bajo && bajo.closest ? bajo.closest("[data-pz-id]") : null;
       const elHasta = diana ? porId(diana.dataset.pzId) : null;
       const p = aMundo(ev);
-      const hasta = elHasta && elHasta.tipo !== "flecha" ? elHasta.id : { x: redondear(p.x), y: redondear(p.y) };
+      const hasta = elHasta && elHasta.tipo !== "flecha" ? elHasta.id : puntoLibre(p);
       const mismo = typeof hasta === "string" && hasta === a.desde;
       const corta = typeof hasta !== "string" && typeof a.desde !== "string" && Math.hypot(hasta.x - a.desde.x, hasta.y - a.desde.y) < 12;
       if (ev.type === "pointerup" && !mismo && !corta) {

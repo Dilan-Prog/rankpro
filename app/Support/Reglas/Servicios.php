@@ -15,7 +15,7 @@ class Servicios
     public static function guardar(): array
     {
         return [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['required', 'integer', Rule::exists('clientes', 'id')->whereNull('deleted_at')],
             'responsable_id' => ['nullable', 'integer', 'exists:users,id'],
             'tipo' => ['required', Rule::enum(TipoServicio::class)],
             'nombre' => ['required', 'string', 'max:255'],

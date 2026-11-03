@@ -24,7 +24,7 @@ class SeoPosicionController extends Controller
         ]);
 
         $data['cliente_id'] = $campana->cliente_id;
-        $data['variacion'] = ($data['posicion_anterior'] ?? 0) - ($data['posicion_actual'] ?? 0);
+        $data['variacion'] = \App\Models\SeoPosicion::calcularVariacion($data['posicion_anterior'] ?? null, $data['posicion_actual'] ?? null);
         $data['fecha_registro'] = now()->toDateString();
 
         $posicion = $campana->posiciones()->create($data);

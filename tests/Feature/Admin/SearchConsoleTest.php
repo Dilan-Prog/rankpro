@@ -85,6 +85,26 @@ class SearchConsoleTest extends TestCase
 
     // ---- estados vacíos ---------------------------------------------------
 
+    public function test_cada_propiedad_recibe_sus_ultimos_seis_meses_de_metricas(): void
+    {
+        $propiedades = collect(['uno', 'dos'])->map(function (string $n) {
+            $p = \App\Models\GscPropiedad::create(['cliente_id' => Cliente::factory()->create()->id, 'site_url' => "https://{$n}.test/"]);
+            foreach (range(1, 8) as $mes) {
+                \App\Models\GscMetricaMensual::create(['propiedad_id' => $p->id, 'periodo' => sprintf('2026-%02d-01', $mes), 'clics' => $mes]);
+            }
+
+            return $p;
+        });
+
+        $respuesta = $this->actingAs($this->usuario())->get(route('admin.integraciones.search-console.index'))->assertOk();
+
+        foreach ($propiedades as $p) {
+            $cargada = $respuesta->viewData('propiedades')->get($p->cliente_id);
+            $this->assertCount(6, $cargada->metricas);
+            $this->assertSame('2026-08-01', $cargada->metricas->first()->periodo->toDateString());
+        }
+    }
+
     public function test_sin_llave_ni_propiedades_muestra_estados_vacios_honestos(): void
     {
         Cliente::factory()->create(['nombre' => 'Hotel Prueba']);

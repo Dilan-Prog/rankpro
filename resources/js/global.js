@@ -83,7 +83,11 @@
 
     toggle.addEventListener("click", () => {
       const collapsed = document.documentElement.classList.toggle("sidebar--collapsed");
-      localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0");
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0");
+      } catch (e) {
+        /* sin almacenamiento (modo privado): el menú se pliega igual, solo no lo recuerda */
+      }
       document.dispatchEvent(new CustomEvent("sidebar:toggle", { detail: { collapsed } }));
     });
   }
@@ -139,6 +143,8 @@
     const grupos = Array.from(document.querySelectorAll(".sidebar__group"));
     if (!grupos.length) return;
 
+    const tocados = new Set();
+
     function guardar() {
       let previos = [];
       try {
@@ -147,7 +153,13 @@
         previos = [];
       }
       const presentes = grupos.map((g) => g.dataset.grupo);
-      const cerrados = grupos.filter((g) => g.classList.contains("is-cerrado")).map((g) => g.dataset.grupo);
+      // Un grupo abierto a la fuerza por contener el enlace activo (data-tiene-activo) no refleja la
+      // preferencia del usuario: se conserva lo guardado para no perder un «cerrado» deliberado.
+      // Si el usuario lo tocó en esta página, manda su gesto.
+      const forzados = grupos.filter((g) => g.hasAttribute("data-tiene-activo") && !tocados.has(g)).map((g) => g.dataset.grupo);
+      const cerrados = grupos
+        .filter((g) => (forzados.includes(g.dataset.grupo) ? previos.includes(g.dataset.grupo) : g.classList.contains("is-cerrado")))
+        .map((g) => g.dataset.grupo);
       const ausentes = previos.filter((nombre) => !presentes.includes(nombre));
       try {
         localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify([...ausentes, ...cerrados]));
@@ -161,6 +173,7 @@
       if (!toggle) return;
 
       toggle.addEventListener("click", () => {
+        tocados.add(grupo);
         const cerrado = grupo.classList.toggle("is-cerrado");
         toggle.setAttribute("aria-expanded", cerrado ? "false" : "true");
         guardar();
@@ -265,7 +278,19 @@
           row.className = "command-palette__row";
           row.setAttribute("role", "option");
           if (rowCount === 0) row.classList.add("is-active");
-          row.innerHTML = `<i class="fa-solid ${group.icon}"></i><span class="command-palette__row-label">${item.label}</span>${item.meta ? `<span class="command-palette__row-meta">${item.meta}</span>` : ""}`;
+          // textContent y no innerHTML: label/meta son nombres de clientes y texto de keywords importadas (datos de usuario).
+          const icono = document.createElement("i");
+          icono.className = `fa-solid ${group.icon}`;
+          const etiqueta = document.createElement("span");
+          etiqueta.className = "command-palette__row-label";
+          etiqueta.textContent = item.label == null ? "" : String(item.label);
+          row.append(icono, etiqueta);
+          if (item.meta) {
+            const meta = document.createElement("span");
+            meta.className = "command-palette__row-meta";
+            meta.textContent = String(item.meta);
+            row.appendChild(meta);
+          }
           results.appendChild(row);
           rowCount++;
         });
@@ -354,6 +379,9 @@
     document.querySelectorAll("[data-paginate]").forEach(setupTablePagination);
   }
 
+  /** Clase con la que la paginación oculta las filas de otras páginas (ver global.css). */
+  const PAGINA_OCULTA = "is-pag-oculta";
+
   function setupTablePagination(wrap) {
     const pageSize = parseInt(wrap.getAttribute("data-paginate"), 10) || 15;
     const table = wrap.querySelector("table");
@@ -370,7 +398,12 @@
       );
     }
 
-    /** Reads which rows currently pass any external filter (display !== "none"). */
+    /**
+     * Reads which rows currently pass any external filter (display !== "none").
+     * La paginación oculta SUS filas con la clase PAGINA_OCULTA (nunca con style.display):
+     * si usara style.display, las filas de otras páginas se leerían como «filtradas» y al
+     * crear/editar/borrar por AJAX desaparecerían las páginas 2+.
+     */
     function recomputeFilteredRows() {
       filteredRows = dataRows().filter((tr) => tr.style.display !== "none");
     }
@@ -426,7 +459,7 @@
       const total = filteredRows.length;
 
       dataRows().forEach((tr) => {
-        if (!filteredRows.includes(tr)) tr.style.display = "none";
+        if (!filteredRows.includes(tr)) tr.classList.remove(PAGINA_OCULTA);
       });
 
       if (!total) {
@@ -439,9 +472,7 @@
       if (currentPage < 1) currentPage = 1;
 
       if (total <= pageSize) {
-        filteredRows.forEach((tr) => {
-          tr.style.display = "";
-        });
+        filteredRows.forEach((tr) => tr.classList.remove(PAGINA_OCULTA));
         removeBar();
         return;
       }
@@ -449,7 +480,7 @@
       const start = (currentPage - 1) * pageSize;
       const end = Math.min(start + pageSize, total);
       filteredRows.forEach((tr, i) => {
-        tr.style.display = i >= start && i < end ? "" : "none";
+        tr.classList.toggle(PAGINA_OCULTA, !(i >= start && i < end));
       });
 
       const barEl = ensureBar();

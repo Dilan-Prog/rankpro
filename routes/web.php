@@ -180,7 +180,7 @@ Route::prefix('agendar')->name('agendar.')->middleware('throttle:agendar-public'
 |
 */
 
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'activo'])->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::middleware('permiso:dashboard')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -510,7 +510,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::delete('/{archivo}', [ArchivosController::class, 'destroy'])->name('destroy');
     });
 
-    Route::get('/integraciones', [IntegracionesController::class, 'index'])->name('integraciones.index');
+    Route::get('/integraciones', [IntegracionesController::class, 'index'])->middleware('permiso:integraciones')->name('integraciones.index');
 
     Route::prefix('integraciones/api')->name('integraciones.api.')->middleware('permiso:integraciones')->group(function () {
         Route::get('/', [IntegracionesApiController::class, 'index'])->name('index');

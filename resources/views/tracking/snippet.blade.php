@@ -14,8 +14,14 @@
 
   function uuid() {
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    // Respaldo para navegadores viejos: getRandomValues es criptografico; Math.random solo como ultimo recurso.
+    var bytes = null;
+    try {
+      if (window.crypto && window.crypto.getRandomValues) bytes = window.crypto.getRandomValues(new Uint8Array(32));
+    } catch (e) {}
+    var i = 0;
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-      var r = (Math.random() * 16) | 0;
+      var r = bytes ? bytes[i++] & 15 : (Math.random() * 16) | 0;
       var v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
@@ -62,14 +68,28 @@
     return vid;
   }
 
-  function post(path, payload) {
+  // Cada evento lleva su evento_id (cuerpo y header) y los reintentos reenvian el MISMO payload,
+  // asi el servidor los descarta como duplicados en vez de contarlos otra vez.
+  function post(path, payload, intento) {
+    intento = intento || 0;
+    if (!payload.evento_id) payload.evento_id = uuid();
+    function reintentar() {
+      if (intento >= 2) return;
+      setTimeout(function () {
+        post(path, payload, intento + 1);
+      }, 1500 * (intento + 1));
+    }
     try {
       fetch(API_BASE + path, {
         method: "POST",
         keepalive: true,
-        headers: { "Content-Type": "application/json", "X-RankPro-Token": TOKEN },
+        headers: { "Content-Type": "application/json", "X-RankPro-Token": TOKEN, "X-RankPro-Evento-Id": payload.evento_id },
         body: JSON.stringify(payload),
-      }).catch(function () {});
+      })
+        .then(function (res) {
+          if (res && res.status >= 500) reintentar();
+        })
+        .catch(reintentar);
     } catch (e) {}
   }
 

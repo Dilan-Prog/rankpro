@@ -32,6 +32,12 @@
      Las paginas 2+ son indexables: aqui no hay noindex ni canonica a la 1. --}}
 @section('canonical', $urlPagina($paginaActual))
 
+{{-- Sin articulos publicados el listado esta vacio: contenido delgado que no
+     debe indexarse (si siguen los enlaces, por eso "follow"). --}}
+@if ($articulos->total() === 0)
+    @section('robots', 'noindex, follow')
+@endif
+
 @push('styles')
     @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css'])
 @endpush

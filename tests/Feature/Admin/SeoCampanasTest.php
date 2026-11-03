@@ -526,7 +526,8 @@ class SeoCampanasTest extends TestCase
     public function test_update_persists_changes_to_database(): void
     {
         [$cliente, $servicio] = $this->clienteConServicioSeo();
-        $campana = $this->campana($cliente, $servicio, ['nombre' => 'Nombre Original', 'estado' => 'activa']);
+        // La fase va cerrada: marcar finalizada con la fase abierta ya no se permite (coherencia estado/fase).
+        $campana = $this->campana($cliente, $servicio, ['nombre' => 'Nombre Original', 'estado' => 'activa', 'fase_actual' => 'cerrada']);
 
         $this->actingAs(User::factory()->create())->putJson(route('admin.seo.update', $campana), [
             'cliente_id' => $cliente->id,

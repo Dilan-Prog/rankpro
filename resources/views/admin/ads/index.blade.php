@@ -23,7 +23,8 @@
         $totalConversiones = (int) $campanas->sum('conversiones');
         $totalClics = (int) $campanas->sum('clics');
         $totalImpresiones = (int) $campanas->sum('impresiones');
-        $totalRoas = $totalInversion > 0 ? round($totalIngreso / $totalInversion, 1) : 0;
+        $totalInversionConIngreso = (float) $campanas->sum('inversion_con_ingreso');
+        $totalRoas = $totalInversionConIngreso > 0 ? round($totalIngreso / $totalInversionConIngreso, 1) : 0;
         $totalCpa = $totalConversiones > 0 ? round($totalInversion / $totalConversiones, 2) : 0;
         $totalCtr = $totalImpresiones > 0 ? round(($totalClics / $totalImpresiones) * 100, 2) : 0;
 

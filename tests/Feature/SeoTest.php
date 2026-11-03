@@ -363,4 +363,99 @@ class SeoTest extends TestCase
             'Consent Mode debe declararse ANTES de cargar el contenedor de GTM.'
         );
     }
+
+    // ------------------------------------------------------------------
+    // Auditoria de QA 2026-11-02
+    // ------------------------------------------------------------------
+
+    public function test_nosotros_y_las_landings_no_publican_cifras_sin_fuente(): void
+    {
+        // El dueno es el unico que puede verificar estas cifras; mientras no las
+        // confirme con fuente, el sitio no las afirma (E-E-A-T).
+        $this->get('/nosotros')->assertOk()
+            ->assertDontSee('más de 200 clientes')
+            ->assertDontSee('98%')
+            ->assertDontSee('$120M')
+            ->assertDontSee('4 años de experiencia');
+
+        $this->get('/servicios/automatizacion-de-procesos')->assertOk()
+            ->assertDontSee('-70%')
+            ->assertDontSee('Grupo inmobiliario')
+            ->assertDontSee('Retail nacional');
+
+        $this->get('/servicios/desarrollo-web')->assertOk()
+            ->assertDontSee('12 dispositivos')
+            ->assertDontSee('PageSpeed &gt; 95', false)
+            ->assertDontSee('< 1.8 s');
+
+        $this->assertStringNotContainsString('90+ en Lighthouse', json_encode(Servicios::todos()));
+    }
+
+    public function test_el_blog_vacio_y_las_categorias_vacias_son_noindex_y_no_van_al_sitemap(): void
+    {
+        config(['seo.indexable' => true]);
+
+        $this->get('/blog')->assertSee('content="noindex, follow"', false);
+        $this->get('/blog/categoria/'.\App\Support\Clusters::slugs()[0])
+            ->assertSee('content="noindex, follow"', false);
+
+        $this->assertStringNotContainsString(
+            '<loc>'.url('/blog').'</loc>',
+            $this->get('/sitemap.xml')->getContent()
+        );
+    }
+
+    public function test_el_json_ld_de_contacto_no_duplica_la_organizacion(): void
+    {
+        $html = $this->get('/contacto')->assertOk()->getContent();
+
+        preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+        $organizaciones = [];
+        foreach ($m[1] as $json) {
+            foreach (json_decode($json, true)['@graph'] ?? [] as $nodo) {
+                if (($nodo['@type'] ?? null) === 'Organization') {
+                    $organizaciones[] = $nodo;
+                }
+            }
+        }
+
+        $this->assertCount(1, $organizaciones, 'Debe haber un solo nodo Organization.');
+        $this->assertSame('+527341036410', $organizaciones[0]['telephone']);
+        $this->assertSame('+527341036410', $organizaciones[0]['contactPoint']['telephone']);
+        $this->assertStringNotContainsString('+52-734', $html);
+    }
+
+    public function test_el_json_ld_de_la_portada_usa_la_misma_url_que_la_canonica(): void
+    {
+        $inicio = rtrim(url('/'), '/').'/';
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<link rel="canonical" href="'.$inicio.'">', $html);
+        $this->assertStringContainsString('"url":"'.$inicio.'"', $html);
+        $this->assertStringNotContainsString('"url":"'.rtrim($inicio, '/').'"', $html);
+    }
+
+    public function test_los_casos_de_exito_declaran_og_type_article(): void
+    {
+        $this->get('/casos-de-exito/hotel-fratelli')
+            ->assertSee('<meta property="og:type" content="article">', false);
+    }
+
+    public function test_el_favicon_ico_no_esta_vacio(): void
+    {
+        $this->assertGreaterThan(0, filesize(public_path('favicon.ico')));
+    }
+
+    public function test_google_fonts_entra_por_link_y_no_por_import_del_css(): void
+    {
+        $this->get('/nosotros')->assertSee('rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope', false);
+        $this->assertStringNotContainsString('@import url(', file_get_contents(resource_path('css/web/app.css')));
+    }
+
+    public function test_el_enlace_de_iniciar_sesion_es_nofollow_y_login_es_noindex(): void
+    {
+        $this->get('/nosotros')->assertSee('class="navbar__login" rel="nofollow"', false);
+        $this->get('/login')->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+        $this->get('/forgot-password')->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+    }
 }

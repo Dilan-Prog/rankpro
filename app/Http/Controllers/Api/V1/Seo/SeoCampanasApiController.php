@@ -80,6 +80,7 @@ class SeoCampanasApiController extends ControladorApi
     public function update(Request $request, SeoCampana $campana)
     {
         $data = $request->validate(ReglasSeoCampanas::actualizar());
+        \App\Support\Reglas\CoherenciaEstadoFase::validar($campana, $data['estado']);
 
         $campana->update($data);
 

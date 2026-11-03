@@ -47,7 +47,12 @@ final class RenderizadorCorreo
             // En modo editor no se sustituye: el marcador {{clave}} se queda
             // visible tal cual, para que editar el texto alrededor nunca borre
             // el marcador (ver envolverEditor() y el docblock de la clase).
-            $html = $editor ? $htmlLibre : Variables::sustituir($htmlLibre, $variables);
+            // Los valores se escapan al sustituir (un cliente 'Tom & <b>' rompería el HTML o
+            // inyectaría etiquetas); el HTML libre del autor sí queda tal cual.
+            $html = $editor ? $htmlLibre : Variables::sustituir($htmlLibre, array_map(
+                fn ($valor) => is_scalar($valor) ? htmlspecialchars((string) $valor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '',
+                $variables
+            ));
         } else {
             $html = self::documento($bloques, array_replace(Bloques::marcaPorDefecto(), $marca), $variables, $editor);
         }

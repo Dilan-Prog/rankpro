@@ -21,6 +21,15 @@ class VerificarHabilidad
             return response()->json(['message' => 'Esta ruta requiere un token de API.'], 403);
         }
 
+        // La habilidad del token no basta: el dueño debe seguir teniendo el permiso del módulo en su rol
+        // (si se le quitó el permiso o le cambiaron el rol después, el token no puede conservar ese poder).
+        if (! $request->user()->tienePermiso($modulo)) {
+            return response()->json([
+                'message' => "El usuario dueño del token no tiene permiso sobre el módulo {$modulo}.",
+                'habilidad_requerida' => "{$modulo}:{$accion}",
+            ], 403);
+        }
+
         $requerida = "{$modulo}:{$accion}";
         $autorizado = $token->can('*')
             || $token->can("{$modulo}:escribir")

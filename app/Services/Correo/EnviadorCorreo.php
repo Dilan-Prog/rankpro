@@ -32,9 +32,23 @@ class EnviadorCorreo
             set_time_limit(300);
         }
 
-        if (! in_array($envio->estado, [EstadoEnvioCorreo::Borrador, EstadoEnvioCorreo::Programado, EstadoEnvioCorreo::Enviando], true)) {
-            throw new RuntimeException("El envío #{$envio->id} está en estado '{$envio->estado->value}' y no se puede mandar.");
+        // Reclamo atómico: el cambio a 'enviando' es condicional en la BD, así que de dos
+        // peticiones simultáneas (doble clic) o de un clic y el scheduler solo una lo logra
+        // y la otra recibe el error sin mandar nada. Un envío que quedó en 'enviando' se
+        // puede reanudar solo cuando lleva más de MINUTOS_ATASCADO sin moverse: antes de
+        // eso lo está procesando otra petición (set_time_limit es de 300 s).
+        $reclamado = CorreoEnvio::whereKey($envio->getKey())
+            ->where(function ($q) {
+                $q->whereIn('estado', [EstadoEnvioCorreo::Borrador->value, EstadoEnvioCorreo::Programado->value])
+                    ->orWhere(fn ($q2) => $q2->where('estado', EstadoEnvioCorreo::Enviando->value)
+                        ->where('updated_at', '<=', now()->subMinutes(CorreoEnvio::MINUTOS_ATASCADO)));
+            })
+            ->update(['estado' => EstadoEnvioCorreo::Enviando->value]);
+
+        if ($reclamado === 0) {
+            throw new RuntimeException("El envío #{$envio->id} está en estado '{$envio->fresh()?->estado->value}' y no se puede mandar.");
         }
+        $envio->refresh();
 
         $envio->loadMissing('plantilla');
 
@@ -57,17 +71,17 @@ class EnviadorCorreo
             'html_congelado' => RenderizadorCorreo::render($contenido['bloques'], $contenido['marca'], $variablesEnvio, ['html_libre' => $contenido['html_libre']]),
         ])->save();
 
-        $salieron = 0;
-
         $envio->destinatarios()
             ->where('estado', EstadoDestinatarioCorreo::Pendiente)
             ->with('cliente')
             ->get()
-            ->each(function (CorreoDestinatario $destinatario) use ($envio, $contenido, $variablesEnvio, $adjuntos, &$salieron) {
-                if ($this->enviarA($destinatario, $envio, $contenido, $variablesEnvio, $adjuntos)) {
-                    $salieron++;
-                }
+            ->each(function (CorreoDestinatario $destinatario) use ($envio, $contenido, $variablesEnvio, $adjuntos) {
+                $this->enviarA($destinatario, $envio, $contenido, $variablesEnvio, $adjuntos);
             });
+
+        // Total acumulado, no solo los de esta corrida: al reanudar un envío interrumpido los
+        // que salieron antes cuentan, y si no el envío completo quedaría como Fallido.
+        $salieron = $envio->destinatarios()->where('estado', EstadoDestinatarioCorreo::Enviado)->count();
 
         $envio->forceFill([
             'estado' => $salieron > 0 ? EstadoEnvioCorreo::Enviado : EstadoEnvioCorreo::Fallido,

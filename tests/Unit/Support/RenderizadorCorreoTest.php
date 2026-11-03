@@ -230,6 +230,17 @@ class RenderizadorCorreoTest extends TestCase
         $this->assertStringContainsString('src="https://pix.test/p.gif"', $html);
     }
 
+    public function test_html_libre_escapa_los_valores_de_las_variables_pero_no_el_html_del_autor(): void
+    {
+        $html = $this->render([], ['contacto' => 'Tom & <b>Jerry</b> "x"'], [
+            'html_libre' => '<p style="color:#111" bgcolor="#fff">Hola {{contacto}}</p>',
+        ]);
+
+        $this->assertStringContainsString('Hola Tom &amp; &lt;b&gt;Jerry&lt;/b&gt; &quot;x&quot;</p>', $html);
+        $this->assertStringNotContainsString('<b>Jerry</b>', $html);
+        $this->assertStringContainsString('<p style="color:#111" bgcolor="#fff">', $html);
+    }
+
     public function test_blank_html_libre_falls_back_to_blocks(): void
     {
         $html = $this->render([['tipo' => 'heading', 'texto' => 'Desde bloques']], [], ['html_libre' => "  \n "]);

@@ -390,6 +390,22 @@ class ArchivosTest extends TestCase
         ]);
     }
 
+    public function test_store_agrega_la_extension_cuando_el_nombre_personalizado_no_la_trae(): void
+    {
+        $user = User::factory()->create();
+        $cliente = Cliente::factory()->create();
+
+        $response = $this->actingAs($user)->postJson(route('admin.archivos.store'), [
+            'cliente_id' => $cliente->id,
+            'tipo' => 'reporte',
+            'nombre' => 'Informe mensual',
+            'archivo' => UploadedFile::fake()->create('origen.pdf', 10, 'application/pdf'),
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('Informe mensual.pdf', $response->json('nombre'));
+    }
+
     public function test_store_uses_provided_nombre_instead_of_filename(): void
     {
         $user = User::factory()->create();

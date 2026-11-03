@@ -44,7 +44,7 @@ class KeywordImportApiController extends ControladorApi
                 'idioma' => ['nullable', 'string', 'max:10'],
                 'pais' => ['nullable', 'string', 'max:10'],
                 'herramienta_origen' => ['nullable', 'in:semrush,ahrefs,google_kp,otro'],
-                'url_asignada' => ['nullable', 'string', 'max:255'],
+                'url_asignada' => ['nullable', 'string', 'max:255', \App\Support\Reglas\Keywords::reglaUrlAsignada()],
                 'estado' => ['nullable', 'in:en_uso,seguimiento,descartada'],
                 'notas' => ['nullable', 'string', 'max:2000'],
             ]);

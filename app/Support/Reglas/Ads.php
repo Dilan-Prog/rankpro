@@ -2,7 +2,9 @@
 
 namespace App\Support\Reglas;
 
+use App\Enums\TipoServicio;
 use App\Models\AdsCampana;
+use Illuminate\Validation\Rule;
 
 /**
  * Reglas de validación de AdsCampana compartidas entre el controlador web
@@ -17,8 +19,8 @@ class Ads
     public static function campana(?AdsCampana $campana = null): array
     {
         $reglas = [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
+            'cliente_id' => ['required', 'integer', Rule::exists('clientes', 'id')->whereNull('deleted_at')],
+            'servicio_id' => ['required', 'integer', new ServicioDelCliente([TipoServicio::GoogleAds->value, TipoServicio::MetaAds->value, TipoServicio::TiktokAds->value], 'Ads')],
             'nombre' => ['required', 'string', 'max:255'],
             'plataforma' => ['required', 'in:google_ads,meta_ads,tiktok_ads'],
             'objetivo' => ['required', 'in:leads,ventas,trafico,branding'],

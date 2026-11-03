@@ -57,7 +57,8 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'permiso' => \App\Http\Middleware\VerificarPermisoModulo::class,
+        'activo' => \App\Http\Middleware\UsuarioWebActivo::class,
+        'permiso' =>\App\Http\Middleware\VerificarPermisoModulo::class,
         'client.token' => \App\Http\Middleware\VerifyClientToken::class,
         'api.json' => \App\Http\Middleware\Api\AceptarJson::class,
         'api.activo' => \App\Http\Middleware\Api\UsuarioActivo::class,

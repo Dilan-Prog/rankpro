@@ -30,12 +30,30 @@ class DashboardController extends Controller
             'pageTitle' => 'Dashboard General',
             'kpis' => $this->kpis($now),
             'periodoActual' => $now->clone()->locale('es')->translatedFormat('F Y'),
-            'chartRange' => $revenueData[0]['month'] . ' — ' . $revenueData[array_key_last($revenueData)]['month'] . ' ' . $now->year,
+            'chartRange' => $this->rangoGrafica($revenueData),
             'revenueData' => $revenueData,
             'alerts' => $this->alerts($now),
             'topRoas' => $this->topRoas(),
             'contractsExpiring' => $this->contractsExpiring($now),
         ]);
+    }
+
+    /**
+     * "Sep — Feb 2027" mentia cuando la ventana de 6 meses cruza de año (Sep era
+     * 2026): si los años difieren se imprimen ambos.
+     *
+     * @param  list<array{periodo: string, month: string}>  $revenueData
+     */
+    private function rangoGrafica(array $revenueData): string
+    {
+        $primero = $revenueData[0];
+        $ultimo = $revenueData[array_key_last($revenueData)];
+        $anioPrimero = substr($primero['periodo'], 0, 4);
+        $anioUltimo = substr($ultimo['periodo'], 0, 4);
+
+        return $anioPrimero === $anioUltimo
+            ? $primero['month'].' — '.$ultimo['month'].' '.$anioUltimo
+            : $primero['month'].' '.$anioPrimero.' — '.$ultimo['month'].' '.$anioUltimo;
     }
 
     /** Streams a PDF summary of the same data index() renders — see resources/views/pdf/dashboard-reporte.blade.php. */
@@ -109,14 +127,18 @@ class DashboardController extends Controller
 
     private function contractsExpiring(Carbon $now): array
     {
+        // Todo se compara por fecha (sin hora): con $now a mitad del dia, diffInDays
+        // truncaba y el contrato de mañana salia "en 0 dias".
+        $hoy = $now->copy()->startOfDay();
+
         return Cliente::where('estado', 'activo')
             ->whereNotNull('fecha_renovacion_contrato')
-            ->where('fecha_renovacion_contrato', '>=', $now->copy()->startOfDay())
+            ->where('fecha_renovacion_contrato', '>=', $hoy)
             ->with('servicios')
             ->orderBy('fecha_renovacion_contrato')
             ->take(5)
             ->get()
-            ->map(function (Cliente $c) use ($now) {
+            ->map(function (Cliente $c) use ($hoy) {
                 $fecha = $c->fecha_renovacion_contrato;
                 $mrr = $c->servicios
                     ->filter(fn (Servicio $s) => $s->estado === EstadoClienteServicio::Activo)
@@ -126,7 +148,7 @@ class DashboardController extends Controller
                     'id' => $c->id,
                     'client' => $c->nombre,
                     'end' => $fecha->day . ' ' . self::MESES[$fecha->month - 1] . ' ' . $fecha->year,
-                    'days' => (int) $now->diffInDays($fecha),
+                    'days' => (int) $hoy->diffInDays($fecha->copy()->startOfDay()),
                     'mrr' => (float) $mrr,
                 ];
             })

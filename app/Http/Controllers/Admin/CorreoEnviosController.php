@@ -225,7 +225,9 @@ class CorreoEnviosController extends Controller
 
     public function enviar(CorreoEnvio $envio): JsonResponse
     {
-        if (! $envio->estado->editable()) {
+        // También un envío interrumpido en 'enviando' (reanudar): el reclamo atómico de
+        // EnviadorCorreo decide si de verdad puede salir.
+        if (! $envio->estado->editable() && ! $envio->reanudable()) {
             return response()->json(['message' => 'Este envío ya no se puede mandar desde aquí.'], 422);
         }
 

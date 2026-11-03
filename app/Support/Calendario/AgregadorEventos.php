@@ -37,11 +37,36 @@ class AgregadorEventos
      */
     public function entre(CarbonInterface $desde, CarbonInterface $hasta, ?int $userId = null): Collection
     {
-        return collect()
-            ->merge($this->reuniones($desde, $hasta))
-            ->merge($this->tareas($desde, $hasta, $userId))
-            ->merge($this->proyectos($desde, $hasta))
-            ->merge($this->finanzas($desde, $hasta))
+        // Cada origen se agrega solo si el usuario puede abrir ese módulo: el calendario no debe ser
+        // una puerta lateral a cobros, reuniones o entregas de módulos que su rol no ve. Sin usuario
+        // no se sabe qué puede ver, así que no se agrega nada (igual que las campañas).
+        $usuario = $userId !== null ? User::find($userId) : null;
+        if ($usuario === null) {
+            return collect();
+        }
+
+        $eventos = collect();
+
+        if ($usuario->tienePermiso('agenda')) {
+            $eventos = $eventos->merge($this->reuniones($desde, $hasta));
+        }
+
+        // Tareas con proyecto pertenecen a Desarrollo; las personales (sin proyecto) a Mi espacio.
+        $eventos = $eventos->merge($this->tareas(
+            $desde, $hasta, $userId,
+            $usuario->tienePermiso('desarrollo'),
+            $usuario->tienePermiso('mi-espacio'),
+        ));
+
+        if ($usuario->tienePermiso('desarrollo')) {
+            $eventos = $eventos->merge($this->proyectos($desde, $hasta));
+        }
+
+        if ($usuario->tienePermiso('finanzas')) {
+            $eventos = $eventos->merge($this->finanzas($desde, $hasta));
+        }
+
+        return $eventos
             ->merge($this->campanas($desde, $hasta, $userId))
             ->values();
     }
@@ -66,16 +91,22 @@ class AgregadorEventos
             ));
     }
 
-    private function tareas(CarbonInterface $desde, CarbonInterface $hasta, ?int $userId): Collection
+    private function tareas(CarbonInterface $desde, CarbonInterface $hasta, ?int $userId, bool $conProyecto, bool $personales): Collection
     {
+        if (! $conProyecto && ! $personales) {
+            return collect();
+        }
+
         return Tarea::query()
             ->with(['proyecto:id,nombre,cliente_id', 'proyecto.cliente:id,nombre', 'cliente:id,nombre'])
             ->where('estado', '!=', EstadoTarea::Completada->value)
             ->whereBetween('fecha_limite', [$desde->toDateString(), $hasta->toDateString()])
-            ->where(function ($q) use ($userId) {
-                $q->whereNotNull('proyecto_id');
-                if ($userId !== null) {
-                    $q->orWhere('user_id', $userId);
+            ->where(function ($q) use ($userId, $conProyecto, $personales) {
+                if ($conProyecto) {
+                    $q->whereNotNull('proyecto_id');
+                }
+                if ($personales && $userId !== null) {
+                    $q->orWhere(fn ($p) => $p->whereNull('proyecto_id')->where('user_id', $userId));
                 }
             })
             ->get()

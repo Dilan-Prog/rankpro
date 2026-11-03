@@ -609,7 +609,11 @@
         input.focus();
         if (input.select) input.select();
 
+        // Escape cancela: renderTable() quita el input y el blur resultante no debe guardar lo tecleado (mismo patrón que conversiones.js).
+        let cancelled = false;
+
         const saveCell = () => {
+          if (cancelled) return;
           const value = input.value;
           const payload = {
             keyword: field === "keyword" ? value : kw.keyword,
@@ -639,7 +643,10 @@
             ev.preventDefault();
             input.blur();
           }
-          if (ev.key === "Escape") renderTable();
+          if (ev.key === "Escape") {
+            cancelled = true;
+            renderTable();
+          }
         });
         input.addEventListener("blur", saveCell);
       }
@@ -1165,7 +1172,9 @@
     const totalClics = campanas.reduce((a, c) => a + (Number(c.clics) || 0), 0);
     const totalImpresiones = campanas.reduce((a, c) => a + (Number(c.impresiones) || 0), 0);
 
-    const roas = totalInversion > 0 ? totalIngreso / totalInversion : 0;
+    // Denominador: solo la inversión de meses con dato de ingreso (el servidor la expone en inversion_con_ingreso).
+    const totalInversionConIngreso = campanas.reduce((a, c) => a + (Number(c.inversion_con_ingreso) || 0), 0);
+    const roas = totalInversionConIngreso > 0 ? totalIngreso / totalInversionConIngreso : 0;
     const cpa = totalConversiones > 0 ? totalInversion / totalConversiones : 0;
     const ctr = totalImpresiones > 0 ? (totalClics / totalImpresiones) * 100 : 0;
 

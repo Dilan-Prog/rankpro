@@ -60,6 +60,24 @@ class ConfiguracionSmtpTest extends TestCase
         $this->assertSame('secreta-123', $config->password);
     }
 
+    public function test_activar_sin_contrasena_guardada_ni_escrita_se_rechaza(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->put(route('admin.configuracion.smtp.update'), $this->payload(['password' => '']))
+            ->assertSessionHasErrors('password');
+
+        $this->assertNull(ConfiguracionSmtp::actual());
+    }
+
+    public function test_guardar_desactivada_sin_contrasena_si_se_permite(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->put(route('admin.configuracion.smtp.update'), $this->payload(['password' => '', 'activa' => '0']))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertFalse(ConfiguracionSmtp::actual()->activa);
+    }
+
     public function test_password_is_stored_encrypted_at_rest(): void
     {
         $this->actingAs(User::factory()->create())->put(route('admin.configuracion.smtp.update'), $this->payload());

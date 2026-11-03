@@ -65,9 +65,9 @@
     $stack = ['React / Next.js', 'TypeScript', 'Tailwind', 'Node', 'PostgreSQL', 'Vercel / AWS', 'Stripe / Conekta', 'GA4 + GTM'];
 
     $metas = [
-        ['valor' => '< 1.8 s', 'label' => 'LCP en móvil', 'nota' => 'Google exige menos de 2.5 s'],
-        ['valor' => '> 95', 'label' => 'PageSpeed móvil', 'nota' => 'Medido antes de entregar'],
-        ['valor' => '100%', 'label' => 'Responsive real', 'nota' => 'Probado en 12 dispositivos'],
+        ['valor' => 'LCP', 'label' => 'Velocidad en móvil', 'nota' => 'Lo medimos con Core Web Vitals; Google considera bueno menos de 2.5 s'],
+        ['valor' => 'PageSpeed', 'label' => 'Revisión antes de entregar', 'nota' => 'Medimos y corregimos; no prometemos una calificación'],
+        ['valor' => 'Móvil', 'label' => 'Responsive real', 'nota' => 'Revisado en distintos tamaños de pantalla'],
         ['valor' => 'AA', 'label' => 'Accesibilidad WCAG', 'nota' => 'Contraste y navegación por teclado'],
     ];
 
@@ -142,7 +142,7 @@
 
                         <div class="cv-trust">
                             <span>{!! $ico($icoGit, 13) !!} Código en tu repositorio</span>
-                            <span>{!! $ico($icoGauge, 13) !!} PageSpeed &gt; 95 al entregar</span>
+                            <span>{!! $ico($icoGauge, 13) !!} PageSpeed medido al entregar</span>
                             <span>{!! $ico($icoEscudo, 13) !!} 30 días de garantía</span>
                         </div>
                     </div>

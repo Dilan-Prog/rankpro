@@ -982,14 +982,15 @@
       return `<div class="kwx-aviso kwx-aviso--error"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><p>${escapeHtml(data.message || "No se encontraron filas para importar.")}</p></div>`;
     }
     const creadasHtml = `<p class="kwx-import__ok"><strong class="kwx-verde">${data.creadas}</strong> keyword(s) creada(s).</p>`;
-    if (!data.errores || !data.errores.length) return creadasHtml;
+    const dup = data.duplicadas ? `<p class="kwx-import__cuenta">${data.duplicadas} keyword(s) omitida(s) por ya existir en la lista.</p>` : "";
+    if (!data.errores || !data.errores.length) return creadasHtml + dup;
     const erroresHtml = data.errores
       .map(
         (err) =>
           `<li><strong>Fila ${err.fila}:</strong> ${escapeHtml(err.texto)} — <span class="kwx-rojo">${(err.errores || []).map(escapeHtml).join("; ")}</span></li>`
       )
       .join("");
-    return `${creadasHtml}<div class="kwx-import__cuenta">${data.errores.length} fila(s) con errores:</div><ul class="kwx-import__errores">${erroresHtml}</ul>`;
+    return `${creadasHtml}${dup}<div class="kwx-import__cuenta">${data.errores.length} fila(s) con errores:</div><ul class="kwx-import__errores">${erroresHtml}</ul>`;
   }
 
   function applyImportedLista(l) {

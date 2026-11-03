@@ -1144,7 +1144,7 @@
       }
 
       const opciones = tipo === "seleccion"
-        ? Array.from(new Set(areaColOpciones.value.split("\n").map((o) => o.trim()).filter(Boolean)))
+        ? Array.from(new Set(areaColOpciones.value.split("\n").map((o) => o.trim().slice(0, 80)).filter(Boolean)))
         : [];
       if (opciones.length > 40) {
         mostrarError(errorColumna, "Máximo 40 opciones por columna.");

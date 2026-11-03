@@ -2,6 +2,9 @@
 
 namespace App\Support\Reglas;
 
+use App\Enums\TipoServicio;
+use Illuminate\Validation\Rule;
+
 /**
  * Reglas de validación de SeoCampana, compartidas entre el controlador web
  * (App\Http\Controllers\Admin\SeoController) y el de la API
@@ -14,10 +17,10 @@ class SeoCampanas
     public static function crear(): array
     {
         return [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
+            'cliente_id' => ['required', 'integer', Rule::exists('clientes', 'id')->whereNull('deleted_at')],
+            'servicio_id' => ['required', 'integer', new ServicioDelCliente([TipoServicio::Seo->value], 'SEO')],
             'nombre' => ['required', 'string', 'max:255'],
-            'url_sitio' => ['nullable', 'string', 'max:255'],
+            'url_sitio' => ['nullable', 'url:http,https', 'max:255'], // se pinta como enlace en reportes: solo http(s)
             'fecha_inicio' => ['nullable', 'date'],
         ];
     }

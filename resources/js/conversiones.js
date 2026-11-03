@@ -143,7 +143,10 @@
         const row = cell.closest("tr");
         const conversionId = row.dataset.conversionId;
         const currentText = cell.textContent.trim();
-        const currentValue = currentText === "—" ? "" : currentText;
+        // El Valor se muestra con separador de miles ('1,234.50'), que un input type=number descarta
+        // (se enviaría null y se perdería el dato): el editor parte del valor crudo de data-valor.
+        const currentValue = field === "valor" ? cell.dataset.valor || "" : currentText === "—" ? "" : currentText;
+        const textoOriginal = currentText;
 
         const inputType = field === "valor" ? "number" : "text";
         const inputStep = field === "valor" ? ' step="0.01" min="0"' : "";
@@ -166,14 +169,16 @@
           request(`${routes.actualizarBase}/${conversionId}`, "PUT", payload)
             .then((fresh) => {
               if (field === "valor") {
-                restoreDisplay(fresh.valor !== null ? Number(fresh.valor).toFixed(2) : "");
+                if (fresh.valor !== null) cell.dataset.valor = String(fresh.valor);
+                else delete cell.dataset.valor;
+                restoreDisplay(fresh.valor !== null ? Number(fresh.valor).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "");
               } else {
                 restoreDisplay((fresh.datos_personalizados || {})[cell.dataset.columnaId]);
               }
             })
             .catch(() => {
               toast("No se pudo guardar el cambio.", "error");
-              restoreDisplay(currentValue);
+              restoreDisplay(textoOriginal);
             });
         };
 
@@ -184,7 +189,7 @@
           }
           if (ev.key === "Escape") {
             cancelled = true;
-            restoreDisplay(currentValue);
+            restoreDisplay(textoOriginal);
           }
         });
         input.addEventListener("blur", saveCell);

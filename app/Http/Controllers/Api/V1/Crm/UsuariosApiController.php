@@ -38,6 +38,10 @@ class UsuariosApiController extends ControladorApi
     {
         $data = $request->validate(array_merge(ReglasUsuarios::datos(), ReglasUsuarios::passwordAlCrear()));
 
+        if ($error = ProteccionAdmin::alAsignarRol($request->user(), $data['role_id'] ?? null)) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
+
         $passwordTemporal = null;
         if (blank($data['password'] ?? null)) {
             $passwordTemporal = Str::password(14);
@@ -66,6 +70,13 @@ class UsuariosApiController extends ControladorApi
     {
         $data = $request->validate(ReglasUsuarios::datos($user));
 
+        if ($mensaje = ProteccionAdmin::alTocarUsuario($request->user(), $user)) {
+            throw new ErrorDeDominio($mensaje, 'general', 403);
+        }
+        if (($data['role_id'] ?? null) !== $user->role_id && ($error = ProteccionAdmin::alAsignarRol($request->user(), $data['role_id'] ?? null))) {
+            throw new ErrorDeDominio($error[1], $error[0]);
+        }
+
         $quedaActivo = $request->boolean('is_active', $user->is_active);
         if ($error = ProteccionAdmin::alEditarUsuario($user, $data['role_id'] ?? null, $quedaActivo)) {
             throw new ErrorDeDominio($error[1], $error[0]);
@@ -87,6 +98,11 @@ class UsuariosApiController extends ControladorApi
     {
         $data = $request->validate(ReglasUsuarios::passwordCambio());
 
+        // Cambiar la contraseña de un admin equivale a tomar su cuenta.
+        if ($mensaje = ProteccionAdmin::alTocarUsuario($request->user(), $user)) {
+            throw new ErrorDeDominio($mensaje, 'general', 403);
+        }
+
         $user->update(['password' => $data['password']]);
 
         return Respuesta::mensaje('Contraseña actualizada.');
@@ -101,6 +117,10 @@ class UsuariosApiController extends ControladorApi
     {
         if ($user->id === $request->user()->id) {
             throw new ErrorDeDominio('No puedes desactivar tu propia cuenta.', 'is_active');
+        }
+
+        if ($mensaje = ProteccionAdmin::alTocarUsuario($request->user(), $user)) {
+            throw new ErrorDeDominio($mensaje, 'general', 403);
         }
 
         if ($mensaje = ProteccionAdmin::alDesactivarUsuario($user)) {

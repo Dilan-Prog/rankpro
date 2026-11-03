@@ -50,6 +50,11 @@ class ArchivosController extends Controller
         $file = $request->file('archivo');
         $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $nombre = filled($data['nombre'] ?? null) ? $data['nombre'] : $file->getClientOriginalName();
+        // Un nombre personalizado sin extension se descargaria sin ella; se
+        // agrega la que ya valido la regla `mimes` para que el SO sepa abrirlo.
+        if ($extension !== '' && strtolower(pathinfo($nombre, PATHINFO_EXTENSION)) !== $extension) {
+            $nombre .= '.'.$extension;
+        }
 
         $path = $file->store("clientes/{$data['cliente_id']}/archivos", 'local');
 

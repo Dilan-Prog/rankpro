@@ -128,12 +128,37 @@ abstract class MaquinaFasesCiclica
             throw new ErrorDeFase("{$this->sujeto()} ya está en la primera fase o está cerrad{$this->generoNeutro()}.", 'fase');
         }
 
-        $this->registro($modelo, $anterior)->update(['aprobado' => false, 'fecha_aprobacion' => null]);
+        // Se invalidan la fase destino Y las posteriores: si solo se limpiara la
+        // anterior, un Reporte aprobado en un ciclo previo sobreviviría al
+        // retroceso y permitiría cerrar o abrir ciclo sin reaprobar nada.
+        $this->revocarDesde($modelo, $anterior);
 
         $modelo->fase_actual = $anterior;
         $modelo->save();
 
         return new ResultadoFase($modelo->fresh(), 'Retrocedió a la fase anterior.');
+    }
+
+    /** Quita la aprobación de $desde y de todas las fases que le siguen (sin crear filas que no existan). */
+    private function revocarDesde(Model $modelo, \BackedEnum $desde): void
+    {
+        for ($fase = $desde; $fase !== null && $fase !== $this->faseCerrada(); $fase = $fase->siguiente()) {
+            $this->registroSiExiste($modelo, $fase)?->update(['aprobado' => false, 'fecha_aprobacion' => null]);
+        }
+    }
+
+    /**
+     * Tras guardar: si la fase estaba aprobada y el checklist quedó incompleto
+     * (se desmarcó algo), la aprobación se revoca; si no, una fase "aprobada"
+     * con casillas vacías seguiría habilitando cerrar/ciclo nuevo.
+     */
+    public function revocarAprobacionSiIncompleta(Model $registro, \BackedEnum $fase): void
+    {
+        $registro = $registro->fresh();
+
+        if ($registro->aprobado && ! $this->checklistCompleto($registro, $fase)) {
+            $registro->update(['aprobado' => false, 'fecha_aprobacion' => null]);
+        }
     }
 
     public function nuevoCiclo(Model $modelo): ResultadoFase

@@ -89,6 +89,7 @@ class AutomatizacionFaseController extends Controller
         }
 
         $registro->update($data);
+        $this->maquina->revocarAprobacionSiIncompleta($registro, $fase);
 
         return response()->json([
             'checklist' => $registro->fresh()->checklist,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\Api\Modulos;
+use App\Support\ProteccionAdmin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +53,22 @@ class IntegracionesApiController extends Controller
         ]);
 
         $habilidades = Modulos::normalizar($data['habilidades']);
+
+        // Un token no puede valer más que su creador: sin esto, quien solo tiene «integraciones»
+        // se fabricaría un token usuarios:escribir (o '*') y escalaría privilegios por la API.
+        $usuario = Auth::user();
+        $noPermitidas = collect($habilidades)->filter(function (string $h) use ($usuario) {
+            if ($h === '*') {
+                return ! ProteccionAdmin::esAdmin($usuario);
+            }
+
+            return ! $usuario->tienePermiso(explode(':', $h)[0]);
+        })->values();
+        if ($noPermitidas->isNotEmpty()) {
+            $mensaje = 'No puedes crear un token con habilidades que tu rol no tiene: '.$noPermitidas->implode(', ').'.';
+
+            return response()->json(['message' => $mensaje, 'errors' => ['habilidades' => [$mensaje]]], 422);
+        }
         $expira = $data['expira_en'] ?? null;
 
         $creado = Auth::user()->createToken($data['nombre'], $habilidades, $expira ? \Illuminate\Support\Carbon::parse($expira) : null);

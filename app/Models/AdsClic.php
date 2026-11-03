@@ -20,6 +20,7 @@ class AdsClic extends Model
         'cliente_id',
         'ads_campana_id',
         'visitor_id',
+        'evento_id',
         'gclid',
         'gbraid',
         'wbraid',

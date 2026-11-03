@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -53,7 +54,7 @@ class DocumentosController extends Controller
         $data = $this->validatedContrato($request);
         [$cliente, $servicios] = $this->resolveClienteServicios($data);
 
-        $numero = 'CONT-'.now()->format('Y').'-'.str_pad((string) (Archivo::where('tipo', 'contrato')->count() + 1), 4, '0', STR_PAD_LEFT);
+        $numero = $this->numeroSiguiente('CONT-', 'contratos', $cliente);
 
         $pdf = Pdf::loadView('pdf.contrato', [
             'numero' => $numero,
@@ -120,7 +121,7 @@ class DocumentosController extends Controller
         $data = $this->validatedPropuesta($request);
         [$cliente, $servicios] = $this->resolveClienteServicios($data);
 
-        $numero = 'PROP-'.now()->format('Y').'-'.str_pad((string) (Archivo::where('tipo', 'propuesta')->count() + 1), 4, '0', STR_PAD_LEFT);
+        $numero = $this->numeroSiguiente('PROP-', 'propuestas', $cliente);
 
         $pdf = Pdf::loadView('pdf.propuesta', [
             'numero' => $numero,
@@ -178,6 +179,38 @@ class DocumentosController extends Controller
         $cliente = Cliente::findOrFail($data['cliente_id']);
         $servicios = Servicio::where('cliente_id', $cliente->id)->whereIn('id', $data['servicios'])->get();
 
+        // Los servicios ajenos al cliente se descartan; si no queda ninguno el
+        // documento saldria con 0 servicios y total $0, asi que se rechaza.
+        if ($servicios->isEmpty()) {
+            throw ValidationException::withMessages([
+                'servicios' => 'Ninguno de los servicios seleccionados pertenece a este cliente.',
+            ]);
+        }
+
         return [$cliente, $servicios];
+    }
+
+    /**
+     * Siguiente folio PREFIJO-AAAA-NNNN. Se toma el MAXIMO ya usado (en las
+     * rutas guardadas de Archivo) y no un count()+1: los Archivo se borran
+     * fisicamente, y con count() al borrar el 2 de 3 se reutilizaba el 0003
+     * sobrescribiendo el PDF existente. Ademas se salta cualquier numero cuyo
+     * fichero siga en disco, como segunda barrera.
+     */
+    private function numeroSiguiente(string $prefijo, string $carpeta, Cliente $cliente): string
+    {
+        $base = $prefijo.now()->format('Y').'-';
+
+        $maximo = Archivo::where('ruta_archivo', 'like', '%/'.$base.'%')
+            ->pluck('ruta_archivo')
+            ->map(fn (string $ruta) => (int) substr(basename($ruta, '.pdf'), strlen($base)))
+            ->max() ?? 0;
+
+        do {
+            $maximo++;
+            $numero = $base.str_pad((string) $maximo, 4, '0', STR_PAD_LEFT);
+        } while (Storage::disk('local')->exists("clientes/{$cliente->id}/{$carpeta}/{$numero}.pdf"));
+
+        return $numero;
     }
 }

@@ -39,7 +39,8 @@ class CorreoAdjuntosController extends Controller
 
         $adjunto = CorreoAdjunto::create([
             'envio_id' => $envio->id,
-            'nombre' => filled($request->input('nombre')) ? $request->input('nombre') : $file->getClientOriginalName(),
+            // Sin extension el adjunto llegaria sin ella: se agrega la del archivo validado.
+            'nombre' => $this->conExtension(filled($request->input('nombre')) ? $request->input('nombre') : $file->getClientOriginalName(), $file->getClientOriginalExtension() ?: (string) $file->extension()),
             'ruta' => $path,
             'disco' => 'local',
             'mime' => $file->getMimeType(),
@@ -198,5 +199,14 @@ class CorreoAdjuntosController extends Controller
         }
 
         return round($bytes / 1024).' KB';
+    }
+
+    private function conExtension(string $nombre, string $extension): string
+    {
+        $extension = strtolower($extension);
+
+        return $extension !== '' && strtolower(pathinfo($nombre, PATHINFO_EXTENSION)) !== $extension
+            ? $nombre.'.'.$extension
+            : $nombre;
     }
 }

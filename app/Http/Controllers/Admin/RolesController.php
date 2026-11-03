@@ -32,6 +32,10 @@ class RolesController extends Controller
     {
         $data = $this->validated($request);
 
+        if ($error = ProteccionAdmin::alConcederPermisos($request->user(), null, $data['permissions'] ?? [])) {
+            return $this->rechazo($error[0], $error[1]);
+        }
+
         $role = Role::create([
             'name' => $data['name'],
             'label' => $data['label'],
@@ -46,6 +50,10 @@ class RolesController extends Controller
     public function update(Request $request, Role $role): JsonResponse
     {
         $data = $this->validated($request, $role);
+
+        if ($error = ProteccionAdmin::alConcederPermisos($request->user(), $role, $data['permissions'] ?? [])) {
+            return $this->rechazo($error[0], $error[1]);
+        }
 
         if ($error = ProteccionAdmin::alEditarRol($role, $data['name'], $data['permissions'] ?? [])) {
             return $this->rechazo($error[0], $error[1]);
@@ -67,8 +75,13 @@ class RolesController extends Controller
      * único aquí (y no en el cliente) para que dos clics seguidos no choquen
      * con el unique de roles.name; luego se renombra desde Editar.
      */
-    public function duplicar(Role $role): JsonResponse
+    public function duplicar(Request $request, Role $role): JsonResponse
     {
+        // La copia es editable: duplicar el rol admin daría a un no-admin un rol con todos los permisos.
+        if ($error = ProteccionAdmin::alConcederPermisos($request->user(), null, $role->permissions()->pluck('permissions.id')->all())) {
+            return $this->rechazo($error[0], $error[1]);
+        }
+
         $base = substr($role->name, 0, 90).'_copia';
         $nombre = $base;
         for ($i = 2; Role::where('name', $nombre)->exists(); $i++) {

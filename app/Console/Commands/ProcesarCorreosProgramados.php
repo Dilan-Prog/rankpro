@@ -23,7 +23,9 @@ class ProcesarCorreosProgramados extends Command
     {
         $procesados = 0;
 
-        CorreoEnvio::vencidos()->orderBy('programado_para')->get()->each(function (CorreoEnvio $envio) use ($enviador, &$procesados) {
+        // Los vencidos y, aparte, los que se quedaron a medias en 'enviando' (SMTP caído, timeout):
+        // sin esto un envío interrumpido nunca terminaría de salir.
+        CorreoEnvio::vencidos()->orderBy('programado_para')->get()->concat(CorreoEnvio::atascados()->get())->each(function (CorreoEnvio $envio) use ($enviador, &$procesados) {
             try {
                 $resultado = $enviador->enviar($envio);
                 $this->line("Envío #{$envio->id} ({$envio->asunto}): {$resultado->estado->label()}");

@@ -2,7 +2,9 @@
 
 namespace App\Support\Reglas;
 
+use App\Enums\TipoServicio;
 use App\Models\AutomatizacionProyecto;
+use Illuminate\Validation\Rule;
 
 /**
  * Reglas de validación de AutomatizacionProyecto. El controlador web
@@ -17,8 +19,8 @@ class Automatizaciones
     public static function crear(): array
     {
         return [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
+            'cliente_id' => ['required', 'integer', Rule::exists('clientes', 'id')->whereNull('deleted_at')],
+            'servicio_id' => ['required', 'integer', new ServicioDelCliente([TipoServicio::Automatizacion->value], 'Automatizaciones')],
             'nombre' => ['required', 'string', 'max:255'],
             'fecha_inicio' => ['nullable', 'date'],
 
@@ -37,8 +39,8 @@ class Automatizaciones
     public static function actualizar(): array
     {
         return [
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'servicio_id' => ['required', 'integer', 'exists:servicios,id'],
+            'cliente_id' => ['required', 'integer', Rule::exists('clientes', 'id')->whereNull('deleted_at')],
+            'servicio_id' => ['required', 'integer', new ServicioDelCliente([TipoServicio::Automatizacion->value], 'Automatizaciones')],
             'nombre' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'in:activa,pausada,finalizada'],
             'fecha_inicio' => ['nullable', 'date'],

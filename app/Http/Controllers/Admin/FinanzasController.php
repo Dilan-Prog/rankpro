@@ -86,7 +86,9 @@ class FinanzasController extends Controller
         if ($request->filled('search')) {
             $search = $request->string('search');
             $query->where(function ($q) use ($search) {
+                // Mismo criterio que el filtro de la tabla en finanzas.js: cliente, concepto y folio.
                 $q->where('concepto', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT('F-', LPAD(id, 5, '0')) like ?", ["%{$search}%"])
                     ->orWhereHas('cliente', fn ($c) => $c->where('nombre', 'like', "%{$search}%"));
             });
         }
@@ -176,6 +178,6 @@ class FinanzasController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate(ReglasFinanzas::guardar());
+        return ReglasFinanzas::validar($request);
     }
 }

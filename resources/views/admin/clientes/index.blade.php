@@ -35,7 +35,7 @@
         <x-data-table :headers="['Empresa', 'Contacto', 'Servicios', 'MRR', 'Vencimiento', 'Estado', '']" data-paginate="15">
             @foreach ($clientes as $cliente)
                 <tr class="is-clickable" data-client-row data-client-row-id="{{ $cliente['id'] }}"
-                    data-search="{{ mb_strtolower($cliente['empresa'].' '.$cliente['contacto_nombre']) }}"
+                    data-search="{{ mb_strtolower(implode(' ', array_filter([$cliente['nombre'] ?? null, $cliente['empresa'], $cliente['contacto_nombre'], $cliente['email'] ?? null]))) }}"
                     data-estado="{{ $cliente['estado'] }}"
                     data-client="{{ json_encode($cliente) }}">
                     <td><div style="font-weight:500">{{ $cliente['empresa'] ?? $cliente['nombre'] }}</div></td>

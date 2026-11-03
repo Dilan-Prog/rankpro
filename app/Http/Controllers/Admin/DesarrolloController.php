@@ -50,7 +50,8 @@ class DesarrolloController extends Controller
             'vistaUrl' => in_array($request->query('vista'), self::VISTAS, true) ? $request->query('vista') : null,
             'proyectos' => $proyectos,
             'bugs' => $bugs,
-            'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->count(),
+            // Solo activos: pausados y cancelados no estan "en proceso".
+            'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->where('estado', 'activo')->count(),
             'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
             'usuarios' => $this->usuariosActivos(),
         ]);
@@ -64,10 +65,12 @@ class DesarrolloController extends Controller
             'tipo' => ['required', 'in:web_nueva,rediseno,software,landing'],
             'descripcion' => ['nullable', 'string', 'max:5000'],
             'presupuesto' => ['required', 'numeric', 'min:0'],
-            'anticipo' => ['nullable', 'numeric', 'min:0'],
+            // Un anticipo mayor al presupuesto es un error de captura: toRow() recorta
+            // `pendiente` a 0 y ocultaria el sobrepago, asi que se rechaza.
+            'anticipo' => ['nullable', 'numeric', 'min:0', 'lte:presupuesto'],
             'forma_pago' => ['nullable', 'in:mensual,etapas,unico'],
             'fecha_inicio' => ['nullable', 'date'],
-            'fecha_entrega_estimada' => ['nullable', 'date'],
+            'fecha_entrega_estimada' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
             'responsable' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -126,11 +129,11 @@ class DesarrolloController extends Controller
             'tipo' => ['required', 'in:web_nueva,rediseno,software,landing'],
             'descripcion' => ['nullable', 'string', 'max:5000'],
             'presupuesto' => ['required', 'numeric', 'min:0'],
-            'anticipo' => ['nullable', 'numeric', 'min:0'],
-            'pagos_recibidos' => ['required', 'numeric', 'min:0'],
+            'anticipo' => ['nullable', 'numeric', 'min:0', 'lte:presupuesto'],
+            'pagos_recibidos' => ['required', 'numeric', 'min:0', 'lte:presupuesto'],
             'forma_pago' => ['nullable', 'in:mensual,etapas,unico'],
             'fecha_inicio' => ['nullable', 'date'],
-            'fecha_entrega_estimada' => ['nullable', 'date'],
+            'fecha_entrega_estimada' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
             'fecha_entrega_real' => ['nullable', 'date'],
             'responsable' => ['nullable', 'string', 'max:255'],
             'estado' => ['required', 'in:activo,pausado,cancelado,cerrado'],
@@ -179,7 +182,8 @@ class DesarrolloController extends Controller
             'avance_origen' => $porTareas !== null ? 'tareas' : 'fase',
             'tareas_total' => $tareasTotal,
             'tareas_hechas' => $tareasHechas,
-            'dias_restantes' => ProyectoProgreso::diasRestantes($p->fecha_entrega_estimada, $p->fase_actual === FaseProyecto::Cerrado),
+            // Un proyecto cancelado tampoco tiene retraso que pintar en rojo.
+            'dias_restantes' => ProyectoProgreso::diasRestantes($p->fecha_entrega_estimada, $p->fase_actual === FaseProyecto::Cerrado || $p->estado->value === 'cancelado'),
             'stack' => ProyectoProgreso::chipsStack($p->organizacion?->stack_tecnologico),
             'presupuesto' => (float) $p->presupuesto,
             'anticipo' => (float) $p->anticipo,
@@ -191,10 +195,16 @@ class DesarrolloController extends Controller
             'fecha_entrega_real' => $p->fecha_entrega_real?->format('Y-m-d'),
             'responsable' => $p->responsable,
             'bugs_abiertos_count' => $p->bugs->whereIn('estado', [EstadoBug::Abierto, EstadoBug::EnProgreso])->count(),
-            'url_repositorio' => $p->organizacion?->url_repositorio,
-            'url_staging' => $p->organizacion?->url_staging,
+            // Solo http(s): se pintan en href (y desarrollo.js los interpola sin escapar), así que un valor viejo tipo javascript: no debe llegar.
+            'url_repositorio' => self::soloHttp($p->organizacion?->url_repositorio),
+            'url_staging' => self::soloHttp($p->organizacion?->url_staging),
             'show_url' => route('admin.desarrollo.show', $p->id),
         ];
+    }
+
+    private static function soloHttp(?string $url): ?string
+    {
+        return $url !== null && preg_match('#^https?://#i', trim($url)) === 1 ? $url : null;
     }
 
     /** Shared shape for index()'s embedded bug rows — kept in sync with BugController::toRow(). */

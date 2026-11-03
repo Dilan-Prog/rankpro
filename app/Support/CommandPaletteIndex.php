@@ -51,8 +51,21 @@ class CommandPaletteIndex
         return $items;
     }
 
+    /**
+     * Clientes y keywords van en el HTML de cada página del panel: sin este filtro cualquier rol
+     * (aunque no tenga CRM ni Keywords) recibiría hasta 200 nombres de cada tipo en el JSON.
+     */
+    private static function puede(string $modulo): bool
+    {
+        return auth()->user()?->tienePermiso($modulo) === true;
+    }
+
     private static function clientes(): array
     {
+        if (! self::puede('clientes')) {
+            return [];
+        }
+
         return Cliente::query()
             ->orderBy('empresa')
             ->limit(self::LIMIT)
@@ -66,6 +79,10 @@ class CommandPaletteIndex
 
     private static function keywords(): array
     {
+        if (! self::puede('keywords')) {
+            return [];
+        }
+
         return Keyword::query()
             ->with('cliente:id,empresa,nombre')
             ->orderBy('keyword')

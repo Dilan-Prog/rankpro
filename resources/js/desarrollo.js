@@ -91,9 +91,22 @@
 
   function request(url, method, payload) {
     return fetch(url, { method, headers: jsonHeaders(), body: JSON.stringify(payload || {}) }).then((res) => {
-      if (!res.ok) throw new Error("request_failed");
+      if (!res.ok) {
+        // En 422 el servidor explica que fallo (p. ej. «el anticipo no puede superar el presupuesto»): se conserva ese mensaje.
+        return res
+          .json()
+          .catch(() => ({}))
+          .then((data) => {
+            throw new Error(res.status === 422 && data.message ? data.message : "request_failed");
+          });
+      }
       return res.json();
     });
+  }
+
+  /** Mensaje del servidor si lo hay (422); si no, el texto genérico de cada acción. */
+  function mensajeError(err, porDefecto) {
+    return err && err.message && err.message !== "request_failed" ? err.message : porDefecto;
   }
 
   // ---------- View toggles (list/kanban, table/kanban) ----------
@@ -202,7 +215,7 @@
           if (!silent) showSaved();
           if (typeof data.completo === "boolean" && aprobarBtn) aprobarBtn.disabled = !data.completo;
         })
-        .catch(() => toast("No se pudo guardar el avance de la fase.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo guardar el avance de la fase."), "error"));
     }
 
     checklistInputs.forEach((input) => {
@@ -480,7 +493,7 @@
           window.AgencyOS.closeModal("tareaModal");
           toast(editingId ? "Tarea actualizada." : "Tarea agregada.", "success");
         })
-        .catch(() => toast("No se pudo guardar la tarea.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo guardar la tarea."), "error"));
     });
 
     function handleListClick(e) {
@@ -511,7 +524,7 @@
             toggleEmptyState(rowsBody, "data-tareas-empty", "data-tareas-table");
             toast("Tarea eliminada.", "success");
           })
-          .catch(() => toast("No se pudo eliminar la tarea.", "error"));
+          .catch((err) => toast(mensajeError(err, "No se pudo eliminar la tarea."), "error"));
       }
     }
 
@@ -597,7 +610,7 @@
             updateCount(sourceZone);
             syncTableRow(tarea);
           })
-          .catch(() => toast("No se pudo mover la tarea.", "error"));
+          .catch((err) => toast(mensajeError(err, "No se pudo mover la tarea."), "error"));
       });
     });
   }
@@ -700,7 +713,7 @@
           window.AgencyOS.closeModal("bugModal");
           toast(editingId ? "Bug actualizado." : "Bug registrado.", "success");
         })
-        .catch(() => toast("No se pudo guardar el bug.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo guardar el bug."), "error"));
     });
 
     function handleListClick(e) {
@@ -731,7 +744,7 @@
             toggleEmptyState(rowsBody, "data-bugs-empty", "data-bugs-table");
             toast("Bug eliminado.", "success");
           })
-          .catch(() => toast("No se pudo eliminar el bug.", "error"));
+          .catch((err) => toast(mensajeError(err, "No se pudo eliminar el bug."), "error"));
       }
     }
 
@@ -816,7 +829,7 @@
             updateCount(sourceZone);
             syncTableRow(bug);
           })
-          .catch(() => toast("No se pudo mover el bug.", "error"));
+          .catch((err) => toast(mensajeError(err, "No se pudo mover el bug."), "error"));
       });
     });
   }
@@ -848,7 +861,7 @@
           window.AgencyOS.closeModal("qaModal");
           toast("Prueba QA agregada.", "success");
         })
-        .catch(() => toast("No se pudo guardar la prueba QA.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo guardar la prueba QA."), "error"));
     });
 
     rowsBody.addEventListener("click", (e) => {
@@ -862,7 +875,7 @@
           toggleEmptyState(rowsBody, "data-qa-empty", "data-qa-table");
           toast("Prueba QA eliminada.", "success");
         })
-        .catch(() => toast("No se pudo eliminar la prueba QA.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo eliminar la prueba QA."), "error"));
     });
   }
 
@@ -900,7 +913,7 @@
           window.AgencyOS.closeModal("comunicacionModal");
           toast("Comunicación registrada.", "success");
         })
-        .catch(() => toast("No se pudo registrar la comunicación.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo registrar la comunicación."), "error"));
     });
 
     list.addEventListener("click", (e) => {
@@ -914,7 +927,7 @@
           toggleEmptyState(list, "data-comunicaciones-empty", "data-comunicaciones-list");
           toast("Comunicación eliminada.", "success");
         })
-        .catch(() => toast("No se pudo eliminar la comunicación.", "error"));
+        .catch((err) => toast(mensajeError(err, "No se pudo eliminar la comunicación."), "error"));
     });
   }
 

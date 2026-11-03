@@ -21,7 +21,9 @@ class UsersController extends Controller
 {
     public function index(Request $request): View
     {
-        $usuarios = User::with('role')->orderBy('name')->get()->map(fn (User $u) => $this->toRow($u, $request->user()));
+        $lista = User::with('role')->orderBy('name')->get();
+        $cuentas = $this->cuentasAsignadas($lista->pluck('id')->all());
+        $usuarios = $lista->map(fn (User $u) => $this->toRow($u, $request->user(), $cuentas));
 
         return view('admin.usuarios.index', [
             'pageTitle' => 'Usuarios del Sistema',
@@ -93,6 +95,10 @@ class UsersController extends Controller
     {
         $data = $request->validate(array_merge(ReglasUsuarios::datos(), ReglasUsuarios::passwordConfirmada()));
 
+        if ($error = ProteccionAdmin::alAsignarRol($request->user(), $data['role_id'] ?? null)) {
+            return response()->json(['message' => $error[1], 'errors' => [$error[0] => [$error[1]]]], 422);
+        }
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -109,6 +115,15 @@ class UsersController extends Controller
     public function update(Request $request, User $user): JsonResponse
     {
         $data = $request->validate(ReglasUsuarios::datos($user));
+
+        if ($mensaje = ProteccionAdmin::alTocarUsuario($request->user(), $user)) {
+            return response()->json(['message' => $mensaje], 403);
+        }
+
+        // Solo vigila el CAMBIO a admin: un admin que ya lo es puede seguir siendo editado por otro admin sin trabas.
+        if (($data['role_id'] ?? null) !== $user->role_id && ($error = ProteccionAdmin::alAsignarRol($request->user(), $data['role_id'] ?? null))) {
+            return response()->json(['message' => $error[1], 'errors' => [$error[0] => [$error[1]]]], 422);
+        }
 
         if ($user->id === $request->user()->id && ! $request->boolean('is_active')) {
             return response()->json([
@@ -138,6 +153,10 @@ class UsersController extends Controller
     {
         if ($user->id === $request->user()->id) {
             return response()->json(['message' => 'No puedes desactivar tu propia cuenta.'], 422);
+        }
+
+        if ($mensaje = ProteccionAdmin::alTocarUsuario($request->user(), $user)) {
+            return response()->json(['message' => $mensaje], 403);
         }
 
         if ($mensaje = ProteccionAdmin::alDesactivarUsuario($user)) {
@@ -178,17 +197,33 @@ class UsersController extends Controller
         return response()->json(['message' => 'No se pudo enviar el enlace de restablecimiento.'], 422);
     }
 
-    /** Shared shape for index()'s server-rendered rows and store()/update()/deactivate()'s AJAX responses. */
-    private function toRow(User $user, User $viewer): array
+    /**
+     * Clientes (sin repetir, ordenados) de los servicios que cada usuario tiene como responsable,
+     * en UNA consulta para toda la lista: hacerlo por usuario era un N+1 en cada carga del índice.
+     *
+     * @param  array<int, int>  $usuarioIds
+     * @return array<int, list<string>>
+     */
+    private function cuentasAsignadas(array $usuarioIds): array
     {
-        $cuentas = Servicio::where('responsable_id', $user->id)
-            ->with('cliente:id,nombre')
+        return Servicio::query()
+            ->whereIn('servicios.responsable_id', $usuarioIds)
+            ->join('clientes', 'clientes.id', '=', 'servicios.cliente_id')
+            ->whereNotNull('clientes.nombre')
+            ->whereNull('clientes.deleted_at') // igual que la relación: un cliente borrado no cuenta
+            ->select('servicios.responsable_id', 'clientes.nombre')
+            ->distinct()
+            ->orderBy('clientes.nombre')
             ->get()
-            ->pluck('cliente.nombre')
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
+            ->groupBy('responsable_id')
+            ->map(fn ($filas) => $filas->pluck('nombre')->sort()->values()->all())
+            ->all();
+    }
+
+    /** Shared shape for index()'s server-rendered rows and store()/update()/deactivate()'s AJAX responses. */
+    private function toRow(User $user, User $viewer, ?array $cuentasPorUsuario = null): array
+    {
+        $cuentas = collect(($cuentasPorUsuario ?? $this->cuentasAsignadas([$user->id]))[$user->id] ?? []);
 
         return [
             'id' => $user->id,

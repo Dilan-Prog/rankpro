@@ -133,6 +133,7 @@ class FinanzasTest extends TestCase
             'tipo' => 'gasto',
             'monto' => 500,
             'estado' => 'pagado',
+            'fecha_pago' => '2026-01-15',
             'mes' => 1,
             'anio' => 2026,
         ]);
@@ -391,6 +392,7 @@ class FinanzasTest extends TestCase
             'tipo' => $finanza->tipo,
             'monto' => $finanza->monto,
             'estado' => $finanza->estado->value,
+            'fecha_pago' => now()->toDateString(),
             'mes' => $finanza->mes,
             'anio' => $finanza->anio,
         ]);
@@ -546,6 +548,71 @@ class FinanzasTest extends TestCase
         $this->assertStringContainsString('Cliente A', $csv);
         $this->assertStringNotContainsString('Concepto de B', $csv);
         $this->assertStringNotContainsString('Cliente B', $csv);
+    }
+
+    public function test_exportar_busca_tambien_por_folio(): void
+    {
+        $user = User::factory()->create();
+        $buscada = $this->finanza(['concepto' => 'Concepto buscado']);
+        $this->finanza(['concepto' => 'Concepto ajeno']);
+
+        $folio = 'F-' . str_pad((string) $buscada->id, 5, '0', STR_PAD_LEFT);
+        $csv = $this->actingAs($user)->get(route('admin.finanzas.exportar', ['search' => $folio]))->streamedContent();
+
+        $this->assertStringContainsString('Concepto buscado', $csv);
+        $this->assertStringNotContainsString('Concepto ajeno', $csv);
+    }
+
+    // --- validacion cruzada ----------------------------------------------------
+
+    private function payloadValido(array $extra = []): array
+    {
+        return array_merge([
+            'cliente_id' => Cliente::factory()->create()->id,
+            'concepto' => 'Mensualidad',
+            'tipo' => 'ingreso',
+            'monto' => 1000,
+            'estado' => 'pendiente',
+            'fecha_emision' => '2026-07-10',
+            'mes' => 7,
+            'anio' => 2026,
+        ], $extra);
+    }
+
+    public function test_pagado_exige_fecha_de_pago(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.finanzas.store'), $this->payloadValido(['estado' => 'pagado']))
+            ->assertStatus(422)->assertJsonValidationErrors('fecha_pago');
+    }
+
+    public function test_pendiente_no_admite_fecha_de_pago(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.finanzas.store'), $this->payloadValido(['fecha_pago' => '2026-07-12']))
+            ->assertStatus(422)->assertJsonValidationErrors('fecha_pago');
+    }
+
+    public function test_vencimiento_no_puede_ser_anterior_a_la_emision(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.finanzas.store'), $this->payloadValido(['fecha_vencimiento' => '2026-07-01']))
+            ->assertStatus(422)->assertJsonValidationErrors('fecha_vencimiento');
+    }
+
+    public function test_vencimiento_sin_fecha_de_emision_es_valido(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.finanzas.store'), $this->payloadValido(['fecha_emision' => null, 'fecha_vencimiento' => '2026-07-01']))
+            ->assertCreated();
+    }
+
+    public function test_mes_y_anio_se_derivan_de_la_fecha_de_emision(): void
+    {
+        $respuesta = $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.finanzas.store'), $this->payloadValido(['mes' => 1, 'anio' => 2020]));
+
+        $respuesta->assertCreated()->assertJsonPath('mes', 7)->assertJsonPath('anio', 2026);
     }
 
     // --- old routes removed -----------------------------------------------

@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ReportesController extends Controller
@@ -44,7 +45,7 @@ class ReportesController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $this->validated($request, forUpdate: false);
+        $data = $this->validated($request, forUpdate: false, clienteId: $request->integer('cliente_id') ?: null);
 
         $reporte = DB::transaction(function () use ($data) {
             $reporte = Reporte::create($data + [
@@ -93,7 +94,13 @@ class ReportesController extends Controller
 
     public function update(Request $request, Reporte $reporte): JsonResponse
     {
-        $data = $this->validated($request, forUpdate: true);
+        $data = $this->validated($request, forUpdate: true, clienteId: $reporte->cliente_id);
+
+        // Entregado a mano sin fecha_emision no cuenta en `entregadosMes` (se mide
+        // por fecha_emision): se estampa hoy, sin pisar una fecha ya existente.
+        if ($data['estado'] === EstadoReporte::Entregado->value && $reporte->fecha_emision === null) {
+            $data['fecha_emision'] = now();
+        }
 
         $reporte->update($data);
 
@@ -114,15 +121,17 @@ class ReportesController extends Controller
      *
      * @return array<string, mixed>
      */
-    private function validated(Request $request, bool $forUpdate): array
+    private function validated(Request $request, bool $forUpdate, ?int $clienteId = null): array
     {
         $reglas = [
             'titulo' => ['required', 'string', 'max:255'],
             'periodo_inicio' => ['required', 'date'],
             'periodo_fin' => ['required', 'date', 'after_or_equal:periodo_inicio'],
             'notas_alcance' => ['nullable', 'string', 'max:5000'],
-            'seo_campana_id' => ['nullable', 'integer', 'exists:seo_campanas,id'],
-            'ads_campana_id' => ['nullable', 'integer', 'exists:ads_campanas,id'],
+            // La campaña debe ser del cliente del reporte: si no, un reporte de A
+            // jalaria metricas de la campaña de B (Propuestas ya lo valida igual).
+            'seo_campana_id' => ['nullable', 'integer', Rule::exists('seo_campanas', 'id')->where('cliente_id', $clienteId)],
+            'ads_campana_id' => ['nullable', 'integer', Rule::exists('ads_campanas', 'id')->where('cliente_id', $clienteId)],
         ];
 
         $reglas += $forUpdate

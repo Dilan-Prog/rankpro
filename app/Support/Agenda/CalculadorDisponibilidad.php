@@ -85,6 +85,10 @@ class CalculadorDisponibilidad
         if ($inicio->lt(now()->addHours($config->anticipacion_minima_horas))) {
             return false;
         }
+        // Mismo tope que disponiblesEn(): sin esto un POST directo reserva a un año.
+        if ($inicio->copy()->startOfDay()->gt(today()->addDays($config->dias_visibles))) {
+            return false;
+        }
         if (DisponibilidadBloqueo::where('fecha', $inicio->toDateString())->exists()) {
             return false;
         }
@@ -97,8 +101,19 @@ class CalculadorDisponibilidad
         if ($inicio->lt($horaInicio) || $fin->gt($horaFin)) {
             return false;
         }
+        // Rejilla de disponiblesEn(): los huecos arrancan en hora_inicio y avanzan de
+        // duracion en duracion; 10:07 no es un hueco que el calendario ofrezca.
+        if ($inicio->second !== 0 || $horaInicio->diffInMinutes($inicio) % max(1, $config->duracion_minutos) !== 0) {
+            return false;
+        }
 
-        return ! Reunion::where('estado', '!=', EstadoReunion::Cancelada)
+        return ! $this->hayTraslape($inicio, $fin, $ignorarReunionId);
+    }
+
+    /** Hay otra reunión no cancelada que se empalma con el rango (para reactivar una cita, donde no aplican anticipación ni rejilla). */
+    public function hayTraslape(Carbon $inicio, Carbon $fin, ?int $ignorarReunionId = null): bool
+    {
+        return Reunion::where('estado', '!=', EstadoReunion::Cancelada)
             ->when($ignorarReunionId, fn ($q) => $q->where('id', '!=', $ignorarReunionId))
             ->whereDate('inicia_en', $inicio->toDateString())
             ->where(fn ($q) => $q->where('inicia_en', '<', $fin)->where('termina_en', '>', $inicio))

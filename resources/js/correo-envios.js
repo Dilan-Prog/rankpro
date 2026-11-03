@@ -162,14 +162,22 @@
     const root = document.querySelector("[data-correo-envio-show]");
     if (!root) return;
 
+    let enviandoAhora = false;
     root.querySelector("[data-enviar-ahora]")?.addEventListener("click", (e) => {
       const btn = e.currentTarget;
+      // Doble clic: el segundo clic llegaría antes de que termine el confirm/la petición.
+      if (enviandoAhora) return;
+      enviandoAhora = true;
       const n = Number(root.dataset.destinatarios || 0);
       if (n === 0) {
+        enviandoAhora = false;
         toast("Agrega al menos un destinatario antes de enviar.", "warning");
         return;
       }
-      if (!window.confirm(`¿Enviar ahora a ${n} ${n === 1 ? "destinatario" : "destinatarios"}?`)) return;
+      if (!window.confirm(`¿Enviar ahora a ${n} ${n === 1 ? "destinatario" : "destinatarios"}?`)) {
+        enviandoAhora = false;
+        return;
+      }
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando…';
       request(root.dataset.enviarUrl, "POST")
@@ -178,6 +186,7 @@
           window.location.reload();
         })
         .catch((err) => {
+          enviandoAhora = false;
           btn.disabled = false;
           btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar ahora';
           toast(mensajeDe(err, "No se pudo enviar el correo."), "error");

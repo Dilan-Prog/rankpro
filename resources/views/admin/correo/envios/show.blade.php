@@ -59,6 +59,12 @@
                     <i class="fa-solid fa-paper-plane"></i> Enviar ahora
                 </button>
             @endif
+            @if ($row['reanudable'])
+                {{-- Interrumpido a mitad (timeout, SMTP caído): sigue en 'enviando'. Reanudar manda solo a los pendientes. --}}
+                <button type="button" class="btn btn--primary" data-enviar-ahora>
+                    <i class="fa-solid fa-paper-plane"></i> Reanudar envío
+                </button>
+            @endif
             @if ($estado === 'programado')
                 <button type="button" class="btn btn--secondary" data-cancelar-programacion>
                     <i class="fa-solid fa-ban"></i> Cancelar programación

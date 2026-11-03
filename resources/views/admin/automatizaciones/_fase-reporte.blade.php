@@ -17,16 +17,26 @@
         </div>
     @endif
 
+    @php
+        // Los dos totales del reporte se capturan a mano y pueden no coincidir con la tabla de flujos del proyecto:
+        // se muestra el valor calculado junto al capturado (no se sobrescribe nada) para que la diferencia se vea.
+        $flujosCalculados = $proyecto->flujos->where('estado', 'activo');
+        $flujosActivosCalculados = $flujosCalculados->count();
+        $horasCalculadas = (float) $flujosCalculados->sum('horas_ahorradas_mes');
+    @endphp
+
     <form id="faseForm" data-fase-action="{{ route('admin.automatizaciones.fase.guardar', $proyecto) }}">
         <h3 class="fase-form__section-title">Impacto del ciclo</h3>
         <div class="form-grid form-grid--2">
             <div class="field">
                 <label class="field__label" for="flujos_activos_total">Flujos activos totales</label>
                 <input class="input" type="number" min="0" name="flujos_activos_total" id="flujos_activos_total" data-autosave value="{{ $reporte->flujos_activos_total }}" @disabled($reporte->aprobado)>
+                <p class="field__hint" data-flujos-calculados>Según la tabla de flujos: {{ $flujosActivosCalculados }} activo(s).@if ($reporte->flujos_activos_total !== null && (int) $reporte->flujos_activos_total !== $flujosActivosCalculados) <strong style="color:var(--text-warning)">No coincide con lo capturado.</strong>@endif</p>
             </div>
             <div class="field">
                 <label class="field__label" for="horas_ahorradas_mes">Horas ahorradas al mes</label>
                 <input class="input" type="number" step="0.5" min="0" name="horas_ahorradas_mes" id="horas_ahorradas_mes" data-autosave value="{{ $reporte->horas_ahorradas_mes }}" @disabled($reporte->aprobado)>
+                <p class="field__hint" data-horas-calculadas>Según la tabla de flujos activos: {{ rtrim(rtrim(number_format($horasCalculadas, 2, '.', ''), '0'), '.') ?: '0' }} h/mes.@if ($reporte->horas_ahorradas_mes !== null && abs((float) $reporte->horas_ahorradas_mes - $horasCalculadas) > 0.001) <strong style="color:var(--text-warning)">No coincide con lo capturado.</strong>@endif</p>
             </div>
         </div>
         <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">

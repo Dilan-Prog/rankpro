@@ -238,14 +238,14 @@
 
     function rowHtml(p) {
       const actual = p.posicion_actual;
-      const color = actual == null ? "inherit" : actual <= 3 ? "var(--text-success)" : actual <= 10 ? "var(--text-warning)" : "inherit";
+      const color = !actual ? "inherit" : actual <= 3 ? "var(--text-success)" : actual <= 10 ? "var(--text-warning)" : "inherit";
       const variacionColor = p.variacion > 0 ? "var(--text-success)" : p.variacion < 0 ? "var(--text-danger)" : "inherit";
       return `<tr data-posicion-id="${p.id}">
         <td>${escapeHtml(p.keyword)}</td>
         <td><span class="u-mono" style="color:var(--color-primary); font-size:var(--text-xs)">${escapeHtml(p.url_pagina || "—")}</span></td>
-        <td class="u-mono"><strong style="color:${color}">#${actual ?? "—"}</strong></td>
-        <td class="u-mono" style="color:var(--color-muted-foreground)">#${p.posicion_anterior ?? "—"}</td>
-        <td class="u-mono" style="color:${variacionColor}">${p.variacion > 0 ? "+" : ""}${p.variacion}</td>
+        <td class="u-mono"><strong style="color:${color}">${actual ? "#" + actual : "—"}</strong></td>
+        <td class="u-mono" style="color:var(--color-muted-foreground)">${p.posicion_anterior ? "#" + p.posicion_anterior : "—"}</td>
+        <td class="u-mono" style="color:${variacionColor}">${p.variacion == null ? "—" : (p.variacion > 0 ? "+" : "") + p.variacion}</td>
         <td class="u-mono">${Number(p.volumen_busqueda || 0).toLocaleString("es-MX")}</td>
         <td class="u-mono">${p.dificultad_keyword ?? "—"}</td>
         <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground); text-transform:capitalize;">${p.dispositivo}</span></td>

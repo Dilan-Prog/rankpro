@@ -9,10 +9,11 @@
          consentimiento se declare antes de cargar cualquier etiqueta. --}}
     @include('components.analytics.gtm')
 
-    {{-- Orígenes externos realmente usados: Google Fonts (Manrope, importada en resources/css/web/app.css) --}}
+    {{-- Orígenes externos realmente usados: Google Fonts (Manrope). Va como <link> y no como @import del CSS para no encadenar peticiones. --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 
     {{-- SEO: título, description, canonical, robots, Open Graph, Twitter Card, iconos --}}
     @include('components.seo.meta')

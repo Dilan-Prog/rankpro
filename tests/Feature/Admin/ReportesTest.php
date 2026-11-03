@@ -7,6 +7,8 @@ use App\Enums\EstadoReporte;
 use App\Models\Cliente;
 use App\Models\Reporte;
 use App\Models\ReporteSeccion;
+use App\Models\SeoCampana;
+use App\Models\Servicio;
 use App\Models\User;
 use App\Support\Reportes\Plantillas;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -215,6 +217,43 @@ class ReportesTest extends TestCase
         $this->assertSame(EstadoReporte::Entregado, $reporte->estado);
         $this->assertSame('2026-07-31', $reporte->periodo_fin->format('Y-m-d'));
         $this->assertSame('Se amplió el alcance a dos dominios.', $reporte->notas_alcance);
+    }
+
+    public function test_update_a_entregado_sin_fecha_emision_la_estampa_y_cuenta_en_el_mes(): void
+    {
+        $reporte = $this->reporte();
+        $this->assertNull($reporte->fecha_emision);
+
+        $this->actingAs(User::factory()->create())->putJson(route('admin.reportes.update', $reporte), [
+            'titulo' => $reporte->titulo,
+            'periodo_inicio' => '2026-08-01',
+            'periodo_fin' => '2026-08-31',
+            'estado' => EstadoReporte::Entregado->value,
+        ])->assertOk();
+
+        $this->assertNotNull($reporte->refresh()->fecha_emision);
+        $this->assertSame(1, $this->actingAs(User::factory()->create())->get(route('admin.reportes.index'))->viewData('entregadosMes'));
+    }
+
+    public function test_las_campanas_deben_ser_del_cliente_del_reporte(): void
+    {
+        $user = User::factory()->create();
+        $ajeno = Cliente::factory()->create();
+        $campanaAjena = SeoCampana::create([
+            'cliente_id' => $ajeno->id,
+            'servicio_id' => Servicio::factory()->create(['cliente_id' => $ajeno->id, 'tipo' => 'seo'])->id,
+            'nombre' => 'Campaña ajena',
+            'estado' => 'activa',
+        ]);
+
+        $this->actingAs($user)->postJson(route('admin.reportes.store'), $this->payload(['seo_campana_id' => $campanaAjena->id]))
+            ->assertStatus(422)->assertJsonValidationErrors('seo_campana_id');
+
+        $reporte = $this->reporte();
+        $this->actingAs($user)->putJson(route('admin.reportes.update', $reporte), [
+            'titulo' => 'x', 'periodo_inicio' => '2026-08-01', 'periodo_fin' => '2026-08-31',
+            'estado' => 'borrador', 'ads_campana_id' => 999999,
+        ])->assertStatus(422)->assertJsonValidationErrors('ads_campana_id');
     }
 
     /**

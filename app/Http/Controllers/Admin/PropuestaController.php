@@ -51,6 +51,8 @@ class PropuestaController extends Controller
 
         $propuestas = $query->get();
 
+        // Los KPI se calculan sobre este mismo conjunto (el que se muestra en la
+        // tabla, ya filtrado por cliente/estado/busqueda): asi cuadran con lo visible.
         $aprobadas = $propuestas->where('estado', EstadoPropuesta::Aprobada)->count();
         $rechazadas = $propuestas->where('estado', EstadoPropuesta::Rechazada)->count();
         $decididas = $aprobadas + $rechazadas;
@@ -302,6 +304,21 @@ class PropuestaController extends Controller
 
         if ($sugeridas === []) {
             return response()->json(['message' => 'El banco de keywords de este cliente está vacío.'], 422);
+        }
+
+        // Dedupe por consulta (sin distinguir mayusculas): un segundo clic, o una
+        // fila capturada a mano igual a una keyword del banco, no debe duplicar filas.
+        $yaPresentes = array_map(
+            fn ($fila) => mb_strtolower(trim((string) ($fila['consulta'] ?? ''))),
+            $existentes
+        );
+        $sugeridas = array_values(array_filter(
+            $sugeridas,
+            fn (array $fila) => ! in_array(mb_strtolower(trim($fila['consulta'])), $yaPresentes, true)
+        ));
+
+        if ($sugeridas === []) {
+            return response()->json(['agregadas' => 0, 'situacion_actual' => $situacion]);
         }
 
         $situacion['tabla_consultas'] = array_merge($existentes, $sugeridas);

@@ -30,14 +30,16 @@ class BlogController extends Controller
 
     public function index(Request $request): View
     {
+        // Sin paginar: blog.js busca y filtra (título, clúster, estado, avisos SEO) en el cliente sobre las filas
+        // renderizadas, así que paginar en servidor hacía que la búsqueda solo viera la página actual. El blog
+        // es de cientos de artículos como mucho y la fila es ligera.
         $articulos = Articulo::with('autor')
             ->orderByRaw('fecha_publicacion IS NULL DESC')
             ->orderByDesc('fecha_publicacion')
             ->orderByDesc('id')
-            ->paginate(25)
-            ->withQueryString();
+            ->get();
 
-        $filas = collect($articulos->items())->map(function (Articulo $a) {
+        $filas = $articulos->map(function (Articulo $a) {
             $cluster = $a->clusterInfo();
 
             return [

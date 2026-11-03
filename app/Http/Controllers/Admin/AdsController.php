@@ -168,7 +168,23 @@ class AdsController extends Controller
     private function toRow(AdsCampana $campana): array
     {
         $inversion = (float) $campana->metricas->sum('inversion_real');
-        $roas = $campana->metricas->count() ? round((float) $campana->metricas->avg('roas'), 2) : 0.0;
+        // Ingreso real por mes: valor_conversion si se capturó; si no, inversión del mes × ROAS del mes. El promedio simple de roas
+        // pesaba igual un mes de $100 que uno de $10,000 e ignoraba valor_conversion. Los meses sin ningún dato de ingreso no entran
+        // al denominador (su inversión no tiene ingreso que comparar).
+        $ingreso = 0.0;
+        $inversionConIngreso = 0.0;
+        foreach ($campana->metricas as $m) {
+            if ($m->valor_conversion !== null) {
+                $ingresoMes = (float) $m->valor_conversion;
+            } elseif ($m->roas !== null) {
+                $ingresoMes = (float) $m->inversion_real * (float) $m->roas;
+            } else {
+                continue;
+            }
+            $ingreso += $ingresoMes;
+            $inversionConIngreso += (float) $m->inversion_real;
+        }
+        $roas = $inversionConIngreso > 0 ? round($ingreso / $inversionConIngreso, 2) : 0.0;
         $impresiones = (int) $campana->metricas->sum('impresiones');
         $clics = (int) $campana->metricas->sum('clics');
         $conversiones = (int) $campana->metricas->sum('conversiones');
@@ -200,7 +216,9 @@ class AdsController extends Controller
             'metricas_count' => $campana->metricas->count(),
             'inversion_mes' => $metricaMes ? (float) $metricaMes->inversion_real : null,
             'roas' => $roas,
-            'ingreso_atribuido' => round($inversion * $roas, 2),
+            'ingreso_atribuido' => round($ingreso, 2),
+            // Inversión de los meses que sí tienen dato de ingreso: denominador correcto del ROAS global (los KPI de la lista).
+            'inversion_con_ingreso' => round($inversionConIngreso, 2),
             'fecha_inicio' => $campana->fecha_inicio?->format('Y-m-d'),
             'fecha_fin' => $campana->fecha_fin?->format('Y-m-d'),
             'notas' => $campana->notas,

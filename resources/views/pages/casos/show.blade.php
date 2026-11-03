@@ -76,6 +76,7 @@
 @section('title', $tituloSeo)
 @section('description', $descripcion)
 @section('canonical', $urlCaso)
+@section('og_type', 'article')
 
 @push('styles')
     @vite(['resources/css/web/servicios-conversion.css', 'resources/css/web/casos.css'])
@@ -402,7 +403,7 @@
                             <li>
                                 <a class="cs-otro" href="{{ route('casos.show', $otro['slug']) }}">
                                     @if (!$otroAnon && !empty($otro['logo']))
-                                        <img class="cs-otro__logo cs-otro__logo--img" src="{{ $otro['logo'] }}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                                        <img class="cs-otro__logo cs-otro__logo--img" src="{{ $otro['logo'] }}" alt="" width="96" height="44" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
                                         <span class="cs-otro__logo cs-otro__logo--{{ $otroSector['tono'] }}" aria-hidden="true" hidden>{{ $otro['iniciales'] }}</span>
                                     @else
                                         <span class="cs-otro__logo {{ $otroAnon ? 'cs-otro__logo--anon' : 'cs-otro__logo--'.$otroSector['tono'] }}" aria-hidden="true">@if ($otroAnon){!! '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>' !!}@else{{ $otro['iniciales'] }}@endif</span>

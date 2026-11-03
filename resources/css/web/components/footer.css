@@ -44,6 +44,17 @@
     gap: 0.625rem;
 }
 
+/* Area tactil en movil: el texto mide 14px y con 10px de separacion quedaba muy
+   por debajo de los ~44px recomendados. El padding vertical agranda el objetivo
+   sin cambiar el aspecto; en escritorio se conserva el espaciado original. */
+@media (max-width: 768px) {
+    .site-footer__links { gap: 0; }
+    .site-footer__links a {
+        display: inline-block;
+        padding-block: 0.8125rem;
+    }
+}
+
 .site-footer__links a {
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.6);

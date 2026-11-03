@@ -8,6 +8,7 @@ use App\Models\Propuesta;
 use App\Support\Propuestas\Calculos;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -31,8 +32,23 @@ class GeneradorPdf
         // Idempotente: folio/fecha_emision se asignan una sola vez, descargas
         // posteriores mantienen el mismo folio (ver Plan, precedente de Reporte::numero).
         if ($propuesta->folio === null) {
-            $numero = 'PROP-CONT-'.now()->format('Y').'-'.str_pad((string) (Propuesta::whereNotNull('folio')->count() + 1), 4, '0', STR_PAD_LEFT);
-            $propuesta->update(['folio' => $numero, 'fecha_emision' => now()]);
+            // MAX sobre withTrashed (no count): el indice unico de folio cuenta
+            // tambien las propuestas borradas, y count()+1 repetiria un folio
+            // tras borrar una. La transaccion con lockForUpdate evita que dos
+            // peticiones simultaneas tomen el mismo consecutivo.
+            DB::transaction(function () use ($propuesta) {
+                $prefijo = 'PROP-CONT-'.now()->format('Y').'-';
+                $ultimo = Propuesta::withTrashed()
+                    ->where('folio', 'like', $prefijo.'%')
+                    ->orderByDesc('folio')
+                    ->lockForUpdate()
+                    ->value('folio');
+                $consecutivo = $ultimo ? (int) substr($ultimo, strlen($prefijo)) : 0;
+                $propuesta->update([
+                    'folio' => $prefijo.str_pad((string) ($consecutivo + 1), 4, '0', STR_PAD_LEFT),
+                    'fecha_emision' => now(),
+                ]);
+            });
         }
 
         $pdf = Pdf::loadView('pdf.propuesta-continuidad', $this->datos($propuesta, $propuesta->folio))

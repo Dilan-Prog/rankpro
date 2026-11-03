@@ -30,7 +30,7 @@ class ConversionesApiController extends ControladorApi
     public function store(Request $request)
     {
         $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['required', 'integer', \Illuminate\Validation\Rule::exists('clientes', 'id')->whereNull('deleted_at')],
             'visitor_id' => ['required', 'string', 'max:64'],
             'gclid' => ['nullable', 'string', 'max:255'],
             'gbraid' => ['nullable', 'string', 'max:255'],

@@ -18,6 +18,7 @@ class AdsConversion extends Model
         'cliente_id',
         'ads_clic_id',
         'visitor_id',
+        'evento_id',
         'gclid',
         'gbraid',
         'wbraid',

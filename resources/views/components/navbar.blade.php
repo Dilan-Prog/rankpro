@@ -135,7 +135,7 @@
         </ul>
 
         <div class="navbar__actions">
-            <a href="{{ route('login') }}" class="navbar__login">
+            <a href="{{ route('login') }}" class="navbar__login" rel="nofollow">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Iniciar sesión
             </a>
@@ -179,7 +179,7 @@
             @endif
         @endforeach
         <div class="navbar__mobile-actions">
-            <a href="{{ route('login') }}" class="navbar__mobile-login">Iniciar sesión</a>
+            <a href="{{ route('login') }}" class="navbar__mobile-login" rel="nofollow">Iniciar sesión</a>
             <a href="{{ route('agendar.mostrar') }}" class="navbar__mobile-cta">Agendar gratis</a>
         </div>
     </div>

@@ -225,7 +225,7 @@ class Servicios
                 'gradient' => 'gradient-4',
                 'icon' => '<path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path>',
                 'tags' => ['Performance', 'CWV', 'Lighthouse'],
-                'resumen' => 'Optimización técnica para alcanzar 90+ en Lighthouse.',
+                'resumen' => 'Optimización técnica de velocidad con mejoras medibles en Lighthouse y datos de campo.',
                 'meta_title' => 'Optimización de PageSpeed y Core Web Vitals | RankPro',
                 'meta_description' => 'Diagnóstico y corrección de LCP, INP y CLS con datos de laboratorio y de campo. Mejoramos la velocidad real de tu sitio en dispositivos móviles.',
                 'h1' => 'Optimización de velocidad y Core Web Vitals',

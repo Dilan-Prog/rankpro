@@ -36,7 +36,7 @@ class KeywordListasController extends Controller
     {
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:keyword_listas,id'],
+            'ids.*' => ['integer', \Illuminate\Validation\Rule::exists('keyword_listas', 'id')->whereNull('deleted_at')],
         ]);
 
         $listas = KeywordLista::whereIn('id', $data['ids'])->get();
