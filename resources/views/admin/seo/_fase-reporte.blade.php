@@ -13,7 +13,7 @@
     @if ($reporte->aprobado)
         <div class="form-status" style="margin-bottom: var(--space-4);">
             <i class="fa-solid fa-circle-check" style="margin-top:2px"></i>
-            <span>Reporte del ciclo {{ $campana->ciclo_actual }} aprobado el {{ $reporte->fecha_aprobacion?->format('Y-m-d') }}. Elige cómo continuar la campaña.</span>
+            <span>Reporte del ciclo {{ $campana->ciclo_actual }} aprobado el {{ fecha_mx($reporte->fecha_aprobacion) }}. Elige cómo continuar la campaña.</span>
         </div>
     @endif
 

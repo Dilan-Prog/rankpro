@@ -76,7 +76,7 @@ class MiEspacioTest extends TestCase
             'fecha_inicio' => '2026-11-02',
             'fecha_limite' => '2026-11-05',
             'cliente_id' => $cliente->id,
-        ])->assertCreated()->assertJsonPath('cliente', $cliente->nombre)->assertJsonPath('orden', 5);
+        ])->assertCreated()->assertJsonPath('cliente', $cliente->nombre_comercial)->assertJsonPath('orden', 5);
 
         $this->assertDatabaseHas('tareas', ['titulo' => 'Nueva', 'user_id' => $yo->id, 'proyecto_id' => null, 'cliente_id' => $cliente->id]);
     }

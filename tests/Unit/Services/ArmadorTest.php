@@ -803,7 +803,7 @@ class ArmadorTest extends TestCase
             'rotulo' => 'SECCIÓN 2',
             'orden' => 1,
             'contenido' => $tabla->contenido,
-            'aviso' => ['texto' => 'Dato desactualizado', 'fecha' => '18 ago 2026'],
+            'aviso' => ['texto' => 'Dato desactualizado', 'fecha' => '2026-08-18'],
             'visible' => true,
         ]);
 

@@ -3,6 +3,8 @@
 namespace App\Support\Correo;
 
 use App\Models\Cliente;
+use App\Models\Reporte;
+use App\Models\ReporteEnlace;
 
 /**
  * Variables que admite una plantilla de correo, con su origen.
@@ -54,9 +56,26 @@ class Variables
     public static function desdeCliente(Cliente $cliente): array
     {
         return [
-            'cliente' => (string) ($cliente->empresa ?: $cliente->nombre),
+            'cliente' => (string) $cliente->nombre_comercial,
             'contacto' => (string) ($cliente->contacto_nombre ?: $cliente->nombre),
         ];
+    }
+
+    /**
+     * Valor de `{{enlace_reporte}}`: el enlace público de solo lectura a la versión para cliente.
+     *
+     * Solo se resuelve si el reporte ya tiene un enlace VIGENTE (alguien decidió compartirlo).
+     * Como en la base solo vive el hash del token, el enlace ya creado no se puede reconstruir:
+     * para el correo se emite uno nuevo con la vigencia completa, y el anterior sigue valiendo
+     * hasta que se revoque. Sin enlace vigente la variable queda vacía (nunca una URL a medias).
+     */
+    public static function enlaceReporte(Reporte $reporte, ?int $usuarioId = null): string
+    {
+        if (! $reporte->enlaces()->vigentes()->exists()) {
+            return '';
+        }
+
+        return ReporteEnlace::crearPara($reporte, $usuarioId)['url'];
     }
 
     /**

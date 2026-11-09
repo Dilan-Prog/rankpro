@@ -44,7 +44,7 @@ class KeywordsController extends Controller
             'listas' => $listas,
             'keywordsSinLista' => $keywordsSinLista,
             'totalKeywords' => $listas->sum('keywords_count') + $keywordsSinLista->count(),
-            'clientes' => Cliente::orderBy('nombre')->pluck('nombre', 'id'),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa'])->pluck('nombre_comercial', 'id'),
             'usuarios' => User::where('is_active', true)->orderBy('name')->pluck('name', 'id'),
         ]);
     }

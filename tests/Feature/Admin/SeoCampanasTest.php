@@ -175,6 +175,9 @@ class SeoCampanasTest extends TestCase
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'precio_mensual' => 1000.50]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'precio_mensual' => 2000.25]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'google_ads', 'precio_mensual' => 5000]);
+        // Pago único y gratuito de SEO tampoco suman al MRR.
+        Servicio::factory()->unico()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'precio_mensual' => 9000]);
+        Servicio::factory()->gratuito()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo']);
 
         $response = $this->actingAs($user)->get(route('admin.seo.index'));
 

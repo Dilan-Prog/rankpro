@@ -64,7 +64,7 @@ class GeneradorPdf
         // cambia comportamiento y queda fuera de este refactor.
         return Archivo::create([
             'cliente_id' => $propuesta->cliente_id,
-            'nombre' => "Propuesta de Continuidad {$propuesta->folio} — {$propuesta->cliente->nombre}.pdf",
+            'nombre' => "Propuesta de Continuidad {$propuesta->folio} — {$propuesta->cliente->nombre_comercial}.pdf",
             'tipo' => TipoArchivo::Propuesta->value,
             'ruta_archivo' => $path,
             'tamano' => Storage::disk('local')->size($path),
@@ -92,7 +92,7 @@ class GeneradorPdf
         $plan = $propuesta->plan_detalle ?? [];
         $condiciones = $propuesta->condiciones_proyeccion ?? [];
 
-        $nombreCliente = $propuesta->cliente->empresa ?: $propuesta->cliente->nombre;
+        $nombreCliente = $propuesta->cliente->nombre_comercial;
         $partesNombre = explode(' ', trim($nombreCliente), 2);
 
         $tablaComparacion = collect($situacion['tabla_comparacion'] ?? [])->map(function (array $fila) {

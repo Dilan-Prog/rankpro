@@ -36,6 +36,8 @@ class GscPropiedad extends Model
             'id' => $this->id,
             'cliente_id' => $this->cliente_id,
             'cliente' => $this->cliente?->nombre,
+            // Campo aditivo: no cambia lo que ya consumía la API.
+            'cliente_nombre_comercial' => $this->cliente?->nombre_comercial,
             'site_url' => $this->site_url,
             'activa' => $this->activa,
             'ultima_sync_en' => $this->ultima_sync_en?->toIso8601String(),

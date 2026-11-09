@@ -6,8 +6,10 @@ use App\Enums\TipoSeccion;
 use App\Http\Controllers\Controller;
 use App\Models\Reporte;
 use App\Models\ReporteSeccion;
+use App\Support\Reportes\AvisoSeccion;
 use App\Support\Reportes\EsquemaSeccion;
 use App\Support\Reportes\NormalizadorCelda;
+use App\Support\Reportes\Precarga\AplicadorPrecarga;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +26,20 @@ class ReporteSeccionController extends Controller
 
         $tipo = TipoSeccion::from($data['tipo']);
 
+        $contenido = EsquemaSeccion::vacio($tipo);
+        $precarga = null;
+
+        // Un resumen añadido a mano a un reporte del mes nace con las sugerencias de ese mes (editables).
+        if ($tipo === TipoSeccion::ResumenCliente && ($resumen = (new AplicadorPrecarga)->resumenPara($reporte))) {
+            [$contenido, $precarga] = $resumen;
+        }
+
         $seccion = $reporte->secciones()->create([
             'tipo' => $tipo->value,
             'titulo' => $data['titulo'],
             'orden' => (int) $reporte->secciones()->max('orden') + 1,
-            'contenido' => EsquemaSeccion::vacio($tipo),
+            'contenido' => $contenido,
+            'precarga' => $precarga,
             'visible' => true,
         ]);
 
@@ -48,14 +59,14 @@ class ReporteSeccionController extends Controller
             'titulo' => ['required', 'string', 'max:255'],
             'rotulo' => ['nullable', 'string', 'max:40'],
             'visible' => ['boolean'],
+            'interno' => ['boolean'],
             'contenido' => ['present', 'array'],
-            // El aviso es el bloque "DATO DESACTUALIZADO" del diseño. La fecha
-            // se valida como cadena y no como `date` a propósito: el documento
-            // imprime lo que se escriba ("18 ago 2026"), y obligar a un formato
-            // de fecha ISO impediría anotar un periodo o una fuente.
+            // El aviso es el bloque "DATO DESACTUALIZADO" del diseño: la etiqueta es fija y
+            // la fecha es una fecha ISO real (así no se confunde con contenido y PDF/XLSX
+            // la formatean igual). Una fecha libre ya no se admite: va dentro del texto.
             'aviso' => ['nullable', 'array'],
             'aviso.texto' => ['nullable', 'string', 'max:1000'],
-            'aviso.fecha' => ['nullable', 'string', 'max:40'],
+            'aviso.fecha' => ['nullable', 'date_format:Y-m-d'],
         ] + EsquemaSeccion::reglas($seccion->tipo));
 
         $seccion->update([
@@ -63,10 +74,12 @@ class ReporteSeccionController extends Controller
             'rotulo' => $data['rotulo'] ?? null,
             // Un aviso sin texto no es un aviso: se guarda null para que el
             // renderizador no tenga que distinguir entre ausente y vacío.
-            'aviso' => filled($data['aviso']['texto'] ?? null) ? $data['aviso'] : null,
+            'aviso' => isset($data['aviso']) ? AvisoSeccion::normalizar($data['aviso']) : null,
             // `visible` solo cambia si el editor lo manda: un autosave de
             // contenido no debe poder ocultar la sección del entregable.
             'visible' => $request->has('visible') ? $request->boolean('visible') : $seccion->visible,
+            // Igual que `visible`: un autosave de contenido no puede cambiar la marca de interno.
+            'interno' => $request->has('interno') ? $request->boolean('interno') : $seccion->interno,
             // Lo tecleado se normaliza igual que lo pegado; si no, el mismo
             // "1,5" acaba almacenado distinto según por dónde entró.
             'contenido' => $this->normalizarContenido($seccion->tipo, $data['contenido']),

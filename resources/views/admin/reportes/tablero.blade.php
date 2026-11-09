@@ -10,7 +10,7 @@
 
 @php
     $fmt = fn (?float $v, int $dec = 1) => $v === null ? '—' : number_format($v, $dec, '.', ',');
-    $fechaCorta = fn (?string $f) => $f ? \Illuminate\Support\Carbon::parse($f)->format('d/m/Y') : null;
+    $fechaCorta = fn (?string $f) => $f ? fecha_mx($f) : null;
 
     if ($datos) {
         $kw = $datos['keywords'];
@@ -63,7 +63,7 @@
                 <option value="" selected>Selecciona un cliente…</option>
             @endunless
             @foreach ($clientes as $c)
-                <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->empresa ?: $c->nombre }}</option>
+                <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->nombre_comercial }}</option>
             @endforeach
         </select>
         {{-- Sin JS el selector sigue funcionando con este botón. --}}

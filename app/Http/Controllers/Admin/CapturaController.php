@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\Captura\TableroCaptura;
+use App\Support\ClienteActivo;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -17,13 +18,17 @@ class CapturaController extends Controller
     {
         $mes = TableroCaptura::resolverMes($request->query('mes'));
         $soloPendientes = $request->boolean('pendientes');
+        $clienteActivo = ClienteActivo::modelo();
 
         return view('admin.captura.index', [
             'pageTitle' => 'Pendientes de captura',
-            'tablero' => $tablero->calcular($mes, $soloPendientes),
+            'clienteActivo' => $clienteActivo,
+            'tablero' => $tablero->calcular($mes, $soloPendientes, $clienteActivo?->id),
             'fuentes' => TableroCaptura::FUENTES,
             'mes' => $mes,
             'soloPendientes' => $soloPendientes,
+            // «Reportes por salir»: envíos programados a ≤ 3 días y lo que les falta (solo avisa).
+            'alertasProgramadas' => app(\App\Support\Captura\AlertasProgramadas::class)->calcular(now(), $clienteActivo?->id),
         ]);
     }
 }

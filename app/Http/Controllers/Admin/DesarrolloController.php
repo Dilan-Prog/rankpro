@@ -52,7 +52,7 @@ class DesarrolloController extends Controller
             'bugs' => $bugs,
             // Solo activos: pausados y cancelados no estan "en proceso".
             'enProceso' => $proyectos->where('fase_actual', '!=', 'cerrado')->where('estado', 'activo')->count(),
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
             'usuarios' => $this->usuariosActivos(),
         ]);
     }
@@ -170,7 +170,7 @@ class DesarrolloController extends Controller
         return [
             'id' => $p->id,
             'cliente_id' => $p->cliente_id,
-            'cliente' => $p->cliente?->nombre ?? '—',
+            'cliente' => $p->cliente?->nombre_comercial ?? '—',
             'nombre' => $p->nombre,
             'tipo' => $p->tipo,
             'descripcion' => $p->descripcion,

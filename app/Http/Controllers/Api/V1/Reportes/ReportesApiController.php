@@ -9,11 +9,10 @@ use App\Models\Reporte;
 use App\Support\Api\ConsultaOpciones;
 use App\Support\Api\Respuesta;
 use App\Support\Api\Serializador;
-use App\Support\Reportes\Plantillas;
+use App\Services\Reportes\CreadorReporte;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /**
  * CRUD de /api/v1/reportes. Misma forma de datos y mismas reglas que
@@ -52,26 +51,8 @@ class ReportesApiController extends ControladorApi
     {
         $data = $this->validated($request, forUpdate: false);
 
-        $reporte = DB::transaction(function () use ($data) {
-            $reporte = Reporte::create($data + [
-                'estado' => EstadoReporte::Borrador->value,
-                'creado_por' => Auth::id(),
-            ]);
-
-            // La estructura de secciones sale de la plantilla del área, igual
-            // que en el alta desde el panel (ver Admin\ReportesController::store).
-            foreach (Plantillas::para($reporte->area) as $i => $seccion) {
-                $reporte->secciones()->create([
-                    'tipo' => $seccion['tipo']->value,
-                    'titulo' => $seccion['titulo'],
-                    'orden' => $i + 1,
-                    'contenido' => $seccion['contenido'],
-                    'visible' => true,
-                ]);
-            }
-
-            return $reporte;
-        });
+        // Mismo alta que el panel: borrador con folio y la plantilla de secciones del área.
+        $reporte = app(CreadorReporte::class)->crearPersonalizado($data, Auth::id());
 
         return Respuesta::recurso(Serializador::modelo($reporte->fresh('cliente')), 201);
     }

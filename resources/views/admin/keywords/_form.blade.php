@@ -25,7 +25,7 @@
             @foreach ($listas as $l)
                 <option value="{{ $l['id'] }}" data-cliente="{{ $l['cliente_id'] }}"
                     @selected((int) old('lista_id', $keyword?->lista_id ?? '') === $l['id'])>
-                    {{ $l['nombre'] }} ({{ $l['cliente'] }})
+                    {{ $l['nombre'] }} ({{ $l['cliente_nombre_comercial'] }})
                 </option>
             @endforeach
         </select>

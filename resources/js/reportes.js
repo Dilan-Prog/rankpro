@@ -14,6 +14,9 @@
  * de la forma anterior (filas de tabla como mapa plano, valores de ficha como
  * escalar), todo contenido pasa por `normalizarContenido` antes de pintarse.
  */
+import { seccionPareceDatoDePago } from "./lib/datos-pago.js";
+import { formatearFecha } from "./utils/fecha.js";
+
 (function () {
   "use strict";
 
@@ -258,6 +261,240 @@
     });
   }
 
+  /**
+   * «Generar reporte del mes»: dos pasos (plantilla, mes). Elegir la plantilla ya avanza
+   * al paso 2 con el mes que acaba de cerrar preseleccionado: dos clics en el caso normal.
+   */
+  function initMesForm() {
+    const form = document.getElementById("mesForm");
+    if (!form) return;
+
+    const paso1 = form.querySelector('[data-mes-paso="1"]');
+    const paso2 = form.querySelector('[data-mes-paso="2"]');
+    const atras = form.querySelector("[data-mes-atras]");
+    const generar = form.querySelector("[data-mes-generar]");
+    const duplicado = form.querySelector("[data-mes-duplicado]");
+    const areaInput = form.querySelector('input[name="area"]');
+    const cliente = form.querySelector('select[name="cliente_id"]');
+
+    function limpiar() {
+      form.querySelectorAll("[data-error-for]").forEach((el) => (el.textContent = ""));
+      if (duplicado) {
+        duplicado.hidden = true;
+        duplicado.textContent = "";
+      }
+    }
+
+    function mostrarPaso(n) {
+      paso1.hidden = n !== 1;
+      paso2.hidden = n !== 2;
+      atras.hidden = n !== 2;
+      generar.hidden = n !== 2;
+    }
+
+    document.querySelectorAll("[data-open-mes-modal]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        limpiar();
+        areaInput.value = "";
+        mostrarPaso(1);
+        generar.disabled = false;
+        openModal("mesModal");
+      });
+    });
+
+    form.querySelectorAll("[data-mes-area]").forEach((tarjeta) => {
+      tarjeta.addEventListener("click", () => {
+        limpiar();
+        if (!cliente.value) {
+          const slot = form.querySelector('[data-error-for="cliente_id"]');
+          if (slot) slot.textContent = "Selecciona un cliente primero.";
+          cliente.focus();
+          return;
+        }
+        const area = tarjeta.dataset.mesArea;
+        areaInput.value = area;
+        form.querySelector("[data-mes-resumen-plantilla]").textContent =
+          `${tarjeta.querySelector("strong").textContent} · ${cliente.options[cliente.selectedIndex].textContent.trim()}`;
+        form.querySelectorAll("[data-mes-avanzadas]").forEach((grupo) => {
+          const activo = grupo.dataset.mesAvanzadas === area;
+          grupo.hidden = !activo;
+          // Solo viajan las casillas de la plantilla elegida.
+          grupo.querySelectorAll("input[type=checkbox]").forEach((c) => {
+            c.disabled = !activo;
+            if (!activo) c.checked = false;
+          });
+        });
+        mostrarPaso(2);
+      });
+    });
+
+    atras.addEventListener("click", () => {
+      limpiar();
+      mostrarPaso(1);
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      limpiar();
+      if (!areaInput.value) {
+        mostrarPaso(1);
+        return;
+      }
+
+      const payload = {
+        cliente_id: cliente.value,
+        area: areaInput.value,
+        mes: form.querySelector('input[name="mes"]').value,
+        avanzadas: Array.from(form.querySelectorAll('input[name="avanzadas[]"]:checked')).map((c) => c.value),
+      };
+
+      generar.disabled = true;
+      request(form.dataset.storeAction, "POST", payload)
+        .then((data) => {
+          window.location.href = data.show_url;
+        })
+        .catch((error) => {
+          generar.disabled = false;
+          const cuerpo = error.body || {};
+          const errores = cuerpo.errors;
+          if (errores) {
+            Object.keys(errores).forEach((campo) => {
+              const slot = form.querySelector(`[data-error-for="${campo}"]`);
+              if (slot) slot.textContent = errores[campo][0];
+            });
+            // Duplicado: se ofrece abrir el que ya existe en vez de dejar al usuario sin salida.
+            if (cuerpo.show_url && duplicado) {
+              duplicado.hidden = false;
+              duplicado.textContent = "";
+              const enlace = document.createElement("a");
+              enlace.href = cuerpo.show_url;
+              enlace.textContent = "Abrir el reporte existente";
+              duplicado.appendChild(enlace);
+            }
+            if (errores.cliente_id || errores.area) mostrarPaso(1);
+            return;
+          }
+          toast("No se pudo generar el reporte.", "error");
+        });
+    });
+  }
+
+  /**
+   * Acciones del detalle de un reporte: «Actualizar datos» y el enlace de solo lectura.
+   * Los mensajes quedan en pantalla (no en un toast) y el token del enlace solo se pinta al crearlo.
+   */
+  function initAccionesReporte() {
+    const mensaje = document.querySelector("[data-accion-mensaje]");
+
+    function decir(texto, esError) {
+      if (!mensaje) return;
+      mensaje.hidden = !texto;
+      mensaje.textContent = texto || "";
+      mensaje.classList.toggle("form-status--error", !!esError);
+    }
+
+    // Mensaje que sobrevive a la recarga posterior a «Actualizar datos».
+    try {
+      const guardado = sessionStorage.getItem("rep-mensaje");
+      if (guardado) {
+        decir(guardado, false);
+        sessionStorage.removeItem("rep-mensaje");
+      }
+    } catch (err) {
+      /* sin sessionStorage el mensaje simplemente no se muestra */
+    }
+
+    const actualizar = document.querySelector("[data-actualizar-datos]");
+    if (actualizar) {
+      actualizar.addEventListener("click", () => {
+        actualizar.disabled = true;
+        decir("");
+        request(actualizar.dataset.url, "POST", {})
+          .then((data) => {
+            try {
+              sessionStorage.setItem("rep-mensaje", data.message || "Datos actualizados.");
+            } catch (err) {
+              /* idem */
+            }
+            window.location.reload();
+          })
+          .catch((error) => {
+            actualizar.disabled = false;
+            decir((error.body && error.body.message) || "No se pudieron actualizar los datos.", true);
+          });
+      });
+    }
+
+    const tarjeta = document.querySelector("[data-enlaces]");
+    if (!tarjeta) return;
+
+    const lista = tarjeta.querySelector("[data-enlaces-lista]");
+    const nuevo = tarjeta.querySelector("[data-enlace-nuevo]");
+    const urlInput = tarjeta.querySelector("[data-enlace-url]");
+
+    tarjeta.addEventListener("click", (e) => {
+      const crear = e.target.closest("[data-enlace-crear]");
+      if (crear) {
+        crear.disabled = true;
+        request(tarjeta.dataset.enlaceStoreUrl, "POST", {})
+          .then((data) => {
+            crear.disabled = false;
+            decir("");
+            urlInput.value = data.url;
+            nuevo.hidden = false;
+            urlInput.focus();
+            urlInput.select();
+
+            const vacio = lista.querySelector("[data-enlaces-vacio]");
+            if (vacio) vacio.remove();
+            const li = document.createElement("li");
+            li.className = "rep-enlace";
+            li.dataset.enlaceId = data.enlace.id;
+            li.dataset.estado = "vigente";
+            li.innerHTML =
+              `<span class="rep-enlace__estado rep-enlace__estado--vigente">Vigente</span>` +
+              `<span class="rep-enlace__meta">vence ${escapeHtml(formatearFecha(data.enlace.expira_en))} · 0 accesos</span>` +
+              `<button type="button" class="btn btn--secondary btn--sm" data-enlace-revocar>Revocar</button>`;
+            lista.prepend(li);
+          })
+          .catch((error) => {
+            crear.disabled = false;
+            decir((error.body && error.body.message) || "No se pudo crear el enlace.", true);
+          });
+        return;
+      }
+
+      if (e.target.closest("[data-enlace-copiar]")) {
+        urlInput.select();
+        const listo = () => decir("Enlace copiado.", false);
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(urlInput.value).then(listo, () => document.execCommand("copy") && listo());
+        else if (document.execCommand("copy")) listo();
+        return;
+      }
+
+      const revocar = e.target.closest("[data-enlace-revocar]");
+      if (revocar) {
+        const li = revocar.closest("[data-enlace-id]");
+        if (!li || !window.confirm("¿Revocar este enlace? Quien lo tenga dejará de poder abrirlo.")) return;
+        revocar.disabled = true;
+        request(tarjeta.dataset.enlaceDestroyUrl.replace("__ID__", li.dataset.enlaceId), "DELETE")
+          .then(() => {
+            li.dataset.estado = "revocado";
+            const estadoNodo = li.querySelector(".rep-enlace__estado");
+            if (estadoNodo) {
+              estadoNodo.textContent = "Revocado";
+              estadoNodo.className = "rep-enlace__estado rep-enlace__estado--revocado";
+            }
+            revocar.remove();
+          })
+          .catch((error) => {
+            revocar.disabled = false;
+            decir((error.body && error.body.message) || "No se pudo revocar el enlace.", true);
+          });
+      }
+    });
+  }
+
   function initReporteDelete() {
     const tabla = document.querySelector("[data-reportes-tabla]");
     if (!tabla) return;
@@ -315,6 +552,7 @@
         rotulo: bloque.querySelector("[data-seccion-rotulo]")?.value || "",
         aviso: aviso && typeof aviso === "object" ? { texto: aviso.texto || "", fecha: aviso.fecha || "" } : { texto: "", fecha: "" },
         visible: !!bloque.querySelector("[data-seccion-visible]")?.checked,
+        interno: !!bloque.querySelector("[data-seccion-interno]")?.checked,
         guardar: null,
         // Secuencia del autosave: una respuesta con `seq` viejo se descarta,
         // para que dos PUT solapados no dejen el estado antiguo en pantalla.
@@ -429,17 +667,39 @@
     return objeto[campo];
   }
 
+  /** De dónde salió un valor precargado (fuente y fecha del dato); vacío en un valor escrito a mano. */
+  function procedencia(item) {
+    if (!item.precargada && !item.fuente) return "";
+    const fecha = item.fecha_dato ? ` · dato del ${formatearFecha(item.fecha_dato)}` : "";
+    return `<span class="rep-row__fuente" title="Lo trajo «Generar reporte del mes»; Actualizar datos lo refresca si no lo editas.">Precargado de ${escapeHtml(item.fuente || "datos capturados")}${escapeHtml(fecha)}</span>`;
+  }
+
+  /** Logro / reto / próximo paso del resumen para el cliente: un texto corto y editable. */
+  function filaResumen(item, etiqueta, placeholder) {
+    const sugerido = item.precargada ? `<span class="rep-row__fuente" title="Sugerido con cifras reales del mes. Edítalo con tus palabras.">Sugerido a partir de los datos: revísalo</span>` : "";
+    return (
+      campoConEtiqueta(
+        etiqueta,
+        `<textarea class="textarea rep-row__textarea" rows="2" maxlength="280" data-campo="texto" placeholder="${escapeHtml(placeholder)}">${escapeHtml(item.texto)}</textarea>`,
+        "ancho"
+      ) +
+      sugerido +
+      celdaBorrar()
+    );
+  }
+
   /** Filas de las listas que se pintan como tarjetas apiladas (`.rep-rows`). */
   const FILAS = {
     "kpis:items": (item) =>
       campoConEtiqueta("Label", inputTexto("label", item.label, "Clics orgánicos"), "ancho") +
-      campoConEtiqueta("Valor", inputTexto("valor", item.valor, "12.480")) +
+      campoConEtiqueta("Valor", inputTexto("valor", item.valor, "Valor del indicador")) +
       campoConEtiqueta("Formato", `<select class="select" data-campo="formato">${options(FORMATOS, porDefecto(item, "formato", "texto"))}</select>`) +
-      campoConEtiqueta("Comparativo", inputTexto("comparativo", item.comparativo, "+18,2%")) +
+      campoConEtiqueta("Comparativo", inputTexto("comparativo", item.comparativo, "Comparativo (opcional)")) +
       campoConEtiqueta("Dirección", `<select class="select" data-campo="direccion">${options(DIRECCIONES, porDefecto(item, "direccion", "neutral"))}</select>`) +
       campoConEtiqueta("Detalle", inputTexto("detalle", item.detalle, "vs. periodo anterior"), "ancho") +
       campoConEtiqueta("Desactualizado", inputTexto("desactualizado", item.desactualizado, "dato a 31 ago")) +
       checkCampo("Destacado", "destacado", !!item.destacado, "Se imprime con más peso que el resto") +
+      procedencia(item) +
       celdaBorrar(),
 
     "hallazgos:items": (item) =>
@@ -506,6 +766,10 @@
         celdaBorrar()
       );
     },
+
+    "resumen_cliente:logros": (item) => filaResumen(item, "Logro", "Qué salió bien este mes"),
+    "resumen_cliente:retos": (item) => filaResumen(item, "Reto", "Qué hay que vigilar o mejorar"),
+    "resumen_cliente:proximos_pasos": (item) => filaResumen(item, "Paso", "Qué sigue y cuándo"),
 
     "texto:bloques": (item) =>
       campoConEtiqueta("Título", inputTexto("titulo", item.titulo, "Fuentes"), "ancho") +
@@ -680,8 +944,20 @@
    * Sin columnas configuradas, una fila de datos solo puede mostrar su botón de
    * borrar: se deshabilita el alta (y el pegado) hasta que haya columnas.
    */
+  /** Máximo de filas por lista del resumen para el cliente (cabe en una página). */
+  const MAXIMOS_RESUMEN = { logros: 3, retos: 3, proximos_pasos: 5 };
+
   function actualizarBotones(bloque, st) {
     const listo = hayColumnas(st);
+
+    if (st.tipo === "resumen_cliente") {
+      bloque.querySelectorAll("[data-add-fila]").forEach((btn) => {
+        const tope = MAXIMOS_RESUMEN[btn.dataset.addFila];
+        const lleno = tope && lista(st, btn.dataset.addFila).length >= tope;
+        btn.disabled = !!lleno;
+        btn.title = lleno ? `Máximo ${tope}: la versión para cliente cabe en una página.` : "";
+      });
+    }
 
     bloque.querySelectorAll("[data-add-fila]").forEach((btn) => {
       if (!dependeDeColumnas(st, btn.dataset.addFila)) return;
@@ -709,8 +985,40 @@
       pintarLista(bloque, st, contenedor.dataset.lista);
     });
 
+    pintarGraficaResumen(bloque, st);
     pintarAviso(bloque, st);
+    pintarInterno(bloque, st);
     actualizarBotones(bloque, st);
+  }
+
+  /** La gráfica clave del resumen no se edita a mano: viene de los datos del mes. */
+  function pintarGraficaResumen(bloque, st) {
+    const nodo = bloque.querySelector("[data-resumen-grafica]");
+    if (!nodo || st.tipo !== "resumen_cliente") return;
+    const g = st.contenido.grafica || {};
+    const puntos = Array.isArray(g.filas) ? g.filas.length : 0;
+    nodo.textContent = puntos
+      ? `${g.titulo || "Gráfica clave"}: ${puntos} ${puntos === 1 ? "mes" : "meses"} de datos. Se actualiza con «Actualizar datos».`
+      : "Sin datos suficientes para la gráfica: no se imprimirá hasta que haya datos de algún mes.";
+  }
+
+  /**
+   * Etiqueta «Interno» + interruptor + advertencia de datos de pago. La
+   * advertencia es una heurística suave: no bloquea ni guarda nada, solo ofrece
+   * marcar la sección (y desaparece en cuanto ya es interna).
+   */
+  function pintarInterno(bloque, st) {
+    const chip = bloque.querySelector("[data-interno-chip]");
+    const interruptor = bloque.querySelector("[data-seccion-interno]");
+    const aviso = bloque.querySelector("[data-pago-aviso]");
+
+    if (chip) chip.hidden = !st.interno;
+    if (interruptor) interruptor.checked = st.interno;
+    bloque.classList.toggle("is-interna", st.interno);
+
+    if (aviso) {
+      aviso.hidden = st.interno || !seccionPareceDatoDePago([st.titulo, st.aviso, st.contenido]);
+    }
   }
 
   function pintarAviso(bloque, st) {
@@ -722,7 +1030,7 @@
     if (fecha) fecha.value = st.aviso.fecha || "";
     if (chip) {
       chip.hidden = !st.aviso.texto;
-      chip.textContent = st.aviso.texto ? `Dato desactualizado${st.aviso.fecha ? " · " + st.aviso.fecha : ""}` : "";
+      chip.textContent = st.aviso.texto ? `Dato desactualizado${st.aviso.fecha ? " · " + formatearFecha(st.aviso.fecha) : ""}` : "";
     }
   }
 
@@ -820,6 +1128,7 @@
       titulo: st.titulo,
       rotulo: st.rotulo || null,
       visible: st.visible,
+      interno: st.interno,
       aviso,
       contenido: st.contenido,
     };
@@ -887,6 +1196,7 @@
   function programarGuardado(bloque) {
     const st = estado(bloque);
     if (!st.guardar) st.guardar = autosave(() => guardar(bloque), 800);
+    pintarInterno(bloque, st);
     st.guardar();
   }
 
@@ -1035,6 +1345,9 @@
       "ficha:registros": () => ({ titulo: "", valores: {}, veredicto: "", estado: "ok" }),
       "plan:acciones": () => ({ prioridad: "p2", accion: "", evidencia: "", area: "", impacto: 3, esfuerzo: 3, kpi: "" }),
       "texto:bloques": () => ({ titulo: "", cuerpo: "" }),
+      "resumen_cliente:logros": () => ({ texto: "", precargada: false }),
+      "resumen_cliente:retos": () => ({ texto: "", precargada: false }),
+      "resumen_cliente:proximos_pasos": () => ({ texto: "" }),
     };
     const fabrica = plantillas[`${st.tipo}:${clave}`];
     return fabrica ? fabrica() : {};
@@ -1100,6 +1413,13 @@
         return;
       }
 
+      if (el.matches("[data-seccion-interno]")) {
+        st.interno = el.checked;
+        pintarInterno(bloque, st);
+        guardar(bloque);
+        return;
+      }
+
       if (el.matches("[data-campo-raiz]")) {
         st.contenido[el.dataset.campoRaiz] = el.value;
         // La etiqueta del eje X es la cabecera de la primera columna de la rejilla.
@@ -1159,6 +1479,7 @@
 
       if (!el.matches("[data-campo]")) return;
       const campo = el.dataset.campo;
+      if (st.tipo === "resumen_cliente" && "precargada" in registro) registro.precargada = false;
 
       const esListaConfig = claveLista === LISTAS_CONFIG[st.tipo];
       const esDimension = st.tipo === "ficha" && claveLista === "dimensiones";
@@ -1248,6 +1569,13 @@
         panel.hidden = !panel.hidden;
         avisoToggle.setAttribute("aria-expanded", panel.hidden ? "false" : "true");
         if (!panel.hidden) panel.querySelector("[data-aviso-texto]")?.focus();
+        return;
+      }
+
+      if (e.target.closest("[data-marcar-interno]")) {
+        st.interno = true;
+        pintarInterno(bloque, st);
+        guardar(bloque);
         return;
       }
 
@@ -1419,12 +1747,17 @@
     // escucha en el mismo punto y su cancelación tiene que mandar.
     document.addEventListener("submit", (e) => {
       const form = e.target.closest("form[data-nav-flush]");
-      if (!form || e.defaultPrevented || form.dataset.flushed === "1" || !hayPendientes()) return;
+      // Los `data-descarga` los envía lib/descargas.js (fetch), que antes pide vaciar el autosave con `descarga:antes`.
+      if (!form || form.hasAttribute("data-descarga") || e.defaultPrevented || form.dataset.flushed === "1" || !hayPendientes()) return;
       e.preventDefault();
       vaciarPendientes().then(() => {
         form.dataset.flushed = "1";
         form.submit();
       });
+    });
+
+    document.addEventListener("descarga:antes", (e) => {
+      if (hayPendientes()) e.detail.esperar.push(vaciarPendientes());
     });
 
     window.addEventListener("beforeunload", (e) => {
@@ -1643,6 +1976,8 @@
   document.addEventListener("shell:ready", () => {
     initReporteFiltros();
     initReporteForm();
+    initMesForm();
+    initAccionesReporte();
     initReporteDelete();
     initEditor();
   });

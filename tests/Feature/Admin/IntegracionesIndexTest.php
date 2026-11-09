@@ -169,7 +169,7 @@ class IntegracionesIndexTest extends TestCase
             'cliente_id', 'cliente', 'conectado', 'pendientes_count',
             'ultima_senal', 'ultima_senal_label', 'show_url',
         ], array_keys($row));
-        $this->assertSame($cliente->nombre, $row['cliente']);
+        $this->assertSame($cliente->nombre_comercial, $row['cliente']);
     }
 
     public function test_show_url_matches_route_for_each_cliente(): void

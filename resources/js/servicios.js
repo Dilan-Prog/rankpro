@@ -5,6 +5,7 @@
  * history), and the create/edit/delete modal CRUD (fetch()-driven, mirrors
  * clientes.js's pattern).
  */
+import { formatearFecha, formatearFechaHora } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -22,6 +23,38 @@
   };
 
   const ESTADO_LABELS = { activo: "Activo", pausado: "Pausado", cancelado: "Cancelado" };
+
+  // Etiqueta del precio y de la ficha según el tipo de cobro; solo el mensual es MRR.
+  const COBRO = {
+    mensual: { etiquetaPrecio: "Precio mensual (MXN)", sufijo: "/mes", facturacion: "Mensual · MXN", metrica: "MRR" },
+    unico: { etiquetaPrecio: "Precio del proyecto (MXN)", sufijo: "pago único", facturacion: "Pago único · MXN", metrica: "Pago único" },
+    gratuito: { etiquetaPrecio: "Precio (sin costo)", sufijo: "", facturacion: "Gratuito", metrica: "Costo" },
+  };
+
+  /** Celda de precio: la misma que pinta index.blade.php en el servidor. */
+  function precioHtml(servicio) {
+    if (servicio.tipo_cobro === "gratuito") return "Gratuito";
+    const cobro = COBRO[servicio.tipo_cobro] || COBRO.mensual;
+    const monto = servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—";
+    return `${monto} <span class="srv-cobro">${cobro.sufijo}</span>`;
+  }
+
+  const VENCIDO_TITULO = "La fecha de fin ya pasó y el servicio sigue activo: renuévalo o ciérralo.";
+
+  /** Muestra el precio solo si el servicio se cobra; en gratuitos va oculto y en 0. */
+  function aplicarTipoCobro() {
+    const select = document.getElementById("tipo_cobro");
+    const campo = document.getElementById("precioCampo");
+    const precio = document.getElementById("precio_mensual");
+    if (!select || !campo || !precio) return;
+
+    const cobro = COBRO[select.value] || COBRO.mensual;
+    document.getElementById("precioEtiqueta").textContent = cobro.etiquetaPrecio;
+    const gratuito = select.value === "gratuito";
+    campo.style.display = gratuito ? "none" : "";
+    precio.required = !gratuito;
+    if (gratuito) precio.value = "0";
+  }
 
   // Holds the servicio object currently shown in the detail modal, so the
   // "Editar servicio" button can hand it off to the form modal without a
@@ -47,15 +80,6 @@
 
   function formatCurrency(amount) {
     return "$" + Math.round(amount).toLocaleString("es-MX");
-  }
-
-  /** "2026-08-30 14:32" -> "30/08/2026 14:32" */
-  function formatFechaHora(value) {
-    if (!value) return "—";
-    const [fecha, hora] = value.split(" ");
-    const [y, m, d] = (fecha || "").split("-");
-    if (!y || !m || !d) return value;
-    return `${d}/${m}/${y}${hora ? " " + hora : ""}`;
   }
 
   function badgeHtml(estado) {
@@ -108,10 +132,10 @@
     }
     return eventos
       .map((evento) => {
-        const fecha = (evento.fecha || "").split(" ")[0] || "—";
+        const fecha = formatearFecha(evento.fecha);
         return `
           <li class="srv-bitacora__item">
-            <span class="srv-bitacora__fecha" title="${escapeHtml(formatFechaHora(evento.fecha))}">${escapeHtml(fecha)}</span>
+            <span class="srv-bitacora__fecha" title="${escapeHtml(formatearFechaHora(evento.fecha))}">${escapeHtml(fecha)}</span>
             <span class="srv-bitacora__texto">${escapeHtml(evento.descripcion)}</span>
             <span class="srv-bitacora__autor">${escapeHtml(evento.usuario || "")}</span>
           </li>`;
@@ -125,20 +149,30 @@
     document.getElementById("servicioDetailTitle").textContent =
       `${TIPO_LABELS[servicio.tipo] || servicio.tipo} — ${servicio.cliente}`;
     document.getElementById("servicioDetailSubtitulo").textContent =
-      (servicio.fecha_inicio ? `Alta ${servicio.fecha_inicio}` : "Sin fecha de alta") +
+      (servicio.fecha_inicio ? `Alta ${formatearFecha(servicio.fecha_inicio)}` : "Sin fecha de alta") +
       " · " + (servicio.responsable_nombre ? `responsable ${servicio.responsable_nombre}` : "sin responsable asignado");
     document.getElementById("servicioDetailBadge").outerHTML = badgeHtml(servicio.estado);
 
+    const cobro = COBRO[servicio.tipo_cobro] || COBRO.mensual;
+    document.getElementById("servicioDetailMrrEtiqueta").textContent = cobro.metrica;
     document.getElementById("servicioDetailMrr").textContent =
-      servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—";
+      servicio.tipo_cobro === "gratuito" ? "Gratuito" : (servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—");
+    document.getElementById("servicioDetailFacturacion").textContent = cobro.facturacion;
+    document.getElementById("servicioDetailVencido").innerHTML = servicio.vencido
+      ? `<div class="srv-alerta"><span class="badge badge--danger">Vencido</span><span>La fecha de fin (${escapeHtml(formatearFecha(servicio.fecha_fin))}) ya pasó y el servicio sigue activo: renuévalo o ciérralo.</span></div>`
+      : "";
     document.getElementById("servicioDetailAnualizado").textContent =
       servicio.anualizado > 0 ? formatCurrency(servicio.anualizado) : "—";
+    // Anualizado e ingreso acumulado solo tienen sentido con cobro mensual: en único/gratuito se ocultan en vez de mostrar "—".
+    const esMensual = servicio.tipo_cobro === "mensual";
+    document.getElementById("servicioDetailAnualizado").parentElement.style.display = esMensual ? "" : "none";
+    document.getElementById("servicioDetailIngresoAcumulado").parentElement.style.display = esMensual ? "" : "none";
     document.getElementById("servicioDetailMeses").textContent = servicio.fecha_inicio ? servicio.meses_activos : "—";
     document.getElementById("servicioDetailEstadoLabel").textContent = ESTADO_LABELS[servicio.estado] || servicio.estado;
 
     document.getElementById("servicioDetailCliente").textContent = servicio.cliente || "—";
     document.getElementById("servicioDetailNombre").textContent = servicio.nombre || "—";
-    document.getElementById("servicioDetailInicio").textContent = servicio.fecha_inicio || "—";
+    document.getElementById("servicioDetailInicio").textContent = servicio.fecha_inicio ? formatearFecha(servicio.fecha_inicio) : "—";
     document.getElementById("servicioDetailResponsable").textContent = servicio.responsable_nombre || "Sin asignar";
     document.getElementById("servicioDetailIngresoAcumulado").textContent =
       servicio.ingreso_acumulado > 0 ? formatCurrency(servicio.ingreso_acumulado) : "—";
@@ -193,12 +227,14 @@
   function fillServicioForm(form, servicio) {
     if (!servicio) {
       form.reset();
+      aplicarTipoCobro();
       return;
     }
     Array.from(form.elements).forEach((el) => {
       if (!el.name || !(el.name in servicio)) return;
       el.value = servicio[el.name] ?? "";
     });
+    aplicarTipoCobro();
   }
 
   function openServicioFormModal(servicio) {
@@ -243,10 +279,10 @@
       <td><div style="font-weight:500">${escapeHtml(servicio.cliente)}</div></td>
       <td>${escapeHtml(servicio.nombre)}</td>
       <td>${TIPO_LABELS[servicio.tipo] || escapeHtml(servicio.tipo)}</td>
-      <td>${badgeEstadoHtml(servicio.estado)}</td>
+      <td>${badgeEstadoHtml(servicio.estado)}${servicio.vencido ? ` <span class="badge badge--danger" title="${VENCIDO_TITULO}">Vencido</span>` : ""}</td>
       <td class="srv-responsable${servicio.responsable_nombre ? "" : " srv-responsable--vacio"}">${escapeHtml(servicio.responsable_nombre || "—")}</td>
-      <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(servicio.fecha_inicio || "—")}</span></td>
-      <td class="u-mono">${servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) : "—"}</td>
+      <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(formatearFecha(servicio.fecha_inicio))}</span></td>
+      <td class="u-mono">${precioHtml(servicio)}</td>
       <td>
         <div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-servicio="${servicio.id}">
@@ -284,7 +320,7 @@
     wrap.innerHTML = `
       <table class="table">
         <thead>
-          <tr><th>Cliente</th><th>Servicio</th><th>Tipo</th><th>Estado</th><th>Responsable</th><th>Inicio</th><th>Precio Mensual</th><th></th></tr>
+          <tr><th>Cliente</th><th>Servicio</th><th>Tipo</th><th>Estado</th><th>Responsable</th><th>Inicio</th><th>Precio</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>`;
@@ -337,6 +373,9 @@
     const form = document.getElementById("servicioForm");
     if (!form) return;
 
+    document.getElementById("tipo_cobro")?.addEventListener("change", aplicarTipoCobro);
+    aplicarTipoCobro();
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const editingId = form.dataset.editingId;
@@ -387,7 +426,7 @@
       document.getElementById("servicioDeleteName").textContent =
         `${servicio.nombre} (${TIPO_LABELS[servicio.tipo] || servicio.tipo} — ${servicio.cliente})`;
       document.getElementById("servicioDeleteMrr").textContent =
-        servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) + " MXN/mes" : "—";
+        servicio.aporta_mrr && servicio.precio_mensual > 0 ? formatCurrency(servicio.precio_mensual) + " MXN/mes" : "—";
       document.getElementById("servicioDeleteResponsable").textContent = servicio.responsable_nombre || "— Sin asignar —";
       confirmBtn.dataset.servicioId = servicio.id;
 

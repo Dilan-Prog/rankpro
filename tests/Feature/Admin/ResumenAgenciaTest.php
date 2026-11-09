@@ -40,9 +40,9 @@ class ResumenAgenciaTest extends TestCase
     public function test_el_contrato_que_vence_hoy_y_manana_aparecen_con_dias_correctos(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-11-02 15:30'));
-        Cliente::factory()->create(['nombre' => 'Hoy SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-02']);
-        Cliente::factory()->create(['nombre' => 'Manana SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-03']);
-        Cliente::factory()->create(['nombre' => 'Diez SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-12']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'Hoy SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-02']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'Manana SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-03']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'Diez SA', 'estado' => 'activo', 'fecha_renovacion_contrato' => '2026-11-12']);
 
         $mensajes = $this->mensajes();
 
@@ -64,7 +64,7 @@ class ResumenAgenciaTest extends TestCase
 
     public function test_un_gasto_vencido_no_sale_como_pago_vencido_de_cliente(): void
     {
-        $cliente = Cliente::factory()->create(['nombre' => 'Cliente Gasto']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Gasto']);
         $this->vencido($cliente, 'gasto');
 
         $this->assertSame([], $this->mensajes());
@@ -73,9 +73,9 @@ class ResumenAgenciaTest extends TestCase
     public function test_cinco_renovaciones_no_desplazan_los_pagos_vencidos(): void
     {
         foreach (range(1, 5) as $i) {
-            Cliente::factory()->create(['nombre' => "Renueva {$i}", 'estado' => 'activo', 'fecha_renovacion_contrato' => now()->addDays($i)]);
+            Cliente::factory()->create(['empresa' => null, 'nombre' => "Renueva {$i}", 'estado' => 'activo', 'fecha_renovacion_contrato' => now()->addDays($i)]);
         }
-        $this->vencido(Cliente::factory()->create(['nombre' => 'Moroso SA']));
+        $this->vencido(Cliente::factory()->create(['empresa' => null, 'nombre' => 'Moroso SA']));
 
         $alertas = $this->mensajes();
 
@@ -86,7 +86,7 @@ class ResumenAgenciaTest extends TestCase
     public function test_el_roas_de_este_mes_usa_las_metricas_del_mes_y_no_el_promedio_historico(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-11-15'));
-        $cliente = Cliente::factory()->create(['nombre' => 'Ads SA']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Ads SA']);
         $campana = AdsCampana::factory()->create(['cliente_id' => $cliente->id, 'servicio_id' => Servicio::factory()->create(['cliente_id' => $cliente->id])->id, 'estado' => 'activa', 'nombre' => 'Camp']);
         AdsMetrica::factory()->create(['ads_campana_id' => $campana->id, 'cliente_id' => $cliente->id, 'mes' => 11, 'anio' => 2026, 'roas' => 2.5]);
         AdsMetrica::factory()->create(['ads_campana_id' => $campana->id, 'cliente_id' => $cliente->id, 'mes' => 8, 'anio' => 2026, 'roas' => 9.5]);

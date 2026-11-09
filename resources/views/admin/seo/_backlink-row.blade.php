@@ -4,7 +4,7 @@
     <td class="u-mono"><strong style="color:var(--text-success)">{{ $b->da_dr ?? '—' }}</strong></td>
     <td style="text-transform:capitalize;">{{ $b->tipo }}</td>
     <td><x-badge :status="$b->estado" /></td>
-    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ $b->fecha_conseguido?->format('Y-m-d') ?? '—' }}</td>
+    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ fecha_mx($b->fecha_conseguido) }}</td>
     <td>
         <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-backlink="{{ $b->id }}">
             <i class="fa-solid fa-trash"></i>

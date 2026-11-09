@@ -427,4 +427,162 @@ class MetricasTest extends TestCase
         $this->assertCount(2, $respuesta->viewData('grafica')['puntos']);
         $respuesta->assertDontSee('data-grafica-linea', false);
     }
+
+    // --- catálogo estándar y fuente -----------------------------------------
+
+    public function test_agregar_del_catalogo_crea_con_los_datos_del_catalogo_y_sin_meta(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->actingAs($this->usuario())->post(route('admin.metricas.definiciones.catalogo'), [
+            'cliente_id' => $cliente->id,
+            'claves' => ['cpa', 'inversion', 'posicion_media'],
+        ])->assertRedirect()->assertSessionHas('status');
+
+        $this->assertSame(3, MetricaCliente::count());
+        $cpa = MetricaCliente::where('metrica_estandar', 'cpa')->firstOrFail();
+        $this->assertSame($cliente->id, $cpa->cliente_id);
+        $this->assertSame('CPA / costo por lead', $cpa->nombre);
+        $this->assertSame('MXN', $cpa->unidad);
+        $this->assertSame('menor', $cpa->sentido->value);
+        $this->assertSame('google_ads', $cpa->fuente);
+        $this->assertNull($cpa->meta);
+        $this->assertTrue($cpa->activa);
+        $this->assertSame('search_console', MetricaCliente::where('metrica_estandar', 'posicion_media')->value('fuente'));
+        $this->assertSame(3, MetricaCliente::whereNull('meta')->count());
+    }
+
+    public function test_la_inversion_del_catalogo_sale_sin_meta_en_el_semaforo(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $this->actingAs($this->usuario())->post(route('admin.metricas.definiciones.catalogo'), [
+            'cliente_id' => $cliente->id, 'claves' => ['inversion'],
+        ]);
+        $metrica = MetricaCliente::firstOrFail();
+        $this->valor($metrica, '2026-10-01', 4200);
+
+        $this->actingAs($this->usuario())
+            ->get(route('admin.metricas.index', ['cliente' => $cliente->id, 'mes' => '2026-10']))
+            ->assertOk()
+            ->assertSee('data-semaforo="sin_meta"', false);
+    }
+
+    public function test_agregar_del_catalogo_no_duplica_ni_cruza_clientes(): void
+    {
+        $a = Cliente::factory()->create();
+        $b = Cliente::factory()->create();
+        $usuario = $this->usuario();
+
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $a->id, 'claves' => ['ctr', 'roas']]);
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $a->id, 'claves' => ['ctr', 'roas', 'clics']])
+            ->assertSessionHas('status', fn ($m) => str_contains($m, 'Se agregaron 1') && str_contains($m, '2 ya existía'));
+
+        $this->assertSame(3, MetricaCliente::where('cliente_id', $a->id)->count());
+        $this->assertSame(0, MetricaCliente::where('cliente_id', $b->id)->count());
+
+        // El otro cliente sí puede tener las mismas métricas estándar.
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $b->id, 'claves' => ['ctr']]);
+        $this->assertSame(1, MetricaCliente::where('cliente_id', $b->id)->count());
+        $this->assertSame(2, MetricaCliente::where('metrica_estandar', 'ctr')->count());
+    }
+
+    public function test_agregar_del_catalogo_respeta_una_metrica_estandar_ya_editada(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id, 'claves' => ['llamadas']]);
+        MetricaCliente::firstOrFail()->update(['meta' => 40, 'nombre' => 'Llamadas del hotel']);
+
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id, 'claves' => ['llamadas']]);
+
+        $this->assertSame(1, MetricaCliente::count());
+        $this->assertSame('40.00', MetricaCliente::firstOrFail()->meta);
+    }
+
+    public function test_agregar_del_catalogo_valida_claves_y_cliente(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id, 'claves' => ['inventada']])
+            ->assertSessionHasErrors('claves.0');
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id])
+            ->assertSessionHasErrors('claves');
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => 999999, 'claves' => ['ctr']])
+            ->assertSessionHasErrors('cliente_id');
+
+        $this->assertSame(0, MetricaCliente::count());
+    }
+
+    public function test_agregar_del_catalogo_requiere_sesion(): void
+    {
+        $cliente = Cliente::factory()->create();
+
+        $this->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id, 'claves' => ['ctr']])
+            ->assertRedirect(route('login'));
+
+        $this->assertSame(0, MetricaCliente::count());
+    }
+
+    public function test_la_pantalla_ofrece_el_catalogo_y_marca_las_ya_agregadas(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.catalogo'), ['cliente_id' => $cliente->id, 'claves' => ['ctr']]);
+
+        $this->actingAs($usuario)->get(route('admin.metricas.index', ['cliente' => $cliente->id]))
+            ->assertOk()
+            ->assertSee('Agregar del catálogo')
+            ->assertSee('data-catalogo-clave="roas"', false)
+            ->assertSee('Ya agregada')
+            ->assertSee('Google Ads');
+    }
+
+    public function test_crear_metrica_personalizada_guarda_la_fuente_y_por_defecto_es_manual(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+        $base = ['cliente_id' => $cliente->id, 'sentido' => 'mayor', 'umbral_amarillo_pct' => 80];
+
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.store'), $base + ['nombre' => 'Reservas directas', 'fuente' => 'crm'])
+            ->assertSessionHasNoErrors();
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.store'), $base + ['nombre' => 'Sin fuente'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('crm', MetricaCliente::where('nombre', 'Reservas directas')->value('fuente'));
+        $this->assertSame('manual', MetricaCliente::where('nombre', 'Sin fuente')->value('fuente'));
+        $this->assertNull(MetricaCliente::where('nombre', 'Reservas directas')->value('metrica_estandar'));
+    }
+
+    public function test_fuente_invalida_se_rechaza_al_crear_y_al_editar(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+        $metrica = $this->metrica($cliente);
+
+        $this->actingAs($usuario)->post(route('admin.metricas.definiciones.store'), [
+            'cliente_id' => $cliente->id, 'nombre' => 'X', 'sentido' => 'mayor', 'umbral_amarillo_pct' => 80, 'fuente' => 'facebook',
+        ])->assertSessionHasErrors('fuente');
+        $this->actingAs($usuario)->put(route('admin.metricas.definiciones.update', $metrica), [
+            'nombre' => 'Llamadas', 'sentido' => 'mayor', 'umbral_amarillo_pct' => 80, 'fuente' => 'facebook',
+        ])->assertSessionHasErrors('fuente');
+
+        $this->assertSame(1, MetricaCliente::count());
+        $this->assertSame('manual', $metrica->fresh()->fuente);
+    }
+
+    public function test_editar_cambia_la_fuente_y_se_muestra_en_la_tabla(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $usuario = $this->usuario();
+        $metrica = $this->metrica($cliente);
+
+        $this->actingAs($usuario)->put(route('admin.metricas.definiciones.update', $metrica), [
+            'nombre' => 'Llamadas', 'sentido' => 'mayor', 'umbral_amarillo_pct' => 80, 'fuente' => 'tracking',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('tracking', $metrica->fresh()->fuente);
+        $this->actingAs($usuario)->get(route('admin.metricas.index', ['cliente' => $cliente->id]))
+            ->assertOk()->assertSee('data-fuente="tracking"', false)->assertSee('Tracking propio');
+    }
 }

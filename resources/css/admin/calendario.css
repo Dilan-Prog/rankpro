@@ -270,3 +270,12 @@ a.cal-item__titulo:hover {
     font-size: 0;
   }
 }
+
+/* Móvil (<= 768 px): los botones de navegación del mes (20x25 px) y "Hoy" suben a un objetivo táctil de 40 px. */
+@media (max-width: 768px) {
+  .btn {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+  }
+}

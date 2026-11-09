@@ -62,6 +62,7 @@ class SeoFaseAuditoria extends Model
         'seo_campana_id',
         'ciclo',
         'seo_score',
+        'fecha_auditoria',
         'velocidad_mobile',
         'velocidad_desktop',
         'lcp_mobile',
@@ -94,6 +95,7 @@ class SeoFaseAuditoria extends Model
     protected $casts = [
         'ciclo' => 'integer',
         'seo_score' => 'integer',
+        'fecha_auditoria' => 'date',
         'velocidad_mobile' => 'decimal:2',
         'velocidad_desktop' => 'decimal:2',
         'lcp_mobile' => 'decimal:2',
@@ -120,6 +122,20 @@ class SeoFaseAuditoria extends Model
         'aprobado' => 'boolean',
         'fecha_aprobacion' => 'datetime',
     ];
+
+    /**
+     * La fecha de auditoría se fija en el modelo (y no en un controlador) para que valga igual desde el
+     * panel, la API y los seeders: solo cambia cuando CAMBIA el score, nunca por editar otros campos,
+     * y una fecha dada a mano manda sobre la automática.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $auditoria) {
+            if ($auditoria->isDirty('seo_score') && ! $auditoria->isDirty('fecha_auditoria')) {
+                $auditoria->fecha_auditoria = $auditoria->seo_score === null ? null : now()->toDateString();
+            }
+        });
+    }
 
     public function seoCampana(): BelongsTo
     {

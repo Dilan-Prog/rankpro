@@ -64,7 +64,7 @@
         {{-- Anuncios para lector de pantalla al mover tarjetas con el teclado. --}}
         <div class="u-visually-hidden" role="status" aria-live="polite" data-me-anuncio></div>
 
-        <script type="application/json" data-me-datos>{!! json_encode(['tareas' => $tareas, 'clientes' => $clientes], $banderas) !!}</script>
+        <script type="application/json" data-me-datos>{!! json_encode(['tareas' => $tareas], $banderas) !!}</script>
 
         <x-modal id="tareaModal">
             <x-slot:header><h2 data-me-modal-titulo>Nueva tarea</h2></x-slot:header>
@@ -109,7 +109,7 @@
                     <select class="select" id="me-cliente" name="cliente_id">
                         <option value="">Sin cliente</option>
                         @foreach ($clientes as $c)
-                            <option value="{{ $c->id }}">{{ $c->nombre }}</option>
+                            <option value="{{ $c->id }}">{{ $c->nombre_comercial }}</option>
                         @endforeach
                     </select>
                 </div>

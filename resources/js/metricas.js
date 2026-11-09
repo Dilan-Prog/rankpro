@@ -30,6 +30,7 @@
         modalForm.elements.unidad.value = datos.unidad || "";
         modalForm.elements.meta.value = datos.meta || "";
         modalForm.elements.sentido.value = datos.sentido || "mayor";
+        modalForm.elements.fuente.value = datos.fuente || "manual";
         modalForm.elements.umbral_amarillo_pct.value = datos.umbral || 80;
         modalForm.elements.orden.value = datos.orden || "";
       } else {
@@ -45,6 +46,11 @@
       btn.addEventListener("click", () => abrir("editar", btn.dataset));
     });
   }
+
+  // Modal del catálogo estándar: solo se abre; el envío es un POST normal.
+  root.querySelector("[data-metrica-catalogo-abrir]")?.addEventListener("click", () => {
+    window.AgencyOS.openModal("metricaCatalogoModal");
+  });
 
   root.querySelectorAll("form[data-confirmar]").forEach((form) => {
     form.addEventListener("submit", (e) => {

@@ -148,9 +148,12 @@ Headers:  Authorization: Bearer rp_xxxxxxxx
         <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x:auto;">{
   "data": {
     "mes": "2026-10",
-    "resumen": { "pendientes": 3, "total": 8 },
+    "resumen": { "pendientes": 3, "total": 8,
+                 "celdas_pendientes": 3, "celdas_total": 8,
+                 "clientes_con_pendientes": 2, "clientes_activos": 5, "clientes_sin_fuentes": 3 },
     "filas": [
       { "cliente_id": 12, "cliente": "Hotel Sol", "pendientes": 2,
+        "sin_fuentes": false, "configurar": [],
         "celdas": [ { "fuente": "keywords|seo|ads|metricas", "etiqueta": "...",
                       "estado": "completo|parcial|falta|no_aplica",
                       "hechas": 0, "total": 2, "url": "https://.../admin/..." } ] }
@@ -163,8 +166,10 @@ Headers:  Authorization: Bearer rp_xxxxxxxx
   }
 }</pre>
         <p style="color: var(--text-secondary);">
-            <code>resumen</code> es "N de M pendientes" de todo el mes (aunque <code>solo_pendientes</code> oculte filas).
-            <code>filas</code> trae un elemento por cliente activo; <code>pendientes</code> es la lista plana solo con
+            <code>resumen.pendientes</code>/<code>total</code> (alias <code>celdas_pendientes</code>/<code>celdas_total</code>) cuentan
+            <strong>celdas</strong> de todo el mes (aunque <code>solo_pendientes</code> oculte filas); <code>clientes_con_pendientes</code> y
+            <code>clientes_activos</code> cuentan clientes. <code>filas</code> trae un elemento por cliente activo, también los que no tienen
+            ninguna fuente (<code>sin_fuentes: true</code>, celdas <code>no_aplica</code> y <code>configurar</code> con enlaces para crearlas); <code>pendientes</code> es la lista plana solo con
             estado <code>falta|parcial</code>, lista para un <em>Split Out</em> y un mensaje por elemento con
             <code>cliente</code>, <code>etiqueta</code>, <code>estado</code> y <code>url</code> (donde se captura).
             Todas las rutas nuevas aparecen en <code>openapi.json</code>.

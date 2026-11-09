@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Webhooks\Despachador;
 use App\Support\ConfiguracionSmtpAplicador;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -39,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
         // No se toca defaultSimpleView: la vista usa $elements, que
         // simplePaginate() no proporciona.
         Paginator::defaultView('vendor.pagination.rankpro');
+
+        // @fecha($x) / @fecha($x, true): misma salida que fecha_mx() para las vistas.
+        Blade::directive('fecha', fn (string $expresion) => "<?php echo e(\\App\\Support\\Fecha::mx({$expresion})); ?>");
 
         // SMTP configurable desde el panel (Administración → Configuración de
         // correo) en vez de solo el .env; no-op si no se ha activado nunca.

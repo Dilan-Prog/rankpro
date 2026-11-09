@@ -19,6 +19,7 @@
     $semaforoClase = ['verde' => 'badge--success', 'amarillo' => 'badge--warning', 'rojo' => 'badge--danger', 'sin_meta' => 'badge--neutral', 'sin_dato' => 'badge--neutral'];
     $semaforoTexto = ['verde' => 'Verde', 'amarillo' => 'Amarillo', 'rojo' => 'Rojo', 'sin_meta' => 'Sin meta', 'sin_dato' => 'Sin dato'];
     $mesValor = $mes->format('Y-m');
+    $fuentes = \App\Support\Metricas\Catalogo::fuentes();
 @endphp
 
 @section('content')
@@ -48,7 +49,7 @@
                 <select class="select" name="cliente" aria-label="Cliente" data-metricas-cliente>
                     <option value="">Selecciona un cliente…</option>
                     @foreach ($clientes as $c)
-                        <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->nombre }}</option>
+                        <option value="{{ $c->id }}" @selected($cliente && $cliente->id === $c->id)>{{ $c->nombre_comercial }}</option>
                     @endforeach
                 </select>
             @endif
@@ -61,6 +62,7 @@
         @else
             <div class="metricas__acciones">
                 <button type="button" class="btn btn--primary" data-metrica-nueva data-cliente-id="{{ $cliente->id }}">Nueva métrica</button>
+                <button type="button" class="btn" data-metrica-catalogo-abrir>Agregar del catálogo</button>
                 <a class="btn" href="{{ route('admin.metricas.index', ['cliente' => $cliente->id, 'mes' => $mesValor, 'copiar' => 1]) }}" data-metricas-copiar>Copiar mes anterior</a>
             </div>
 
@@ -80,7 +82,13 @@
                             $unidad = $m->unidad ? ' '.$m->unidad : '';
                         @endphp
                         <tr data-metrica-fila="{{ $m->id }}" data-semaforo="{{ $fila['semaforo'] }}">
-                            <td>{{ $m->nombre }} <small>({{ $m->sentido->label() }})</small></td>
+                            <td>{{ $m->nombre }} <small>({{ $m->sentido->label() }} · {{ $fuentes[$m->fuente ?? 'manual'] ?? $m->fuente }})</small>
+                                {{-- Solo con valor capturado: sin valor es "sin dato", nunca antiguo. La edad cuenta desde que cerró el periodo, no desde la edición. --}}
+                                @if ($fila['valor'] !== null)
+                                    <x-dato-fecha :fuente="($fuentes[$m->fuente ?? 'manual'] ?? $m->fuente).($fila['capturado_por'] ? ' · capturó '.$fila['capturado_por'] : '')"
+                                        :fecha="\App\Support\Calidad\Antiguedad::finDeMes((int) $mes->month, (int) $mes->year)" :texto="'periodo '.$mes->format('m/Y')" />
+                                @endif
+                            </td>
                             <td data-col="meta">{{ $m->meta === null ? '—' : $fmt($m->meta).$unidad }}</td>
                             <td>
                                 <input type="text" inputmode="decimal" class="input" name="valores[{{ $m->id }}]"
@@ -119,13 +127,14 @@
             </form>
 
             <h2>Definiciones</h2>
-            <x-data-table :headers="['Métrica', 'Unidad', 'Meta', 'Sentido', 'Amarillo desde', 'Estado', 'Acciones']" data-metricas-definiciones>
+            <x-data-table :headers="['Métrica', 'Unidad', 'Meta', 'Sentido', 'Fuente', 'Amarillo desde', 'Estado', 'Acciones']" data-metricas-definiciones>
                 @forelse ($definiciones as $d)
                     <tr data-definicion="{{ $d->id }}">
                         <td>{{ $d->nombre }}</td>
                         <td>{{ $d->unidad ?: '—' }}</td>
                         <td>{{ $fmt($d->meta) }}</td>
                         <td>{{ $d->sentido->label() }}</td>
+                        <td data-col="fuente">{{ $fuentes[$d->fuente ?? 'manual'] ?? $d->fuente }}</td>
                         <td>{{ $d->umbral_amarillo_pct }} %</td>
                         <td><x-badge :status="$d->activa ? 'activa' : 'pausada'" /></td>
                         <td>
@@ -136,6 +145,7 @@
                                     data-unidad="{{ $d->unidad }}"
                                     data-meta="{{ $d->meta }}"
                                     data-sentido="{{ $d->sentido->value }}"
+                                    data-fuente="{{ $d->fuente ?? 'manual' }}"
                                     data-umbral="{{ $d->umbral_amarillo_pct }}"
                                     data-orden="{{ $d->orden }}">Editar</button>
                             <form method="POST" action="{{ route('admin.metricas.definiciones.alternar', $d) }}" class="metricas__inline">
@@ -153,7 +163,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="table__empty">Sin definiciones todavía.</td></tr>
+                    <tr><td colspan="8" class="table__empty">Sin definiciones todavía.</td></tr>
                 @endforelse
             </x-data-table>
 
@@ -187,6 +197,14 @@
                         </select>
                     </div>
                     <div class="field">
+                        <label class="field__label" for="metrica_fuente">Fuente</label>
+                        <select class="select" id="metrica_fuente" name="fuente">
+                            @foreach ($fuentes as $clave => $etiqueta)
+                                <option value="{{ $clave }}">{{ $etiqueta }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="field">
                         <label class="field__label" for="metrica_umbral">Amarillo desde (% de la meta)</label>
                         <input type="number" class="input" id="metrica_umbral" name="umbral_amarillo_pct" min="1" max="100" value="80" required>
                     </div>
@@ -194,7 +212,44 @@
                         <label class="field__label" for="metrica_orden">Orden</label>
                         <input type="number" class="input" id="metrica_orden" name="orden" min="0" max="65535" placeholder="Automático">
                     </div>
-                    <button type="submit" class="btn btn--primary">Guardar métrica</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">Guardar métrica</button>
+                        <button type="button" class="btn btn--secondary" data-modal-close="metricaModal">Cancelar</button>
+                    </div>
+                </form>
+            </x-modal>
+
+            {{-- Catálogo estándar: crea las métricas elegidas sin meta (la fija el usuario) y salta las que ya existen. --}}
+            @php
+                $yaAgregadas = $definiciones->pluck('metrica_estandar')->filter()->all();
+            @endphp
+            <x-modal id="metricaCatalogoModal">
+                <x-slot:header><h2>Agregar del catálogo</h2></x-slot:header>
+                <form method="POST" action="{{ route('admin.metricas.definiciones.catalogo') }}" data-metrica-catalogo-form>
+                    @csrf
+                    <input type="hidden" name="cliente_id" value="{{ $cliente->id }}">
+                    <input type="hidden" name="mes" value="{{ $mesValor }}">
+                    <p class="field__hint">Se crean con su unidad, sentido y fuente típica, sin meta. Las que ya tiene el cliente aparecen marcadas y no se duplican.</p>
+                    <div class="metricas__catalogo">
+                        @foreach (\App\Support\Metricas\Catalogo::todos() as $clave => $entrada)
+                            @php
+                                $ya = in_array($clave, $yaAgregadas, true);
+                            @endphp
+                            <label class="metricas__catalogo-item" data-catalogo-clave="{{ $clave }}">
+                                <input type="checkbox" name="claves[]" value="{{ $clave }}" @disabled($ya) @checked($ya)>
+                                <span>
+                                    <strong>{{ $entrada['nombre'] }}</strong>
+                                    <small>({{ $entrada['unidad'] }} · {{ \App\Enums\SentidoMetrica::from($entrada['sentido'])->label() }} · {{ $fuentes[$entrada['fuente_tipica']] }})</small>
+                                    @if ($ya) <em>Ya agregada</em> @endif
+                                    <br><small>{{ $entrada['descripcion'] }}</small>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">Agregar seleccionadas</button>
+                        <button type="button" class="btn btn--secondary" data-modal-close="metricaCatalogoModal">Cancelar</button>
+                    </div>
                 </form>
             </x-modal>
         @endif

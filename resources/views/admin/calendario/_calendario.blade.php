@@ -23,6 +23,9 @@
         </div>
         @endunless
 
+        {{-- También incrustado en Inicio: el filtro nunca debe ser silencioso. --}}
+        <x-cliente-activo-aviso :cliente="$clienteActivo ?? null" nota="Los eventos sin cliente (de la agencia) se muestran siempre." />
+
         <div class="cal-barra">
             <div class="cal-nav">
                 <button type="button" class="btn btn--icon" aria-label="Mes anterior" data-cal-anterior><i class="fa-solid fa-chevron-left"></i></button>
@@ -77,7 +80,7 @@
                         <select class="select" id="cal-cliente" name="cliente_id">
                             <option value="">Sin cliente</option>
                             @foreach ($clientes as $c)
-                                <option value="{{ $c->id }}">{{ $c->nombre }}</option>
+                                <option value="{{ $c->id }}">{{ $c->nombre_comercial }}</option>
                             @endforeach
                         </select>
                     </div>

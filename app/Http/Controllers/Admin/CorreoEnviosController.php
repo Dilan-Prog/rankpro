@@ -446,12 +446,12 @@ class CorreoEnviosController extends Controller
         $clientes = Cliente::where('estado', EstadoClienteServicio::Activo)
             ->whereNotNull('email')
             ->where('email', '!=', '')
-            ->orderBy('empresa')
-            ->orderBy('nombre')
+            ->ordenadoPorNombreComercial()
             ->get(['id', 'empresa', 'nombre', 'contacto_nombre', 'email'])
             ->map(fn (Cliente $c) => [
                 'id' => $c->id,
                 'empresa' => $c->empresa,
+                'nombre_comercial' => $c->nombre_comercial,
                 'nombre' => $c->nombre,
                 'contacto_nombre' => $c->contacto_nombre,
                 'email' => $c->email,

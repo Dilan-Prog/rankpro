@@ -10,7 +10,7 @@
             <h1 class="page-header__title">Dashboard General</h1>
             <p class="page-header__subtitle">{{ $periodoActual }} · Vista ejecutiva</p>
         </div>
-        <a class="btn btn--secondary" id="exportReportBtn" href="{{ route('admin.dashboard.exportar') }}">
+        <a class="btn btn--secondary" id="exportReportBtn" href="{{ route('admin.dashboard.exportar') }}" data-descarga>
             <i class="fa-solid fa-download"></i> Exportar reporte
         </a>
     </div>
@@ -18,8 +18,10 @@
     <div class="kpi-grid">
         @foreach ($kpis as $kpi)
             <x-stat-card :label="$kpi['label']" :value="$kpi['value']" :sub="$kpi['sub']"
-                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" :invertir="$kpi['invertir'] ?? false" />
+                :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" :invertir="$kpi['invertir'] ?? false" :fuente="$kpi['fuente'] ?? null" :tipo="$kpi['tipo'] ?? null" />
         @endforeach
+        <x-stat-card label="Ingresos por proyecto" :value="'$' . number_format($ingresosProyecto['total'])" :sub="$ingresosProyecto['proyectos'] . ' proyectos de pago único · no es MRR'"
+            icon="fa-diagram-project" color="blue" :href="route('admin.servicios.index')" fuente="Servicios (pago único)" tipo="calculado" />
     </div>
 
     <div class="grid-2 grid-2--wide-left dashboard__row" style="margin-bottom: var(--space-6);">

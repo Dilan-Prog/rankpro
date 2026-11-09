@@ -17,6 +17,8 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     {{-- ---------- KPIs (real, computed from tracking-pixel data) ---------- --}}
     <div class="kpi-grid">
         <x-stat-card label="Clientes Conectados" value="{{ $clientesConectados }}/{{ $clientesTotal }}" icon="fa-key" color="emerald" />

@@ -49,8 +49,19 @@ class FinanzasMetricsTest extends TestCase
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 7500]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'pausado', 'precio_mensual' => 20000]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'cancelado', 'precio_mensual' => 30000]);
+        // Activos pero de pago único / gratuitos: no son ingreso recurrente.
+        Servicio::factory()->unico()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 40000]);
+        Servicio::factory()->gratuito()->create(['cliente_id' => $cliente->id, 'estado' => 'activo']);
 
         $this->assertSame(12500.0, FinanzasMetrics::mrr());
+    }
+
+    public function test_mrr_no_excluye_servicios_con_fecha_fin_vencida(): void
+    {
+        $cliente = Cliente::factory()->create();
+        Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 1500, 'fecha_inicio' => now()->subYear(), 'fecha_fin' => now()->subMonth()]);
+
+        $this->assertSame(1500.0, FinanzasMetrics::mrr());
     }
 
     public function test_mrr_is_zero_when_no_active_servicios(): void
@@ -98,11 +109,38 @@ class FinanzasMetricsTest extends TestCase
         $periodo = FinanzasMetrics::periodoActual($now);
 
         $this->assertSame(3000.0, $periodo['cobrado']); // 1000 + 2000, pagado ingreso only
-        $this->assertSame(800.0, $periodo['pendiente']); // 500 + 300, pendiente + vencido ingreso
+        // Antes «pendiente» era solo el mes (800); ahora suma también lo impago de meses cerrados (mayo: 888888).
+        $this->assertSame(800.0, $periodo['pendiente_mes']); // 500 + 300, pendiente + vencido ingreso
+        $this->assertSame(888888.0, $periodo['vencido_anterior']);
+        $this->assertSame(889688.0, $periodo['pendiente']);
         $this->assertSame(900.0, $periodo['gastos']);
         $this->assertSame(3000.0 - 900.0, $periodo['utilidad']);
         $this->assertSame(2, $periodo['facturas_pagadas']);
+        $this->assertSame(2, $periodo['facturas_pendientes_mes']);
+        $this->assertSame(1, $periodo['facturas_vencidas_anterior']);
+        $this->assertSame(3, $periodo['facturas_pendientes']);
+    }
+
+    /** Escenario real de octubre/noviembre: el pendiente de septiembre debe seguir en «por cobrar» y el mes en curso no lo duplica. */
+    public function test_por_cobrar_incluye_el_pendiente_de_meses_anteriores_pero_no_de_meses_futuros(): void
+    {
+        $now = Carbon::create(2026, 11, 8);
+        $cliente = Cliente::factory()->create();
+
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pendiente', 'monto' => 1500, 'mes' => 9, 'anio' => 2026]);
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'vencido', 'monto' => 400, 'mes' => 12, 'anio' => 2025]); // año anterior
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pagado', 'monto' => 9000, 'mes' => 9, 'anio' => 2026]); // pagado: no es deuda
+        $this->finanza(['cliente_id' => $cliente->id, 'tipo' => 'gasto', 'estado' => 'pendiente', 'monto' => 777, 'mes' => 9, 'anio' => 2026]); // gasto: no es por cobrar
+        $this->finanza(['cliente_id' => $cliente->id, 'estado' => 'pendiente', 'monto' => 5000, 'mes' => 12, 'anio' => 2026]); // futuro
+
+        $periodo = FinanzasMetrics::periodoActual($now);
+
+        $this->assertSame(1900.0, $periodo['vencido_anterior']);
+        $this->assertSame(2, $periodo['facturas_vencidas_anterior']);
+        $this->assertSame(0.0, $periodo['pendiente_mes']);
+        $this->assertSame(1900.0, $periodo['pendiente']);
         $this->assertSame(2, $periodo['facturas_pendientes']);
+        $this->assertSame(0.0, $periodo['cobrado']); // cobrado sigue siendo del mes en curso
     }
 
     public function test_periodo_actual_is_all_zero_when_no_rows_match_the_period(): void

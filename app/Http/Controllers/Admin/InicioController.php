@@ -8,6 +8,7 @@ use App\Models\EventoCalendario;
 use App\Models\Tarea;
 use App\Models\User;
 use App\Support\Calendario\AgregadorEventos;
+use App\Support\Calidad\DatosDesactualizados;
 use App\Support\Inicio\AccesosRapidos;
 use App\Support\Inicio\ActividadReciente;
 use App\Support\ResumenAgencia;
@@ -53,6 +54,7 @@ class InicioController extends Controller
                 'kpis' => $usuario->tienePermiso('finanzas') ? $this->kpisVisibles($usuario, $ahora) : [],
                 'accesos' => AccesosRapidos::para($usuario),
                 'alertas' => ResumenAgencia::alertas($ahora, $usuario),
+                'datosAntiguos' => DatosDesactualizados::detectar($usuario),
                 'agenda' => $this->agendaDeHoy($usuario, $ahora),
                 'verTareas' => $verTareas,
                 'tareas' => $verTareas ? $this->tareasPendientes($usuario) : collect(),
@@ -131,7 +133,7 @@ class InicioController extends Controller
         $registro->update(['estado' => $datos['hecha'] ? EstadoTarea::Completada : EstadoTarea::Pendiente]);
 
         return response()->json([
-            'tarea' => MiEspacioController::serializar($registro->fresh('cliente:id,nombre')),
+            'tarea' => MiEspacioController::serializar($registro->fresh('cliente:id,nombre,empresa')),
             'progreso' => $this->progreso($request->user()),
         ]);
     }
@@ -186,7 +188,7 @@ class InicioController extends Controller
         $hoy = $ahora->clone()->startOfDay();
 
         $manuales = EventoCalendario::query()
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->whereDate('fecha', $hoy->toDateString())
             ->get()
             ->map(function (EventoCalendario $e) {
@@ -223,7 +225,7 @@ class InicioController extends Controller
         return Tarea::query()
             ->where('user_id', $usuario->id)
             ->where('estado', '!=', EstadoTarea::Completada->value)
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             // Lo que vence antes arriba; sin fecha al final, en el orden que el usuario le dio.
             ->orderByRaw('fecha_limite IS NULL')
             ->orderBy('fecha_limite')

@@ -6,7 +6,7 @@
 
 @section('content')
     @php
-        $nombreCliente = $cliente->empresa ?: $cliente->nombre;
+        $nombreCliente = $cliente->nombre_comercial;
         $pos = fn ($v) => $v === null ? '—' : '#'.$v;
     @endphp
     <div class="kwx">
@@ -29,8 +29,8 @@
     <div class="kwc-kpis">
         <x-stat-card label="Keywords" :value="$kpi['keywords']" sub="sin contar descartadas" icon="fa-key" color="primary" />
         <x-stat-card label="Listas" :value="$kpi['listas']" sub="de palabras clave" icon="fa-list" color="teal" />
-        <x-stat-card label="En top 10" :value="$kpi['top10']" sub="según la última medición" icon="fa-trophy" color="emerald" />
-        <x-stat-card label="Posición media" :value="$pos($kpi['posicion_media'])" sub="keywords con posición" icon="fa-bullseye" color="amber" />
+        <x-stat-card label="En top 10" :value="$kpi['top10']" sub="según la última medición" icon="fa-trophy" color="emerald" fuente="Mediciones de posición" :fecha="$ultimaMedicion" fecha-sin="Sin fecha de medición" />
+        <x-stat-card label="Posición media" :value="$pos($kpi['posicion_media'])" sub="keywords con posición" icon="fa-bullseye" color="amber" fuente="Mediciones de posición" :fecha="$ultimaMedicion" fecha-sin="Sin fecha de medición" />
     </div>
 
     <div class="card kwc-contacto">
@@ -52,7 +52,7 @@
                         <x-badge :status="$lista->estado->value" />
                     </div>
                     <p class="kwc-lista__meta">
-                        {{ $lista->canal ?: 'Sin canal' }} · {{ $lista->responsable?->name ?? 'Sin responsable' }} · actualizada {{ $lista->updated_at?->format('Y-m-d') ?? '—' }}
+                        {{ $lista->canal ?: 'Sin canal' }} · {{ $lista->responsable?->name ?? 'Sin responsable' }} · actualizada {{ fecha_mx($lista->updated_at) }}
                     </p>
                 </div>
                 <div class="kwx-cabecera__botones">

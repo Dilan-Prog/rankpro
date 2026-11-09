@@ -105,7 +105,7 @@ class Propuesta extends Model
             'folio' => $this->folio,
             'titulo' => $this->titulo,
             'cliente_id' => $this->cliente_id,
-            'cliente' => $this->cliente?->empresa ?: $this->cliente?->nombre,
+            'cliente' => $this->cliente?->nombre_comercial,
             'estado' => $this->estado->value,
             'estado_label' => $this->estado->label(),
             'precio_mensual' => $this->precio_mensual !== null ? (float) $this->precio_mensual : null,

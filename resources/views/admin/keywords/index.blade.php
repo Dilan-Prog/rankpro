@@ -307,7 +307,7 @@
                 <select class="select" name="lista_id" id="ki_lista_id" required>
                     <option value="">— Selecciona una lista —</option>
                     @foreach ($listas as $l)
-                        <option value="{{ $l['id'] }}">{{ $l['nombre'] }} ({{ $l['cliente'] }})</option>
+                        <option value="{{ $l['id'] }}">{{ $l['nombre'] }} ({{ $l['cliente_nombre_comercial'] }})</option>
                     @endforeach
                 </select>
                 <span class="field__error" data-error-for="lista_id"></span>

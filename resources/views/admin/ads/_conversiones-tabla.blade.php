@@ -17,7 +17,7 @@
             <tbody>
                 @foreach ($conversiones as $conversion)
                     <tr>
-                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $conversion->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($conversion->created_at, true) }}</td>
                         <td>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</td>
                         <td class="u-mono">{{ $conversion->valor ? '$'.number_format($conversion->valor, 2) : '—' }}</td>
                         <td><x-badge :status="$conversion->estado" /></td>

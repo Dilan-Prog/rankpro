@@ -84,7 +84,7 @@
                 <select class="select" id="desarrolloClienteFilter" style="min-width:200px;">
                     <option value="all">Todos los clientes</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
                     @endforeach
                 </select>
                 <select class="select" id="desarrolloEstadoFilter" style="min-width:160px;">
@@ -202,8 +202,8 @@
 
                     <div class="proyecto-card__footer">
                         <div style="display:flex; gap:12px; flex-wrap:wrap; color:var(--color-muted-foreground);">
-                            <span>Inicio: {{ $p['fecha_inicio'] ?? '—' }}</span>
-                            <span>Entrega estimada: {{ $p['fecha_entrega_estimada'] ?? '—' }}</span>
+                            <span>Inicio: {{ fecha_mx($p['fecha_inicio'] ?? null) }}</span>
+                            <span>Entrega estimada: {{ fecha_mx($p['fecha_entrega_estimada'] ?? null) }}</span>
                             @if ($p['url_repositorio'])
                                 <a href="{{ $p['url_repositorio'] }}" target="_blank" rel="noopener" style="color:var(--color-primary);"><i class="fa-solid fa-code-branch"></i> Repositorio</a>
                             @endif
@@ -279,8 +279,8 @@
                     <td><x-badge :status="$b['prioridad']" /></td>
                     <td><x-badge :status="$b['estado']" /></td>
                     <td>{{ $b['responsable_nombre'] ?? '—' }}</td>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $b['created_at'] }}</td>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $b['fecha_resolucion'] ?? '—' }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($b['created_at']) }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($b['fecha_resolucion'] ?? null) }}</td>
                     <td class="u-mono">{{ $b['dias_abierto'] ?? '—' }}</td>
                     <td>
                         <div style="display:flex; gap:4px;">
@@ -313,7 +313,7 @@
                         <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $p['cliente'] }}</div>
                     </div>
                     <div style="text-align:right;">
-                        <div class="u-mono" style="font-size:var(--text-sm);">{{ $p['fecha_entrega_estimada'] ?? 'Sin fecha' }}</div>
+                        <div class="u-mono" style="font-size:var(--text-sm);">{{ fecha_mx($p['fecha_entrega_estimada'] ?? null, false, 'Sin fecha') }}</div>
                         @if ($dias !== null)
                             @if ($dias < 0)
                                 <span class="badge badge--danger">Vencida ({{ abs($dias) }}d)</span>
@@ -342,7 +342,7 @@
                     <select class="select" name="cliente_id" id="pf_cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

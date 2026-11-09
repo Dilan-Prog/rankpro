@@ -30,7 +30,7 @@
                 <h1 class="page-header__title">Identidad de marca</h1>
                 <p class="page-header__subtitle">
                     @if ($cliente)
-                        {{ $cliente->empresa ?: $cliente->nombre }} · guía visual y de comunicación
+                        {{ $cliente->nombre_comercial }} · guía visual y de comunicación
                     @else
                         Guía visual y de comunicación de cada cliente.
                     @endif
@@ -61,7 +61,7 @@
                         <h2 class="identidad__titulo">Logo</h2>
                         <div class="identidad__logo">
                             @if ($identidad?->logo_ruta)
-                                <img src="{{ route('admin.identidad.logo') }}?v={{ $identidad->updated_at->timestamp }}" alt="Logo de {{ $cliente->empresa ?: $cliente->nombre }}" data-identidad-logo-img>
+                                <img src="{{ route('admin.identidad.logo') }}?v={{ $identidad->updated_at->timestamp }}" alt="Logo de {{ $cliente->nombre_comercial }}" data-identidad-logo-img>
                             @else
                                 <span class="identidad__logo-vacio" data-identidad-logo-vacio><i class="fa-regular fa-image"></i> Sin logo</span>
                             @endif

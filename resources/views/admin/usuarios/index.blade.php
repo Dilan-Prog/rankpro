@@ -82,7 +82,7 @@
                     </span>
                 </td>
                 <td><x-badge :status="$u['is_active'] ? 'activo' : 'inactivo'" /></td>
-                <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $u['last_login_at'] ?? 'Nunca' }}</span></td>
+                <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($u['last_login_at'] ?? null, true, 'Nunca') }}</span></td>
                 <td>
                     <div style="display:flex; gap:4px;">
                         <button type="button" class="btn--icon" title="Editar" data-edit-usuario="{{ $u['id'] }}">

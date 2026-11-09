@@ -25,7 +25,7 @@
             <a href="{{ route('admin.clientes.show', $cliente->id) }}" class="notif-panel__item">
                 <span class="notif-panel__dot notif-panel__dot--warning"></span>
                 <div>
-                    <div class="notif-panel__text">Renovación próxima: {{ $cliente->empresa ?: $cliente->nombre }}</div>
+                    <div class="notif-panel__text">Renovación próxima: {{ $cliente->nombre_comercial }}</div>
                     <div class="notif-panel__meta">{{ $cliente->fecha_renovacion_contrato->diffForHumans() }}</div>
                 </div>
             </a>

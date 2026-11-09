@@ -10,6 +10,11 @@ class AdsConversionObserver
 
     public function created(AdsConversion $conversion): void
     {
+        // Una repetida (doble clic) no es una conversión nueva para quien consume el webhook.
+        if ($conversion->esDuplicada()) {
+            return;
+        }
+
         webhook('conversion.registrada', [
             'conversion_id' => $conversion->id,
             'cliente_id' => $conversion->cliente_id,

@@ -99,7 +99,7 @@ class ReporteProgramacion extends Model
         return [
             'id' => $this->id,
             'cliente_id' => $this->cliente_id,
-            'cliente' => $this->cliente?->empresa ?: $this->cliente?->nombre,
+            'cliente' => $this->cliente?->nombre_comercial,
             'area' => $this->area->value,
             'area_label' => $this->area->label(),
             'plantilla_id' => $this->plantilla_id,

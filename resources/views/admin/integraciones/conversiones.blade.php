@@ -3,7 +3,7 @@
 @section('content')
     <div class="page-header">
         <div>
-            <h1 class="page-header__title">Conversiones — {{ $cliente->nombre }}</h1>
+            <h1 class="page-header__title">Conversiones — {{ $cliente->nombre_comercial }}</h1>
             <p class="page-header__subtitle">Formularios, WhatsApp, llamadas y compras vinculadas a clics de Google Ads</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
@@ -113,21 +113,33 @@
             </div>
         </form>
 
+        <div class="conv-resumen">
+            <span class="conv-chip conv-chip--ok"><i class="fa-solid fa-check"></i> {{ $resumenExportacion['exportables'] }} pendientes listas para Google Ads</span>
+            <span class="conv-chip conv-chip--aviso"><i class="fa-solid fa-tag"></i> {{ $resumenExportacion['sin_etapa'] }} sin etapa</span>
+            <span class="conv-chip conv-chip--error"><i class="fa-solid fa-ban"></i> {{ $resumenExportacion['sin_identificador'] }} sin identificador de clic (no exportables)</span>
+            @if ($resumenExportacion['duplicadas'] > 0)
+                <span class="conv-chip conv-chip--dup">{{ $resumenExportacion['duplicadas'] }} duplicadas fuera de la lista</span>
+            @endif
+        </div>
+
         {{-- Forms separados (no anidados dentro del de filtros — HTML no permite <form> anidados) que reenvían los mismos filtros vía inputs ocultos. --}}
         <div style="display:flex; gap: var(--space-2); margin-top: var(--space-3);">
-            <form method="POST" action="{{ route('admin.clientes.conversiones.exportar', $cliente) }}">
+            {{-- El CSV pasa las conversiones a «Exportada»: confirmación nativa (la gestiona descargas.js) y recarga para ver el nuevo estado. --}}
+            <form method="POST" action="{{ route('admin.clientes.conversiones.exportar', $cliente) }}"
+                  data-descarga data-descarga-recargar
+                  data-descarga-confirmar="Se exportarán {{ $resumenExportacion['exportables'] }} conversión(es) pendientes con etapa y click id y pasarán a &quot;Exportada&quot;. Se omiten {{ $resumenExportacion['sin_etapa'] }} sin etapa y {{ $resumenExportacion['sin_identificador'] }} sin identificador de clic (siguen pendientes). ¿Continuar?">
                 @csrf
                 @foreach (request()->query() as $key => $value)
                     @foreach ((array) $value as $v)
                         <input type="hidden" name="{{ $key }}{{ is_array($value) ? '[]' : '' }}" value="{{ $v }}">
                     @endforeach
                 @endforeach
-                <button type="submit" class="btn" style="background:var(--color-primary); color:#fff;" data-confirm="¿Exportar las conversiones pendientes que coinciden con estos filtros? Pasarán a estado &quot;Exportada&quot;.">
-                    <i class="fa-solid fa-file-csv"></i> Exportar CSV (pendientes, formato Google Ads)
+                <button type="submit" class="btn" style="background:var(--color-primary); color:#fff;" @disabled($resumenExportacion['exportables'] === 0)>
+                    <i class="fa-solid fa-file-csv"></i> Exportar CSV (clasificadas, formato Google Ads)
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('admin.clientes.conversiones.exportar-excel', $cliente) }}">
+            <form method="POST" action="{{ route('admin.clientes.conversiones.exportar-excel', $cliente) }}" data-descarga>
                 @csrf
                 @foreach (request()->query() as $key => $value)
                     @foreach ((array) $value as $v)
@@ -135,7 +147,7 @@
                     @endforeach
                 @endforeach
                 <button type="submit" class="btn btn--secondary">
-                    <i class="fa-solid fa-file-excel"></i> Exportar a Excel (con etapa)
+                    <i class="fa-solid fa-file-csv"></i> Exportar a CSV (con etapa)
                 </button>
             </form>
         </div>
@@ -150,15 +162,25 @@
         <x-data-table :headers="['Fecha', 'Tipo', 'Identificador', 'Campaña', 'Valor', 'Estado', 'Etapa del embudo']">
             @foreach ($conversiones as $conversion)
                 <tr>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $conversion->created_at->format('Y-m-d H:i') }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($conversion->created_at, true) }}</td>
                     <td>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</td>
                     <td>
                         @php $identificador = $conversion->gclid ?? $conversion->gbraid ?? $conversion->wbraid; @endphp
                         <span class="u-mono" style="font-size:var(--text-xs);" title="{{ $identificador }}">{{ $identificador ? \Illuminate\Support\Str::limit($identificador, 16) : '—' }}</span>
                     </td>
-                    <td>{{ $conversion->adsClic?->adsCampana?->nombre ?? '—' }}</td>
+                    <td>{{ $conversion->campanaNombre() ?? '—' }}</td>
                     <td class="u-mono">{{ $conversion->valor ? '$'.number_format($conversion->valor, 2).' '.$conversion->moneda : '—' }}</td>
-                    <td><x-badge :status="$conversion->estado" /></td>
+                    <td>
+                        <x-badge :status="$conversion->estado" />
+                        @php
+                            $motivo = $conversion->motivoNoExportable();
+                        @endphp
+                        @if ($motivo === 'sin_identificador')
+                            <span class="conv-chip conv-chip--error" title="Sin gclid, gbraid ni wbraid Google no puede atribuirla">No exportable: sin identificador</span>
+                        @elseif ($motivo === 'sin_etapa')
+                            <span class="conv-chip conv-chip--aviso">Falta clasificar</span>
+                        @endif
+                    </td>
                     <td>
                         <form method="POST" action="{{ route('admin.clientes.conversiones.etapa', ['cliente' => $cliente, 'conversion' => $conversion]) }}">
                             @csrf

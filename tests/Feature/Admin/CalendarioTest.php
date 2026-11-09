@@ -81,7 +81,7 @@ class CalendarioTest extends TestCase
             'cliente_id' => $cliente->id,
         ])->assertCreated()
             ->assertJsonPath('hora', '09:30')
-            ->assertJsonPath('cliente', $cliente->nombre)
+            ->assertJsonPath('cliente', $cliente->nombre_comercial)
             ->json('evento_id');
 
         $this->assertDatabaseHas('eventos_calendario', ['id' => $id, 'user_id' => $user->id, 'tipo' => 'entrega']);
@@ -267,7 +267,7 @@ class CalendarioTest extends TestCase
     public function test_agregador_alimenta_el_tipo_campana_desde_ads_y_seo(): void
     {
         $user = User::factory()->create(); // permisos apagados: ve todo
-        $cliente = Cliente::factory()->create(['nombre' => 'Acme']);
+        $cliente = Cliente::factory()->create(['nombre' => 'Acme', 'empresa' => null]);
 
         $ads = $this->campanaAds($cliente);
         AdsLanzamiento::create(['ads_campana_id' => $ads->id, 'ciclo' => 1, 'fecha_lanzamiento' => '2026-11-08']);

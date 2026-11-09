@@ -13,7 +13,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-header__title">{{ $campana->nombre }}</h1>
-            <p class="page-header__subtitle">{{ $campana->cliente->nombre }} · {{ \App\Support\Labels::plataforma($campana->plataforma) }}</p>
+            <p class="page-header__subtitle">{{ $campana->cliente->nombre_comercial }} · {{ \App\Support\Labels::plataforma($campana->plataforma) }}</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
             <a href="{{ route('admin.ads.index', ['editar' => $campana->id, 'plataforma' => $campana->plataforma]) }}" class="btn btn--secondary">
@@ -35,8 +35,25 @@
     <div class="kpi-grid">
         <x-stat-card label="Fase Actual" value="{{ \App\Support\Labels::faseAds($campana->fase_actual->value) }}" icon="fa-diagram-project" color="primary" />
         <x-stat-card label="Ciclo" value="{{ $campana->ciclo_actual }}" icon="fa-arrows-rotate" color="teal" />
-        <x-stat-card label="Presupuesto Mensual" value="${{ number_format($campana->presupuesto_mensual) }}" icon="fa-dollar-sign" color="amber" />
-        <x-stat-card label="ROAS Promedio" value="{{ $campana->metricas->count() ? round((float) $campana->metricas->avg('roas'), 2).'x' : '—' }}" icon="fa-chart-line" color="emerald" />
+        <x-stat-card label="Presupuesto Mensual" value="${{ number_format($campana->presupuesto_mensual, fmod((float) $campana->presupuesto_mensual, 1.0) === 0.0 ? 0 : 2) }} {{ $campana->moneda ?? 'MXN' }}" icon="fa-dollar-sign" color="amber" />
+        @php
+            // La edad del ROAS se cuenta desde el cierre del último mes capturado, no desde la edición de la fila.
+            $ultimaMetricaAds = $campana->metricas->sortByDesc(fn ($m) => $m->anio * 12 + $m->mes)->first();
+        @endphp
+        <x-stat-card label="ROAS Promedio" value="{{ $campana->metricas->count() ? round((float) $campana->metricas->avg('roas'), 2).'x' : '—' }}" icon="fa-chart-line" color="emerald"
+            fuente="Métricas mensuales de Ads" :fecha="$ultimaMetricaAds ? \App\Support\Calidad\Antiguedad::finDeMes((int) $ultimaMetricaAds->mes, (int) $ultimaMetricaAds->anio) : null"
+            :fecha-texto="$ultimaMetricaAds ? 'periodo '.sprintf('%02d/%d', $ultimaMetricaAds->mes, $ultimaMetricaAds->anio) : null" />
+    </div>
+
+    {{-- ---------- Datos de la plataforma (se editan desde "Editar") ---------- --}}
+    <div class="card card--padded" style="margin-top: var(--space-4);" data-campana-plataforma>
+        <h2 class="card__header-title">Plataforma</h2>
+        <dl style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin:0;">
+            <div><dt class="field__label">Plataforma</dt><dd style="margin:0;">{{ \App\Support\Labels::plataforma($campana->plataforma) }}</dd></div>
+            <div><dt class="field__label">ID de cuenta</dt><dd class="u-mono" style="margin:0;">{{ $campana->plataforma_cuenta_id ?: '—' }}</dd></div>
+            <div><dt class="field__label">ID de campaña</dt><dd class="u-mono" style="margin:0;">{{ $campana->plataforma_campana_id ?: '—' }}</dd></div>
+            <div><dt class="field__label">Moneda</dt><dd style="margin:0;">{{ $campana->moneda ?? 'MXN' }}</dd></div>
+        </dl>
     </div>
 
     {{-- ---------- Rastreador visual de fases ---------- --}}
@@ -69,7 +86,7 @@
             </div>
             <p style="color:var(--color-muted-foreground); font-size:var(--text-sm);">
                 Esta campaña se cerró
-                @if ($campana->reporteActual?->fecha_aprobacion) el {{ $campana->reporteActual->fecha_aprobacion->format('Y-m-d') }} @endif
+                @if ($campana->reporteActual?->fecha_aprobacion) el {{ fecha_mx($campana->reporteActual->fecha_aprobacion) }} @endif
                 después de {{ $campana->ciclo_actual }} {{ $campana->ciclo_actual === 1 ? 'ciclo' : 'ciclos' }}.
             </p>
             @if ($campana->reporteActual?->satisfaccion_cliente)
@@ -171,7 +188,7 @@
                         <td class="u-mono">{{ number_format($r->conversiones_total ?? 0) }}</td>
                         <td class="u-mono">{{ $r->roas_promedio ?? '—' }}</td>
                         <td>{{ $r->continua_campana ? 'Sí' : 'No' }}</td>
-                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $r->fecha_aprobacion?->format('Y-m-d') }}</td>
+                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($r->fecha_aprobacion) }}</td>
                     </tr>
                 @endforeach
             </x-data-table>

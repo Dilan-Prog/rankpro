@@ -20,6 +20,8 @@ class SeoFases
         return match ($fase) {
             FaseSeo::Auditoria => [
                 'seo_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+                // Opcional: si no se manda, el modelo la fija sola al cambiar el score.
+                'fecha_auditoria' => ['nullable', 'date', 'before_or_equal:today'],
                 'velocidad_mobile' => ['nullable', 'numeric', 'min:0', 'max:100'],
                 'velocidad_desktop' => ['nullable', 'numeric', 'min:0', 'max:100'],
                 'lcp_mobile' => ['nullable', 'numeric', 'min:0'],

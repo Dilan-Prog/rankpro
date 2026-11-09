@@ -30,6 +30,11 @@ class Serializador
     {
         $datos = method_exists($modelo, 'toRow') ? $modelo->toRow() : $modelo->toArray();
 
+        // Campo aditivo (no un $appends global): quien ya lee `nombre`/`empresa` no se entera.
+        if ($modelo instanceof Cliente) {
+            $datos['nombre_comercial'] = $modelo->nombre_comercial;
+        }
+
         foreach (self::OCULTOS[get_class($modelo)] ?? [] as $campo) {
             unset($datos[$campo]);
         }

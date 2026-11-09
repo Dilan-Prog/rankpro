@@ -34,7 +34,7 @@
     <footer>RankPro Solutions — Reporte Ejecutivo {{ $periodo }} — Página <span></span></footer>
 
     <div class="doc-title">Reporte Ejecutivo — {{ $periodo }}</div>
-    <div class="doc-meta">Fecha de emisión: {{ $fechaEmision }}</div>
+    <div class="doc-meta">Fecha de emisión: {{ fecha_mx($fechaEmision) }}</div>
 
     <div class="box">
         <h3>Resumen de KPIs</h3>

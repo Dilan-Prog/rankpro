@@ -20,7 +20,7 @@
                 <select class="select" name="cliente_id" id="documentoClienteSelect" required>
                     <option value="">— Selecciona un cliente —</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}" @selected((int) old('cliente_id') === $cliente->id)>{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected((int) old('cliente_id') === $cliente->id)>{{ $cliente->nombre_comercial }}</option>
                     @endforeach
                 </select>
                 @error('cliente_id')<span class="field__error">{{ $message }}</span>@enderror
@@ -34,7 +34,7 @@
                             <label class="checkbox-item">
                                 <input type="checkbox" name="servicios[]" value="{{ $servicio->id }}"
                                     @checked(in_array($servicio->id, old('servicios', [])))>
-                                {{ $servicio->nombre }} — ${{ number_format($servicio->precio_mensual) }}/mes
+                                {{ $servicio->nombre }} — {{ $servicio->etiquetaPrecio() }}
                             </label>
                         @empty
                             <p class="field__hint">Este cliente no tiene servicios registrados todavía.</p>

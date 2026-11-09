@@ -114,7 +114,7 @@ class CorreoAdjuntosController extends Controller
             'archivos' => $archivos->map(fn (Archivo $a) => [
                 'id' => $a->id,
                 'nombre' => $a->nombre,
-                'cliente' => $a->cliente?->empresa ?: $a->cliente?->nombre,
+                'cliente' => $a->cliente?->nombre_comercial,
                 'tipo_label' => Labels::tipoArchivo($a->tipo->value),
                 'tamano_legible' => $this->tamanoLegible((int) $a->tamano),
                 'extension' => $a->extension,

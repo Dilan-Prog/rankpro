@@ -30,7 +30,7 @@ class MiEspacioController extends Controller
 
         $tareas = Tarea::query()
             ->where('user_id', $request->user()->id)
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->orderBy('orden')
             ->orderBy('id')
             ->get()
@@ -41,7 +41,7 @@ class MiEspacioController extends Controller
             'pageTitle' => 'Mi espacio',
             'vista' => in_array($vista, self::VISTAS, true) ? $vista : 'tarjetas',
             'tareas' => $tareas,
-            'clientes' => Cliente::query()->orderBy('nombre')->get(['id', 'nombre']),
+            'clientes' => Cliente::query()->ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
             // La fecha «de hoy» la fija el servidor (zona de la app), no el reloj del navegador.
             'hoy' => now()->toDateString(),
         ]);
@@ -59,7 +59,7 @@ class MiEspacioController extends Controller
 
         $tarea = Tarea::create($datos + ['user_id' => $request->user()->id]);
 
-        return response()->json(self::serializar($tarea->load('cliente:id,nombre')), 201);
+        return response()->json(self::serializar($tarea->load('cliente:id,nombre,empresa')), 201);
     }
 
     public function update(Request $request, int $tarea): JsonResponse
@@ -67,7 +67,7 @@ class MiEspacioController extends Controller
         $tarea = $this->propia($request, $tarea);
         $tarea->update($this->validar($request, parcial: true));
 
-        return response()->json(self::serializar($tarea->fresh('cliente:id,nombre')));
+        return response()->json(self::serializar($tarea->fresh('cliente:id,nombre,empresa')));
     }
 
     /** Borrado suave: el toast «Deshacer» del front llama a `restaurar` durante unos segundos. */
@@ -87,7 +87,7 @@ class MiEspacioController extends Controller
         $registro = Tarea::withTrashed()->where('user_id', $request->user()->id)->findOrFail($tarea);
         $registro->restore();
 
-        return response()->json(self::serializar($registro->fresh('cliente:id,nombre')));
+        return response()->json(self::serializar($registro->fresh('cliente:id,nombre,empresa')));
     }
 
     /**
@@ -123,7 +123,7 @@ class MiEspacioController extends Controller
             }
         });
 
-        return response()->json(self::serializar($tarea->fresh('cliente:id,nombre')));
+        return response()->json(self::serializar($tarea->fresh('cliente:id,nombre,empresa')));
     }
 
     /** Tarea del usuario autenticado o 404. */
@@ -170,7 +170,7 @@ class MiEspacioController extends Controller
             'fecha_inicio' => $t->fecha_inicio?->toDateString(),
             'fecha_limite' => $t->fecha_limite?->toDateString(),
             'cliente_id' => $t->cliente_id,
-            'cliente' => $t->cliente?->nombre,
+            'cliente' => $t->cliente?->nombre_comercial,
             'orden' => (int) $t->orden,
         ];
     }

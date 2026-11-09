@@ -148,7 +148,8 @@ class ReportesTest extends TestCase
 
         $this->assertSame(EstadoReporte::Borrador, $reporte->estado);
         $this->assertSame($user->id, $reporte->creado_por);
-        $this->assertNull($reporte->numero);
+        // El folio nace con el borrador (ya no al generar el primer PDF); la fecha de emisión sigue vacía.
+        $this->assertMatchesRegularExpression('/^REP-SEO-\d{4}-0001$/', $reporte->numero);
         $this->assertNull($reporte->fecha_emision);
     }
 

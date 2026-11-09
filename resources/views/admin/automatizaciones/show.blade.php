@@ -13,7 +13,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-header__title">{{ $proyecto->nombre }}</h1>
-            <p class="page-header__subtitle">{{ $proyecto->cliente->nombre }}</p>
+            <p class="page-header__subtitle">{{ $proyecto->cliente->nombre_comercial }}</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
             <a href="{{ route('admin.automatizaciones.edit', $proyecto) }}" class="btn btn--secondary">
@@ -69,7 +69,7 @@
             </div>
             <p style="color:var(--color-muted-foreground); font-size:var(--text-sm);">
                 Este proyecto se cerró
-                @if ($proyecto->reporteActual?->fecha_aprobacion) el {{ $proyecto->reporteActual->fecha_aprobacion->format('Y-m-d') }} @endif
+                @if ($proyecto->reporteActual?->fecha_aprobacion) el {{ fecha_mx($proyecto->reporteActual->fecha_aprobacion) }} @endif
                 después de {{ $proyecto->ciclo_actual }} {{ $proyecto->ciclo_actual === 1 ? 'ciclo' : 'ciclos' }}.
             </p>
             @if ($proyecto->reporteActual?->satisfaccion_cliente)
@@ -117,7 +117,7 @@
                         <td class="u-mono">{{ $r->horas_ahorradas_mes ?? '—' }}</td>
                         <td class="u-mono">{{ number_format($r->mensajes_gestionados_mes ?? 0) }}</td>
                         <td>{{ $r->continua_proyecto ? 'Sí' : 'No' }}</td>
-                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $r->fecha_aprobacion?->format('Y-m-d') }}</td>
+                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($r->fecha_aprobacion) }}</td>
                     </tr>
                 @endforeach
             </x-data-table>

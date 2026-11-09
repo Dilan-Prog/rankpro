@@ -84,7 +84,7 @@ class TableroCliente
         $datos = self::analizar($mediciones, $totalKeywords);
         $datos['cliente'] = [
             'id' => $cliente->id,
-            'nombre' => $cliente->empresa ?: $cliente->nombre,
+            'nombre' => $cliente->nombre_comercial,
         ];
         $datos['tareas'] = $this->tareas($cliente);
         $datos['actividades_seo'] = $this->actividadesSeo($cliente);

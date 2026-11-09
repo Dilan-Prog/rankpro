@@ -90,6 +90,14 @@
         <x-stat-card id="kpiClics" label="Clics" value="{{ number_format($totalClics) }}" sub="CTR {{ number_format($totalCtr, 2) }}%" icon="fa-arrow-pointer" color="amber" />
         <x-stat-card id="kpiImpresiones" label="Impresiones" value="{{ $compact($totalImpresiones) }}" icon="fa-eye" color="red" />
     </div>
+    {{-- Una sola línea para todas las tarjetas: ads.js reescribe los valores al filtrar, y la fecha del último periodo no cambia con el filtro. --}}
+    @php
+        $periodoAds = $ultimoPeriodo ? \App\Support\Calidad\Antiguedad::finDeMes($ultimoPeriodo['mes'], $ultimoPeriodo['anio']) : null;
+        $textoPeriodoAds = $ultimoPeriodo ? 'último periodo '.sprintf('%02d/%d', $ultimoPeriodo['mes'], $ultimoPeriodo['anio']) : null;
+    @endphp
+    <p class="dato-fecha-linea" data-ads-fuente>
+        <x-dato-fecha fuente="Fuente: métricas mensuales de Ads (acumulado histórico)" :fecha="$periodoAds" :texto="$textoPeriodoAds" sin-fecha="Sin métricas mensuales capturadas" />
+    </p>
 
     {{-- ---------- Inversión vs Ingreso atribuido (Chart.js, one bar-pair per currently visible campaign) ---------- --}}
     <div class="card card--padded" style="margin-bottom: var(--space-6);">
@@ -123,7 +131,7 @@
                 <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ \App\Support\Labels::objetivo($c['objetivo']) }}</span></td>
                 <td><x-badge :status="$c['fase_actual']" /></td>
                 <td><x-badge :status="$c['estado']" /></td>
-                <td class="u-mono">${{ number_format($c['presupuesto_mensual']) }}</td>
+                <td class="u-mono">${{ number_format($c['presupuesto_mensual'], fmod((float) $c['presupuesto_mensual'], 1.0) === 0.0 ? 0 : 2) }} <small style="color:var(--color-muted-foreground);">{{ $c['moneda'] ?? 'MXN' }}</small></td>
                 <td class="u-mono">${{ number_format($c['inversion']) }}</td>
                 <td class="u-mono">{{ $compact($c['impresiones']) }}</td>
                 <td class="u-mono">{{ number_format($c['clics']) }}</td>
@@ -155,7 +163,7 @@
                     <select class="select" name="cliente_id" id="cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>
@@ -203,14 +211,39 @@
 
             <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
                 <div class="field">
-                    <label class="field__label" for="cf_presupuesto">Presupuesto mensual (MXN)</label>
-                    <input class="input" type="number" step="0.01" min="0" name="presupuesto_mensual" id="cf_presupuesto" value="0" required>
+                    <label class="field__label" for="cf_presupuesto">Presupuesto mensual</label>
+                    <input class="input" type="number" step="0.01" min="0.01" name="presupuesto_mensual" id="cf_presupuesto" placeholder="Ej. 5000" required>
                     <span class="field__error" data-error-for="presupuesto_mensual"></span>
                 </div>
                 <div class="field">
                     <label class="field__label" for="cf_fecha_inicio">Fecha de inicio</label>
                     <input class="input" type="date" name="fecha_inicio" id="cf_fecha_inicio">
                     <span class="field__error" data-error-for="fecha_inicio"></span>
+                </div>
+            </div>
+
+            {{-- Datos de la plataforma: enlazan la campaña con su cuenta real; todos opcionales. --}}
+            <h3 class="field__label" style="margin-top: var(--space-4);">Plataforma</h3>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-2);">
+                <div class="field">
+                    <label class="field__label" for="cf_moneda">Moneda del presupuesto</label>
+                    <select class="select" name="moneda" id="cf_moneda">
+                        <option value="MXN">MXN</option>
+                        <option value="USD">USD</option>
+                    </select>
+                    <span class="field__error" data-error-for="moneda"></span>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="cf_cuenta_id">ID de cuenta</label>
+                    <input class="input" type="text" name="plataforma_cuenta_id" id="cf_cuenta_id" maxlength="40" placeholder="123-456-7890" autocomplete="off">
+                    <span class="field__error" data-error-for="plataforma_cuenta_id"></span>
+                </div>
+            </div>
+            <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
+                <div class="field">
+                    <label class="field__label" for="cf_campana_id">ID de campaña</label>
+                    <input class="input" type="text" name="plataforma_campana_id" id="cf_campana_id" maxlength="40" autocomplete="off">
+                    <span class="field__error" data-error-for="plataforma_campana_id"></span>
                 </div>
             </div>
 

@@ -35,6 +35,7 @@
         @if ($aud?->seo_score !== null)
             <div class="seo-kpi__valor">{{ $aud->seo_score }}<span class="seo-kpi__unidad">/100</span></div>
             <p class="seo-kpi__sub">auditoría del ciclo {{ $campana->ciclo_actual }}</p>
+            <x-dato-fecha fuente="Auditoría SEO" :fecha="$aud->fecha_auditoria" tipo="auditoria" sin-fecha="Sin fecha de auditoría" />
         @else
             <div class="seo-kpi__valor seo-kpi__valor--vacio">—</div>
             <p class="seo-kpi__sub">Sin dato todavía</p>
@@ -49,6 +50,7 @@
         @if ($aud?->errores_tecnicos !== null)
             <div class="seo-kpi__valor">{{ number_format($aud->errores_tecnicos) }}</div>
             <p class="seo-kpi__sub">registrados en la auditoría</p>
+            <x-dato-fecha fuente="Auditoría SEO" :fecha="$aud->fecha_auditoria" tipo="auditoria" sin-fecha="Sin fecha de auditoría" />
         @else
             <div class="seo-kpi__valor seo-kpi__valor--vacio">—</div>
             <p class="seo-kpi__sub">Sin dato todavía</p>
@@ -63,6 +65,7 @@
         @if ($indexacionVerificada)
             <div class="seo-kpi__valor seo-kpi__valor--texto">{{ $aud->indexacion_ok ? 'Correcta' : 'Con problemas' }}</div>
             <p class="seo-kpi__sub">estado en Google, verificado en la auditoría</p>
+            <x-dato-fecha fuente="Auditoría SEO" :fecha="$aud->fecha_auditoria" tipo="auditoria" sin-fecha="Sin fecha de auditoría" />
         @else
             <div class="seo-kpi__valor seo-kpi__valor--vacio">—</div>
             <p class="seo-kpi__sub">Sin verificar todavía</p>
@@ -77,6 +80,7 @@
         @if ($hayCwv)
             <div class="seo-kpi__valor">{{ $aud->lcp_mobile !== null ? $num($aud->lcp_mobile).'s' : '—' }}<span class="seo-kpi__unidad"> LCP</span></div>
             <p class="seo-kpi__sub">móvil · CLS {{ $aud->cls_mobile !== null ? $num($aud->cls_mobile) : '—' }} · INP {{ $aud->inp_mobile !== null ? $num($aud->inp_mobile).' ms' : '—' }} · TTFB {{ $aud->ttfb_mobile !== null ? $num($aud->ttfb_mobile).' ms' : '—' }}</p>
+            <x-dato-fecha fuente="Auditoría SEO" :fecha="$aud->fecha_auditoria" tipo="auditoria" sin-fecha="Sin fecha de auditoría" />
         @else
             <div class="seo-kpi__valor seo-kpi__valor--vacio">—</div>
             <p class="seo-kpi__sub">Sin dato todavía</p>
@@ -128,13 +132,16 @@
 <div class="seo-duo">
     <section class="seo-panel-card" aria-labelledby="seoTraficoTitulo">
         <header class="seo-panel-card__head">
-            <h2 class="seo-panel-card__titulo" id="seoTraficoTitulo">Tráfico orgánico — {{ $campana->cliente->nombre }}</h2>
+            <h2 class="seo-panel-card__titulo" id="seoTraficoTitulo">Tráfico orgánico — {{ $campana->cliente->nombre_comercial }}</h2>
             @if ($serieTrafico && $serieTrafico['delta'])
                 @php $pct = $serieTrafico['delta']['pct']; @endphp
                 <span class="seo-delta {{ $pct > 0 ? 'seo-delta--sube' : ($pct < 0 ? 'seo-delta--baja' : '') }}">{{ $pct > 0 ? '+' : '' }}{{ $pct }}% vs {{ $serieTrafico['delta']['contra'] }}</span>
             @endif
         </header>
-        @include('admin.seo._grafica-trafico', ['serie' => $serieTrafico, 'cuenta' => $campana->cliente->nombre])
+        @if ($serieTrafico)
+            <x-dato-fecha fuente="Métricas mensuales SEO" :fecha="\App\Support\Calidad\Antiguedad::finDeMes($serieTrafico['ultimo']['mes'], $serieTrafico['ultimo']['anio'])" :texto="'último mes capturado '.sprintf('%02d/%d', $serieTrafico['ultimo']['mes'], $serieTrafico['ultimo']['anio'])" style="margin: 0 0 var(--space-3);" />
+        @endif
+        @include('admin.seo._grafica-trafico', ['serie' => $serieTrafico, 'cuenta' => $campana->cliente->nombre_comercial])
     </section>
 
     <section class="seo-panel-card" aria-labelledby="seoResumenTitulo">

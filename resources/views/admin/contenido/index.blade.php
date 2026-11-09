@@ -10,7 +10,7 @@
             <h1 class="page-header__title">Contenido</h1>
             <p class="page-header__subtitle">
                 @if ($cliente)
-                    Carpetas, documentos, tablas y archivos de {{ $cliente->empresa ?: $cliente->nombre }}
+                    Carpetas, documentos, tablas y archivos de {{ $cliente->nombre_comercial }}
                 @else
                     Material de trabajo organizado por cliente
                 @endif

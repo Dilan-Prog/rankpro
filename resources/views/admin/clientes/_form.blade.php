@@ -1,4 +1,4 @@
-{{-- Campos del modal crear/editar cliente (index.blade.php, #clientFormModal); estilo .form-moderno en clientes.css --}}
+{{-- Campos del modal de EDICIÓN de cliente (index.blade.php, #clientFormModal; el alta usa el asistente _asistente.blade.php); estilo .form-moderno en clientes.css --}}
 
 <div class="form-moderno__rejilla form-moderno__rejilla--2">
     <div class="form-moderno__campo">
@@ -10,6 +10,30 @@
         <label class="form-moderno__etiqueta" for="empresa">Empresa</label>
         <input class="form-moderno__control" type="text" name="empresa" id="empresa" value="{{ old('empresa', $cliente?->empresa ?? '') }}" placeholder="Ej. FashionMX" aria-describedby="error-empresa">
         <span class="form-moderno__error" id="error-empresa" data-error-for="empresa" role="alert">@error('empresa'){{ $message }}@enderror</span>
+    </div>
+</div>
+
+{{-- Giro, sitio y ciudad: opcionales. El sitio web es la fuente que precarga SEO, Search Console y reportes. --}}
+<div class="form-moderno__rejilla form-moderno__rejilla--3">
+    <div class="form-moderno__campo">
+        <label class="form-moderno__etiqueta" for="giro">Giro</label>
+        <select class="form-moderno__control form-moderno__control--select" name="giro" id="giro" aria-describedby="error-giro">
+            <option value="">Otro / sin especificar</option>
+            @foreach (\App\Support\Plantillas\Giros::etiquetas() as $clave => $etiqueta)
+                <option value="{{ $clave }}" @selected(old('giro', $cliente?->giro ?? '') === $clave)>{{ $etiqueta }}</option>
+            @endforeach
+        </select>
+        <span class="form-moderno__error" id="error-giro" data-error-for="giro" role="alert">@error('giro'){{ $message }}@enderror</span>
+    </div>
+    <div class="form-moderno__campo">
+        <label class="form-moderno__etiqueta" for="sitio_web">Sitio web</label>
+        <input class="form-moderno__control" type="text" name="sitio_web" id="sitio_web" value="{{ old('sitio_web', $cliente?->sitio_web ?? '') }}" placeholder="https://empresa.com" aria-describedby="error-sitio_web">
+        <span class="form-moderno__error" id="error-sitio_web" data-error-for="sitio_web" role="alert">@error('sitio_web'){{ $message }}@enderror</span>
+    </div>
+    <div class="form-moderno__campo">
+        <label class="form-moderno__etiqueta" for="ciudad">Ciudad</label>
+        <input class="form-moderno__control" type="text" name="ciudad" id="ciudad" value="{{ old('ciudad', $cliente?->ciudad ?? '') }}" placeholder="Ej. Aguascalientes" aria-describedby="error-ciudad">
+        <span class="form-moderno__error" id="error-ciudad" data-error-for="ciudad" role="alert">@error('ciudad'){{ $message }}@enderror</span>
     </div>
 </div>
 

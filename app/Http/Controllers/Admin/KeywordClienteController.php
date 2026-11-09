@@ -59,11 +59,16 @@ class KeywordClienteController extends Controller
             'posicion_media' => $conPosicion->isEmpty() ? null : round($conPosicion->avg('actual'), 1),
         ];
 
+        // Fecha de la última ronda medida (la del dato, no la de edición de la keyword); sin mediciones queda null.
+        $ultimaMedicion = $mediciones->flatten(1)->whereNotNull('posicion')->max('fecha');
+
         $porLista = $filas->groupBy(fn ($f) => $f['keyword']->lista_id ?? 0);
 
         return view('admin.keywords.cliente', [
+            'pageTitle' => 'Keywords — '.($cliente->nombre_comercial),
             'cliente' => $cliente,
             'kpi' => $kpi,
+            'ultimaMedicion' => $ultimaMedicion,
             'listas' => $listas,
             'filasPorLista' => $porLista,
             'sinLista' => $porLista->get(0, collect()),

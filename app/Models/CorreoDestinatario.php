@@ -62,7 +62,7 @@ class CorreoDestinatario extends Model
             'email' => $this->email,
             'nombre' => $this->nombre,
             'cliente_id' => $this->cliente_id,
-            'cliente' => $this->cliente?->empresa ?: $this->cliente?->nombre,
+            'cliente' => $this->cliente?->nombre_comercial,
             'estado' => $this->estado->value,
             'enviado_en' => $this->enviado_en?->format('Y-m-d H:i'),
             'error' => $this->error,

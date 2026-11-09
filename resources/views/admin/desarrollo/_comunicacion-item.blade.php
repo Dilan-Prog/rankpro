@@ -1,7 +1,7 @@
 <div class="comunicacion-item" data-comunicacion-id="{{ $comunicacion->id }}">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-3);">
         <div>
-            <div class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $comunicacion->fecha->format('Y-m-d') }}</div>
+            <div class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($comunicacion->fecha) }}</div>
             <p style="margin-top:4px; font-size:var(--text-sm);">{{ $comunicacion->resumen }}</p>
             @if ($comunicacion->aprobaciones)
                 <p style="margin-top:4px; font-size:var(--text-xs); color:var(--text-success);"><i class="fa-solid fa-circle-check"></i> {{ $comunicacion->aprobaciones }}</p>

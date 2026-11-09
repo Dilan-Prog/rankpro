@@ -5,6 +5,8 @@
  * this file only wires up the mobile menu, modal dismissal, and exposes
  * small shared helpers on window.AgencyOS used by module scripts.
  */
+import { iniciarDescargas } from "./lib/descargas.js";
+
 (function () {
   "use strict";
 
@@ -130,39 +132,30 @@
     window.addEventListener("pagehide", guardar);
   }
 
-  const SIDEBAR_GROUPS_KEY = "agencyos-sidebar-groups";
+  const SIDEBAR_GROUPS_KEY = "agencyos-sidebar-estado";
 
   /**
-   * Grupos del menú (General, Agencia, Marca…) desplegables. El estado inicial
+   * Grupos del menú (Hoy, Clientes, Cliente activo…) desplegables. El estado inicial
    * lo aplica un script en línea de components/sidebar.blade.php antes del
-   * primer pintado; aquí solo se cablea el clic y se guarda la lista de
-   * grupos cerrados. Los grupos que este usuario no ve (por permisos) se
-   * conservan en la lista para que reaparezcan cerrados si un rol cambia.
+   * primer pintado; aquí solo se cablea el clic y se guarda {grupo: "abierto"|"cerrado"}
+   * únicamente de lo que el usuario tocó: lo demás sigue su valor por defecto («Más» cerrado)
+   * y un grupo abierto a la fuerza por contener el enlace activo no se anota como preferencia.
    */
   function initSidebarGroups() {
     const grupos = Array.from(document.querySelectorAll(".sidebar__group"));
     if (!grupos.length) return;
 
-    const tocados = new Set();
-
-    function guardar() {
-      let previos = [];
+    function guardar(grupo, cerrado) {
+      let estado = {};
       try {
-        previos = JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_KEY) || "[]");
+        estado = JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_KEY) || "{}");
       } catch (e) {
-        previos = [];
+        estado = {};
       }
-      const presentes = grupos.map((g) => g.dataset.grupo);
-      // Un grupo abierto a la fuerza por contener el enlace activo (data-tiene-activo) no refleja la
-      // preferencia del usuario: se conserva lo guardado para no perder un «cerrado» deliberado.
-      // Si el usuario lo tocó en esta página, manda su gesto.
-      const forzados = grupos.filter((g) => g.hasAttribute("data-tiene-activo") && !tocados.has(g)).map((g) => g.dataset.grupo);
-      const cerrados = grupos
-        .filter((g) => (forzados.includes(g.dataset.grupo) ? previos.includes(g.dataset.grupo) : g.classList.contains("is-cerrado")))
-        .map((g) => g.dataset.grupo);
-      const ausentes = previos.filter((nombre) => !presentes.includes(nombre));
+      if (estado === null || typeof estado !== "object" || Array.isArray(estado)) estado = {};
+      estado[grupo.dataset.grupo] = cerrado ? "cerrado" : "abierto";
       try {
-        localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify([...ausentes, ...cerrados]));
+        localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(estado));
       } catch (e) {
         /* sin almacenamiento (modo privado): el menú funciona igual, solo no recuerda */
       }
@@ -173,10 +166,9 @@
       if (!toggle) return;
 
       toggle.addEventListener("click", () => {
-        tocados.add(grupo);
         const cerrado = grupo.classList.toggle("is-cerrado");
         toggle.setAttribute("aria-expanded", cerrado ? "false" : "true");
-        guardar();
+        guardar(grupo, cerrado);
       });
     });
   }
@@ -264,7 +256,7 @@
       let rowCount = 0;
 
       GROUPS.forEach((group) => {
-        const items = (index[group.key] || []).filter((item) => !q || item.label.toLowerCase().includes(q));
+        const items = (index[group.key] || []).filter((item) => !q || `${item.label} ${item.busqueda || ""}`.toLowerCase().includes(q));
         if (!items.length) return;
 
         const groupLabel = document.createElement("div");
@@ -642,6 +634,7 @@
     initDropdowns();
     initCommandPalette();
     initTablePagination();
+    iniciarDescargas();
     document.dispatchEvent(new CustomEvent("shell:ready"));
   });
 })();

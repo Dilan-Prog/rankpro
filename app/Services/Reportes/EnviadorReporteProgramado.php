@@ -26,6 +26,9 @@ use Throwable;
  * Manda por correo el reporte del mes anterior de una programación, reutilizando
  * PublicadorReporte (PDF) y EnviadorCorreo (envío con adjuntos): aquí solo se
  * pegan las dos piezas y se deja el resultado persistido en la programación.
+ *
+ * Para desarrollar o probar esto sin mandar correos reales usa `MAIL_MAILER=log` en el .env
+ * (el mensaje queda en storage/logs); en los tests el mailer ya es `array` (phpunit.xml).
  */
 class EnviadorReporteProgramado
 {
@@ -209,6 +212,8 @@ class EnviadorReporteProgramado
             'programacion_id' => $prog->id,
             'cliente_id' => $prog->cliente_id,
             'cliente' => $prog->cliente?->nombre,
+            // Campo aditivo: n8n sigue recibiendo `cliente` igual que antes.
+            'cliente_nombre_comercial' => $prog->cliente?->nombre_comercial,
             'area' => $prog->area->value,
             'reporte_id' => $reporte?->id,
             'periodo' => $periodo,
@@ -360,6 +365,8 @@ class EnviadorReporteProgramado
             'mes' => $this->mes($reporte->periodo_fin),
             'servicio' => $prog->area->label(),
             'responsable' => $responsable ?: (string) config('app.name'),
+            // Vacío si el reporte no tiene un enlace de solo lectura vigente (ver Variables::enlaceReporte).
+            'enlace_reporte' => Variables::enlaceReporte($reporte),
         ];
 
         // En el envío real las de persona las resuelve EnviadorCorreo por destinatario; aquí sirven a la prueba.

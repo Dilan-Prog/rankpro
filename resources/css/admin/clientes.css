@@ -356,3 +356,226 @@
   .modal--moderno__pie .form-moderno__boton { flex: 1; }
 }
 /* Fin del bloque FORMULARIO MODERNO */
+
+/* ==========================================================================
+   ASISTENTE DE ALTA DE CLIENTE + IMPORTACIÓN (clientes-asistente.js)
+   Reutiliza .form-moderno / .modal--moderno; solo tokens de global.css.
+   ========================================================================== */
+.page-header__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.modal--asistente {
+  max-width: 820px;
+}
+
+.form-moderno__ayuda {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  line-height: 1.5;
+}
+
+.asistente__progreso {
+  height: 4px;
+  background: var(--color-secondary);
+  flex-shrink: 0;
+}
+
+.asistente__barra {
+  height: 100%;
+  width: 25%;
+  background: var(--color-primary);
+  transition: width var(--transition-fast);
+}
+
+.asistente__pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 12px 32px 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.asistente__pasos li.is-activo {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.asistente__pasos li.is-hecho {
+  color: var(--color-foreground);
+}
+
+.asistente__paso {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.asistente__paso[hidden],
+.asistente__resultado[hidden],
+.asistente__paso [hidden] {
+  display: none;
+}
+
+.asistente__error {
+  margin: 0;
+}
+
+.asistente__plantilla,
+.asistente__rapido,
+.asistente__aviso {
+  padding: 14px 16px;
+  font-size: var(--text-sm);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.asistente__lista {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.asistente__servicios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Tipo, nombre, cobro, precio y quitar en una fila; en móvil se apilan. */
+.asistente__servicio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+@media (min-width: 720px) {
+  .asistente__servicio {
+    grid-template-columns: 130px minmax(0, 1.6fr) 130px 110px 40px;
+  }
+}
+
+.asistente__mrr {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  padding: 14px 16px;
+  background: var(--color-secondary);
+  border-radius: 12px;
+}
+
+.asistente__mrr > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.asistente__mrr-etiqueta {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.asistente__colores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.asistente__color {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+
+.asistente__color input[type="color"] {
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.asistente__subtitulo {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.asistente__conexiones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.asistente__conexion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px 14px;
+  font-size: var(--text-sm);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.asistente__conexion--apagada {
+  opacity: 0.7;
+}
+
+.asistente__conexion-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asistente__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  outline: none;
+}
+
+.asistente__enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.asistente__enlaces .form-moderno__boton {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.asistente__pie {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* «Alta rápida» a la izquierda, separada de la navegación. */
+.asistente__rapida-boton {
+  margin-right: auto;
+}
+
+.asistente__atajos {
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+@media (max-width: 639px) {
+  .asistente__pasos { padding: 12px 20px 0; }
+}

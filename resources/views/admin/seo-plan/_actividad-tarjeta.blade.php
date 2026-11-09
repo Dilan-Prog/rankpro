@@ -40,7 +40,7 @@
         <span>{{ $a->responsable?->name ?? 'Sin asignar' }}</span>
         <span class="u-mono">
             @if ($a->notas_count) <i class="fa-regular fa-note-sticky" title="Notas"></i> {{ $a->notas_count }} @endif
-            {{ $a->fecha_limite?->format('d/m/Y') ?? '' }}
+            {{ fecha_mx($a->fecha_limite, false, '') }}
         </span>
     </div>
 </article>

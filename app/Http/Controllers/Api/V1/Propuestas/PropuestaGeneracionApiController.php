@@ -51,7 +51,7 @@ class PropuestaGeneracionApiController
 
         $archivo = Archivo::create([
             'cliente_id' => $propuesta->cliente_id,
-            'nombre' => "Propuesta de Continuidad {$propuesta->folio} — {$propuesta->cliente->nombre}.pdf",
+            'nombre' => "Propuesta de Continuidad {$propuesta->folio} — {$propuesta->cliente->nombre_comercial}.pdf",
             'tipo' => TipoArchivo::Propuesta->value,
             'ruta_archivo' => $path,
             'tamano' => Storage::disk('local')->size($path),

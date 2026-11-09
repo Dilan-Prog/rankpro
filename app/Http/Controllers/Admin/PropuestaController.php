@@ -69,7 +69,7 @@ class PropuestaController extends Controller
             'pageTitle' => 'Propuestas de Continuidad',
             'clienteActivo' => $clienteActivo,
             'propuestas' => $propuestas->map(fn (Propuesta $p) => $p->toRow())->values(),
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre', 'empresa']),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
             'campanasPorCliente' => $campanasPorCliente,
             'kpis' => [
                 'total' => $propuestas->count(),

@@ -54,6 +54,11 @@ class SeoFaseController extends Controller
             $data[$field] = $request->boolean($field);
         }
 
+        // Una fecha vacía en el autoguardado no debe borrar la que fijó el modelo al cambiar el score.
+        if (($data['fecha_auditoria'] ?? null) === null) {
+            unset($data['fecha_auditoria']);
+        }
+
         $registro->update($data);
         $this->maquina->revocarAprobacionSiIncompleta($registro, $fase);
 
@@ -75,6 +80,7 @@ class SeoFaseController extends Controller
         return response()->json([
             'checklist' => $registro->fresh()->checklist,
             'tecnico_checklist' => $auditoria->fresh()->tecnico_checklist,
+            'fecha_auditoria' => $auditoria->fresh()->fecha_auditoria?->format('Y-m-d'),
             'completo' => $this->maquina->checklistCompleto($registro->fresh(), $fase),
         ]);
     }

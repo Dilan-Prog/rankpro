@@ -9,6 +9,35 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <span class="topbar__title">{{ $title }}</span>
+        @php
+            // Visible en toda página: antes solo estaba en el grupo «Marca» del menú, que se puede colapsar.
+            $clienteActivoTop = \App\Support\ClienteActivo::modelo();
+            // Mismo criterio que el selector del menú (grupo Cliente activo): quien no ve esa sección no debe recibir la lista de clientes.
+            $verSelectorCliente = array_key_exists(\App\Support\Navigation::GRUPO_CLIENTE_ACTIVO, \App\Support\Navigation::groups());
+        @endphp
+        @if ($verSelectorCliente)
+        <div class="topbar__cliente @if ($clienteActivoTop) is-activo @endif" data-cliente-activo-barra>
+            <form method="POST" action="{{ route('admin.cliente-activo') }}" class="topbar__cliente-form">
+                @csrf
+                <i class="fa-solid fa-user-tag topbar__cliente-icono" aria-hidden="true"></i>
+                <select name="cliente_id" class="topbar__cliente-select" aria-label="Cliente activo" title="Cliente activo" onchange="this.form.submit()">
+                    <option value="">Todos los clientes</option>
+                    @foreach (\App\Support\ClienteActivo::opciones() as $clienteOpcion)
+                        <option value="{{ $clienteOpcion->id }}" @selected($clienteActivoTop && $clienteOpcion->id === $clienteActivoTop->id)>{{ $clienteOpcion->nombre_comercial }}</option>
+                    @endforeach
+                </select>
+            </form>
+            @if ($clienteActivoTop)
+                <form method="POST" action="{{ route('admin.cliente-activo') }}">
+                    @csrf
+                    <input type="hidden" name="cliente_id" value="">
+                    <button type="submit" class="topbar__cliente-limpiar" title="Quitar el cliente activo">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i> Todos los clientes
+                    </button>
+                </form>
+            @endif
+        </div>
+        @endif
         <button type="button" class="command-palette-trigger" data-command-palette-trigger>
             <i class="fa-solid fa-magnifying-glass"></i>
             <span class="command-palette-trigger__label">Buscar</span>

@@ -6,6 +6,7 @@ use App\Enums\TipoArchivo;
 use App\Http\Controllers\Controller;
 use App\Models\Archivo;
 use App\Models\Cliente;
+use App\Support\ClienteActivo;
 use App\Support\Labels;
 use App\Support\Reglas\Archivos as ReglasArchivos;
 use Illuminate\Http\JsonResponse;
@@ -19,8 +20,9 @@ class ArchivosController extends Controller
 {
     public function index(Request $request): View
     {
-        $clientes = Cliente::withCount('archivos')->withSum('archivos', 'tamano')->orderBy('nombre')->get();
-        $clienteId = $request->integer('cliente') ?: $clientes->first()?->id;
+        $clientes = Cliente::withCount('archivos')->withSum('archivos', 'tamano')->ordenadoPorNombreComercial()->get();
+        // Archivos tiene su propio selector: el cliente activo del menú solo es el valor por defecto, no un filtro forzado.
+        $clienteId = $request->integer('cliente') ?: ClienteActivo::id() ?: $clientes->first()?->id;
 
         $archivosCliente = $clienteId
             ? Archivo::with('usuario')->where('cliente_id', $clienteId)->orderBy('created_at', 'desc')->get()
@@ -95,7 +97,7 @@ class ArchivosController extends Controller
     {
         return [
             'cliente_id' => $cliente->id,
-            'cliente' => $cliente->nombre,
+            'cliente' => $cliente->nombre_comercial,
             'estado' => $cliente->estado->value,
             'archivos_count' => (int) $cliente->archivos_count,
             'peso_mb' => round((float) ($cliente->archivos_sum_tamano ?? 0) / 1048576, 1),

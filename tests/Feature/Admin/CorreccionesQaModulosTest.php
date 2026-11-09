@@ -107,6 +107,8 @@ class CorreccionesQaModulosTest extends TestCase
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'estado' => 'activo', 'precio_mensual' => 1000]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'estado' => 'pausado', 'precio_mensual' => 700]);
         Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'estado' => 'cancelado', 'precio_mensual' => 500]);
+        Servicio::factory()->unico()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'estado' => 'activo', 'precio_mensual' => 6000]);
+        Servicio::factory()->gratuito()->create(['cliente_id' => $cliente->id, 'tipo' => 'seo', 'estado' => 'activo']);
 
         $fila = $this->get(route('admin.seo.index'))->viewData('clientes')->firstWhere('cliente_id', $cliente->id);
 

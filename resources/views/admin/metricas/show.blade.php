@@ -21,7 +21,7 @@
             <div>
                 <h1 class="page-header__title">{{ $metrica->nombre }}</h1>
                 <p class="page-header__subtitle">
-                    {{ $metrica->cliente->nombre }} · Meta: {{ $metrica->meta === null ? 'sin meta' : $fmt($metrica->meta).($metrica->unidad ? ' '.$metrica->unidad : '') }} · {{ $metrica->sentido->label() }}
+                    {{ $metrica->cliente->nombre_comercial }} · Meta: {{ $metrica->meta === null ? 'sin meta' : $fmt($metrica->meta).($metrica->unidad ? ' '.$metrica->unidad : '') }} · {{ $metrica->sentido->label() }}
                 </p>
             </div>
             <a class="btn" href="{{ route('admin.metricas.index', ['cliente' => $metrica->cliente_id, 'mes' => $fin->format('Y-m')]) }}">Volver</a>

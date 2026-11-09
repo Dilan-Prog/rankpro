@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\SeoCampana;
 use App\Models\User;
+use App\Support\Calidad\Antiguedad;
 use App\Support\ClienteActivo;
+use App\Support\FinanzasMetrics;
 use App\Support\Reglas\SeoCampanas as ReglasSeoCampanas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,12 @@ class SeoController extends Controller
         $scores = $clientes->pluck('seo_score')->filter(fn ($s) => $s !== null);
         $trafico = $clientes->pluck('trafico_actual')->filter(fn ($t) => $t !== null);
 
+        // Edad de las cifras: score = fecha de la auditoría (la más vieja manda; las sin fecha se cuentan aparte);
+        // tráfico = última edición del reporte (no hay fecha de captura propia), también la más vieja.
+        $conScore = $clientes->filter(fn ($c) => $c['seo_score'] !== null);
+        $fechasScore = $conScore->pluck('seo_score_fecha')->filter()->sort()->values();
+        $fechasTrafico = $clientes->filter(fn ($c) => $c['trafico_actual'] !== null)->pluck('trafico_fecha')->filter()->sort()->values();
+
         return view('admin.seo.index', [
             'pageTitle' => 'Módulo SEO',
             'clienteActivo' => $clienteActivo,
@@ -34,6 +42,9 @@ class SeoController extends Controller
             'campanasActivas' => $clientes->where('estado', 'activa')->count(),
             'scorePromedio' => $scores->isNotEmpty() ? round($scores->avg(), 1) : null,
             'traficoTotal' => (int) $trafico->sum(),
+            'scoreFecha' => $fechasScore->first(),
+            'scoreSinFecha' => $conScore->count() - $fechasScore->count(),
+            'traficoFecha' => $fechasTrafico->first(),
         ]);
     }
 
@@ -132,7 +143,7 @@ class SeoController extends Controller
                 'servicios' => fn ($q) => $q->where('tipo', 'seo')->with('responsable'),
                 'seoCampanas' => fn ($q) => $q->latest('created_at')->with('faseAuditoria', 'reporteActual'),
             ])
-            ->orderBy('nombre')
+            ->ordenadoPorNombreComercial()
             ->get()
             ->map(fn (Cliente $cliente) => $this->toClienteRow($cliente));
     }
@@ -204,7 +215,8 @@ class SeoController extends Controller
             $delta = ['pct' => round((($porMes[$fin] - $previo) / $previo) * 100), 'contra' => $completos[($fin - 1) % 12]];
         }
 
-        return ['meses' => $meses, 'delta' => $delta];
+        // El último mes con dato fija la edad de la gráfica (se cuenta desde que ese mes cerró).
+        return ['meses' => $meses, 'delta' => $delta, 'ultimo' => ['mes' => ($fin % 12) + 1, 'anio' => intdiv($fin, 12)]];
     }
 
     /**
@@ -223,11 +235,11 @@ class SeoController extends Controller
 
         return [
             'cliente_id' => $cliente->id,
-            'cliente' => $cliente->nombre,
+            'cliente' => $cliente->nombre_comercial,
             'contacto' => $cliente->contacto_nombre,
             'responsable' => $cliente->servicios->pluck('responsable.name')->filter()->first(),
-            // Solo servicios activos (igual que Clientes y Ads): un servicio pausado o cancelado ya no es ingreso recurrente.
-            'mrr' => (float) $cliente->servicios->filter(fn ($s) => $s->estado === \App\Enums\EstadoClienteServicio::Activo)->sum('precio_mensual'),
+            // Fuente única del MRR: solo activos de cobro mensual (un pausado, único o gratuito no es ingreso recurrente).
+            'mrr' => FinanzasMetrics::mrrDeServicios($cliente->servicios),
             'servicios_seo' => $cliente->servicios->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre])->values(),
             'campana_id' => $campana?->id,
             'campana_nombre' => $campana?->nombre,
@@ -239,9 +251,32 @@ class SeoController extends Controller
             'fecha_inicio' => $campana?->fecha_inicio?->format('Y-m-d'),
             'notas' => $campana?->notas,
             'seo_score' => $campana?->faseAuditoria?->seo_score,
+            'seo_score_fecha' => $campana?->faseAuditoria?->fecha_auditoria?->format('Y-m-d'),
+            'seo_score_nota' => $this->notaScore($campana?->faseAuditoria),
+            'seo_score_antiguo' => $this->scoreAntiguo($campana?->faseAuditoria),
+            'trafico_fecha' => $campana?->reporteActual?->updated_at?->format('Y-m-d'),
             'trafico_actual' => $campana?->reporteActual?->trafico_actual,
             'show_url' => $campana ? route('admin.seo.show', $campana->id) : null,
         ];
+    }
+
+    /** Texto de la tarjeta: de dónde sale el score y de cuándo es (o que no se sabe). */
+    private function notaScore(?\App\Models\SeoFaseAuditoria $auditoria): ?string
+    {
+        if ($auditoria?->seo_score === null) {
+            return null;
+        }
+
+        $evaluacion = Antiguedad::evaluar($auditoria->fecha_auditoria, null, Antiguedad::TIPO_AUDITORIA);
+        $texto = 'Auditoría SEO · '.($auditoria->fecha_auditoria ? fecha_mx($auditoria->fecha_auditoria) : 'Sin fecha de auditoría');
+
+        return $evaluacion['estado'] === Antiguedad::ANTIGUO ? $texto.' · hace '.$evaluacion['dias'].' días' : $texto;
+    }
+
+    private function scoreAntiguo(?\App\Models\SeoFaseAuditoria $auditoria): bool
+    {
+        return $auditoria?->seo_score !== null
+            && Antiguedad::evaluar($auditoria->fecha_auditoria, null, Antiguedad::TIPO_AUDITORIA)['estado'] === Antiguedad::ANTIGUO;
     }
 
     private function validated(Request $request, bool $forUpdate): array

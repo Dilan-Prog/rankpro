@@ -328,3 +328,68 @@
   overflow-x: auto;
   white-space: pre;
 }
+
+/* ---------- Conversiones: duplicadas, exportabilidad y acciones en lote ---------- */
+.conv-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.conv-resumen__enlace {
+  margin-left: auto;
+  color: var(--color-primary);
+}
+
+.conv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.conv-resumen .conv-chip {
+  margin-left: 0;
+}
+
+.conv-chip--ok { background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.3); color: #22c55e; }
+.conv-chip--aviso { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); color: var(--color-warning); }
+.conv-chip--error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); color: #f87171; }
+.conv-chip--dup { background: var(--color-muted); border-color: var(--color-border, transparent); color: var(--color-muted-foreground); }
+
+.conv-fila--duplicada { opacity: 0.7; }
+
+.conv-check {
+  width: 32px;
+  text-align: center;
+}
+
+/* Barra de lote: pegajosa para no perder los botones al bajar por una lista larga. */
+.conv-lote {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--color-card, var(--color-muted));
+}
+
+.conv-lote__contador {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  min-width: 110px;
+}

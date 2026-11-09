@@ -19,6 +19,7 @@ enum TipoSeccion: string
     case Ficha = 'ficha';
     case Plan = 'plan';
     case Texto = 'texto';
+    case ResumenCliente = 'resumen_cliente';
 
     public function label(): string
     {
@@ -30,6 +31,7 @@ enum TipoSeccion: string
             self::Ficha => 'Fichas por URL',
             self::Plan => 'Plan de acción',
             self::Texto => 'Texto',
+            self::ResumenCliente => 'Resumen para el cliente',
         };
     }
 

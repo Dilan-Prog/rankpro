@@ -21,6 +21,8 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" nota="La conexión con Google es de toda la agencia; solo se filtran las propiedades por cliente." />
+
     @if (session('status'))
         <div class="form-status" data-gsc-aviso="ok"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
@@ -125,13 +127,13 @@
                     $propiedad = $propiedades->get($cliente->id);
                 @endphp
                 <tr data-gsc-fila="{{ $cliente->id }}" @if ($propiedad) data-propiedad-id="{{ $propiedad->id }}" @endif>
-                    <td>{{ $cliente->nombre }}</td>
+                    <td>{{ $cliente->nombre_comercial }}</td>
                     <td>
                         <form method="POST" action="{{ route('admin.integraciones.search-console.propiedad.guardar', $cliente) }}" class="gsc-form-propiedad">
                             @csrf
                             @method('PUT')
                             <input class="input u-mono" type="text" name="site_url" list="gsc_propiedades_detectadas" maxlength="255"
-                                   placeholder="https://dominio.com/ o sc-domain:dominio.com" value="{{ $propiedad?->site_url }}" required aria-label="Propiedad de {{ $cliente->nombre }}">
+                                   placeholder="https://dominio.com/ o sc-domain:dominio.com" value="{{ $propiedad?->site_url }}" required aria-label="Propiedad de {{ $cliente->nombre_comercial }}">
                             <input type="hidden" name="activa" value="0">
                             <label class="checkbox-item"><input type="checkbox" name="activa" value="1" @checked($propiedad?->activa ?? true)> Activa</label>
                             <button type="submit" class="btn btn--secondary btn--sm">Guardar</button>

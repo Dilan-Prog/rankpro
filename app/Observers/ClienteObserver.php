@@ -10,7 +10,7 @@ class ClienteObserver
 
     public function created(Cliente $cliente): void
     {
-        webhook('cliente.creado', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre, 'empresa' => $cliente->empresa, 'email' => $cliente->email]);
+        webhook('cliente.creado', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre, 'nombre_comercial' => $cliente->nombre_comercial, 'empresa' => $cliente->empresa, 'email' => $cliente->email]);
     }
 
     public function updated(Cliente $cliente): void

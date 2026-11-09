@@ -167,4 +167,56 @@ class AdsTest extends TestCase
 
         $this->assertEquals(2, $campana->metricas()->count());
     }
+
+    public function test_store_guarda_y_devuelve_ids_de_plataforma_y_moneda(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['is_active' => true]), ['ads:escribir']);
+        $cliente = Cliente::factory()->create();
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'google_ads']);
+        $base = [
+            'cliente_id' => $cliente->id, 'servicio_id' => $servicio->id, 'nombre' => 'Con plataforma',
+            'plataforma' => 'google_ads', 'objetivo' => 'leads', 'presupuesto_mensual' => 3000,
+        ];
+
+        $this->postJson('/api/v1/ads/campanas', $base + [
+            'plataforma_cuenta_id' => '123-456-7890', 'plataforma_campana_id' => '987654321', 'moneda' => 'USD',
+        ])->assertStatus(201)
+            ->assertJsonPath('data.plataforma_cuenta_id', '123-456-7890')
+            ->assertJsonPath('data.plataforma_campana_id', '987654321')
+            ->assertJsonPath('data.moneda', 'USD');
+
+        // Sin los campos nuevos el contrato anterior sigue valiendo: moneda MXN e IDs null.
+        $this->postJson('/api/v1/ads/campanas', ['nombre' => 'Sin plataforma'] + $base)
+            ->assertStatus(201)->assertJsonPath('data.moneda', 'MXN')->assertJsonPath('data.plataforma_cuenta_id', null);
+    }
+
+    public function test_moneda_invalida_es_422(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['is_active' => true]), ['ads:escribir']);
+        $cliente = Cliente::factory()->create();
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id, 'tipo' => 'google_ads']);
+
+        $this->postJson('/api/v1/ads/campanas', [
+            'cliente_id' => $cliente->id, 'servicio_id' => $servicio->id, 'nombre' => 'X', 'plataforma' => 'google_ads',
+            'objetivo' => 'leads', 'presupuesto_mensual' => 100, 'moneda' => 'EUR',
+        ])->assertStatus(422)->assertJsonValidationErrors('moneda');
+        $this->assertSame(0, AdsCampana::count());
+    }
+
+    public function test_update_y_show_devuelven_los_campos_de_plataforma(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['is_active' => true]), ['ads:leer', 'ads:escribir']);
+        $campana = $this->campana();
+
+        $this->putJson("/api/v1/ads/campanas/{$campana->id}", [
+            'cliente_id' => $campana->cliente_id, 'servicio_id' => $campana->servicio_id, 'nombre' => $campana->nombre,
+            'plataforma' => 'google_ads', 'objetivo' => 'leads', 'presupuesto_mensual' => 5000, 'estado' => 'activa',
+            'plataforma_cuenta_id' => '555-111-2222', 'plataforma_campana_id' => 'C-42', 'moneda' => 'USD',
+        ])->assertOk()->assertJsonPath('data.moneda', 'USD');
+
+        $this->getJson("/api/v1/ads/campanas/{$campana->id}")->assertOk()
+            ->assertJsonPath('data.plataforma_cuenta_id', '555-111-2222')
+            ->assertJsonPath('data.plataforma_campana_id', 'C-42')
+            ->assertJsonPath('data.moneda', 'USD');
+    }
 }

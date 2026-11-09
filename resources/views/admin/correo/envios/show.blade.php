@@ -97,7 +97,7 @@
                 <h3 class="card__header-title">Datos del envío</h3>
                 <dl class="correo-ficha">
                     <dt>Estado</dt><dd><x-badge :status="$estado" /></dd>
-                    <dt>{{ $fechaLabel }}</dt><dd class="u-mono">{{ $fechaValor ?? '—' }}</dd>
+                    <dt>{{ $fechaLabel }}</dt><dd class="u-mono">{{ fecha_mx($fechaValor, true) }}</dd>
                     <dt>Plantilla</dt>
                     <dd>
                         @if ($envio->plantilla && ! $envio->plantilla->trashed())
@@ -108,7 +108,7 @@
                     </dd>
                     <dt>Remitente</dt><dd class="u-mono">{{ $envio->remitente_nombre ?: config('mail.from.name') }} &lt;{{ $envio->remitente_email ?: config('mail.from.address') }}&gt;</dd>
                     <dt>Responsable</dt><dd>{{ $row['responsable'] ?? '—' }}</dd>
-                    <dt>Creado</dt><dd class="u-mono">{{ $envio->created_at?->format('Y-m-d H:i') }}</dd>
+                    <dt>Creado</dt><dd class="u-mono">{{ fecha_mx($envio->created_at, true) }}</dd>
                     @if ($editable)
                         {{-- El toast de "Enviar prueba" desaparece solo a los 3.5s y es
                              fácil perderlo; esto deja el resultado a la vista hasta la
@@ -241,7 +241,7 @@
                                         @foreach ($d['eventos'] as $ev)
                                             <li>
                                                 <i class="fa-solid {{ $ev['tipo'] === 'clic' ? 'fa-arrow-pointer' : 'fa-envelope-open' }}"></i>
-                                                <span class="u-mono">{{ $ev['fecha'] }}</span>
+                                                <span class="u-mono">{{ fecha_mx($ev['fecha'], true) }}</span>
                                                 @if ($ev['tipo'] === 'clic' && $ev['url'])
                                                     <a href="{{ $ev['url'] }}" target="_blank" rel="noopener noreferrer nofollow" title="{{ $ev['url'] }}">{{ \Illuminate\Support\Str::limit($ev['url'], 36) }}</a>
                                                 @else

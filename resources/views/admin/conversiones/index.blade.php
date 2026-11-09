@@ -8,6 +8,8 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
@@ -27,7 +29,7 @@
                 <select class="select" name="cliente_id" id="cliente_id" onchange="this.form.requestSubmit()">
                     <option value="">— Todos los clientes —</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}" @selected((string) request('cliente_id') === (string) $cliente->id)>{{ $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected((string) request('cliente_id') === (string) $cliente->id)>{{ $cliente->nombre_comercial }}</option>
                     @endforeach
                 </select>
                 <span class="field__hint">Elige un cliente para poder filtrar también por etapa del embudo.</span>
@@ -35,7 +37,7 @@
 
             @if ($clienteSeleccionado)
                 <div class="field">
-                    <label class="field__label" for="ads_embudo_etapa_id">Etapa del embudo — {{ $clienteSeleccionado->nombre }}</label>
+                    <label class="field__label" for="ads_embudo_etapa_id">Etapa del embudo — {{ $clienteSeleccionado->nombre_comercial }}</label>
                     <select class="select" name="ads_embudo_etapa_id" id="ads_embudo_etapa_id">
                         <option value="">— Todas —</option>
                         <option value="sin_clasificar" @selected(request('ads_embudo_etapa_id') === 'sin_clasificar')>Sin clasificar</option>
@@ -86,7 +88,7 @@
             </div>
         </form>
 
-        <form method="POST" action="{{ route('admin.conversiones.exportar-excel') }}" style="margin-top: var(--space-3);">
+        <form method="POST" action="{{ route('admin.conversiones.exportar-excel') }}" style="margin-top: var(--space-3);" data-descarga>
             @csrf
             @foreach (request()->query() as $key => $value)
                 @foreach ((array) $value as $v)
@@ -94,11 +96,50 @@
                 @endforeach
             @endforeach
             <button type="submit" class="btn btn--secondary">
-                <i class="fa-solid fa-file-excel"></i> Exportar a Excel
+                <i class="fa-solid fa-file-csv"></i> Exportar a CSV
             </button>
         </form>
         </div>
     </details>
+
+    {{-- Estado de la lista: qué se puede subir a Google Ads y qué no (las 31 sin click id siguen visibles, marcadas). --}}
+    @php
+        $consultaSinPagina = request()->except('duplicadas', 'page');
+    @endphp
+    <div class="conv-resumen" data-conv-resumen>
+        @if ($verDuplicadas)
+            <span><strong>{{ $resumen['duplicadas'] }}</strong> marcadas como duplicadas (doble clic o repetidas a mano). No cuentan en la lista, el embudo ni los exportes.</span>
+            <a href="{{ route('admin.conversiones.index', $consultaSinPagina) }}" class="btn btn--secondary btn--sm"><i class="fa-solid fa-arrow-left"></i> Volver a la lista</a>
+        @else
+            <span><strong>{{ $resumen['total'] }}</strong> conversiones</span>
+            <span class="conv-chip conv-chip--ok" title="Tienen etapa y gclid, gbraid o wbraid, y no son duplicadas"><i class="fa-solid fa-check"></i> {{ $resumen['exportables'] }} listas para Google Ads</span>
+            <span class="conv-chip conv-chip--aviso" title="Tienen identificador de clic pero falta clasificarlas en una etapa"><i class="fa-solid fa-tag"></i> {{ $resumen['sin_etapa'] }} sin etapa</span>
+            <span class="conv-chip conv-chip--error" title="Sin gclid, gbraid ni wbraid Google no puede atribuirlas: no se exportan"><i class="fa-solid fa-ban"></i> {{ $resumen['sin_identificador'] }} sin identificador de clic (no exportables)</span>
+            <a href="{{ route('admin.conversiones.index', $consultaSinPagina + ['duplicadas' => 1]) }}" class="conv-resumen__enlace">Ver duplicadas ({{ $resumen['duplicadas'] }})</a>
+        @endif
+    </div>
+
+    {{-- Los checkboxes de la tabla se asocian a este formulario con form="conv-lote": enviar no depende de JS. --}}
+    <form method="POST" id="conv-lote" class="conv-lote" action="{{ route('admin.conversiones.lote.etapa') }}" data-conv-lote>
+        @csrf
+        <span class="conv-lote__contador" data-lote-contador aria-live="polite">0 seleccionadas</span>
+        @if (! $verDuplicadas)
+            @if ($clienteSeleccionado)
+                <select name="ads_embudo_etapa_id" class="select" data-lote-etapa aria-label="Etapa para las seleccionadas">
+                    <option value="">Elige una etapa…</option>
+                    @foreach ($etapas as $etapa)
+                        <option value="{{ $etapa->id }}">{{ $etapa->nombre }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="btn btn--primary btn--sm" data-lote-clasificar disabled><i class="fa-solid fa-tag"></i> Clasificar seleccionadas</button>
+                <button type="submit" name="quitar_etapa" value="1" class="btn btn--secondary btn--sm" data-lote-requiere disabled>Quitar etapa</button>
+            @else
+                <span class="field__hint">Filtra por un cliente para clasificar en lote (las etapas son de cada cliente).</span>
+            @endif
+            <button type="submit" formaction="{{ route('admin.conversiones.lote.duplicadas') }}" class="btn btn--secondary btn--sm" data-lote-requiere data-lote-min="2" disabled
+                    title="Se conserva la más antigua de la selección y las demás se marcan; se puede revertir"><i class="fa-regular fa-clone"></i> Marcar como duplicadas</button>
+        @endif
+    </form>
 
     @if ($conversiones->isEmpty())
         <div class="card empty-state">
@@ -113,6 +154,7 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th class="conv-check"><input type="checkbox" data-lote-todas aria-label="Seleccionar todas las de esta página" title="Seleccionar todas las de esta página"></th>
                         <th>Fecha</th>
                         <th>Cliente</th>
                         <th>Tipo</th>
@@ -139,17 +181,32 @@
                             $tipoId = $conversion->gclid ? 'Gclid' : ($conversion->gbraid ? 'Gbraid' : ($conversion->wbraid ? 'Wbraid' : null));
                             $identificador = $conversion->gclid ?? $conversion->gbraid ?? $conversion->wbraid;
                         @endphp
-                        <tr data-conversion-id="{{ $conversion->id }}">
-                            <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $conversion->created_at->format('Y-m-d H:i') }}</td>
-                            <td><a href="{{ route('admin.clientes.conversiones', $conversion->cliente) }}" style="color:var(--color-foreground);">{{ $conversion->cliente->nombre }}</a></td>
+                        <tr data-conversion-id="{{ $conversion->id }}" @class(['conv-fila--duplicada' => $conversion->esDuplicada()])>
+                            <td class="conv-check"><input type="checkbox" name="conversion_ids[]" value="{{ $conversion->id }}" form="conv-lote" data-lote-fila aria-label="Seleccionar la conversión {{ $conversion->id }}"></td>
+                            <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($conversion->created_at, true) }}</td>
+                            <td><a href="{{ route('admin.clientes.conversiones', $conversion->cliente) }}" style="color:var(--color-foreground);">{{ $conversion->cliente->nombre_comercial }}</a></td>
                             <td>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</td>
                             <td>{{ $tipoId ?? '—' }}</td>
                             <td>
                                 <span class="u-mono" style="font-size:var(--text-xs);" title="{{ $identificador }}">{{ $identificador ? \Illuminate\Support\Str::limit($identificador, 16) : '—' }}</span>
                             </td>
-                            <td>{{ $conversion->adsClic?->adsCampana?->nombre ?? '—' }}</td>
+                            <td>{{ $conversion->campanaNombre() ?? '—' }}</td>
                             <td class="u-mono" data-editable-cell data-field="valor" @if ($conversion->valor !== null) data-valor="{{ $conversion->valor }}" @endif>{{ $conversion->valor !== null ? number_format($conversion->valor, 2) : '—' }}</td>
-                            <td><x-badge :status="$conversion->estado" /></td>
+                            <td>
+                                <x-badge :status="$conversion->estado" />
+                                @php
+                                    $motivo = $conversion->motivoNoExportable();
+                                @endphp
+                                @if ($motivo === 'duplicada')
+                                    <span class="conv-chip conv-chip--dup" title="Se conserva la #{{ $conversion->duplicada_de_id }}">Duplicada de #{{ $conversion->duplicada_de_id }}</span>
+                                @elseif ($motivo === 'sin_identificador')
+                                    <span class="conv-chip conv-chip--error" title="Sin gclid, gbraid ni wbraid Google no puede atribuirla">No exportable: sin identificador</span>
+                                @elseif ($motivo === 'sin_etapa')
+                                    <span class="conv-chip conv-chip--aviso">Falta clasificar</span>
+                                @else
+                                    <span class="conv-chip conv-chip--ok">Lista para Google Ads</span>
+                                @endif
+                            </td>
                             <td>
                                 <form method="POST" action="{{ route('admin.conversiones.etapa', $conversion) }}">
                                     @csrf
@@ -164,7 +221,14 @@
                             @foreach ($columnas as $columna)
                                 <td data-editable-cell data-field="custom" data-columna-id="{{ $columna->id }}">{{ $conversion->datos_personalizados[$columna->id] ?? '—' }}</td>
                             @endforeach
-                            <td></td>
+                            <td>
+                                @if ($conversion->esDuplicada())
+                                    <form method="POST" action="{{ route('admin.conversiones.desmarcar-duplicada', $conversion) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn--secondary btn--sm" title="Devuelve la conversión a la lista">Quitar marca</button>
+                                    </form>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

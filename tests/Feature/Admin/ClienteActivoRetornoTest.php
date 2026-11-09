@@ -20,6 +20,9 @@ class ClienteActivoRetornoTest extends TestCase
 
         $cliente->delete();
 
+        // El cliente activo se memoiza por petición: el borrado ocurre entre una petición y la siguiente.
+        $this->app->instance('request', \Illuminate\Http\Request::create('/'));
+
         $this->assertNull(ClienteActivo::id());
         $this->assertNull(ClienteActivo::modelo());
         $this->assertNull(session(ClienteActivo::CLAVE));

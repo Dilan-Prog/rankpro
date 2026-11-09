@@ -3,6 +3,7 @@
 namespace App\Support\Reglas;
 
 use App\Enums\SentidoMetrica;
+use App\Support\Metricas\Catalogo;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,8 @@ class Metricas
             // min:0 porque con meta negativa meta*umbral > meta y el amarillo sería inalcanzable.
             'meta' => ['nullable', 'numeric', 'min:0', self::LIMITE],
             'sentido' => ['required', Rule::enum(SentidoMetrica::class)],
+            // Opcional: sin ella la métrica queda como 'manual' (default de la columna).
+            'fuente' => ['nullable', Rule::in(Catalogo::FUENTES)],
             'umbral_amarillo_pct' => ['required', 'integer', 'between:1,100'],
             'orden' => ['nullable', 'integer', 'between:0,65535'],
         ];

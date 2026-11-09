@@ -85,7 +85,7 @@ class ArchivosTest extends TestCase
     public function test_clientes_includes_clients_with_zero_archivos(): void
     {
         $user = User::factory()->create();
-        $cliente = Cliente::factory()->create(['nombre' => 'Cliente Sin Archivos']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Sin Archivos']);
 
         $response = $this->actingAs($user)->get(route('admin.archivos.index'));
 
@@ -99,8 +99,8 @@ class ArchivosTest extends TestCase
     public function test_client_picker_stats_do_not_leak_between_clients(): void
     {
         $user = User::factory()->create();
-        $clienteA = Cliente::factory()->create(['nombre' => 'Cliente A']);
-        $clienteB = Cliente::factory()->create(['nombre' => 'Cliente B']);
+        $clienteA = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente A']);
+        $clienteB = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente B']);
 
         $this->archivoConArchivoReal($clienteA, ['contenido' => str_repeat('a', 1048576)]);
         $this->archivoConArchivoReal($clienteA, ['contenido' => str_repeat('a', 1048576)]);
@@ -120,8 +120,8 @@ class ArchivosTest extends TestCase
     public function test_cliente_query_param_selects_that_client(): void
     {
         $user = User::factory()->create();
-        Cliente::factory()->create(['nombre' => 'AAA Cliente']);
-        $clienteB = Cliente::factory()->create(['nombre' => 'ZZZ Cliente']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'AAA Cliente']);
+        $clienteB = Cliente::factory()->create(['empresa' => null, 'nombre' => 'ZZZ Cliente']);
 
         $response = $this->actingAs($user)->get(route('admin.archivos.index', ['cliente' => $clienteB->id]));
 
@@ -131,8 +131,8 @@ class ArchivosTest extends TestCase
     public function test_omitting_cliente_param_defaults_to_alphabetically_first_client(): void
     {
         $user = User::factory()->create();
-        Cliente::factory()->create(['nombre' => 'Zeta Cliente']);
-        $clienteA = Cliente::factory()->create(['nombre' => 'Alfa Cliente']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'Zeta Cliente']);
+        $clienteA = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Alfa Cliente']);
 
         $response = $this->actingAs($user)->get(route('admin.archivos.index'));
 
@@ -208,8 +208,8 @@ class ArchivosTest extends TestCase
     public function test_kpis_are_scoped_to_selected_client_only(): void
     {
         $user = User::factory()->create();
-        $clienteA = Cliente::factory()->create(['nombre' => 'Cliente A KPI']);
-        $clienteB = Cliente::factory()->create(['nombre' => 'Cliente B KPI']);
+        $clienteA = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente A KPI']);
+        $clienteB = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente B KPI']);
 
         $this->archivoConArchivoReal($clienteA, ['tipo' => 'contrato', 'contenido' => str_repeat('a', 1048576)]);
         $this->archivoConArchivoReal($clienteB, ['tipo' => 'contrato', 'contenido' => str_repeat('a', 5242880)]);

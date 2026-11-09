@@ -5,7 +5,7 @@
         <select class="select" name="cliente_id" id="cliente_id" required>
             <option value="">— Selecciona un cliente —</option>
             @foreach ($clientes as $cliente)
-                <option value="{{ $cliente->id }}" @selected((int) old('cliente_id', $proyecto->cliente_id) === $cliente->id)>{{ $cliente->nombre }}</option>
+                <option value="{{ $cliente->id }}" @selected((int) old('cliente_id', $proyecto->cliente_id) === $cliente->id)>{{ $cliente->nombre_comercial }}</option>
             @endforeach
         </select>
         @error('cliente_id')<span class="field__error">{{ $message }}</span>@enderror

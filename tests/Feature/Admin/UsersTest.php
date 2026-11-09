@@ -165,7 +165,7 @@ class UsersTest extends TestCase
     {
         $this->actingAsUser();
         $responsable = User::factory()->create();
-        $cliente = Cliente::factory()->create(['nombre' => 'Cliente Asignado']);
+        $cliente = Cliente::factory()->create(['nombre' => 'Cliente Asignado', 'empresa' => null]);
         Servicio::factory()->create(['responsable_id' => $responsable->id, 'cliente_id' => $cliente->id]);
         // Second servicio, same responsable + same client — must not duplicate.
         Servicio::factory()->create(['responsable_id' => $responsable->id, 'cliente_id' => $cliente->id]);

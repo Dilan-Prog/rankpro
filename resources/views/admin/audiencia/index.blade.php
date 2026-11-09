@@ -19,7 +19,7 @@
                 <h1 class="page-header__title">Audiencia</h1>
                 <p class="page-header__subtitle">
                     @if ($cliente)
-                        {{ $cliente->empresa ?: $cliente->nombre }} · {{ $personas->count() }} {{ $personas->count() === 1 ? 'buyer persona' : 'buyer personas' }}
+                        {{ $cliente->nombre_comercial }} · {{ $personas->count() }} {{ $personas->count() === 1 ? 'buyer persona' : 'buyer personas' }}
                     @else
                         Buyer personas de cada cliente.
                     @endif

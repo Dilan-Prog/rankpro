@@ -62,7 +62,7 @@
                         <td><span class="blog-cluster">{{ $a['cluster_nombre'] }}</span></td>
                         <td><x-badge :status="$a['estado']" /></td>
                         <td><span class="blog-meta">{{ $a['autor'] }}</span></td>
-                        <td class="u-mono">{{ $a['fecha_publicacion'] ?? '—' }}</td>
+                        <td class="u-mono">{{ fecha_mx($a['fecha_publicacion'] ?? null) }}</td>
                         <td class="u-mono @if ($a['palabras'] < 1500) blog-palabras--corto @endif">{{ number_format($a['palabras']) }}</td>
                         <td>
                             @if (count($a['avisos']))

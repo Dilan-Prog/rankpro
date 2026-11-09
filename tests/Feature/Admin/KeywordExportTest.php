@@ -33,7 +33,7 @@ class KeywordExportTest extends TestCase
 
     public function test_exporta_las_keywords_de_una_lista_en_csv_utf8_con_bom(): void
     {
-        $cliente = Cliente::factory()->create(['nombre' => 'Clínica Peña']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Clínica Peña']);
         $lista = $this->lista($cliente);
         $otra = $this->lista($cliente, 'Otra lista');
         $this->keyword($cliente, $lista, 'diseño web en león', ['volumen_busqueda' => 320, 'posicion_actual' => 7]);

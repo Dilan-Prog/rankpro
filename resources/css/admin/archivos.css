@@ -216,3 +216,16 @@
   color: var(--color-muted-foreground);
   margin-top: 2px;
 }
+
+/* Móvil (<= 768 px): las tarjetas de cliente se apilan; una fila de 1400 px con scroll horizontal no se descubre ni se toca bien. */
+@media (max-width: 768px) {
+  .archivo-cliente-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .archivo-cliente-card {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}

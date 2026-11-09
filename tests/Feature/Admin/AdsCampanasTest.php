@@ -488,6 +488,9 @@ class AdsCampanasTest extends TestCase
         $user = User::factory()->create();
         $cliente = Cliente::factory()->create(['contacto_nombre' => 'Marta Pérez']);
         $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 4200]);
+        // Un pago único y un gratuito no son MRR: no deben sumarse a la cuenta.
+        Servicio::factory()->unico()->create(['cliente_id' => $cliente->id, 'estado' => 'activo', 'precio_mensual' => 30000]);
+        Servicio::factory()->gratuito()->create(['cliente_id' => $cliente->id, 'estado' => 'activo']);
         $campana = $this->campanaConFases($cliente, $servicio, ['nombre' => 'Con metricas']);
         $this->campanaConFases($cliente, $servicio, ['nombre' => 'Sin metricas']);
 
@@ -526,5 +529,121 @@ class AdsCampanasTest extends TestCase
         $this->assertNull($filas['Sin metricas']['inversion_mes']);
         $this->assertSame(5.0, $filas['Con metricas']['ctr']);
         $this->assertSame(1000.0, $filas['Con metricas']['inversion_mes']);
+    }
+
+    // --- campos de plataforma y moneda ---------------------------------------
+
+    private function payloadCampana(Cliente $cliente, Servicio $servicio, array $extra = []): array
+    {
+        return $extra + [
+            'cliente_id' => $cliente->id,
+            'servicio_id' => $servicio->id,
+            'nombre' => 'Campaña con plataforma',
+            'plataforma' => 'google_ads',
+            'objetivo' => 'leads',
+            'presupuesto_mensual' => 3000,
+        ];
+    }
+
+    public function test_store_guarda_y_devuelve_ids_de_plataforma_y_moneda(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id]);
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.ads.store'), $this->payloadCampana($cliente, $servicio, [
+                'plataforma_cuenta_id' => '123-456-7890',
+                'plataforma_campana_id' => '987654321',
+                'moneda' => 'USD',
+            ]))
+            ->assertCreated()
+            ->assertJsonPath('plataforma_cuenta_id', '123-456-7890')
+            ->assertJsonPath('plataforma_campana_id', '987654321')
+            ->assertJsonPath('moneda', 'USD');
+
+        $campana = AdsCampana::latest('id')->firstOrFail();
+        $this->assertSame('123-456-7890', $campana->plataforma_cuenta_id);
+        $this->assertSame('987654321', $campana->plataforma_campana_id);
+        $this->assertSame('USD', $campana->moneda);
+    }
+
+    public function test_store_sin_moneda_ni_ids_usa_mxn_y_null(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id]);
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.ads.store'), $this->payloadCampana($cliente, $servicio))
+            ->assertCreated()
+            ->assertJsonPath('moneda', 'MXN')
+            ->assertJsonPath('plataforma_cuenta_id', null);
+
+        $this->assertSame('MXN', AdsCampana::latest('id')->firstOrFail()->moneda);
+    }
+
+    public function test_moneda_invalida_o_ids_con_simbolos_son_422(): void
+    {
+        $cliente = Cliente::factory()->create();
+        $servicio = Servicio::factory()->create(['cliente_id' => $cliente->id]);
+        $usuario = User::factory()->create();
+
+        $this->actingAs($usuario)->postJson(route('admin.ads.store'), $this->payloadCampana($cliente, $servicio, ['moneda' => 'EUR']))
+            ->assertStatus(422)->assertJsonValidationErrors('moneda');
+        $this->actingAs($usuario)->postJson(route('admin.ads.store'), $this->payloadCampana($cliente, $servicio, ['plataforma_cuenta_id' => '123 456; DROP']))
+            ->assertStatus(422)->assertJsonValidationErrors('plataforma_cuenta_id');
+        $this->actingAs($usuario)->postJson(route('admin.ads.store'), $this->payloadCampana($cliente, $servicio, ['plataforma_campana_id' => str_repeat('1', 41)]))
+            ->assertStatus(422)->assertJsonValidationErrors('plataforma_campana_id');
+
+        $this->assertSame(0, AdsCampana::count());
+    }
+
+    public function test_update_cambia_ids_y_moneda_y_una_moneda_vacia_no_la_borra(): void
+    {
+        $campana = $this->campanaConFases(null, null, ['moneda' => 'USD']);
+        $datos = [
+            'cliente_id' => $campana->cliente_id,
+            'servicio_id' => $campana->servicio_id,
+            'nombre' => $campana->nombre,
+            'plataforma' => 'google_ads',
+            'objetivo' => 'ventas',
+            'presupuesto_mensual' => 5000,
+            'estado' => 'activa',
+            'plataforma_cuenta_id' => '555-111-2222',
+            'plataforma_campana_id' => 'C-42',
+        ];
+
+        $this->actingAs(User::factory()->create())
+            ->putJson(route('admin.ads.update', $campana), array_merge($datos, ['moneda' => '']))
+            ->assertOk()
+            ->assertJsonPath('plataforma_cuenta_id', '555-111-2222')
+            ->assertJsonPath('moneda', 'USD');
+
+        $campana->refresh();
+        $this->assertSame('C-42', $campana->plataforma_campana_id);
+        $this->assertSame('USD', $campana->moneda);
+
+        $this->actingAs(User::factory()->create())
+            ->putJson(route('admin.ads.update', $campana), array_merge($datos, ['moneda' => 'MXN', 'plataforma_cuenta_id' => '']))
+            ->assertOk();
+        $this->assertSame('MXN', $campana->fresh()->moneda);
+        $this->assertNull($campana->fresh()->plataforma_cuenta_id);
+    }
+
+    public function test_el_default_de_la_columna_moneda_es_mxn(): void
+    {
+        $this->assertSame('MXN', $this->campanaConFases()->moneda);
+    }
+
+    public function test_la_ficha_y_la_lista_muestran_plataforma_y_moneda(): void
+    {
+        $campana = $this->campanaConFases(null, null, [
+            'plataforma_cuenta_id' => '123-456-7890', 'plataforma_campana_id' => 'CAMP-77', 'moneda' => 'USD',
+        ]);
+        $usuario = User::factory()->create();
+
+        $this->actingAs($usuario)->get(route('admin.ads.show', $campana))
+            ->assertOk()->assertSee('123-456-7890')->assertSee('CAMP-77')->assertSee('5,000 USD');
+        $this->actingAs($usuario)->get(route('admin.ads.index'))
+            ->assertOk()->assertSee('name="plataforma_cuenta_id"', false)->assertSee('name="moneda"', false);
     }
 }

@@ -41,7 +41,7 @@
                     <td data-sort="{{ $p['estado'] }}"><x-badge :status="$p['estado']" /></td>
                     <td data-sort="{{ $p['fecha_entrega_estimada'] ?? '' }}">
                         @if ($p['fecha_entrega_estimada'])
-                            <span class="u-mono" style="font-size:var(--text-xs);">{{ $p['fecha_entrega_estimada'] }}</span>
+                            <span class="u-mono" style="font-size:var(--text-xs);">{{ fecha_mx($p['fecha_entrega_estimada']) }}</span>
                             @if ($dias !== null)
                                 @if ($dias < 0)
                                     <span class="badge badge--danger">Vencida ({{ abs($dias) }}d)</span>

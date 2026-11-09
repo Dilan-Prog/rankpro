@@ -15,7 +15,7 @@ class SearchConsoleApiController extends ControladorApi
     public function index(): JsonResponse
     {
         return Respuesta::coleccion(
-            GscPropiedad::query()->with('cliente:id,nombre')->orderBy('id')->get()->map(fn (GscPropiedad $p) => $p->toRow())->all()
+            GscPropiedad::query()->with('cliente:id,nombre,empresa')->orderBy('id')->get()->map(fn (GscPropiedad $p) => $p->toRow())->all()
         );
     }
 

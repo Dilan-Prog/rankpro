@@ -19,7 +19,7 @@
     </div>
     <div class="kanban__card-meta">
         <span>{{ $tarea->responsable ?? 'Sin responsable' }}</span>
-        <span class="u-mono">{{ $tarea->fecha_limite?->format('d/m/y') ?? '—' }}</span>
+        <span class="u-mono">{{ fecha_mx($tarea->fecha_limite) }}</span>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:4px; margin-top: var(--space-2);">
         <button type="button" class="btn--icon" title="Editar" data-edit-tarea="{{ $tarea->id }}">

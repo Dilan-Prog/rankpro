@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Archivo;
 use App\Models\Cliente;
+use App\Enums\TipoCobro;
 use App\Models\Servicio;
+use App\Support\FinanzasMetrics;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +22,7 @@ class DocumentosController extends Controller
     {
         return view('admin.archivos.contrato-create', [
             'pageTitle' => 'Generar Contrato',
-            'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(['id', 'nombre', 'empresa']),
+            'clientes' => Cliente::with('servicios')->ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
         ]);
     }
 
@@ -33,7 +35,8 @@ class DocumentosController extends Controller
             'numero' => 'VISTA PREVIA',
             'cliente' => $cliente,
             'servicios' => $servicios,
-            'totalMensual' => $servicios->sum('precio_mensual'),
+            'totalMensual' => FinanzasMetrics::mrrDeServicios($servicios),
+            'totalUnico' => $servicios->filter(fn ($s) => $s->tipo_cobro === TipoCobro::Unico)->sum('precio_mensual'),
             'fechaEmision' => now()->format('Y-m-d'),
             'fechaInicio' => $data['fecha_inicio'],
             'fechaFin' => $data['fecha_fin'] ?? null,
@@ -60,7 +63,8 @@ class DocumentosController extends Controller
             'numero' => $numero,
             'cliente' => $cliente,
             'servicios' => $servicios,
-            'totalMensual' => $servicios->sum('precio_mensual'),
+            'totalMensual' => FinanzasMetrics::mrrDeServicios($servicios),
+            'totalUnico' => $servicios->filter(fn ($s) => $s->tipo_cobro === TipoCobro::Unico)->sum('precio_mensual'),
             'fechaEmision' => now()->format('Y-m-d'),
             'fechaInicio' => $data['fecha_inicio'],
             'fechaFin' => $data['fecha_fin'] ?? null,
@@ -73,7 +77,7 @@ class DocumentosController extends Controller
 
         Archivo::create([
             'cliente_id' => $cliente->id,
-            'nombre' => "Contrato {$numero} — {$cliente->nombre}.pdf",
+            'nombre' => "Contrato {$numero} — {$cliente->nombre_comercial}.pdf",
             'tipo' => 'contrato',
             'ruta_archivo' => $path,
             'tamano' => Storage::disk('local')->size($path),
@@ -88,7 +92,7 @@ class DocumentosController extends Controller
     {
         return view('admin.archivos.propuesta-create', [
             'pageTitle' => 'Generar Propuesta',
-            'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(['id', 'nombre', 'empresa']),
+            'clientes' => Cliente::with('servicios')->ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
         ]);
     }
 
@@ -101,7 +105,8 @@ class DocumentosController extends Controller
             'numero' => 'VISTA PREVIA',
             'cliente' => $cliente,
             'servicios' => $servicios,
-            'totalMensual' => $servicios->sum('precio_mensual'),
+            'totalMensual' => FinanzasMetrics::mrrDeServicios($servicios),
+            'totalUnico' => $servicios->filter(fn ($s) => $s->tipo_cobro === TipoCobro::Unico)->sum('precio_mensual'),
             'fechaEmision' => now()->format('Y-m-d'),
             'validezDias' => $data['validez_dias'],
             'condiciones' => $data['condiciones'],
@@ -127,7 +132,8 @@ class DocumentosController extends Controller
             'numero' => $numero,
             'cliente' => $cliente,
             'servicios' => $servicios,
-            'totalMensual' => $servicios->sum('precio_mensual'),
+            'totalMensual' => FinanzasMetrics::mrrDeServicios($servicios),
+            'totalUnico' => $servicios->filter(fn ($s) => $s->tipo_cobro === TipoCobro::Unico)->sum('precio_mensual'),
             'fechaEmision' => now()->format('Y-m-d'),
             'validezDias' => $data['validez_dias'],
             'condiciones' => $data['condiciones'],
@@ -139,7 +145,7 @@ class DocumentosController extends Controller
 
         Archivo::create([
             'cliente_id' => $cliente->id,
-            'nombre' => "Propuesta {$numero} — {$cliente->nombre}.pdf",
+            'nombre' => "Propuesta {$numero} — {$cliente->nombre_comercial}.pdf",
             'tipo' => 'propuesta',
             'ruta_archivo' => $path,
             'tamano' => Storage::disk('local')->size($path),

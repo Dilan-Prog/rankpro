@@ -6,6 +6,7 @@
  * Checklist toggles, field autosave, and posiciones/backlinks CRUD all use
  * vanilla fetch() — no page reloads for those.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -174,6 +175,9 @@
         .then((data) => {
           if (!silent) showSaved();
           if (typeof data.completo === "boolean" && aprobarBtn) aprobarBtn.disabled = !data.completo;
+          // El servidor fija la fecha de auditoría al cambiar el score; reflejarla evita que el siguiente autoguardado mande el campo vacío.
+          const fechaAud = document.getElementById("fecha_auditoria");
+          if (fechaAud && data.fecha_auditoria) fechaAud.value = data.fecha_auditoria;
         })
         .catch(() => toast("No se pudo guardar el avance de la fase.", "error"));
     }
@@ -296,7 +300,7 @@
         <td class="u-mono"><strong style="color:var(--text-success)">${b.da_dr ?? "—"}</strong></td>
         <td style="text-transform:capitalize;">${escapeHtml(b.tipo)}</td>
         <td>${badge(b.estado)}</td>
-        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">${b.fecha_conseguido ? String(b.fecha_conseguido).slice(0, 10) : "—"}</td>
+        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">${formatearFecha(b.fecha_conseguido)}</td>
         <td><button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-backlink="${b.id}"><i class="fa-solid fa-trash"></i></button></td>
       </tr>`;
     }
@@ -434,7 +438,7 @@
             <span class="u-mono" style="color:var(--color-primary); font-size:var(--text-xs); word-break:break-all;">${escapeHtml(accion.url_pagina)}</span>
             <p style="margin-top: var(--space-2); font-size:var(--text-sm);">${escapeHtml(accion.accion)}</p>
             <div style="margin-top: var(--space-2); font-size:var(--text-xs); color:var(--color-muted-foreground); display:flex; gap: var(--space-3); flex-wrap:wrap;">
-              <span><i class="fa-solid fa-calendar"></i> ${fecha || "—"}</span>
+              <span><i class="fa-solid fa-calendar"></i> ${formatearFecha(fecha)}</span>
               <span><i class="fa-solid fa-user"></i> ${escapeHtml(accion.responsable?.name || "Sin asignar")}</span>
             </div>
           </div>
@@ -794,7 +798,7 @@
           ${cabecera}
           <span class="seo-cuenta__foot">
             ${seoBadgeHtml(ESTADO_CAMPANA_BADGE, row.estado)}
-            <span class="seo-cuenta__score" title="SEO Score de la auditoría">Score ${scoreLabel}</span>
+            <span class="seo-cuenta__score" title="SEO Score · ${escapeHtml(row.seo_score_nota || "Sin dato")}">Score ${scoreLabel}${row.seo_score_antiguo ? ' <i class="fa-solid fa-clock" aria-label="Auditoría desactualizada"></i>' : ""}</span>
           </span>
         </a>
         <span class="seo-cuenta__acciones">

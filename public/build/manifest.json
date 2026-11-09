@@ -1,4 +1,8 @@
 {
+  "_fecha-CkvE23zC.js": {
+    "file": "assets/fecha-CkvE23zC.js",
+    "name": "fecha"
+  },
   "resources/css/admin/ads.css": {
     "file": "assets/ads-egFVSPSQ.css",
     "src": "resources/css/admin/ads.css",
@@ -10,7 +14,7 @@
     "isEntry": true
   },
   "resources/css/admin/archivos.css": {
-    "file": "assets/archivos-N_pHQ4GD.css",
+    "file": "assets/archivos-CE8ocbYX.css",
     "src": "resources/css/admin/archivos.css",
     "isEntry": true
   },
@@ -35,12 +39,12 @@
     "isEntry": true
   },
   "resources/css/admin/calendario.css": {
-    "file": "assets/calendario-DwSNNkYX.css",
+    "file": "assets/calendario-RhAvSPg5.css",
     "src": "resources/css/admin/calendario.css",
     "isEntry": true
   },
   "resources/css/admin/clientes.css": {
-    "file": "assets/clientes-C_WqmbXK.css",
+    "file": "assets/clientes-DjPtgpFU.css",
     "src": "resources/css/admin/clientes.css",
     "isEntry": true
   },
@@ -75,12 +79,12 @@
     "isEntry": true
   },
   "resources/css/admin/finanzas.css": {
-    "file": "assets/finanzas-AuckFyY3.css",
+    "file": "assets/finanzas-uz9OkTgU.css",
     "src": "resources/css/admin/finanzas.css",
     "isEntry": true
   },
   "resources/css/admin/global.css": {
-    "file": "assets/global-CYDtSjwa.css",
+    "file": "assets/global-wo4Zmp2q.css",
     "src": "resources/css/admin/global.css",
     "isEntry": true
   },
@@ -95,7 +99,7 @@
     "isEntry": true
   },
   "resources/css/admin/integraciones.css": {
-    "file": "assets/integraciones-Cu4pDhbi.css",
+    "file": "assets/integraciones-T14tMA-0.css",
     "src": "resources/css/admin/integraciones.css",
     "isEntry": true
   },
@@ -105,7 +109,7 @@
     "isEntry": true
   },
   "resources/css/admin/metricas.css": {
-    "file": "assets/metricas-Y-GzYMX9.css",
+    "file": "assets/metricas-DUb19cRS.css",
     "src": "resources/css/admin/metricas.css",
     "isEntry": true
   },
@@ -119,14 +123,24 @@
     "src": "resources/css/admin/pizarra.css",
     "isEntry": true
   },
+  "resources/css/admin/portal-accesos.css": {
+    "file": "assets/portal-accesos-B9JnkPGT.css",
+    "src": "resources/css/admin/portal-accesos.css",
+    "isEntry": true
+  },
   "resources/css/admin/propuestas.css": {
     "file": "assets/propuestas-DggyNlbj.css",
     "src": "resources/css/admin/propuestas.css",
     "isEntry": true
   },
   "resources/css/admin/reportes.css": {
-    "file": "assets/reportes-t8-1MPpu.css",
+    "file": "assets/reportes-DE5S6pg5.css",
     "src": "resources/css/admin/reportes.css",
+    "isEntry": true
+  },
+  "resources/css/admin/resumen-cliente.css": {
+    "file": "assets/resumen-cliente-CCizStzS.css",
+    "src": "resources/css/admin/resumen-cliente.css",
     "isEntry": true
   },
   "resources/css/admin/roles.css": {
@@ -150,12 +164,12 @@
     "isEntry": true
   },
   "resources/css/admin/servicios.css": {
-    "file": "assets/servicios-DhsFtss-.css",
+    "file": "assets/servicios-CULjEuo_.css",
     "src": "resources/css/admin/servicios.css",
     "isEntry": true
   },
   "resources/css/admin/sidebar.css": {
-    "file": "assets/sidebar--aSimTKH.css",
+    "file": "assets/sidebar-BAKqNeIW.css",
     "src": "resources/css/admin/sidebar.css",
     "isEntry": true
   },
@@ -167,6 +181,11 @@
   "resources/css/admin/usuarios.css": {
     "file": "assets/usuarios-BHkVZ4Hu.css",
     "src": "resources/css/admin/usuarios.css",
+    "isEntry": true
+  },
+  "resources/css/portal/portal.css": {
+    "file": "assets/portal-CodwEz6w.css",
+    "src": "resources/css/portal/portal.css",
     "isEntry": true
   },
   "resources/css/web/agendar.css": {
@@ -200,10 +219,13 @@
     "isEntry": true
   },
   "resources/js/ads.js": {
-    "file": "assets/ads-C7DxzYg-.js",
+    "file": "assets/ads-D0izhRS9.js",
     "name": "ads",
     "src": "resources/js/ads.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/agenda.js": {
     "file": "assets/agenda-CIMapNXE.js",
@@ -218,10 +240,13 @@
     "isEntry": true
   },
   "resources/js/archivos.js": {
-    "file": "assets/archivos-CG4TI3f_.js",
+    "file": "assets/archivos-U7KOI-PI.js",
     "name": "archivos",
     "src": "resources/js/archivos.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/audiencia.js": {
     "file": "assets/audiencia-ClW_irO0.js",
@@ -259,11 +284,20 @@
     "src": "resources/js/calendario.js",
     "isEntry": true
   },
+  "resources/js/clientes-asistente.js": {
+    "file": "assets/clientes-asistente-CJ7hk4af.js",
+    "name": "clientes-asistente",
+    "src": "resources/js/clientes-asistente.js",
+    "isEntry": true
+  },
   "resources/js/clientes.js": {
-    "file": "assets/clientes-CH9I6f_e.js",
+    "file": "assets/clientes-CFtsyRLn.js",
     "name": "clientes",
     "src": "resources/js/clientes.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/configuracion.js": {
     "file": "assets/configuracion-o7kb3kjt.js",
@@ -272,10 +306,13 @@
     "isEntry": true
   },
   "resources/js/contenido.js": {
-    "file": "assets/contenido-K__lHA_Q.js",
+    "file": "assets/contenido-CiJO7sxw.js",
     "name": "contenido",
     "src": "resources/js/contenido.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/conversiones-embudo.js": {
     "file": "assets/conversiones-embudo-CIxXyBR4.js",
@@ -284,16 +321,19 @@
     "isEntry": true
   },
   "resources/js/conversiones.js": {
-    "file": "assets/conversiones-BWLt6jNq.js",
+    "file": "assets/conversiones-CnQv6Mbi.js",
     "name": "conversiones",
     "src": "resources/js/conversiones.js",
     "isEntry": true
   },
   "resources/js/correo-envios.js": {
-    "file": "assets/correo-envios-BvcCUgaq.js",
+    "file": "assets/correo-envios-BDT9yPqu.js",
     "name": "correo-envios",
     "src": "resources/js/correo-envios.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/correo-plantillas.js": {
     "file": "assets/correo-plantillas-B2wxdAN0.js",
@@ -308,10 +348,13 @@
     "isEntry": true
   },
   "resources/js/desarrollo.js": {
-    "file": "assets/desarrollo-edZ1dhOO.js",
+    "file": "assets/desarrollo-DTeoBrTZ.js",
     "name": "desarrollo",
     "src": "resources/js/desarrollo.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/documentos.js": {
     "file": "assets/documentos-BWYWxTqM.js",
@@ -320,13 +363,16 @@
     "isEntry": true
   },
   "resources/js/finanzas.js": {
-    "file": "assets/finanzas-YtvDkbhl.js",
+    "file": "assets/finanzas-sCW1Od4u.js",
     "name": "finanzas",
     "src": "resources/js/finanzas.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/global.js": {
-    "file": "assets/global-DYnYfKCS.js",
+    "file": "assets/global-CjhtlYiQ.js",
     "name": "global",
     "src": "resources/js/global.js",
     "isEntry": true
@@ -343,23 +389,35 @@
     "src": "resources/js/inicio.js",
     "isEntry": true
   },
-  "resources/js/keywords.js": {
-    "file": "assets/keywords-lkylHucX.js",
-    "name": "keywords",
-    "src": "resources/js/keywords.js",
+  "resources/js/integraciones-cliente.js": {
+    "file": "assets/integraciones-cliente-DnZWbs8j.js",
+    "name": "integraciones-cliente",
+    "src": "resources/js/integraciones-cliente.js",
     "isEntry": true
   },
+  "resources/js/keywords.js": {
+    "file": "assets/keywords-DKhMzLC8.js",
+    "name": "keywords",
+    "src": "resources/js/keywords.js",
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
+  },
   "resources/js/metricas.js": {
-    "file": "assets/metricas-BHVlppFd.js",
+    "file": "assets/metricas-1v_wVqbM.js",
     "name": "metricas",
     "src": "resources/js/metricas.js",
     "isEntry": true
   },
   "resources/js/mi-espacio.js": {
-    "file": "assets/mi-espacio-B4AZDHFS.js",
+    "file": "assets/mi-espacio-DBp0DmGk.js",
     "name": "mi-espacio",
     "src": "resources/js/mi-espacio.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/modules/agendar.js": {
     "file": "assets/agendar-I9COR9zF.js",
@@ -372,6 +430,15 @@
     "name": "pizarra",
     "src": "resources/js/pizarra.js",
     "isEntry": true
+  },
+  "resources/js/portal-accesos.js": {
+    "file": "assets/portal-accesos-BAaOIN-k.js",
+    "name": "portal-accesos",
+    "src": "resources/js/portal-accesos.js",
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/propuestas.js": {
     "file": "assets/propuestas-akAe8poy.js",
@@ -386,10 +453,13 @@
     "isEntry": true
   },
   "resources/js/reportes.js": {
-    "file": "assets/reportes-DhyeVK69.js",
+    "file": "assets/reportes-eX-y3AGZ.js",
     "name": "reportes",
     "src": "resources/js/reportes.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/roles.js": {
     "file": "assets/roles-C2pMWInT.js",
@@ -404,10 +474,13 @@
     "isEntry": true
   },
   "resources/js/seo.js": {
-    "file": "assets/seo-CcrPp_i1.js",
+    "file": "assets/seo-Bn2pJWE_.js",
     "name": "seo",
     "src": "resources/js/seo.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/servicios-conversion.js": {
     "file": "assets/servicios-conversion-uJPgqOUf.js",
@@ -416,10 +489,13 @@
     "isEntry": true
   },
   "resources/js/servicios.js": {
-    "file": "assets/servicios-CZR2KXgN.js",
+    "file": "assets/servicios-BHUczYSd.js",
     "name": "servicios",
     "src": "resources/js/servicios.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   },
   "resources/js/tablero.js": {
     "file": "assets/tablero-CO33dSXw.js",
@@ -434,9 +510,12 @@
     "isEntry": true
   },
   "resources/js/usuarios.js": {
-    "file": "assets/usuarios-Dov5l6bO.js",
+    "file": "assets/usuarios-DWPe_6zN.js",
     "name": "usuarios",
     "src": "resources/js/usuarios.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_fecha-CkvE23zC.js"
+    ]
   }
 }

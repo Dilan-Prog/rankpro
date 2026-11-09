@@ -38,7 +38,7 @@
             <p class="page-header__subtitle">Facturación, ingresos y proyecciones</p>
         </div>
         <div style="display:flex; gap: var(--space-3);">
-            <a id="finanzasExportBtn" href="{{ route('admin.finanzas.exportar') }}" class="btn btn--secondary">
+            <a id="finanzasExportBtn" href="{{ route('admin.finanzas.exportar') }}" class="btn btn--secondary" data-descarga>
                 <i class="fa-solid fa-file-export"></i> Exportar
             </a>
             <button type="button" class="btn btn--primary" data-open-finanza-modal>
@@ -47,23 +47,29 @@
         </div>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" nota="Las facturas, la cartera y el MRR por cliente se filtran; las tarjetas de arriba siguen siendo de toda la agencia." />
+
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif
 
     <div class="kpi-grid">
-        <x-stat-card label="MRR Activo" value="{{ $money($mrr) }}" sub="MXN · servicios activos" icon="fa-arrow-trend-up" color="emerald" />
-        <x-stat-card label="Cobrado (este mes)" value="{{ $money($cobrado) }}" sub="{{ $facturasPagadas }} facturas pagadas" icon="fa-circle-check" color="primary" />
-        <x-stat-card label="Por cobrar" value="{{ $money($pendiente) }}" sub="{{ $facturasPendientes }} facturas pendientes" icon="fa-triangle-exclamation" color="amber" />
-        <x-stat-card label="Ingresos (6 meses)" value="{{ $money($ingresos6m) }}" icon="fa-chart-column" color="teal" />
-        <x-stat-card label="Utilidad neta" value="{{ $money($utilidad) }}" sub="{{ $margenPct }}% de margen" icon="fa-scale-balanced" color="{{ $utilidadColor }}" />
-        <x-stat-card label="Ticket promedio" value="{{ $money($ticketPromedio) }}" sub="por cliente activo" icon="fa-receipt" color="blue" />
+        <x-stat-card label="MRR Activo" value="{{ $money($mrr) }}" sub="MXN · servicios mensuales activos" icon="fa-arrow-trend-up" color="emerald" fuente="Servicios (MRR)" tipo="calculado" />
+        <x-stat-card label="Ingresos por proyecto" value="{{ $money($ingresosProyecto['total']) }}" sub="{{ $ingresosProyecto['proyectos'] }} proyectos de pago único · no es MRR" icon="fa-diagram-project" color="blue" fuente="Servicios (pago único)" tipo="calculado" />
+        {{-- Cobrado se cuenta por el mes de la factura, no por la fecha en que entró el pago; Por cobrar suma lo de este mes y lo que sigue impago de meses anteriores. --}}
+        <x-stat-card label="Cobrado del mes" value="{{ $money($cobrado) }}" sub="{{ $facturasPagadas }} {{ $facturasPagadas === 1 ? 'factura' : 'facturas' }} de este mes ya {{ $facturasPagadas === 1 ? 'pagada' : 'pagadas' }}" icon="fa-circle-check" color="primary" fuente="Finanzas (facturas)" tipo="calculado" />
+        <x-stat-card label="Por cobrar" value="{{ $money($pendiente) }}" sub="{{ $facturasPendientes }} {{ $facturasPendientes === 1 ? 'factura' : 'facturas' }} sin cobrar · este mes {{ $money($pendienteMes) }}" icon="fa-triangle-exclamation" color="amber" fuente="Finanzas (facturas)" tipo="calculado" />
+        <x-stat-card label="Vencido de meses anteriores" value="{{ $money($vencidoAnterior) }}" sub="{{ $facturasVencidasAnterior }} {{ $facturasVencidasAnterior === 1 ? 'factura' : 'facturas' }} de meses cerrados sin cobrar" icon="fa-clock" color="{{ $vencidoAnterior > 0 ? 'red' : 'emerald' }}" fuente="Finanzas (facturas)" tipo="calculado" />
+        <x-stat-card label="Ingresos (6 meses)" value="{{ $money($ingresos6m) }}" icon="fa-chart-column" color="teal" fuente="Finanzas (ingresos)" tipo="calculado" />
+        <x-stat-card label="Utilidad neta" value="{{ $money($utilidad) }}" sub="{{ $margenPct }}% de margen" icon="fa-scale-balanced" color="{{ $utilidadColor }}" fuente="Finanzas (ingresos y gastos)" tipo="calculado" />
+        <x-stat-card label="Ticket promedio" value="{{ $money($ticketPromedio) }}" sub="por cliente con MRR" icon="fa-receipt" color="blue" fuente="Servicios (MRR)" tipo="calculado" />
     </div>
 
     <div class="tabs" id="finanzasTabs">
         <button type="button" class="tabs__item is-active" data-panel="resumen">Resumen</button>
         <button type="button" class="tabs__item" data-panel="facturacion">Facturación</button>
         <button type="button" class="tabs__item" data-panel="cliente">Por cliente</button>
+        <button type="button" class="tabs__item" data-panel="conciliacion">Conciliación @if ($revision['total'] > 0)<span class="badge badge--warning">{{ $revision['total'] }}</span>@endif</button>
     </div>
 
     {{-- ==================================================================
@@ -149,7 +155,7 @@
             <select class="select" id="facturasClienteFilter">
                 <option value="all">Todos los clientes</option>
                 @foreach ($clientes as $cliente)
-                    <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                    <option value="{{ $cliente->id }}">{{ $cliente->nombre_comercial }}</option>
                 @endforeach
             </select>
             <select class="select" id="facturasEstadoFilter">
@@ -174,9 +180,9 @@
                     <td><span style="font-size:var(--text-sm); color:var(--color-muted-foreground);">{{ $f['concepto'] }}</span></td>
                     <td><span style="font-size:var(--text-xs); text-transform:capitalize; color:{{ $f['tipo'] === 'ingreso' ? 'var(--text-success)' : 'var(--text-danger)' }};">{{ $f['tipo'] }}</span></td>
                     <td class="u-mono"><strong>${{ number_format($f['monto']) }}</strong></td>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $f['fecha_vencimiento'] ?? '—' }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($f['fecha_vencimiento'] ?? null) }}</td>
                     <td><x-badge :status="$f['estado']" /></td>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $f['fecha_pago'] ?? '—' }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($f['fecha_pago'] ?? null) }}</td>
                     <td>
                         <div style="display:flex; gap:4px;">
                             <button type="button" class="btn--icon" title="Editar" data-edit-finanza="{{ $f['id'] }}"><i class="fa-solid fa-pen"></i></button>
@@ -232,10 +238,21 @@
                     @endforeach
                 </div>
                 <p style="font-size:var(--text-sm); color:var(--color-muted-foreground); margin-top: var(--space-4); margin-bottom:0;">
-                    Los {{ min(3, $mrrPorCliente->count()) }} principales clientes concentran {{ $top3Pct }}% del MRR total.
+                    @if ($mrrPorCliente->count() === 1)
+                        El único cliente con MRR concentra el {{ $top3Pct }}% del MRR total.
+                    @else
+                        Los {{ min(3, $mrrPorCliente->count()) }} principales clientes concentran {{ $top3Pct }}% del MRR total.
+                    @endif
                 </p>
             @endif
         </div>
+    </div>
+
+    {{-- ==================================================================
+         Tab: Conciliación (solo lectura)
+         ================================================================== --}}
+    <div data-panel-content="conciliacion" hidden>
+        @include('admin.finanzas._conciliacion')
     </div>
 
     {{-- ---------- Create/edit modal — servicio_id intentionally omitted (see finanzas.js comment); AJAX-only, so field errors are unconditional empty spans, never @error(...)@enderror ---------- --}}
@@ -251,7 +268,7 @@
                     <select class="select" name="cliente_id" id="cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}">{{ $cliente->nombre_comercial }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

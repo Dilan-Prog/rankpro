@@ -52,7 +52,8 @@ class CapturaApiTest extends TestCase
 
         $r->assertJsonPath('data.mes', '2026-03')
             ->assertJsonPath('data.resumen.pendientes', 1)
-            ->assertJsonPath('data.resumen.total', 2)
+            // 2 celdas de medición + 2 de perfil (una por cliente activo).
+            ->assertJsonPath('data.resumen.total', 4)
             ->assertJsonCount(2, 'data.filas')
             ->assertJsonCount(1, 'data.pendientes')
             ->assertJsonPath('data.pendientes.0.cliente_id', $pendiente->id)
@@ -80,7 +81,7 @@ class CapturaApiTest extends TestCase
         $this->getJson('/api/v1/captura?mes=2026-03&solo_pendientes=1')->assertOk()
             ->assertJsonCount(1, 'data.filas')
             ->assertJsonPath('data.filas.0.cliente_id', $pendiente->id)
-            ->assertJsonPath('data.resumen.total', 2);
+            ->assertJsonPath('data.resumen.total', 4);
         $this->getJson('/api/v1/captura?mes=2026-03&solo_pendientes=0')->assertOk()->assertJsonCount(2, 'data.filas');
     }
 
@@ -99,5 +100,26 @@ class CapturaApiTest extends TestCase
         $this->como(['*']);
 
         $this->getJson('/api/v1/captura')->assertOk();
+    }
+
+    public function test_clientes_activos_sin_fuentes_salen_con_marca_y_el_resumen_cuenta_clientes(): void
+    {
+        $this->como(['captura:leer']);
+        $this->metrica(Cliente::factory()->create(['estado' => 'activo']));
+        $vacio = Cliente::factory()->create(['estado' => 'activo']);
+
+        $r = $this->getJson('/api/v1/captura?mes=2026-03')->assertOk();
+
+        $r->assertJsonPath('data.resumen.pendientes', 1)
+            ->assertJsonPath('data.resumen.celdas_pendientes', 1)
+            ->assertJsonPath('data.resumen.clientes_activos', 2)
+            ->assertJsonPath('data.resumen.clientes_con_pendientes', 1)
+            ->assertJsonPath('data.resumen.clientes_sin_fuentes', 1)
+            ->assertJsonCount(2, 'data.filas')
+            ->assertJsonCount(1, 'data.pendientes');
+
+        $fila = collect($r->json('data.filas'))->firstWhere('cliente_id', $vacio->id);
+        $this->assertTrue($fila['sin_fuentes']);
+        $this->assertCount(4, $fila['configurar']);
     }
 }

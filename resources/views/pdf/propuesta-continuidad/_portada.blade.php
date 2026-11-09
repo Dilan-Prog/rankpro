@@ -32,7 +32,7 @@
                         </td>
                         <td style="width: 40%;" class="cv-brand-url">
                             @if ($visible('portada.sitio_web'))
-                                {{ $resumen['sitio_web'] ?? $cliente->nombre }}
+                                {{ $resumen['sitio_web'] ?? $cliente->nombre_comercial }}
                             @endif
                         </td>
                     </tr>
@@ -97,7 +97,7 @@
             <div class="cv-footer" style="padding-top: 210px;">
                 <div class="cv-footer-lbl">Preparado por</div>
                 <div class="cv-footer-nombre">Ing. Dilan Yovani · RankPro Solutions</div>
-                <div class="cv-footer-folio">Folio {{ $folio }} · {{ $fechaEmision }}</div>
+                <div class="cv-footer-folio">Folio {{ $folio }} · {{ fecha_mx($fechaEmision) }}</div>
             </div>
         </td>
     </tr>

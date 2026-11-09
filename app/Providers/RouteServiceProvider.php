@@ -58,10 +58,21 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->ip());
         });
 
+        // Enlaces públicos de reportes: cualquiera puede probar tokens, así que van limitados por IP.
+        RateLimiter::for('reporte-publico', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
+
+            Route::middleware('web')
+                ->group(base_path('routes/publico_reportes.php'));
+
+            Route::middleware('web')
+                ->group(base_path('routes/publico_portal.php'));
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));

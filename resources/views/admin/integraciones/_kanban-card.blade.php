@@ -8,15 +8,17 @@
         <span class="kanban__card-icon" style="background: {{ $color }}22; color: {{ $color }};">
             <i class="{{ $iconPrefix }} {{ $icono }}"></i>
         </span>
-        <span class="kanban__card-title" title="{{ $conversion->adsClic?->adsCampana?->nombre }}">
-            {{ $conversion->adsClic?->adsCampana?->nombre ?? 'Sin campaña' }}
+        <span class="kanban__card-title" title="{{ $conversion->campanaNombre() }}">
+            {{ $conversion->campanaNombre() ?? 'Sin campaña' }}
         </span>
-        <span class="kanban__card-date">{{ $conversion->created_at->format('d/m/y') }}</span>
+        <span class="kanban__card-date">{{ fecha_mx($conversion->created_at) }}</span>
     </div>
     <div class="kanban__card-meta">
         <span>{{ \App\Support\Labels::tipoConversion($conversion->tipo->value) }}</span>
         @if ($identificador)
             <span class="u-mono" title="{{ $identificador }}">{{ \Illuminate\Support\Str::limit($identificador, 14) }}</span>
+        @else
+            <span class="conv-chip conv-chip--error" title="Sin gclid, gbraid ni wbraid Google no puede atribuirla">No exportable</span>
         @endif
     </div>
     @if ($conversion->valor !== null)

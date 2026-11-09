@@ -20,6 +20,7 @@
  * todas sus keywords), la matriz se pide bajo demanda al servidor en vez de
  * derivarse de las filas, y el POST sí devuelve la lista entera ya recalculada.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -214,7 +215,7 @@
           </div>
         </div>
       </td>
-      <td data-col="cliente">${escapeHtml(l.cliente)}</td>
+      <td data-col="cliente">${escapeHtml(l.cliente_nombre_comercial)}</td>
       <td data-col="estado">${badgeHtml(l.estado)}</td>
       <td class="u-mono" data-col="count">${l.keywords_count}</td>
       <td class="u-mono" data-col="volumen">${fmtNum(l.volumen_total)}</td>
@@ -398,7 +399,7 @@
 
   /** Keeps the keywordFormModal's and keywordImportModal's lista_id <select>s (server-rendered once at page load) in sync with AJAX-created/renamed listas. */
   function syncListaOptionsEverywhere(l) {
-    const label = `${l.nombre} (${l.cliente})`;
+    const label = `${l.nombre} (${l.cliente_nombre_comercial})`;
     upsertSelectOption(document.getElementById("ki_lista_id"), l.id, label);
     upsertSelectOption(document.getElementById("kw_lista_id"), l.id, label, l.cliente_id);
   }
@@ -560,7 +561,7 @@
     document.getElementById("listaDetailVolumen").textContent = fmtNum(l.volumen_total);
     document.getElementById("listaDetailKd").innerHTML = kdHtml(l.kd_promedio);
     document.getElementById("listaDetailCpc").textContent = l.cpc_promedio != null ? fmtMoney(l.cpc_promedio) : "—";
-    document.getElementById("listaDetailCliente").textContent = l.cliente || "—";
+    document.getElementById("listaDetailCliente").textContent = l.cliente_nombre_comercial || "—";
     document.getElementById("listaDetailCanal").textContent = l.canal || "—";
     document.getElementById("listaDetailResponsable").textContent = l.responsable_nombre || "— Sin asignar —";
     document.getElementById("listaDetailPosicion").textContent = l.posicion_promedio != null ? "#" + l.posicion_promedio : "—";
@@ -1147,9 +1148,7 @@
 
   /** dd/mm/yyyy a partir de un "YYYY-MM-DD" plano — sin new Date(), que desplazaría la fecha por zona horaria. */
   function fmtFecha(iso) {
-    const parts = String(iso || "").split("-");
-    if (parts.length !== 3) return String(iso || "");
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return formatearFecha(iso, String(iso || ""));
   }
 
   function todayIso() {
@@ -2319,7 +2318,7 @@
     return mediciones
       .map(
         (m) =>
-          `<li><span class="kwx-bitacora__fecha u-mono">${escapeHtml(m.fecha || "—")}</span>` +
+          `<li><span class="kwx-bitacora__fecha u-mono">${escapeHtml(formatearFecha(m.fecha))}</span>` +
           `<span class="kwx-bitacora__texto">${escapeHtml(m.nota)}</span>` +
           `<span class="kwx-bitacora__autor">${escapeHtml(m.registrado_por || "")}</span></li>`
       )
@@ -2346,7 +2345,7 @@
     currentDetailKeyword = k;
     const token = ++bitacoraToken;
 
-    const cliente = k.cliente && k.cliente !== "—" ? k.cliente : null;
+    const cliente = k.cliente_nombre_comercial && k.cliente_nombre_comercial !== "—" ? k.cliente_nombre_comercial : null;
     const fuente = HERRAMIENTA_LABELS[k.herramienta_origen] ? `fuente ${HERRAMIENTA_LABELS[k.herramienta_origen]}` : null;
     setText("kwDetailTitle", k.keyword);
     setText("kwDetailSub", [cliente, fuente].filter(Boolean).join(" · ") || "Sin cliente ni fuente de origen");
@@ -2366,7 +2365,7 @@
     setText("kwDetailAnterior", posicionLabel(k.posicion_anterior));
     document.getElementById("kwDetailCambio").innerHTML = cambioHtml(k.posicion_actual, k.posicion_anterior);
     setText("kwDetailLista", k.lista_nombre || "Sin lista");
-    setText("kwDetailIncorporada", k.fecha_incorporacion);
+    setText("kwDetailIncorporada", formatearFecha(k.fecha_incorporacion, ""));
     const notas = document.getElementById("kwDetailNotas");
     notas.hidden = !k.notas;
     notas.textContent = k.notas ? `Notas: ${k.notas}` : "";

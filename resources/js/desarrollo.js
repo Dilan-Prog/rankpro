@@ -27,6 +27,7 @@
  * panel needs to render) — the Kanban board is the only caller that asks
  * those same two routes for a JSON response instead.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -408,7 +409,7 @@
         <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(t.responsable || "—")}</span></td>
         <td>${badge(t.prioridad)}</td>
         <td data-tarea-estado-cell>${badge(t.estado)}</td>
-        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(t.fecha_limite) || "—"}</td>
+        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(t.fecha_limite)}</td>
         <td><div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-tarea="${t.id}"><i class="fa-solid fa-pen"></i></button>
           <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-tarea="${t.id}"><i class="fa-solid fa-trash"></i></button>
@@ -424,7 +425,7 @@
         </div>
         <div class="kanban__card-meta">
           <span>${escapeHtml(t.responsable || "Sin responsable")}</span>
-          <span class="u-mono">${dateOnly(t.fecha_limite) || "—"}</span>
+          <span class="u-mono">${formatearFecha(t.fecha_limite)}</span>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:4px; margin-top:var(--space-2);">
           <button type="button" class="btn--icon" title="Editar" data-edit-tarea="${t.id}"><i class="fa-solid fa-pen"></i></button>
@@ -631,7 +632,7 @@
         <td>${badge(b.prioridad)}</td>
         <td data-bug-estado-cell>${badge(b.estado)}</td>
         <td>${escapeHtml(b.responsable_nombre || "—")}</td>
-        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.fecha_resolucion) || "—"}</td>
+        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(b.fecha_resolucion)}</td>
         <td><div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-bug="${b.id}"><i class="fa-solid fa-pen"></i></button>
           <button type="button" class="btn--icon" title="Eliminar" style="color:var(--text-danger);" data-delete-bug="${b.id}"><i class="fa-solid fa-trash"></i></button>
@@ -646,7 +647,7 @@
           ${badge(b.prioridad)}
         </div>
         <div class="kanban__card-meta">
-          <span class="u-mono">${dateOnly(b.fecha_resolucion) || "Sin fecha de resolución"}</span>
+          <span class="u-mono">${formatearFecha(b.fecha_resolucion, "Sin fecha de resolución")}</span>
           <span>${escapeHtml(b.responsable_nombre || "Sin asignar")}</span>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:4px; margin-top:var(--space-2);">
@@ -892,7 +893,7 @@
       return `<div class="comunicacion-item" data-comunicacion-id="${c.id}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-3);">
           <div>
-            <div class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(c.fecha)}</div>
+            <div class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(c.fecha)}</div>
             <p style="margin-top:4px; font-size:var(--text-sm);">${escapeHtml(c.resumen)}</p>
             ${aprobaciones}
           </div>
@@ -1113,8 +1114,8 @@
 
       <div class="proyecto-card__footer">
         <div style="display:flex; gap:12px; flex-wrap:wrap; color:var(--color-muted-foreground);">
-          <span>Inicio: ${dateOnly(p.fecha_inicio) || "—"}</span>
-          <span>Entrega estimada: ${dateOnly(p.fecha_entrega_estimada) || "—"}</span>
+          <span>Inicio: ${formatearFecha(p.fecha_inicio)}</span>
+          <span>Entrega estimada: ${formatearFecha(p.fecha_entrega_estimada)}</span>
           ${repoLink}
           ${stagingLink}
         </div>
@@ -1247,7 +1248,7 @@
         else if (dias === 0) extra = '<span class="badge badge--warning">Hoy</span>';
         else extra = `<span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">en ${dias} d</span>`;
       }
-      entrega = `<span class="u-mono" style="font-size:var(--text-xs);">${escapeHtml(p.fecha_entrega_estimada)}</span> ${extra}`;
+      entrega = `<span class="u-mono" style="font-size:var(--text-xs);">${escapeHtml(formatearFecha(p.fecha_entrega_estimada))}</span> ${extra}`;
     }
     const titulo = p.avance_origen === "tareas" ? `${p.tareas_hechas} de ${p.tareas_total} tareas` : "Avance de la fase de Dirección";
     return `<tr ${vistaItemAttrs(p)}>
@@ -1337,7 +1338,7 @@
             <div class="timeline__etiqueta"><a href="${p.show_url}" title="${escapeHtml(p.nombre)}">${escapeHtml(p.nombre)}</a><small>${escapeHtml(p.cliente)}</small></div>
             <div class="timeline__pista" style="width: ${ancho}px;">
               <div class="timeline__barra ${vencido ? "timeline__barra--vencida" : ""}" style="left: ${left}px; width: ${width}px;"
-                title="${escapeHtml(p.nombre)}: ${escapeHtml(p.fecha_inicio)} a ${escapeHtml(p.fecha_entrega_estimada)} · ${avance}%">
+                title="${escapeHtml(p.nombre)}: ${escapeHtml(formatearFecha(p.fecha_inicio))} a ${escapeHtml(formatearFecha(p.fecha_entrega_estimada))} · ${avance}%">
                 <span class="timeline__avance" style="width: ${avance}%;"></span><span class="timeline__texto">${avance}%</span>
               </div>
             </div>
@@ -1466,7 +1467,7 @@
             <div style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(p.cliente)}</div>
           </div>
           <div style="text-align:right;">
-            <div class="u-mono" style="font-size:var(--text-sm);">${dateOnly(p.fecha_entrega_estimada) || "Sin fecha"}</div>
+            <div class="u-mono" style="font-size:var(--text-sm);">${formatearFecha(p.fecha_entrega_estimada, "Sin fecha")}</div>
             ${badgeHtml}
           </div>
         </div>`;
@@ -1646,8 +1647,8 @@
       <td>${badge(b.prioridad)}</td>
       <td>${badge(b.estado)}</td>
       <td>${escapeHtml(b.responsable_nombre || "—")}</td>
-      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.created_at) || "—"}</td>
-      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${dateOnly(b.fecha_resolucion) || "—"}</td>
+      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(b.created_at)}</td>
+      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(b.fecha_resolucion)}</td>
       <td class="u-mono">${dias}</td>
       <td>
         <div style="display:flex; gap:4px;">

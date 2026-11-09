@@ -6,6 +6,7 @@
  * toggle, a read-only detail modal, delete, and a real multipart file
  * upload (the only non-JSON request in this file — see archivoUploadRequest()).
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -215,7 +216,7 @@
     document.getElementById("archivoDetailTipo").textContent = a.extension || "—";
     document.getElementById("archivoDetailPeso").textContent = a.tamano_label;
     document.getElementById("archivoDetailSubidoPor").textContent = a.subido_por || "—";
-    document.getElementById("archivoDetailFecha").textContent = a.fecha;
+    document.getElementById("archivoDetailFecha").textContent = formatearFecha(a.fecha);
 
     const downloadLink = document.getElementById("archivoDetailDownload");
     if (downloadLink) downloadLink.href = a.download_url;
@@ -338,7 +339,7 @@
       <td><span class="archivo-ext-pill" style="--pill-color:${color}">${escapeHtml(a.extension || "—")}</span></td>
       <td class="u-mono">${escapeHtml(a.tamano_label)}</td>
       <td>${escapeHtml(a.subido_por || "—")}</td>
-      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(a.fecha)}</td>
+      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(formatearFecha(a.fecha))}</td>
       <td>
         <div style="display:flex; gap:4px;">
           <a href="${a.download_url}" class="btn--icon" title="Descargar"><i class="fa-solid fa-download"></i></a>
@@ -367,7 +368,7 @@
       </span>
       <div style="min-width:0; flex:1;">
         <div class="archivos-file__name">${escapeHtml(a.nombre)}</div>
-        <div class="archivos-file__meta">${escapeHtml(a.tamano_label)} · ${escapeHtml(a.fecha)} · ${escapeHtml(a.subido_por || "—")}</div>
+        <div class="archivos-file__meta">${escapeHtml(a.tamano_label)} · ${escapeHtml(formatearFecha(a.fecha))} · ${escapeHtml(a.subido_por || "—")}</div>
       </div>
       <div style="display:flex; gap:4px; flex-shrink:0;">
         <a href="${a.download_url}" class="btn--icon" title="Descargar"><i class="fa-solid fa-download"></i></a>

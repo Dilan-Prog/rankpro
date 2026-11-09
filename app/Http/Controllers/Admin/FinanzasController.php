@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\Finanza;
 use App\Models\Servicio;
+use App\Support\ClienteActivo;
+use App\Support\Finanzas\Conciliacion;
 use App\Support\FinanzasMetrics;
 use App\Support\Reglas\Finanzas as ReglasFinanzas;
 use Illuminate\Http\JsonResponse;
@@ -20,11 +22,18 @@ class FinanzasController extends Controller
         $periodo = FinanzasMetrics::periodoActual($now);
         $revenueData = FinanzasMetrics::revenueData($now);
 
-        $finanzasIngreso = Finanza::where('tipo', 'ingreso')->get();
+        // Cliente activo del menú: acota facturas, cartera y MRR por cliente; los KPI de arriba salen de
+        // FinanzasMetrics (fuente única de la agencia) y no se tocan: el aviso lo aclara.
+        $clienteActivo = ClienteActivo::modelo();
+
+        $finanzasIngreso = Finanza::where('tipo', 'ingreso')
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
+            ->get();
         $carteraBuckets = $this->carteraBuckets($finanzasIngreso);
-        $mrrPorCliente = $this->mrrPorCliente();
+        $mrrPorCliente = $this->mrrPorCliente($clienteActivo?->id);
 
         $facturas = Finanza::with('cliente')
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
             ->orderByDesc('fecha_emision')
             ->orderByDesc('id')
             ->get()
@@ -32,22 +41,32 @@ class FinanzasController extends Controller
 
         $ingresos6m = (float) array_sum(array_column($revenueData, 'income'));
 
+        // Conciliación solo lectura; con cliente activo se acota igual que la cartera.
+        $conciliacion = new Conciliacion($now, $clienteActivo?->id);
+
         return view('admin.finanzas.index', [
             'pageTitle' => 'Finanzas',
+            'clienteActivo' => $clienteActivo,
             'mrr' => FinanzasMetrics::mrr(),
+            'ingresosProyecto' => FinanzasMetrics::ingresosPorProyecto(),
             'cobrado' => $periodo['cobrado'],
             'pendiente' => $periodo['pendiente'],
             'gastos' => $periodo['gastos'],
             'utilidad' => $periodo['utilidad'],
             'facturasPendientes' => $periodo['facturas_pendientes'],
             'facturasPagadas' => $periodo['facturas_pagadas'],
+            'pendienteMes' => $periodo['pendiente_mes'],
+            'vencidoAnterior' => $periodo['vencido_anterior'],
+            'facturasVencidasAnterior' => $periodo['facturas_vencidas_anterior'],
+            'conciliacionMeses' => $conciliacion->meses(),
+            'revision' => $conciliacion->revision(),
             'ingresos6m' => $ingresos6m,
             'ticketPromedio' => $mrrPorCliente->count() ? $mrrPorCliente->avg('mrr') : 0.0,
             'revenueData' => $revenueData,
             'carteraBuckets' => $carteraBuckets,
             'mrrPorCliente' => $mrrPorCliente,
             'facturas' => $facturas,
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
         ]);
     }
 
@@ -77,6 +96,9 @@ class FinanzasController extends Controller
     {
         $query = Finanza::with('cliente')->orderByDesc('fecha_emision')->orderByDesc('id');
 
+        // Lo que se descarga es lo que se ve: sin cliente_id explícito rige el cliente activo.
+        ClienteActivo::aplicarA($request);
+
         if ($request->filled('cliente_id')) {
             $query->where('cliente_id', $request->integer('cliente_id'));
         }
@@ -89,7 +111,7 @@ class FinanzasController extends Controller
                 // Mismo criterio que el filtro de la tabla en finanzas.js: cliente, concepto y folio.
                 $q->where('concepto', 'like', "%{$search}%")
                     ->orWhereRaw("CONCAT('F-', LPAD(id, 5, '0')) like ?", ["%{$search}%"])
-                    ->orWhereHas('cliente', fn ($c) => $c->where('nombre', 'like', "%{$search}%"));
+                    ->orWhereHas('cliente', fn ($c) => $c->where('nombre', 'like', "%{$search}%")->orWhere('empresa', 'like', "%{$search}%"));
             });
         }
 
@@ -104,7 +126,7 @@ class FinanzasController extends Controller
             foreach ($facturas as $f) {
                 fputcsv($out, [
                     $this->folio($f),
-                    $f->cliente?->nombre ?? '—',
+                    $f->cliente?->nombre_comercial ?? '—',
                     $f->concepto,
                     $f->tipo,
                     $f->monto,
@@ -134,15 +156,16 @@ class FinanzasController extends Controller
             ->all();
     }
 
-    private function mrrPorCliente()
+    private function mrrPorCliente(?int $clienteId = null)
     {
-        return Servicio::where('estado', 'activo')
-            ->with('cliente:id,nombre')
+        return Servicio::mensual()
+            ->when($clienteId, fn ($q) => $q->where('cliente_id', $clienteId))
+            ->with('cliente:id,nombre,empresa')
             ->get()
             ->groupBy('cliente_id')
             ->map(fn ($servicios) => [
-                'cliente' => $servicios->first()->cliente?->nombre ?? '—',
-                'mrr' => (float) $servicios->sum('precio_mensual'),
+                'cliente' => $servicios->first()->cliente?->nombre_comercial ?? '—',
+                'mrr' => FinanzasMetrics::mrrDeServicios($servicios),
             ])
             ->filter(fn ($r) => $r['mrr'] > 0)
             ->sortByDesc('mrr')
@@ -161,7 +184,7 @@ class FinanzasController extends Controller
             'id' => $f->id,
             'folio' => $this->folio($f),
             'cliente_id' => $f->cliente_id,
-            'cliente' => $f->cliente?->nombre ?? '—',
+            'cliente' => $f->cliente?->nombre_comercial ?? '—',
             'servicio_id' => $f->servicio_id,
             'concepto' => $f->concepto,
             'tipo' => $f->tipo,

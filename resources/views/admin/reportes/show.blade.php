@@ -5,13 +5,17 @@
 @endsection
 
 @section('content')
+    @php
+        // «Actualizar datos» solo tiene sentido en un borrador nacido de «Generar reporte del mes».
+        $puedeActualizar = $reporte->esDelMes() && $reporte->estado === \App\Enums\EstadoReporte::Borrador;
+    @endphp
     <div class="page-header">
         <div>
             <h1 class="page-header__title">{{ $reporte->titulo }}</h1>
             <p class="page-header__subtitle">
-                {{ $reporte->cliente?->empresa ?: $reporte->cliente?->nombre }}
+                {{ $reporte->cliente?->nombre_comercial }}
                 · {{ $reporte->area->label() }}
-                · {{ $reporte->periodo_inicio?->format('Y-m-d') }} — {{ $reporte->periodo_fin?->format('Y-m-d') }}
+                · {{ fecha_mx($reporte->periodo_inicio) }} — {{ fecha_mx($reporte->periodo_fin) }}
                 @if ($reporte->numero) · <span class="u-mono">{{ $reporte->numero }}</span> @endif
             </p>
         </div>
@@ -23,14 +27,32 @@
                 <i class="fa-solid fa-eye"></i> Vista previa
             </a>
 
+            {{-- data-descarga: descarga con progreso y error visible (lib/descargas.js); recarga para ver estado, folio y entregas. --}}
+            @if ($puedeActualizar)
+                <button type="button" class="btn btn--secondary" data-actualizar-datos data-url="{{ route('admin.reportes.actualizar-datos', $reporte) }}"
+                        title="Refresca solo lo precargado; no pisa lo que ya editaste">
+                    <i class="fa-solid fa-rotate"></i> Actualizar datos
+                </button>
+            @endif
+
+            <a href="{{ route('admin.reportes.preview-cliente', $reporte) }}" class="btn btn--secondary" target="_blank" rel="noopener" data-nav-flush>
+                <i class="fa-solid fa-user-check"></i> Vista previa para cliente
+            </a>
+
+            <form method="POST" action="{{ route('admin.reportes.pdf-cliente', $reporte) }}"
+                  data-descarga data-descarga-recargar data-descarga-aviso="#repDescargaAviso" data-nav-flush>
+                @csrf
+                <button type="submit" class="btn btn--secondary"><i class="fa-solid fa-file-pdf"></i> Descargar versión para cliente</button>
+            </form>
+
             <form method="POST" action="{{ route('admin.reportes.pdf', $reporte) }}"
-                  data-confirm="Se generará una entrega nueva en PDF. ¿Continuar?" data-nav-flush>
+                  data-descarga data-descarga-recargar data-descarga-aviso="#repDescargaAviso" data-nav-flush>
                 @csrf
                 <button type="submit" class="btn btn--secondary"><i class="fa-solid fa-file-pdf"></i> Generar PDF</button>
             </form>
 
             <form method="POST" action="{{ route('admin.reportes.xlsx', $reporte) }}"
-                  data-confirm="Se generará una entrega nueva en Excel. ¿Continuar?" data-nav-flush>
+                  data-descarga data-descarga-recargar data-descarga-aviso="#repDescargaAviso" data-nav-flush>
                 @csrf
                 <button type="submit" class="btn btn--secondary"><i class="fa-solid fa-file-excel"></i> Generar Excel</button>
             </form>
@@ -40,6 +62,9 @@
             </a>
         </div>
     </div>
+
+    <div id="repDescargaAviso" data-descarga-mensajes></div>
+    <div class="form-status" data-accion-mensaje hidden role="status"></div>
 
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
@@ -73,15 +98,19 @@
                              data-seccion-id="{{ $seccion->id }}"
                              data-seccion-tipo="{{ $seccion->tipo->value }}"
                              data-contenido="{{ json_encode($seccion->contenido ?? []) }}"
-                             data-aviso="{{ json_encode($seccion->aviso) }}">
+                             data-aviso="{{ json_encode($seccion->aviso) }}"
+                             data-interno="{{ $seccion->interno ? '1' : '0' }}">
                         <header class="rep-seccion__head">
                             <button type="button" class="rep-seccion__toggle" data-toggle-seccion aria-expanded="true" title="Plegar / desplegar">
                                 <i class="fa-solid fa-chevron-down"></i>
                             </button>
                             <span class="rep-seccion__tipo">{{ $seccion->tipo->label() }}</span>
-                            {{-- El rótulo es la numeración impresa del entregable: SECCIÓN 2, ANEXO A. --}}
+                            <span class="rep-seccion__interno-chip" data-interno-chip title="No sale en ningún entregable" @if (! $seccion->interno) hidden @endif>
+                                <i class="fa-solid fa-lock"></i> Interno
+                            </span>
+                            {{-- Rótulo opcional impreso sobre el título (SECCIÓN 2, ANEXO A). No se siembra desde la plantilla: repetiría el título en el PDF y, al reordenar, la numeración quedaría mentirosa. --}}
                             <input class="input rep-seccion__rotulo u-mono" type="text" value="{{ $seccion->rotulo }}"
-                                   data-seccion-rotulo placeholder="SECCIÓN 2" aria-label="Rótulo de la sección">
+                                   data-seccion-rotulo placeholder="Rótulo de la sección (opcional)" aria-label="Rótulo de la sección">
                             <input class="input rep-seccion__titulo" type="text" value="{{ $seccion->titulo }}"
                                    data-seccion-titulo aria-label="Título de la sección">
                             <span class="rep-seccion__saved" data-guardado></span>
@@ -102,13 +131,25 @@
 
                         {{-- Fuera del cuerpo plegable: un 422 o un aviso vigente tienen que
                              seguir viéndose con la sección cerrada. --}}
+                        <div class="rep-seccion__interno">
+                            <label class="rep-switch" title="Una sección interna se ve aquí pero no sale en el PDF, el Excel ni el envío al cliente.">
+                                <input type="checkbox" data-seccion-interno @checked($seccion->interno)>
+                                <span>Interno (no sale en el PDF del cliente)</span>
+                            </label>
+                            <span class="rep-seccion__pago" data-pago-aviso hidden>
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Parece contener datos de pago: ¿marcar como interno?
+                                <button type="button" class="btn btn--secondary btn--sm" data-marcar-interno>Marcar como interno</button>
+                            </span>
+                        </div>
+
                         <p class="rep-seccion__error" data-seccion-error hidden></p>
                         <p class="rep-seccion__aviso-chip" data-aviso-chip hidden></p>
 
                         <div class="rep-seccion__aviso" data-aviso-panel hidden>
                             <label class="rep-seccion__aviso-campo rep-seccion__aviso-campo--ancho">
                                 <span class="rep-row__label">Aviso de dato desactualizado</span>
-                                <input class="input" type="text" data-aviso-texto placeholder="Search Console no ha refrescado el último tramo.">
+                                <input class="input" type="text" data-aviso-texto placeholder="Qué dato está desactualizado y por qué">
                             </label>
                             <label class="rep-seccion__aviso-campo">
                                 <span class="rep-row__label">Fecha del dato</span>
@@ -139,7 +180,7 @@
                 <ul class="rep-entregas" data-entregas>
                     @forelse ($reporte->entregas as $entrega)
                         <li class="rep-entrega">
-                            <span class="rep-entrega__formato rep-entrega__formato--{{ $entrega->formato }}">{{ mb_strtoupper($entrega->formato) }}</span>
+                            <span class="rep-entrega__formato rep-entrega__formato--{{ $entrega->formato }}">{{ $entrega->formato === 'pdf_cliente' ? 'CLIENTE' : mb_strtoupper($entrega->formato) }}</span>
                             <div class="rep-entrega__cuerpo">
                                 @if ($entrega->archivo)
                                     <a href="{{ route('admin.archivos.download', $entrega->archivo) }}" class="rep-entrega__folio u-mono">{{ $entrega->archivo->nombre }}</a>
@@ -147,7 +188,7 @@
                                     <span class="rep-entrega__folio u-mono">{{ $reporte->numero ?? '—' }}</span>
                                 @endif
                                 <span class="rep-entrega__meta">
-                                    {{ $entrega->created_at?->format('Y-m-d H:i') }}
+                                    {{ fecha_mx($entrega->created_at, true) }}
                                     · {{ $entrega->usuario?->name ?? 'Sistema' }}
                                 </span>
                             </div>
@@ -156,6 +197,38 @@
                         <li class="rep-entregas__vacio">Todavía no se ha generado ningún entregable.</li>
                     @endforelse
                 </ul>
+            </div>
+
+            {{-- Enlace de solo lectura a la versión para cliente. El token en claro solo se ve al crearlo. --}}
+            <div class="card card--padded" data-enlaces
+                 data-enlace-store-url="{{ route('admin.reportes.enlaces.store', $reporte) }}"
+                 data-enlace-destroy-url="{{ route('admin.reportes.enlaces.destroy', ['reporte' => $reporte, 'enlace' => '__ID__']) }}">
+                <h2 class="card__header-title">Compartir con el cliente</h2>
+                <p class="rep-aside__hint">Enlace de solo lectura a la versión de una página. Vence a los 30 días y se puede revocar.</p>
+
+                <div class="rep-enlace-nuevo" data-enlace-nuevo hidden>
+                    <label class="rep-row__label" for="repEnlaceUrl">Copia el enlace ahora; no se vuelve a mostrar</label>
+                    <div class="rep-enlace-nuevo__fila">
+                        <input class="input u-mono" id="repEnlaceUrl" type="text" readonly data-enlace-url>
+                        <button type="button" class="btn btn--secondary btn--sm" data-enlace-copiar>Copiar</button>
+                    </div>
+                </div>
+
+                <ul class="rep-enlaces" data-enlaces-lista>
+                    @forelse ($enlaces as $enlace)
+                        <li class="rep-enlace" data-enlace-id="{{ $enlace['id'] }}" data-estado="{{ $enlace['estado'] }}">
+                            <span class="rep-enlace__estado rep-enlace__estado--{{ $enlace['estado'] }}">{{ ucfirst($enlace['estado']) }}</span>
+                            <span class="rep-enlace__meta">vence {{ fecha_mx($enlace['expira_en']) }} · {{ $enlace['accesos'] }} {{ $enlace['accesos'] === 1 ? 'acceso' : 'accesos' }}</span>
+                            @if ($enlace['estado'] === 'vigente')
+                                <button type="button" class="btn btn--secondary btn--sm" data-enlace-revocar>Revocar</button>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="rep-entregas__vacio" data-enlaces-vacio>Todavía no hay enlaces.</li>
+                    @endforelse
+                </ul>
+
+                <button type="button" class="btn btn--secondary btn--sm" data-enlace-crear><i class="fa-solid fa-link"></i> Crear enlace</button>
             </div>
 
             <div class="card card--padded">

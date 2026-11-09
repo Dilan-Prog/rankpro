@@ -53,6 +53,8 @@ class MetricaClienteValorObserver
         return ['semaforo' => $semaforo, 'datos' => [
             'cliente_id' => $metrica->cliente_id,
             'cliente' => $cliente?->nombre,
+            // Campo aditivo: n8n sigue recibiendo `cliente` igual que antes.
+            'cliente_nombre_comercial' => $cliente?->nombre_comercial,
             'metrica_id' => $metrica->id,
             'nombre' => $metrica->nombre,
             'unidad' => $metrica->unidad,
@@ -61,6 +63,8 @@ class MetricaClienteValorObserver
             'valor_anterior' => $anterior === null ? null : (float) $anterior,
             'meta' => $metrica->meta === null ? null : (float) $metrica->meta,
             'sentido' => $metrica->sentido->value,
+            // Campo aditivo: de dónde sale la cifra (manual, google_ads, ...); n8n puede enrutar según ella.
+            'fuente' => $metrica->fuente ?? 'manual',
             'semaforo' => $semaforo,
         ]];
     }

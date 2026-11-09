@@ -3,7 +3,7 @@
     data-optimizacion-tipo="{{ $o->tipo }}"
     data-optimizacion-descripcion="{{ $o->descripcion }}"
     data-optimizacion-resultado="{{ $o->resultado }}">
-    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $o->fecha->format('Y-m-d') }}</td>
+    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($o->fecha) }}</td>
     <td>{{ \App\Support\Labels::tipoOptimizacion($o->tipo) }}</td>
     <td><span style="font-size:var(--text-sm);">{{ $o->descripcion }}</span></td>
     <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $o->resultado ?? '—' }}</span></td>

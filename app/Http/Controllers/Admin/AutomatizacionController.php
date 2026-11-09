@@ -8,6 +8,7 @@ use App\Models\AutomatizacionFaseDiagnostico;
 use App\Models\AutomatizacionProyecto;
 use App\Models\Cliente;
 use App\Models\Servicio;
+use App\Support\ClienteActivo;
 use App\Support\Reglas\Automatizaciones as ReglasAutomatizaciones;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,13 +19,16 @@ class AutomatizacionController extends Controller
 {
     public function index(): View
     {
+        $clienteActivo = ClienteActivo::modelo();
+
         $proyectos = AutomatizacionProyecto::with('cliente', 'faseDiagnostico', 'reporteActual')
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (AutomatizacionProyecto $p) => [
                 'id' => $p->id,
                 'nombre' => $p->nombre,
-                'cliente' => $p->cliente?->nombre ?? '—',
+                'cliente' => $p->cliente?->nombre_comercial ?? '—',
                 'estado' => $p->estado->value,
                 'fase_actual' => $p->fase_actual->value,
                 'ciclo_actual' => $p->ciclo_actual,
@@ -34,6 +38,7 @@ class AutomatizacionController extends Controller
 
         return view('admin.automatizaciones.index', [
             'pageTitle' => 'Automatizaciones',
+            'clienteActivo' => $clienteActivo,
             'proyectos' => $proyectos,
             // Solo los activos: contar pausados y finalizados inflaba el KPI "en proceso".
             'enProceso' => $proyectos->where('estado', 'activa')->count(),
@@ -44,7 +49,7 @@ class AutomatizacionController extends Controller
     {
         return view('admin.automatizaciones.create', [
             'pageTitle' => 'Nuevo Proyecto de Automatización',
-            'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
+            'clientes' => Cliente::with('servicios')->ordenadoPorNombreComercial()->get(),
             'checklistDiagnostico' => AutomatizacionFaseDiagnostico::CHECKLIST,
         ]);
     }
@@ -95,7 +100,7 @@ class AutomatizacionController extends Controller
         return view('admin.automatizaciones.edit', [
             'pageTitle' => 'Editar Proyecto de Automatización',
             'proyecto' => $proyecto,
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre']),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
             'serviciosAutomatizacion' => Servicio::where('cliente_id', $proyecto->cliente_id)->where('tipo', 'automatizacion')->get(),
         ]);
     }

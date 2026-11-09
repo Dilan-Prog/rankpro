@@ -75,6 +75,8 @@ class KeywordLista extends Model
             'id' => $this->id,
             'cliente_id' => $this->cliente_id,
             'cliente' => $this->cliente?->nombre ?? '—',
+            // Campo aditivo: la API conserva `cliente` tal cual; el panel muestra este.
+            'cliente_nombre_comercial' => $this->cliente?->nombre_comercial ?? '—',
             'responsable_id' => $this->responsable_id,
             'responsable_nombre' => $this->responsable?->name,
             'nombre' => $this->nombre,

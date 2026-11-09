@@ -24,7 +24,7 @@ class MetricasController extends Controller
 {
     public function index(Request $request): View
     {
-        $clientes = Cliente::query()->orderBy('nombre')->get(['id', 'nombre']);
+        $clientes = Cliente::query()->ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']);
         $clienteId = $request->query('cliente');
         $cliente = is_string($clienteId) && ctype_digit($clienteId) ? $clientes->firstWhere('id', (int) $clienteId) : null;
 
@@ -43,7 +43,7 @@ class MetricasController extends Controller
         if ($cliente) {
             $definiciones = MetricaCliente::query()->where('cliente_id', $cliente->id)->orderBy('orden')->orderBy('id')->get();
             $ids = $definiciones->pluck('id');
-            $actuales = MetricaClienteValor::query()->whereIn('metrica_id', $ids)->whereDate('periodo', $mes)->get()->keyBy('metrica_id');
+            $actuales = MetricaClienteValor::query()->with('registradoPor:id,name')->whereIn('metrica_id', $ids)->whereDate('periodo', $mes)->get()->keyBy('metrica_id');
             $previos = MetricaClienteValor::query()->whereIn('metrica_id', $ids)->whereDate('periodo', $mesAnterior)->get()->keyBy('metrica_id');
             $copiado = $request->boolean('copiar');
 
@@ -63,6 +63,7 @@ class MetricasController extends Controller
                     'precargado' => $precargado,
                     'valor_previo' => $valorPrevio,
                     'nota' => $actual?->nota,
+                    'capturado_por' => $actual?->registradoPor?->name,
                     'semaforo' => Semaforo::evaluar($valor, $metrica->meta, $metrica->sentido, $metrica->umbral_amarillo_pct),
                     'variacion' => self::variacion($valor, $valorPrevio),
                 ];

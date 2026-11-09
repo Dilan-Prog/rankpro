@@ -15,7 +15,7 @@ class MetricaCliente extends Model
     protected $table = 'metricas_cliente';
 
     protected $fillable = [
-        'cliente_id', 'nombre', 'unidad', 'meta', 'sentido', 'umbral_amarillo_pct', 'activa', 'orden',
+        'cliente_id', 'nombre', 'unidad', 'meta', 'sentido', 'fuente', 'metrica_estandar', 'umbral_amarillo_pct', 'activa', 'orden',
     ];
 
     protected $casts = [

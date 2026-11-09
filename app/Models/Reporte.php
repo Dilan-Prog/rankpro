@@ -26,6 +26,7 @@ class Reporte extends Model
     protected $fillable = [
         'cliente_id',
         'area',
+        'origen',
         'sitio_web',
         'seo_campana_id',
         'ads_campana_id',
@@ -90,6 +91,17 @@ class Reporte extends Model
         return $this->hasMany(ReporteEntrega::class)->orderByDesc('created_at');
     }
 
+    public function enlaces(): HasMany
+    {
+        return $this->hasMany(ReporteEnlace::class)->orderByDesc('id');
+    }
+
+    /** ¿Nació de "Generar reporte del mes" (con datos precargados que se pueden refrescar)? */
+    public function esDelMes(): bool
+    {
+        return $this->origen === 'mes';
+    }
+
     /**
      * Shape compartido entre el render inicial del listado y las respuestas AJAX
      * de store/update, para que la fila de la tabla se repinte sin recargar.
@@ -101,7 +113,7 @@ class Reporte extends Model
         return [
             'id' => $this->id,
             'cliente_id' => $this->cliente_id,
-            'cliente' => $this->cliente?->empresa ?: $this->cliente?->nombre,
+            'cliente' => $this->cliente?->nombre_comercial,
             'area' => $this->area->value,
             'area_label' => $this->area->label(),
             'titulo' => $this->titulo,

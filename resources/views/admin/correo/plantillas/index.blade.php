@@ -90,7 +90,7 @@
                         @endif
                     </td>
                     <td><span class="cp-muted">{{ $p['autor'] ?? '—' }}</span></td>
-                    <td><span class="u-mono cp-muted cp-fecha">{{ $p['actualizada'] ?? '—' }}</span></td>
+                    <td><span class="u-mono cp-muted cp-fecha">{{ fecha_mx($p['actualizada'] ?? null) }}</span></td>
                     <td>
                         <div class="cp-acciones">
                             <a href="{{ $p['show_url'] }}" class="btn--icon" title="Abrir el editor"><i class="fa-solid fa-pen"></i></a>

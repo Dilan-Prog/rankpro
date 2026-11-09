@@ -17,7 +17,7 @@
     $subtitulo = array_values(array_filter([
         $l['canal'] ?? null,
         $l['responsable_nombre'] ?? null,
-        ! empty($l['updated_at']) ? 'act. '.$l['updated_at'] : null,
+        ! empty($l['updated_at']) ? 'act. '.fecha_mx_texto($l['updated_at']) : null,
     ]));
     $fuentesTexto = collect($l['fuentes'])->map(fn ($f) => \App\Support\Labels::herramientaOrigen($f))->implode(', ');
 @endphp
@@ -42,7 +42,7 @@
             </div>
         </div>
     </td>
-    <td data-col="cliente">{{ $l['cliente'] }}</td>
+    <td data-col="cliente">{{ $l['cliente_nombre_comercial'] }}</td>
     <td data-col="estado"><x-badge :status="$l['estado']" /></td>
     <td class="u-mono" data-col="count">{{ $l['keywords_count'] }}</td>
     <td class="u-mono" data-col="volumen">{{ number_format($l['volumen_total']) }}</td>

@@ -10,8 +10,8 @@ use App\Models\AdsClic;
 use App\Models\AdsConversion;
 use App\Models\AdsKeywordColumna;
 use App\Models\Cliente;
-use App\Models\Servicio;
 use App\Support\ClienteActivo;
+use App\Support\FinanzasMetrics;
 use App\Support\Labels;
 use App\Support\Reglas\Ads as ReglasAds;
 use Illuminate\Http\JsonResponse;
@@ -26,11 +26,14 @@ class AdsController extends Controller
         // Cliente activo del menú (grupo Marca): campañas, KPIs y gráficas salen solo de sus campañas.
         $clienteActivo = ClienteActivo::modelo();
 
-        $campanas = AdsCampana::with(['cliente', 'metricas'])
+        $modelos = AdsCampana::with(['cliente', 'metricas'])
             ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn (AdsCampana $campana) => $this->toRow($campana));
+            ->get();
+        $campanas = $modelos->map(fn (AdsCampana $campana) => $this->toRow($campana));
+
+        // Fecha del dato más reciente: el último mes capturado (se cuenta desde que cerró), no la edición de la fila.
+        $ultimoPeriodo = $modelos->flatMap->metricas->sortByDesc(fn ($m) => $m->anio * 12 + $m->mes)->first();
 
         // Con cliente activo su tarjeta se muestra aunque aún no tenga campañas (no depende de las filas).
         $idsCuentas = $clienteActivo ? [$clienteActivo->id] : $campanas->pluck('cliente_id')->unique()->all();
@@ -39,27 +42,24 @@ class AdsController extends Controller
             'pageTitle' => 'Módulo Ads',
             'clienteActivo' => $clienteActivo,
             'campanas' => $campanas,
-            'clientes' => Cliente::with('servicios')->orderBy('nombre')->get(),
+            'ultimoPeriodo' => $ultimoPeriodo ? ['mes' => (int) $ultimoPeriodo->mes, 'anio' => (int) $ultimoPeriodo->anio] : null,
+            'clientes' => Cliente::with('servicios')->ordenadoPorNombreComercial()->get(),
             'cuentasInfo' => $this->cuentasInfo($idsCuentas),
         ]);
     }
 
     /**
      * Datos reales de Cliente para la tarjeta de la cuenta seleccionada (solo clientes con campañas, que son las
-     * únicas cuentas que el selector muestra). El MRR se suma en consulta y no sobre la colección: Servicio::estado
-     * es un enum y un `==` contra el string 'activo' nunca coincide en PHP, así que filtrar en memoria daría 0.
+     * únicas cuentas que el selector muestra). El MRR sale de FinanzasMetrics (fuente única): solo cobro mensual activo, y en consulta
+     * porque Servicio::estado es un enum y un `==` contra el string 'activo' nunca coincide en PHP.
      */
     private function cuentasInfo(array $clienteIds): array
     {
-        $mrrPorCliente = Servicio::whereIn('cliente_id', $clienteIds)
-            ->where('estado', 'activo')
-            ->groupBy('cliente_id')
-            ->selectRaw('cliente_id, SUM(precio_mensual) as mrr')
-            ->pluck('mrr', 'cliente_id');
+        $mrrPorCliente = FinanzasMetrics::mrrPorCliente($clienteIds);
 
         return Cliente::with('servicios')->whereIn('id', $clienteIds)->get()->mapWithKeys(fn (Cliente $c) => [
             $c->id => [
-                'nombre' => $c->nombre,
+                'nombre' => $c->nombre_comercial,
                 'contacto' => $c->contacto_nombre,
                 'email' => $c->email,
                 'telefono' => $c->telefono,
@@ -86,8 +86,12 @@ class AdsController extends Controller
                 'servicio_id' => $data['servicio_id'],
                 'nombre' => $data['nombre'],
                 'plataforma' => $data['plataforma'],
+                'plataforma_cuenta_id' => $data['plataforma_cuenta_id'] ?? null,
+                'plataforma_campana_id' => $data['plataforma_campana_id'] ?? null,
                 'objetivo' => $data['objetivo'],
                 'presupuesto_mensual' => $data['presupuesto_mensual'],
+                // Sin moneda se usa el default de la columna (MXN), no un null.
+                'moneda' => $data['moneda'] ?? 'MXN',
                 'estado' => 'activa',
                 'fase_actual' => FaseAds::Briefing->value,
                 'ciclo_actual' => 1,
@@ -151,6 +155,10 @@ class AdsController extends Controller
     public function update(Request $request, AdsCampana $campana): JsonResponse
     {
         $data = $request->validate(ReglasAds::campana($campana));
+        // La columna es NOT NULL: una moneda vacía significa "no cambiar", no null (daba 500).
+        if (($data['moneda'] ?? null) === null) {
+            unset($data['moneda']);
+        }
 
         $campana->update($data);
 
@@ -195,16 +203,19 @@ class AdsController extends Controller
         return [
             'id' => $campana->id,
             'cliente_id' => $campana->cliente_id,
-            'cliente' => $campana->cliente?->nombre ?? '—',
+            'cliente' => $campana->cliente?->nombre_comercial ?? '—',
             'cliente_contacto' => $campana->cliente?->contacto_nombre,
             'servicio_id' => $campana->servicio_id,
             'nombre' => $campana->nombre,
             'plataforma' => $campana->plataforma,
+            'plataforma_cuenta_id' => $campana->plataforma_cuenta_id,
+            'plataforma_campana_id' => $campana->plataforma_campana_id,
             'objetivo' => $campana->objetivo,
             'estado' => $campana->estado->value,
             'fase_actual' => $campana->fase_actual->value,
             'ciclo_actual' => $campana->ciclo_actual,
             'presupuesto_mensual' => (float) $campana->presupuesto_mensual,
+            'moneda' => $campana->moneda ?? 'MXN',
             'inversion' => $inversion,
             'impresiones' => $impresiones,
             'clics' => $clics,

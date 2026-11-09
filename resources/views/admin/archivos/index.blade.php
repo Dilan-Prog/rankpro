@@ -125,7 +125,7 @@
                         <td><span class="archivo-ext-pill" style="--pill-color:{{ $color }}">{{ $a['extension'] ?? '—' }}</span></td>
                         <td class="u-mono">{{ $a['tamano_label'] }}</td>
                         <td>{{ $a['subido_por'] ?? '—' }}</td>
-                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $a['fecha'] }}</td>
+                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($a['fecha']) }}</td>
                         <td>
                             <div style="display:flex; gap:4px;">
                                 <a href="{{ $a['download_url'] }}" class="btn--icon" title="Descargar"><i class="fa-solid fa-download"></i></a>
@@ -154,7 +154,7 @@
                                         </span>
                                         <div style="min-width:0; flex:1;">
                                             <div class="archivos-file__name">{{ $a['nombre'] }}</div>
-                                            <div class="archivos-file__meta">{{ $a['tamano_label'] }} · {{ $a['fecha'] }} · {{ $a['subido_por'] ?? '—' }}</div>
+                                            <div class="archivos-file__meta">{{ $a['tamano_label'] }} · {{ fecha_mx($a['fecha']) }} · {{ $a['subido_por'] ?? '—' }}</div>
                                         </div>
                                         <div style="display:flex; gap:4px; flex-shrink:0;">
                                             <a href="{{ $a['download_url'] }}" class="btn--icon" title="Descargar"><i class="fa-solid fa-download"></i></a>

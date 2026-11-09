@@ -5,6 +5,7 @@
  * and the create/edit/delete modal CRUD (fetch()-driven, mirrors the
  * pattern in automatizaciones.js's initFlujos()).
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -97,15 +98,15 @@
 
   function populateModal(client) {
     detailClient = client;
-    document.getElementById("clientModalName").textContent = client.empresa || client.nombre;
+    document.getElementById("clientModalName").textContent = client.nombre_comercial || client.empresa || client.nombre;
     document.getElementById("clientModalBadge").outerHTML = badgeHtml(client.estado);
-    document.getElementById("clientModalContact").textContent = client.contacto_nombre || "—";
+    document.getElementById("clientModalContact").textContent = client.contacto || "—";
     document.getElementById("clientModalEmail").textContent = client.email || "—";
     document.getElementById("clientModalPhone").textContent = client.telefono || "—";
     document.getElementById("clientModalPayment").textContent =
       (FORMA_PAGO_LABELS[client.forma_pago] || "—") + " · " + (METODO_PAGO_LABELS[client.metodo_pago] || "—");
-    document.getElementById("clientModalStart").textContent = client.fecha_inicio_contrato || "—";
-    document.getElementById("clientModalEnd").textContent = client.fecha_renovacion_contrato || "—";
+    document.getElementById("clientModalStart").textContent = formatearFecha(client.fecha_inicio_contrato);
+    document.getElementById("clientModalEnd").textContent = formatearFecha(client.fecha_renovacion_contrato);
     document.getElementById("clientModalMrr").textContent = client.mrr > 0 ? formatCurrency(client.mrr) + " MXN/mes" : "—";
 
     const servicesEl = document.getElementById("clientModalServices");
@@ -218,14 +219,17 @@
       : '<span style="color:var(--color-muted-foreground);font-size:var(--text-xs)">Sin servicios</span>';
 
     return `
-      <td><div style="font-weight:500">${escapeHtml(client.empresa || client.nombre)}</div></td>
       <td>
-        <div>${escapeHtml(client.contacto_nombre || "—")}</div>
+        <div style="font-weight:500">${escapeHtml(client.nombre_comercial || client.empresa || client.nombre)}</div>
+        ${client.perfil_completo === false ? '<span class="badge badge--warning">Perfil incompleto</span>' : ""}
+      </td>
+      <td>
+        <div>${escapeHtml(client.contacto || "—")}</div>
         <div style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(client.email || "—")}</div>
       </td>
       <td><div style="display:flex;flex-wrap:wrap;gap:4px;">${servicios}</div></td>
       <td class="u-mono">${client.mrr > 0 ? formatCurrency(client.mrr) : "—"}</td>
-      <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(client.fecha_renovacion_contrato || "—")}</span></td>
+      <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">${escapeHtml(formatearFecha(client.fecha_renovacion_contrato))}</span></td>
       <td>${badgeHtml(client.estado)}</td>
       <td>
         <div style="display:flex; gap:4px;">
@@ -368,9 +372,9 @@
   function openDeleteModal(client) {
     const confirmBtn = document.getElementById("clientDeleteConfirm");
     if (!confirmBtn) return;
-    document.getElementById("clientDeleteName").textContent = client.empresa || client.nombre;
+    document.getElementById("clientDeleteName").textContent = client.nombre_comercial || client.empresa || client.nombre;
     document.getElementById("clientDeleteMrr").textContent = client.mrr > 0 ? formatCurrency(client.mrr) + " MXN/mes" : "—";
-    document.getElementById("clientDeleteEnd").textContent = client.fecha_renovacion_contrato || "—";
+    document.getElementById("clientDeleteEnd").textContent = formatearFecha(client.fecha_renovacion_contrato);
     confirmBtn.dataset.clientId = client.id;
     window.AgencyOS.openModal("clientDeleteModal");
   }
@@ -407,6 +411,14 @@
     });
   }
 
+  // El tablero de captura enlaza aquí con ?editar=ID para completar un perfil incompleto sin buscar al cliente.
+  function abrirEdicionDesdeUrl() {
+    const id = new URLSearchParams(window.location.search).get("editar");
+    if (!id) return;
+    const row = document.querySelector(`[data-client-row-id="${id}"]`);
+    if (row) openClientFormModal(JSON.parse(row.dataset.client));
+  }
+
   document.addEventListener("shell:ready", () => {
     initFilters();
     initModal();
@@ -415,5 +427,6 @@
     initClientForm();
     initClientDelete();
     initDetailFooter();
+    abrirEdicionDesdeUrl();
   });
 })();

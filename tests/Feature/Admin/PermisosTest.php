@@ -85,7 +85,7 @@ class PermisosTest extends TestCase
         $etiquetas = collect(Navigation::groups())->flatten(1)->pluck('label')->all();
 
         $this->assertContains('Dashboard', $etiquetas);
-        $this->assertContains('CRM Clientes', $etiquetas);
+        $this->assertContains('Lista', $etiquetas);
         $this->assertNotContains('Finanzas', $etiquetas);
         $this->assertNotContains('Roles', $etiquetas);
     }

@@ -9,7 +9,7 @@
     <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $tarea->responsable ?? '—' }}</span></td>
     <td><x-badge :status="$tarea->prioridad" /></td>
     <td data-tarea-estado-cell><x-badge :status="$tarea->estado" /></td>
-    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $tarea->fecha_limite?->format('Y-m-d') ?? '—' }}</td>
+    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($tarea->fecha_limite) }}</td>
     <td>
         <div style="display:flex; gap:4px;">
             <button type="button" class="btn--icon" title="Editar" data-edit-tarea="{{ $tarea->id }}">

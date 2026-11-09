@@ -34,13 +34,18 @@ class CapturaApiController extends ControladorApi
 
                 // Lista plana lista para iterar en n8n (un aviso por elemento).
                 if (in_array($celda['estado'], [TableroCaptura::FALTA, TableroCaptura::PARCIAL], true)) {
-                    $pendientes[] = ['cliente_id' => $fila['cliente']->id, 'cliente' => $fila['cliente']->nombre] + $celda;
+                    $pendientes[] = ['cliente_id' => $fila['cliente']->id, 'cliente' => $fila['cliente']->nombre, 'cliente_nombre_comercial' => $fila['cliente']->nombre_comercial] + $celda;
                 }
             }
             $filas[] = [
                 'cliente_id' => $fila['cliente']->id,
                 'cliente' => $fila['cliente']->nombre,
+                // Campo aditivo: `cliente` sigue igual para los flujos de n8n.
+                'cliente_nombre_comercial' => $fila['cliente']->nombre_comercial,
                 'pendientes' => $fila['pendientes'],
+                // Aditivos: un cliente sin fuentes sale con celdas todas `no_aplica` y esta marca.
+                'sin_fuentes' => $fila['sin_fuentes'],
+                'configurar' => $fila['configurar'],
                 'celdas' => $celdas,
             ];
         }
@@ -50,6 +55,8 @@ class CapturaApiController extends ControladorApi
             'resumen' => $r['resumen'],
             'filas' => $filas,
             'pendientes' => $pendientes,
+            // Aditivo: envíos programados a ≤ 3 días y lo que les falta para salir completos (solo avisa).
+            'alertas_programadas' => app(\App\Support\Captura\AlertasProgramadas::class)->calcular(now()),
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Publico;
 
 use App\Http\Controllers\Controller;
 use App\Models\Archivo;
+use App\Support\Reportes\NombreEntregable;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,6 +24,6 @@ class ArchivoDescargaController extends Controller
     {
         abort_unless(Storage::disk('local')->exists($archivo->ruta_archivo), 404);
 
-        return Storage::disk('local')->download($archivo->ruta_archivo, basename($archivo->ruta_archivo));
+        return Storage::disk('local')->download($archivo->ruta_archivo, NombreEntregable::deArchivo($archivo));
     }
 }

@@ -50,8 +50,24 @@
                 <div class="kpi-grid">
                     @foreach ($kpis as $kpi)
                         <x-stat-card :label="$kpi['label']" :value="$kpi['value']" :sub="$kpi['sub']"
-                            :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" :invertir="$kpi['invertir'] ?? false" />
+                            :trend="$kpi['trend']" :icon="$kpi['icon']" :color="$kpi['color']" :href="$kpi['href']" :invertir="$kpi['invertir'] ?? false" :fuente="$kpi['fuente'] ?? null" :tipo="$kpi['tipo'] ?? null" />
                     @endforeach
+                </div>
+            @endif
+
+            {{-- Aviso suave: solo si hay datos que existen y están viejos; sin datos no se muestra nada. --}}
+            @if (count($datosAntiguos))
+                @php $totalAntiguos = array_sum(array_column($datosAntiguos, 'cantidad')); @endphp
+                <div class="dato-alerta" role="status" data-datos-antiguos>
+                    <i class="fa-solid fa-clock" aria-hidden="true" style="margin-top:3px"></i>
+                    <div>
+                        <strong>{{ $totalAntiguos }} {{ $totalAntiguos === 1 ? 'cifra desactualizada' : 'cifras desactualizadas' }}</strong>: más de 30 días sin actualizar (90 en la auditoría SEO)
+                        <ul>
+                            @foreach ($datosAntiguos as $aviso)
+                                <li><a href="{{ $aviso['href'] }}">{{ $aviso['cantidad'] }} {{ $aviso['etiqueta'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
             @endif
 
@@ -144,7 +160,7 @@
                                             {{ $tarea->titulo }}
                                             @if ($tarea->fecha_limite || $tarea->cliente)
                                                 <small class="inicio__detalle">
-                                                    {{ collect([$tarea->fecha_limite?->format('d/m/Y'), $tarea->cliente?->nombre])->filter()->implode(' · ') }}
+                                                    {{ collect([($tarea->fecha_limite ? fecha_mx($tarea->fecha_limite) : null), $tarea->cliente?->nombre_comercial])->filter()->implode(' · ') }}
                                                 </small>
                                             @endif
                                         </span>

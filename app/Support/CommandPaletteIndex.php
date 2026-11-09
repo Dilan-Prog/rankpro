@@ -36,14 +36,24 @@ class CommandPaletteIndex
     {
         $items = [];
 
+        $vistas = [];
+
         foreach (Navigation::groups() as $links) {
             foreach ($links as $link) {
                 if (! Route::has($link['route'])) {
                     continue;
                 }
+                // «Resumen» sin cliente activo y «Reportes del cliente» apuntan a una pantalla que ya
+                // tiene su propia entrada: se omiten para que la paleta no repita destinos.
+                $url = Navigation::url($link);
+                if (isset($vistas[$url])) {
+                    continue;
+                }
+                $vistas[$url] = true;
                 $items[] = [
-                    'label' => $link['label'],
-                    'url' => route($link['route']),
+                    // Las etiquetas cortas del menú («Lista», «Todos») no dicen nada fuera de su grupo.
+                    'label' => $link['paleta'] ?? $link['label'],
+                    'url' => $url,
                 ];
             }
         }
@@ -67,11 +77,13 @@ class CommandPaletteIndex
         }
 
         return Cliente::query()
-            ->orderBy('empresa')
+            ->ordenadoPorNombreComercial()
             ->limit(self::LIMIT)
-            ->get(['id', 'empresa', 'nombre'])
+            ->get(['id', 'empresa', 'nombre', 'contacto_nombre'])
             ->map(fn (Cliente $cliente) => [
-                'label' => $cliente->empresa ?: $cliente->nombre,
+                'label' => $cliente->nombre_comercial,
+                // Se busca también por la persona de contacto, aunque no se muestre como etiqueta.
+                'busqueda' => collect([$cliente->nombre, $cliente->contacto_nombre])->filter()->unique()->implode(' '),
                 'url' => route('admin.clientes.show', $cliente->id),
             ])
             ->all();
@@ -90,7 +102,7 @@ class CommandPaletteIndex
             ->get(['id', 'keyword', 'cliente_id'])
             ->map(fn (Keyword $keyword) => [
                 'label' => $keyword->keyword,
-                'meta' => $keyword->cliente?->empresa ?: $keyword->cliente?->nombre,
+                'meta' => $keyword->cliente?->nombre_comercial,
                 'url' => route('admin.keywords.index'),
             ])
             ->all();

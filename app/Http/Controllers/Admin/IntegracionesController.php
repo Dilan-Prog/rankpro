@@ -9,6 +9,8 @@ use App\Models\AdsClic;
 use App\Models\AdsConversion;
 use App\Models\AdsConversionColumna;
 use App\Models\Cliente;
+use App\Support\ClienteActivo;
+use App\Support\Conversiones\ResumenExportacion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,13 +35,20 @@ class IntegracionesController extends Controller
             ['name' => 'Slack', 'desc' => 'Notificaciones y alertas en tiempo real', 'icon' => 'fa-slack', 'brand' => true],
         ];
 
-        $clientes = Cliente::orderBy('nombre')->get()->map(fn (Cliente $c) => $this->toClienteRow($c));
+        // Cliente activo del menú: la lista por cliente (conexión, pendientes, última señal) se acota a él.
+        $clienteActivo = ClienteActivo::modelo();
+
+        $clientes = Cliente::ordenadoPorNombreComercial()
+            ->when($clienteActivo, fn ($q) => $q->where('id', $clienteActivo->id))
+            ->get()
+            ->map(fn (Cliente $c) => $this->toClienteRow($c));
 
         $pendientesTotal = (int) $clientes->sum('pendientes_count');
         $ultimaSenalGlobal = $clientes->pluck('ultima_senal')->filter()->max();
 
         return view('admin.integraciones.index', [
             'pageTitle' => 'Integraciones',
+            'clienteActivo' => $clienteActivo,
             'integraciones' => $integraciones,
             'clientes' => $clientes,
             'clientesConectados' => $clientes->where('conectado', true)->count(),
@@ -58,7 +67,7 @@ class IntegracionesController extends Controller
 
         return [
             'cliente_id' => $cliente->id,
-            'cliente' => $cliente->nombre,
+            'cliente' => $cliente->nombre_comercial,
             'conectado' => (bool) $cliente->api_token,
             'pendientes_count' => $cliente->adsConversiones()->where('estado', 'pendiente')->count(),
             'ultima_senal' => $ultimaSenal,
@@ -74,7 +83,7 @@ class IntegracionesController extends Controller
         $ultimaSenal = collect([$ultimoClic, $ultimaConversion])->filter()->max();
 
         return view('admin.integraciones.cliente', [
-            'pageTitle' => 'Integraciones — '.$cliente->nombre,
+            'pageTitle' => 'Integraciones — '.$cliente->nombre_comercial,
             'cliente' => $cliente,
             'ultimaSenal' => $ultimaSenal,
             'scriptUrl' => $cliente->api_token
@@ -116,7 +125,7 @@ class IntegracionesController extends Controller
         }
 
         return view('admin.integraciones.clics', [
-            'pageTitle' => 'Clics — '.$cliente->nombre,
+            'pageTitle' => 'Clics — '.$cliente->nombre_comercial,
             'cliente' => $cliente,
             'clics' => $query->latest('created_at')->paginate(50)->withQueryString(),
             'campanas' => AdsCampana::where('cliente_id', $cliente->id)->orderBy('nombre')->get(['id', 'nombre']),
@@ -128,9 +137,13 @@ class IntegracionesController extends Controller
         $query = $this->conversionesFiltradas($request, $cliente);
 
         return view('admin.integraciones.conversiones', [
-            'pageTitle' => 'Conversiones — '.$cliente->nombre,
+            'pageTitle' => 'Conversiones — '.$cliente->nombre_comercial,
             'cliente' => $cliente,
-            'conversiones' => $query->with('adsClic.adsCampana', 'etapa')->latest('created_at')->paginate(50)->withQueryString(),
+            'conversiones' => $query->with('adsClic.adsCampana', 'campana', 'etapa')->latest('created_at')->paginate(50)->withQueryString(),
+            'resumenExportacion' => ResumenExportacion::calcular(
+                $this->conversionesFiltradas($request, $cliente)->where('estado', 'pendiente'),
+                $cliente->adsConversiones()->whereNotNull('duplicada_de_id')->where('estado', 'pendiente')->count()
+            ),
             'campanas' => AdsCampana::where('cliente_id', $cliente->id)->orderBy('nombre')->get(['id', 'nombre']),
             'tiposConversion' => TipoConversion::cases(),
             'etapas' => $cliente->embudoEtapas,
@@ -145,7 +158,7 @@ class IntegracionesController extends Controller
     public function conversionesEmbudo(Request $request, Cliente $cliente): View
     {
         $conversiones = $this->conversionesFiltradas($request, $cliente)
-            ->with('adsClic.adsCampana', 'etapa')
+            ->with('adsClic.adsCampana', 'campana', 'etapa')
             ->latest('created_at')
             ->get();
 
@@ -153,7 +166,7 @@ class IntegracionesController extends Controller
         $columnas = $columnaIds->isNotEmpty() ? AdsConversionColumna::whereIn('id', $columnaIds)->get()->keyBy('id') : collect();
 
         return view('admin.integraciones.conversiones-embudo', [
-            'pageTitle' => 'Embudo de Conversiones — '.$cliente->nombre,
+            'pageTitle' => 'Embudo de Conversiones — '.$cliente->nombre_comercial,
             'cliente' => $cliente,
             'etapas' => $cliente->embudoEtapas,
             'conversiones' => $conversiones,
@@ -171,12 +184,22 @@ class IntegracionesController extends Controller
      */
     public function exportarCsv(Request $request, Cliente $cliente)
     {
-        $conversiones = $this->conversionesFiltradas($request, $cliente)
+        // Con duplicadas incluidas solo para poder contarlas como omitidas; nunca salen en el archivo.
+        $pendientes = $this->conversionesFiltradas($request, $cliente, true)
             ->where('estado', 'pendiente')
             ->orderBy('created_at')
             ->get();
 
-        $filename = 'conversiones-'.Str::slug($cliente->nombre).'-'.now()->format('Y-m-d_His').'.csv';
+        // Google solo atribuye una conversión offline con click id, y sin etapa no hay qué reportar:
+        // el resto se omite y se cuenta, pero NO se marca exportada (seguiría "pendiente" de corregirse).
+        $conversiones = collect();
+        $omitidas = ['duplicada' => 0, 'sin_identificador' => 0, 'sin_etapa' => 0];
+        foreach ($pendientes as $conversion) {
+            $motivo = $conversion->motivoNoExportable();
+            $motivo === null ? $conversiones->push($conversion) : $omitidas[$motivo]++;
+        }
+
+        $filename = 'conversiones-'.Str::slug($cliente->nombre_comercial).'-'.now()->format('Y-m-d_His').'.csv';
 
         $response = response()->streamDownload(function () use ($conversiones) {
             $out = fopen('php://output', 'w');
@@ -195,7 +218,13 @@ class IntegracionesController extends Controller
             }
 
             fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'X-Exportadas' => (string) $conversiones->count(),
+            'X-Omitidas-Sin-Etapa' => (string) $omitidas['sin_etapa'],
+            'X-Omitidas-Sin-Identificador' => (string) $omitidas['sin_identificador'],
+            'X-Omitidas-Duplicadas' => (string) $omitidas['duplicada'],
+        ]);
 
         AdsConversion::whereIn('id', $conversiones->pluck('id'))->update([
             'estado' => 'exportada',
@@ -254,7 +283,7 @@ class IntegracionesController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        $filename = 'embudo-'.Str::slug($cliente->nombre).'-'.now()->format('Y-m-d_His').'.csv';
+        $filename = 'embudo-'.Str::slug($cliente->nombre_comercial).'-'.now()->format('Y-m-d_His').'.csv';
 
         return response()->streamDownload(function () use ($conversiones) {
             $out = fopen('php://output', 'w');
@@ -278,9 +307,15 @@ class IntegracionesController extends Controller
         }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    private function conversionesFiltradas(Request $request, Cliente $cliente)
+    /** @param  bool  $incluirDuplicadas  solo el exporte lo usa, para contarlas como omitidas */
+    private function conversionesFiltradas(Request $request, Cliente $cliente, bool $incluirDuplicadas = false)
     {
         $query = $cliente->adsConversiones();
+
+        // Las repetidas (doble clic) no se listan ni se exportan; se gestionan en /admin/conversiones.
+        if (! $incluirDuplicadas) {
+            $query->whereNull('duplicada_de_id');
+        }
 
         $this->aplicarFiltrosFecha($query, $request);
 

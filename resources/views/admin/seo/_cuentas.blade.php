@@ -21,7 +21,7 @@
                     </span>
                     <span class="seo-cuenta__foot">
                         <x-badge :status="$c['estado']" />
-                        <span class="seo-cuenta__score" title="SEO Score de la auditoría">Score {{ $c['seo_score'] ?? '—' }}</span>
+                        <span class="seo-cuenta__score" title="SEO Score · {{ $c['seo_score_nota'] ?? 'Sin dato' }}">Score {{ $c['seo_score'] ?? '—' }}@if ($c['seo_score_antiguo'] ?? false) <i class="fa-solid fa-clock" aria-label="Auditoría desactualizada"></i>@endif</span>
                     </span>
                 </a>
                 @if ($editable ?? false)

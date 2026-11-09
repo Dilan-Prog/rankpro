@@ -35,7 +35,7 @@ class ActividadReciente
     private function deServicios(int $limite): Collection
     {
         return ServicioEvento::query()
-            ->with(['servicio:id,nombre,cliente_id', 'servicio.cliente:id,nombre', 'usuario:id,name'])
+            ->with(['servicio:id,nombre,cliente_id', 'servicio.cliente:id,nombre,empresa', 'usuario:id,name'])
             ->latest('created_at')
             ->latest('id')
             ->limit($limite)
@@ -43,7 +43,7 @@ class ActividadReciente
             ->map(fn (ServicioEvento $e) => [
                 'icono' => 'fa-briefcase',
                 'texto' => $e->descripcion,
-                'detalle' => collect([$e->servicio?->nombre, $e->servicio?->cliente?->nombre, $e->usuario?->name])->filter()->implode(' · ') ?: null,
+                'detalle' => collect([$e->servicio?->nombre, $e->servicio?->cliente?->nombre_comercial, $e->usuario?->name])->filter()->implode(' · ') ?: null,
                 'cuando' => $e->created_at,
                 'href' => \Illuminate\Support\Facades\Route::has('admin.servicios.index') ? route('admin.servicios.index') : null,
             ]);

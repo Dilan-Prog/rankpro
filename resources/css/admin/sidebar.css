@@ -307,6 +307,79 @@
   color: var(--color-muted-foreground);
 }
 
+/* Cliente activo en la barra superior: resaltado cuando hay uno elegido para que no pase inadvertido. */
+.topbar__cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.topbar__cliente-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.topbar__cliente-icono {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.topbar__cliente.is-activo .topbar__cliente-icono {
+  color: var(--color-primary);
+}
+
+.topbar__cliente-select {
+  max-width: 220px;
+  padding: 5px var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  background: var(--color-input-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+.topbar__cliente.is-activo .topbar__cliente-select {
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.topbar__cliente-select:focus-visible,
+.topbar__cliente-limpiar:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+.topbar__cliente-limpiar {
+  padding: 5px var(--space-3);
+  font: inherit;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  color: var(--color-muted-foreground);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+.topbar__cliente-limpiar:hover {
+  color: var(--color-foreground);
+}
+
+@media (max-width: 767px) {
+  .topbar__cliente-limpiar {
+    display: none;
+  }
+
+  .topbar__cliente-select {
+    max-width: 140px;
+  }
+}
+
 .topbar__actions {
   display: flex;
   align-items: center;
@@ -568,4 +641,104 @@ html.sidebar--collapsed .sidebar__cliente {
 
 :root.sidebar--collapsed .sidebar__group.is-cerrado .sidebar__group-body {
   display: block;
+}
+
+/* Móvil (<= 768 px): botones de la barra superior y enlaces del menú con objetivo táctil de 40 px. */
+@media (max-width: 768px) {
+  .topbar__menu-btn,
+  .topbar__theme,
+  .topbar__bell {
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .sidebar__link,
+  .sidebar__group-toggle {
+    min-height: 40px;
+  }
+
+  /* Con botones de 40 px la barra se pasaba de 390 px: el lado izquierdo se encoge (título con puntos suspensivos) en vez de empujar campana y avatar fuera. */
+  .topbar {
+    padding: 0 var(--space-3);
+  }
+
+  .topbar__left {
+    flex: 1 1 0;
+    min-width: 0;
+    gap: var(--space-2);
+  }
+
+  .topbar__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar__cliente {
+    flex: 1 1 0;
+  }
+
+  .topbar__cliente-form {
+    flex: 1 1 0;
+  }
+
+  .topbar__cliente-select {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .topbar__actions {
+    flex-shrink: 0;
+    gap: 0;
+  }
+}
+
+/* ---------- Menú por flujo: subgrupos y cliente activo ----------
+   «Cliente activo» agrupa módulos en secciones con encabezado pequeño; los que solo
+   funcionan con un cliente elegido se atenúan (siguen siendo enlaces: la pantalla
+   explica el estado vacío). */
+.sidebar__seccion {
+  padding: var(--space-2) 10px 2px;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  color: var(--color-muted-foreground);
+  opacity: 0.8;
+}
+
+.sidebar__seccion--separador {
+  height: 1px;
+  margin: var(--space-2) 10px;
+  padding: 0;
+  background: var(--color-border);
+  opacity: 0.6;
+}
+
+.sidebar__cliente-aviso {
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+}
+
+.sidebar__link.is-sin-cliente:not(.is-active) {
+  opacity: 0.6;
+}
+
+.sidebar__link-nota {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: normal;
+  color: var(--color-muted-foreground);
+}
+
+html.sidebar--collapsed .sidebar__cliente-aviso,
+:root.sidebar--collapsed .sidebar__seccion:not(.sidebar__seccion--separador),
+:root.sidebar--collapsed .sidebar__link-nota {
+  display: none;
 }

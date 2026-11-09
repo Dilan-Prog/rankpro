@@ -30,6 +30,7 @@ class WebhooksController extends Controller
             ->map(fn (Webhook $w) => $w->toRow());
 
         return view('admin.integraciones.webhooks', [
+            'pageTitle' => 'Webhooks',
             'webhooks' => $webhooks,
             'eventos' => Eventos::lista(),
         ]);

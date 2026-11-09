@@ -25,6 +25,8 @@ class RondaKeywords
             'lista_id' => $lista->id,
             'cliente_id' => $lista->cliente_id,
             'cliente' => $lista->cliente?->nombre,
+            // Campo aditivo: n8n sigue recibiendo `cliente` igual que antes.
+            'cliente_nombre_comercial' => $lista->cliente?->nombre_comercial,
             'fecha' => $fecha,
             'total_mediciones' => $mediciones->count(),
             'con_posicion' => $posiciones->count(),

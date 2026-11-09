@@ -129,6 +129,8 @@ class ProyectosApiController extends ControladorApi
             'id' => $p->id,
             'cliente_id' => $p->cliente_id,
             'cliente' => $p->cliente?->nombre ?? '—',
+            // Campo aditivo: la API conserva `cliente`; el panel ya muestra el nombre comercial.
+            'cliente_nombre_comercial' => $p->cliente?->nombre_comercial ?? '—',
             'nombre' => $p->nombre,
             'tipo' => $p->tipo,
             'descripcion' => $p->descripcion,

@@ -10,9 +10,14 @@
             <h1 class="page-header__title">CRM — Clientes</h1>
             <p class="page-header__subtitle" id="clientesCountSubtitle">{{ $clientes->count() }} clientes · {{ $activos }} activos</p>
         </div>
-        <button type="button" class="btn btn--primary" data-open-client-modal>
-            <i class="fa-solid fa-plus"></i> Nuevo Cliente
-        </button>
+        <div class="page-header__acciones">
+            <button type="button" class="btn btn--secondary" data-abrir-importar>
+                <i class="fa-solid fa-file-import"></i> Importar clientes
+            </button>
+            <button type="button" class="btn btn--primary" data-abrir-asistente>
+                <i class="fa-solid fa-plus"></i> Nuevo Cliente
+            </button>
+        </div>
     </div>
 
     <div class="filters-bar">
@@ -29,7 +34,7 @@
         <div class="card empty-state">
             <div class="empty-state__icon"><i class="fa-solid fa-users"></i></div>
             <p class="empty-state__text">Aún no hay clientes registrados.</p>
-            <button type="button" class="btn btn--primary" data-open-client-modal>Agregar el primer cliente</button>
+            <button type="button" class="btn btn--primary" data-abrir-asistente>Agregar el primer cliente</button>
         </div>
     @else
         <x-data-table :headers="['Empresa', 'Contacto', 'Servicios', 'MRR', 'Vencimiento', 'Estado', '']" data-paginate="15">
@@ -38,9 +43,14 @@
                     data-search="{{ mb_strtolower(implode(' ', array_filter([$cliente['nombre'] ?? null, $cliente['empresa'], $cliente['contacto_nombre'], $cliente['email'] ?? null]))) }}"
                     data-estado="{{ $cliente['estado'] }}"
                     data-client="{{ json_encode($cliente) }}">
-                    <td><div style="font-weight:500">{{ $cliente['empresa'] ?? $cliente['nombre'] }}</div></td>
                     <td>
-                        <div>{{ $cliente['contacto_nombre'] ?? '—' }}</div>
+                        <div style="font-weight:500">{{ $cliente['nombre_comercial'] }}</div>
+                        @if (! $cliente['perfil_completo'])
+                            <span class="badge badge--warning" title="Falta: {{ implode(', ', $cliente['perfil_faltantes']) }}">Perfil incompleto</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div>{{ $cliente['contacto'] ?? '—' }}</div>
                         <div style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ $cliente['email'] ?? '—' }}</div>
                     </td>
                     <td>
@@ -53,7 +63,7 @@
                         </div>
                     </td>
                     <td class="u-mono">{{ $cliente['mrr'] > 0 ? '$'.number_format($cliente['mrr']) : '—' }}</td>
-                    <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ $cliente['fecha_renovacion_contrato'] ?? '—' }}</span></td>
+                    <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ fecha_mx($cliente['fecha_renovacion_contrato'] ?? null) }}</span></td>
                     <td><x-badge :status="$cliente['estado']" /></td>
                     <td>
                         <div style="display:flex; gap:4px;">
@@ -119,6 +129,10 @@
         </div>
     </x-modal>
 
+    {{-- Alta: asistente de 4 pasos con alta rápida; la edición sigue en el modal plano de abajo. --}}
+    @include('admin.clientes._asistente', ['giros' => $giros, 'gscDisponible' => $gscDisponible])
+    @include('admin.clientes._importar')
+
     {{-- Marcado propio (no <x-modal>) por la cabecera con subtítulo y el pie fijo; global.js lo cierra igual (overlay, Esc, [data-modal-close]). --}}
     <div class="modal-overlay" id="clientFormModal" hidden>
         <div class="modal modal--moderno" role="dialog" aria-modal="true" aria-labelledby="clientFormModalTitle" aria-describedby="clientFormModalSubtitle">
@@ -128,8 +142,8 @@
                 @csrf
                 <div class="modal--moderno__cabecera">
                     <div>
-                        <h2 id="clientFormModalTitle" class="modal--moderno__titulo">Nuevo cliente</h2>
-                        <p id="clientFormModalSubtitle" class="modal--moderno__subtitulo">Alta de cuenta en el CRM</p>
+                        <h2 id="clientFormModalTitle" class="modal--moderno__titulo">Editar cliente</h2>
+                        <p id="clientFormModalSubtitle" class="modal--moderno__subtitulo">Actualiza los datos de la cuenta</p>
                     </div>
                     <button type="button" class="modal--moderno__cerrar" data-modal-close="clientFormModal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -140,7 +154,7 @@
                 </div>
                 <div class="modal--moderno__pie">
                     <button type="button" class="form-moderno__boton form-moderno__boton--secundario" data-modal-close="clientFormModal">Cancelar</button>
-                    <button type="submit" class="form-moderno__boton form-moderno__boton--primario" id="clientFormSubmit">Crear cliente</button>
+                    <button type="submit" class="form-moderno__boton form-moderno__boton--primario" id="clientFormSubmit">Guardar cambios</button>
                 </div>
             </form>
         </div>
@@ -161,5 +175,5 @@
 @endsection
 
 @section('scripts')
-    @vite('resources/js/clientes.js')
+    @vite(['resources/js/clientes.js', 'resources/js/clientes-asistente.js'])
 @endsection

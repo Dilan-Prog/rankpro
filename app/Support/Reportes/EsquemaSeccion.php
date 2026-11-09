@@ -15,7 +15,9 @@ use App\Enums\TipoSeccion;
  * Formas (el `contenido` de reporte_secciones):
  *
  *   kpis      {items:[{label, valor, formato, comparativo, direccion, detalle,
- *                      destacado, desactualizado}]}
+ *                      destacado, desactualizado, clave, fuente, fecha_dato, precargada}]}
+ *             (`clave`, `fuente`, `fecha_dato` y `precargada` solo los pone la precarga
+ *             mensual; un KPI escrito a mano no los lleva y sigue siendo válido)
  *   hallazgos {items:[{titulo, severidad, evidencia}]}
  *   serie     {etiqueta_x, series:[{clave, titulo, eje, color}],
  *              filas:[{x, valores:{clave:num}}], lectura}
@@ -28,6 +30,11 @@ use App\Enums\TipoSeccion;
  *   plan      {acciones:[{prioridad, accion, evidencia, area, impacto, esfuerzo, kpi}],
  *              leyenda, leyenda_prioridades}
  *   texto     {formato, bloques:[{titulo, cuerpo}]}
+ *   resumen_cliente
+ *             {logros:[{texto, precargada}], retos:[{texto, precargada}],
+ *              proximos_pasos:[{texto}], grafica:{titulo, etiqueta_x,
+ *              series:[{clave, titulo}], filas:[{x, valores:{clave:num}}]}}
+ *             (la versión de 1 página para el cliente: máximo 3 logros y 3 retos)
  *
  * Las formas de `tabla`, `serie` y `ficha` anidan los valores de columna bajo una
  * clave (`valores`) y dejan en la raíz del registro lo que es metadato de la fila
@@ -93,6 +100,12 @@ class EsquemaSeccion
                 'formato' => 'pares',
                 'bloques' => [],
             ],
+            TipoSeccion::ResumenCliente => [
+                'logros' => [],
+                'retos' => [],
+                'proximos_pasos' => [],
+                'grafica' => ['titulo' => '', 'etiqueta_x' => 'Mes', 'series' => [], 'filas' => []],
+            ],
         };
     }
 
@@ -119,6 +132,11 @@ class EsquemaSeccion
                 'contenido.items.*.detalle' => ['nullable', 'string', 'max:255'],
                 'contenido.items.*.destacado' => ['nullable', 'boolean'],
                 'contenido.items.*.desactualizado' => ['nullable', 'string', 'max:40'],
+                // Procedencia de lo precargado: sin estas reglas el autosave las descartaría.
+                'contenido.items.*.clave' => ['nullable', 'string', 'max:60'],
+                'contenido.items.*.fuente' => ['nullable', 'string', 'max:120'],
+                'contenido.items.*.fecha_dato' => ['nullable', 'date_format:Y-m-d'],
+                'contenido.items.*.precargada' => ['nullable', 'boolean'],
             ],
             TipoSeccion::Hallazgos => [
                 'contenido.items' => ['present', 'array'],
@@ -192,6 +210,26 @@ class EsquemaSeccion
                 'contenido.bloques' => ['present', 'array'],
                 'contenido.bloques.*.titulo' => ['nullable', 'string', 'max:255'],
                 'contenido.bloques.*.cuerpo' => ['required', 'string'],
+            ],
+            TipoSeccion::ResumenCliente => [
+                // Una sola página: tres logros y tres retos como máximo.
+                'contenido.logros' => ['present', 'array', 'max:3'],
+                'contenido.logros.*.texto' => ['required', 'string', 'max:280'],
+                'contenido.logros.*.precargada' => ['nullable', 'boolean'],
+                'contenido.retos' => ['present', 'array', 'max:3'],
+                'contenido.retos.*.texto' => ['required', 'string', 'max:280'],
+                'contenido.retos.*.precargada' => ['nullable', 'boolean'],
+                'contenido.proximos_pasos' => ['present', 'array', 'max:5'],
+                'contenido.proximos_pasos.*.texto' => ['required', 'string', 'max:280'],
+                'contenido.grafica' => ['nullable', 'array'],
+                'contenido.grafica.titulo' => ['nullable', 'string', 'max:120'],
+                'contenido.grafica.etiqueta_x' => ['nullable', 'string', 'max:60'],
+                'contenido.grafica.series' => ['nullable', 'array', 'max:2'],
+                'contenido.grafica.series.*.clave' => ['required', 'string', 'max:40'],
+                'contenido.grafica.series.*.titulo' => ['required', 'string', 'max:60'],
+                'contenido.grafica.filas' => ['nullable', 'array', 'max:24'],
+                'contenido.grafica.filas.*.x' => ['required', 'string', 'max:60'],
+                'contenido.grafica.filas.*.valores' => ['present', 'array'],
             ],
         };
     }

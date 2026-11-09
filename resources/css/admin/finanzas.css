@@ -69,3 +69,24 @@
   border-top: 1px solid var(--color-border);
   justify-content: flex-end;
 }
+
+/* ---------- Conciliación (solo lectura): esperado vs facturado vs cobrado ---------- */
+.conciliacion-card { margin-bottom: var(--space-6); }
+.conciliacion-nota { font-size: var(--text-sm); color: var(--color-muted-foreground); margin: 0 0 var(--space-4); }
+.conciliacion-tabla .u-right,
+.conciliacion-card .u-right { text-align: right; }
+.conciliacion-sub { display: block; font-size: var(--text-xs); color: var(--color-muted-foreground); font-family: inherit; }
+.conciliacion-chip { margin-left: var(--space-2); font-size: var(--text-xs); color: var(--color-muted-foreground); }
+.conciliacion-alerta { color: var(--text-warning, #B45309); font-weight: 600; }
+.conciliacion-alerta--roja { color: var(--text-danger); }
+.conciliacion-etiquetas { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.conciliacion-subtitulo { font-size: var(--text-sm); font-weight: 600; margin: var(--space-5) 0 var(--space-2); }
+.conciliacion-grupo { border: 1px solid var(--color-border); border-radius: var(--radius-md, 8px); padding: var(--space-3); margin-bottom: var(--space-3); }
+.conciliacion-grupo__motivo { font-size: var(--text-xs); color: var(--color-muted-foreground); margin: 0 0 var(--space-2); }
+.conciliacion-detalle { border-top: 1px solid var(--color-border); padding: var(--space-3) 0; }
+.conciliacion-detalle summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); cursor: pointer; }
+.conciliacion-resumen { font-size: var(--text-xs); color: var(--color-muted-foreground); }
+.conciliacion-cliente { margin-top: var(--space-3); }
+.conciliacion-cliente__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-2); }
+.conciliacion-aparte td { color: var(--color-muted-foreground); font-size: var(--text-sm); }
+.tabs__item .badge { margin-left: var(--space-1); }

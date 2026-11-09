@@ -21,7 +21,7 @@
                 <h1 class="page-header__title">SEO Plan</h1>
                 <p class="page-header__subtitle">
                     @if ($cliente)
-                        {{ $cliente->empresa ?: $cliente->nombre }}: metas, actividades, clústeres de keywords y resultados.
+                        {{ $cliente->nombre_comercial }}: metas, actividades, clústeres de keywords y resultados.
                     @else
                         Plan SEO por cliente.
                     @endif
@@ -328,7 +328,7 @@
                                     <tr>
                                         <td>{{ $a->accion }}</td>
                                         <td>{{ $a->tipo?->label() ?? '—' }}</td>
-                                        <td class="u-mono">{{ $a->cerrada_en?->format('d/m/Y') ?? '—' }}</td>
+                                        <td class="u-mono">{{ fecha_mx($a->cerrada_en) }}</td>
                                         <td>{{ $a->medicion_antes ?: '—' }}</td>
                                         <td>{{ $a->medicion_despues ?: '—' }}</td>
                                     </tr>

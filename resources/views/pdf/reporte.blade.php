@@ -245,6 +245,9 @@
         .bloque { padding-bottom: 12px; page-break-inside: avoid; }
         .bloque-titulo { font-size: 12px; font-weight: bold; color: #1A2332; }
         .bloque-cuerpo { font-size: 12px; color: #1A2332; line-height: 1.6; padding-top: 4px; }
+
+        /* ── Resumen para el cliente ────────────────────────────────────── */
+@include('pdf.reporte._resumen_cliente_estilos')
     </style>
 </head>
 <body>
@@ -285,8 +288,8 @@
                         <div class="aviso-rotulo">DATO DESACTUALIZADO · ESTA SECCIÓN</div>
                         <div class="aviso-texto">
                             {{ $seccion['aviso']['texto'] }}
-                            @if (!empty($seccion['aviso']['fecha']))
-                                <span class="marca-fecha">{{ $seccion['aviso']['fecha'] }}</span>
+                            @if (!empty($seccion['aviso']['fecha_label']))
+                                <span class="marca-fecha">{{ $seccion['aviso']['fecha_label'] }}</span>
                             @endif
                         </div>
                     </td>

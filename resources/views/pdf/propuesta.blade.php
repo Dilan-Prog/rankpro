@@ -31,11 +31,11 @@
     <footer>RankPro Solutions — Propuesta {{ $numero }} — Página <span></span></footer>
 
     <div class="doc-title">Propuesta Comercial</div>
-    <div class="doc-meta">No. {{ $numero }} &middot; Fecha de emisión: {{ $fechaEmision }}</div>
+    <div class="doc-meta">No. {{ $numero }} &middot; Fecha de emisión: {{ fecha_mx($fechaEmision) }}</div>
 
     <div class="box">
         <h3>Cliente</h3>
-        <strong>{{ $cliente->empresa ?: $cliente->nombre }}</strong><br>
+        <strong>{{ $cliente->nombre_comercial }}</strong><br>
         @if ($cliente->contacto_nombre) Contacto: {{ $cliente->contacto_nombre }}<br> @endif
         @if ($cliente->email) Email: {{ $cliente->email }}<br> @endif
         @if ($cliente->telefono) Teléfono: {{ $cliente->telefono }} @endif
@@ -47,19 +47,28 @@
 
     <table class="services">
         <thead>
-            <tr><th>Servicio propuesto</th><th>Tipo</th><th style="text-align:right;">Inversión mensual</th></tr>
+            <tr><th>Servicio propuesto</th><th>Tipo</th><th style="text-align:right;">Inversión</th></tr>
         </thead>
         <tbody>
             @foreach ($servicios as $servicio)
                 <tr>
                     <td>{{ $servicio->nombre }}</td>
                     <td>{{ \App\Support\Labels::servicioTipo($servicio->tipo) }}</td>
-                    <td style="text-align:right;">${{ number_format($servicio->precio_mensual, 2) }} MXN</td>
+                    <td style="text-align:right;">
+                        @if ($servicio->tipo_cobro === \App\Enums\TipoCobro::Gratuito)
+                            Sin costo
+                        @else
+                            ${{ number_format($servicio->precio_mensual, 2) }} MXN{{ $servicio->tipo_cobro === \App\Enums\TipoCobro::Unico ? ' (pago único)' : '' }}
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
-            <tr><td colspan="2">Inversión mensual total</td><td style="text-align:right;">${{ number_format($totalMensual, 2) }} MXN</td></tr>
+            <tr><td colspan="2">Inversión mensual total (solo servicios mensuales)</td><td style="text-align:right;">${{ number_format($totalMensual, 2) }} MXN</td></tr>
+            @if ($totalUnico > 0)
+                <tr><td colspan="2">Pago único (no es mensualidad)</td><td style="text-align:right;">${{ number_format($totalUnico, 2) }} MXN</td></tr>
+            @endif
         </tfoot>
     </table>
 

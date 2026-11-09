@@ -30,6 +30,13 @@
         </div>
         <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
             <div class="field">
+                <label class="field__label" for="fecha_auditoria">Fecha de la auditoría</label>
+                <input class="input" type="date" name="fecha_auditoria" id="fecha_auditoria" data-autosave value="{{ $auditoria->fecha_auditoria?->format('Y-m-d') }}" max="{{ now()->toDateString() }}">
+                <span class="field__hint">Se fija sola al cambiar el score; corrígela si el score viene de otra fecha.</span>
+            </div>
+        </div>
+        <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
+            <div class="field">
                 <label class="field__label" for="velocidad_mobile">Velocidad Mobile (0-100)</label>
                 <input class="input" type="number" step="0.01" min="0" max="100" name="velocidad_mobile" id="velocidad_mobile" data-autosave value="{{ $auditoria->velocidad_mobile }}">
             </div>

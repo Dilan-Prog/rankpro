@@ -119,7 +119,7 @@ class InicioTest extends TestCase
 
     public function test_alertas_enlazan_al_modulo_y_se_omiten_sin_permiso(): void
     {
-        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Aurora', 'estado' => 'activo']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Hotel Aurora', 'estado' => 'activo']);
         Finanza::create([
             'cliente_id' => $cliente->id, 'concepto' => 'Mensualidad', 'tipo' => 'ingreso',
             'monto' => 5000, 'estado' => 'vencido', 'fecha_vencimiento' => now()->subDays(3),

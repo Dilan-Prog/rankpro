@@ -7,7 +7,7 @@
 @section('content')
     <div class="page-header">
         <div>
-            <h1 class="page-header__title">Embudo de Conversiones — {{ $cliente->nombre }}</h1>
+            <h1 class="page-header__title">Embudo de Conversiones — {{ $cliente->nombre_comercial }}</h1>
             <p class="page-header__subtitle">Arrastra una tarjeta a otra columna para reclasificarla</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">

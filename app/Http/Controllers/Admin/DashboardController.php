@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\EstadoClienteServicio;
 use App\Http\Controllers\Controller;
 use App\Models\AdsCampana;
 use App\Models\Cliente;
 use App\Models\Finanza;
 use App\Models\SeoCampana;
-use App\Models\Servicio;
 use App\Support\FinanzasMetrics;
 use App\Support\ResumenAgencia;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -35,6 +33,8 @@ class DashboardController extends Controller
             'alerts' => $this->alerts($now),
             'topRoas' => $this->topRoas(),
             'contractsExpiring' => $this->contractsExpiring($now),
+            // Aparte del MRR (no está en kpis() para que Inicio y el PDF no cambien de forma).
+            'ingresosProyecto' => FinanzasMetrics::ingresosPorProyecto(),
         ]);
     }
 
@@ -102,7 +102,7 @@ class DashboardController extends Controller
                 return [
                     'id' => $c->id,
                     'name' => $c->nombre,
-                    'client' => $c->cliente?->nombre ?? '—',
+                    'client' => $c->cliente?->nombre_comercial ?? '—',
                     'platform' => $platformLabels[$c->plataforma] ?? $c->plataforma,
                     'roas' => $c->metricas->count() ? round((float) $c->metricas->avg('roas'), 2) : 0,
                     'estado' => $c->estado->value,
@@ -140,14 +140,12 @@ class DashboardController extends Controller
             ->get()
             ->map(function (Cliente $c) use ($hoy) {
                 $fecha = $c->fecha_renovacion_contrato;
-                $mrr = $c->servicios
-                    ->filter(fn (Servicio $s) => $s->estado === EstadoClienteServicio::Activo)
-                    ->sum('precio_mensual');
+                $mrr = FinanzasMetrics::mrrDeServicios($c->servicios);
 
                 return [
                     'id' => $c->id,
-                    'client' => $c->nombre,
-                    'end' => $fecha->day . ' ' . self::MESES[$fecha->month - 1] . ' ' . $fecha->year,
+                    'client' => $c->nombre_comercial,
+                    'end' => fecha_mx($fecha),
                     'days' => (int) $hoy->diffInDays($fecha->copy()->startOfDay()),
                     'mrr' => (float) $mrr,
                 ];

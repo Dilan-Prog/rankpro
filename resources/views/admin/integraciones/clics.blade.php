@@ -3,7 +3,7 @@
 @section('content')
     <div class="page-header">
         <div>
-            <h1 class="page-header__title">Clics — {{ $cliente->nombre }}</h1>
+            <h1 class="page-header__title">Clics — {{ $cliente->nombre_comercial }}</h1>
             <p class="page-header__subtitle">Historial de visitas provenientes de anuncios de Google</p>
         </div>
         <a href="{{ route('admin.clientes.integraciones', $cliente) }}" class="btn btn--secondary">
@@ -60,7 +60,7 @@
         <x-data-table :headers="['Fecha', 'Identificador', 'Campaña', 'UTM Campaign', 'Landing URL', '']">
             @foreach ($clics as $clic)
                 <tr>
-                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $clic->created_at->format('Y-m-d H:i') }}</td>
+                    <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($clic->created_at, true) }}</td>
                     <td>
                         @if ($clic->gclid)
                             <span class="badge badge--info" title="{{ $clic->gclid }}">GCLID</span>

@@ -269,7 +269,7 @@ class ConfiguracionMedicionTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $enlaces = collect(Navigation::todos()['Administración'])->keyBy('label');
+        $enlaces = collect(Navigation::todos()['Agencia'])->keyBy('label');
 
         $this->assertSame('admin.configuracion.medicion.*', $enlaces['Medición y Google']['active']);
         $this->assertSame('admin.configuracion.smtp.*', $enlaces['Configuración de correo']['active']);

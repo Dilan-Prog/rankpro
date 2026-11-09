@@ -33,11 +33,11 @@
     <footer>RankPro Solutions — Contrato {{ $numero }} — Página <span></span></footer>
 
     <div class="doc-title">Contrato de Prestación de Servicios</div>
-    <div class="doc-meta">No. {{ $numero }} &middot; Fecha de emisión: {{ $fechaEmision }}</div>
+    <div class="doc-meta">No. {{ $numero }} &middot; Fecha de emisión: {{ fecha_mx($fechaEmision) }}</div>
 
     <div class="box">
         <h3>Cliente</h3>
-        <strong>{{ $cliente->empresa ?: $cliente->nombre }}</strong><br>
+        <strong>{{ $cliente->nombre_comercial }}</strong><br>
         @if ($cliente->contacto_nombre) Contacto: {{ $cliente->contacto_nombre }}<br> @endif
         @if ($cliente->email) Email: {{ $cliente->email }}<br> @endif
         @if ($cliente->telefono) Teléfono: {{ $cliente->telefono }} @endif
@@ -45,25 +45,34 @@
 
     <table class="services">
         <thead>
-            <tr><th>Servicio</th><th>Tipo</th><th style="text-align:right;">Precio mensual</th></tr>
+            <tr><th>Servicio</th><th>Tipo</th><th style="text-align:right;">Precio</th></tr>
         </thead>
         <tbody>
             @foreach ($servicios as $servicio)
                 <tr>
                     <td>{{ $servicio->nombre }}</td>
                     <td>{{ \App\Support\Labels::servicioTipo($servicio->tipo) }}</td>
-                    <td style="text-align:right;">${{ number_format($servicio->precio_mensual, 2) }} MXN</td>
+                    <td style="text-align:right;">
+                        @if ($servicio->tipo_cobro === \App\Enums\TipoCobro::Gratuito)
+                            Sin costo
+                        @else
+                            ${{ number_format($servicio->precio_mensual, 2) }} MXN{{ $servicio->tipo_cobro === \App\Enums\TipoCobro::Unico ? ' (pago único)' : '' }}
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
-            <tr><td colspan="2">Total mensual</td><td style="text-align:right;">${{ number_format($totalMensual, 2) }} MXN</td></tr>
+            <tr><td colspan="2">Total mensual (solo servicios mensuales)</td><td style="text-align:right;">${{ number_format($totalMensual, 2) }} MXN</td></tr>
+            @if ($totalUnico > 0)
+                <tr><td colspan="2">Pago único (no es mensualidad)</td><td style="text-align:right;">${{ number_format($totalUnico, 2) }} MXN</td></tr>
+            @endif
         </tfoot>
     </table>
 
     <div class="box">
         <h3>Vigencia</h3>
-        Inicio: {{ $fechaInicio }} &middot; Vencimiento: {{ $fechaFin ?: 'Indefinido, renovación automática' }}
+        Inicio: {{ fecha_mx($fechaInicio) }} &middot; Vencimiento: {{ fecha_mx($fechaFin, false, 'Indefinido, renovación automática') }}
         &middot; Forma de pago: {{ \App\Support\Labels::formaPago($cliente->forma_pago?->value) }}
         &middot; Método de pago: {{ \App\Support\Labels::metodoPago($cliente->metodo_pago?->value) }}
     </div>
@@ -76,7 +85,7 @@
     <table class="signatures">
         <tr>
             <td>RankPro Solutions</td>
-            <td>{{ $cliente->empresa ?: $cliente->nombre }}</td>
+            <td>{{ $cliente->nombre_comercial }}</td>
         </tr>
     </table>
 </body>

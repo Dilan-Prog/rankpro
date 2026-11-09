@@ -38,7 +38,49 @@
     });
   }
 
+  /**
+   * Selección en lote: los checkboxes están asociados al formulario [data-conv-lote] con el atributo form,
+   * así que enviar funciona sin JS; aquí solo se lleva la cuenta y se habilitan los botones que corresponden.
+   */
+  function iniciarLote() {
+    const form = document.querySelector("[data-conv-lote]");
+    if (!form) return;
+
+    const filas = () => Array.from(document.querySelectorAll("[data-lote-fila]"));
+    const todas = document.querySelector("[data-lote-todas]");
+    const contador = form.querySelector("[data-lote-contador]");
+    const etapa = form.querySelector("[data-lote-etapa]");
+
+    function actualizar() {
+      const marcadas = filas().filter((c) => c.checked).length;
+      if (contador) contador.textContent = marcadas === 1 ? "1 seleccionada" : marcadas + " seleccionadas";
+      if (todas) {
+        todas.checked = marcadas > 0 && marcadas === filas().length;
+        todas.indeterminate = marcadas > 0 && marcadas < filas().length;
+      }
+      form.querySelectorAll("[data-lote-requiere]").forEach((b) => {
+        b.disabled = marcadas < Number(b.dataset.loteMin || 1);
+      });
+      const clasificar = form.querySelector("[data-lote-clasificar]");
+      if (clasificar) clasificar.disabled = marcadas < 1 || !etapa || etapa.value === "";
+    }
+
+    document.addEventListener("change", (e) => {
+      if (e.target.matches("[data-lote-todas]")) {
+        filas().forEach((c) => (c.checked = e.target.checked));
+        actualizar();
+      } else if (e.target.matches("[data-lote-fila], [data-lote-etapa]")) {
+        actualizar();
+      }
+    });
+
+    // El navegador puede restaurar casillas marcadas al volver atrás: la cuenta debe reflejarlo.
+    actualizar();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    iniciarLote();
+
     const container = document.querySelector("[data-conversiones-table]");
     if (!container) return;
 

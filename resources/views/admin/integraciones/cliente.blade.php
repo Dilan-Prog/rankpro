@@ -2,6 +2,7 @@
 
 @section('content')
     @vite('resources/css/admin/integraciones.css')
+    @vite('resources/js/integraciones-cliente.js')
 
     @php
         $semaforo = 'red';
@@ -11,11 +12,21 @@
             $semaforo = $horas < 24 ? 'green' : ($horas < 168 ? 'amber' : 'red');
             $textoSenal = 'Última señal recibida: '.$ultimaSenal->diffForHumans();
         }
+
+        // El snippet completo solo viaja en data-completo; en pantalla se enmascara
+        // (misma regla que resources/js/utils/enmascarar-token.js, que es la que se ve sin JS).
+        $enmascarar = fn (string $texto): string => preg_replace_callback(
+            '/(rp_live_)([A-Za-z0-9]{8,})/',
+            fn (array $m) => $m[1].'••••••••••'.substr($m[2], -4),
+            $texto
+        );
+        $snippetCompleto = $cliente->api_token ? '<script src="'.$scriptUrl.'"></script>' : '';
+        $snippetMascara = $enmascarar($snippetCompleto);
     @endphp
 
     <div class="page-header">
         <div>
-            <h1 class="page-header__title">Integraciones — {{ $cliente->nombre }}</h1>
+            <h1 class="page-header__title">Integraciones — {{ $cliente->nombre_comercial }}</h1>
             <p class="page-header__subtitle">Tracking de clics y conversiones de Google Ads</p>
         </div>
         <a href="{{ route('admin.clientes.index') }}" class="btn btn--secondary">
@@ -39,13 +50,20 @@
         </div>
 
         @if ($cliente->api_token)
-            <label class="field__label">Script para instalar en el sitio del cliente</label>
-            <div style="display:flex; gap: var(--space-2); align-items:center;">
-                <input type="text" class="input u-mono" readonly value="&lt;script src=&quot;{{ $scriptUrl }}&quot;&gt;&lt;/script&gt;" onclick="this.select()" style="flex:1;">
-                <button type="button" class="btn btn--secondary" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
+            <label class="field__label" for="tokenSnippet">Script para instalar en el sitio del cliente</label>
+            <div data-token-bloque data-completo="{{ $snippetCompleto }}" style="display:flex; gap: var(--space-2); align-items:center; flex-wrap:wrap;">
+                <input type="text" id="tokenSnippet" class="input u-mono" readonly value="{{ $snippetMascara }}" data-token-texto style="flex:1; min-width:16rem;">
+                <button type="button" class="btn btn--secondary" data-token-mostrar aria-pressed="false">
+                    <i class="fa-solid fa-eye"></i> Mostrar
+                </button>
+                <button type="button" class="btn btn--secondary" data-token-copiar>
                     <i class="fa-solid fa-copy"></i> Copiar
                 </button>
             </div>
+            {{-- Sin JS no hay Mostrar/Copiar: se ofrece el snippet completo para no dejar la pantalla inservible. --}}
+            <noscript>
+                <input type="text" class="input u-mono" readonly value="{{ $snippetCompleto }}" style="margin-top: var(--space-2); width:100%;">
+            </noscript>
             <p class="field__hint" style="margin-top: var(--space-2);">
                 Pégalo en el <code>&lt;head&gt;</code> del sitio del cliente. Para registrar conversiones (WhatsApp, llamadas, formularios), el sitio debe llamar a
                 <code>window.RankProTracking.trackConversion('whatsapp')</code> (o <code>'llamada'</code>, <code>'formulario'</code>, <code>'compra'</code>) en el evento correspondiente.
@@ -56,10 +74,9 @@
                 <a href="{{ route('admin.clientes.conversiones', $cliente) }}" class="btn btn--secondary"><i class="fa-solid fa-bullseye"></i> Ver conversiones</a>
             </div>
 
-            <form method="POST" action="{{ route('admin.clientes.integraciones.token', $cliente) }}" style="margin-top: var(--space-4);" data-confirm="¿Regenerar el token? El script instalado con el token anterior dejará de funcionar hasta actualizarlo.">
-                @csrf
-                <button type="submit" class="btn btn--ghost"><i class="fa-solid fa-rotate"></i> Regenerar token</button>
-            </form>
+            <div style="margin-top: var(--space-4);">
+                <button type="button" class="btn btn--ghost" data-abrir-modal="regenerarTokenModal"><i class="fa-solid fa-rotate"></i> Regenerar token</button>
+            </div>
         @else
             <p style="color:var(--color-muted-foreground); font-size:var(--text-sm); margin-bottom: var(--space-4);">
                 Genera un token para obtener el script de tracking de este cliente.
@@ -93,7 +110,17 @@
         <details class="tracking-guia__paso" open>
             <summary><span class="tracking-guia__num">1</span> Instalar el script (obligatorio)</summary>
             <p>Pégalo en el <code>&lt;head&gt;</code> de <strong>todas</strong> las páginas, antes de cualquier otro script de medición. En WordPress: <em>Apariencia → Editor de temas → header.php</em> o un plugin de "Insert Headers and Footers"; en Shopify: <em>theme.liquid</em>; con GTM: etiqueta HTML personalizada en <em>Todas las páginas</em> (funciona, pero el listener de abajo tiene que ir en otra etiqueta que se dispare después).</p>
-            <pre class="tracking-guia__code"><code>@if ($cliente->api_token)&lt;script src="{{ $scriptUrl }}"&gt;&lt;/script&gt;@else&lt;script src="https://TU-DOMINIO/api/tracking/snippet/{token}.js"&gt;&lt;/script&gt;@endif</code></pre>
+            @if ($cliente->api_token)
+                <div data-token-bloque data-completo="{{ $snippetCompleto }}">
+                    <div style="display:flex; gap: var(--space-2); margin-top: var(--space-3);">
+                        <button type="button" class="btn btn--secondary btn--sm" data-token-mostrar aria-pressed="false"><i class="fa-solid fa-eye"></i> Mostrar</button>
+                        <button type="button" class="btn btn--secondary btn--sm" data-token-copiar><i class="fa-solid fa-copy"></i> Copiar</button>
+                    </div>
+                    <pre class="tracking-guia__code"><code data-token-texto>{{ $snippetMascara }}</code></pre>
+                </div>
+            @else
+                <pre class="tracking-guia__code"><code>&lt;script src="https://TU-DOMINIO/api/tracking/snippet/{token}.js"&gt;&lt;/script&gt;</code></pre>
+            @endif
             <p class="field__hint">Si el token es inválido el script responde igual con un JS vacío (200) para no romper el sitio del cliente: revisa el semáforo de "última señal" de arriba para confirmar que llegan datos.</p>
         </details>
 
@@ -165,4 +192,21 @@ window.RankProTracking &amp;&amp; window.RankProTracking.trackConversion('compra
             </ul>
         </details>
     </div>
+
+    @if ($cliente->api_token)
+        <x-modal id="regenerarTokenModal">
+            <x-slot:header><h2>Regenerar token</h2></x-slot:header>
+            <p style="margin-bottom: var(--space-3);">
+                El script instalado con el token actual <strong>dejará de funcionar</strong> en el sitio de {{ $cliente->nombre_comercial }} hasta que pegues el nuevo enlace.
+            </p>
+            <p class="field__hint">Mientras tanto no se registrarán clics ni conversiones de ese sitio. Esta acción no se puede deshacer.</p>
+            <form method="POST" action="{{ route('admin.clientes.integraciones.token', $cliente) }}">
+                @csrf
+                <div class="form-actions">
+                    <button type="submit" class="btn btn--danger"><i class="fa-solid fa-rotate"></i> Regenerar token</button>
+                    <button type="button" class="btn btn--secondary" data-modal-close="regenerarTokenModal" data-modal-foco>Cancelar</button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
 @endsection

@@ -52,6 +52,8 @@ class ServicioSeeder extends Seeder
             [
                 'nombre' => 'Rediseño Tienda en Línea',
                 'descripcion' => 'Rediseño completo del e-commerce en Shopify.',
+                // Proyecto a precio de cierre: cobro único, no mensualidad.
+                'tipo_cobro' => 'unico',
                 'precio_mensual' => 0,
                 'estado' => 'activo',
                 'fecha_inicio' => '2025-04-01',
@@ -64,6 +66,8 @@ class ServicioSeeder extends Seeder
             [
                 'nombre' => 'CRM a Medida',
                 'descripcion' => 'Desarrollo de CRM interno para seguimiento de obras y clientes.',
+                // Proyecto a precio de cierre: cobro único, no mensualidad.
+                'tipo_cobro' => 'unico',
                 'precio_mensual' => 0,
                 'estado' => 'activo',
                 'fecha_inicio' => '2024-11-01',

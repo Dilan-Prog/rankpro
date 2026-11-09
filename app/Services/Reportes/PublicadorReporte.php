@@ -7,6 +7,7 @@ use App\Enums\EstadoReporte;
 use App\Models\Archivo;
 use App\Models\Reporte;
 use App\Models\ReporteEntrega;
+use App\Support\Reportes\NombreEntregable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * El trabajo se reparte en tres pasos deliberadamente separados:
  *
- *   1. Transacción corta que reserva folio y versión bajo `lockForUpdate()`.
+ *   1. Transacción corta que reserva la versión bajo `lockForUpdate()` (y completa el folio si falta: ya nace con el borrador).
  *   2. Render (dompdf / PhpSpreadsheet) y escritura del fichero, FUERA de
  *      cualquier transacción: son segundos de CPU y antes se hacían con la
  *      fila del reporte bloqueada, con la transacción abierta todo ese rato.
@@ -33,16 +34,21 @@ use Illuminate\Support\Facades\Storage;
  */
 class PublicadorReporte
 {
-    /** @param  'pdf'|'xlsx'  $formato */
+    /** @param  'pdf'|'xlsx'|'pdf_cliente'  $formato  `pdf_cliente` = versión de 1 página para el cliente, con su propia serie de versiones */
     public function publicar(Reporte $reporte, string $formato): Archivo
     {
-        if (! in_array($formato, ['pdf', 'xlsx'], true)) {
+        if (! in_array($formato, ['pdf', 'xlsx', 'pdf_cliente'], true)) {
             throw new \InvalidArgumentException("Formato de reporte no soportado: {$formato}.");
         }
 
         $reporte->loadMissing('cliente');
 
-        [$emitido, $version] = $this->reservar($reporte, $formato);
+        // Antes de reservar nada: sin resumen no hay versión para cliente y no debe gastar versión ni cambiar el estado.
+        if ($formato === 'pdf_cliente' && app(Armador::class)->armarCliente($reporte)['resumen'] === null) {
+            throw new ReporteNoListoException('Este reporte no tiene una sección «Resumen para el cliente» visible. Añádela para generar la versión para cliente.');
+        }
+
+        [$emitido, $version, $pasoAListo] = $this->reservar($reporte, $formato);
 
         // El modelo del llamador se pone al día SOLO con lo que quedó
         // confirmado en la base. Si la reserva revienta, el $reporte que tiene
@@ -54,11 +60,24 @@ class PublicadorReporte
         // El renderizador se resuelve por formato y no por constructor:
         // generar un PDF no tiene por qué instanciar el motor de xlsx
         // (PhpSpreadsheet) ni al revés.
-        $contenido = $formato === 'pdf'
-            ? app(RenderizadorPdf::class)->generar($reporte)
-            : app(RenderizadorXlsx::class)->generar($reporte);
+        try {
+            $contenido = match ($formato) {
+                'pdf' => app(RenderizadorPdf::class)->generar($reporte),
+                'pdf_cliente' => app(RenderizadorPdf::class)->generarCliente($reporte),
+                default => app(RenderizadorXlsx::class)->generar($reporte),
+            };
+        } catch (\Throwable $e) {
+            // La reserva ya se commiteó: si el render falla, el reporte no puede quedar «listo»
+            // sin ningún entregable. El folio SÍ se conserva (se asignó al crear el borrador).
+            if ($pasoAListo) {
+                $this->revertirAListo($reporte);
+            }
 
-        $ruta = "clientes/{$reporte->cliente_id}/reportes/{$reporte->numero}-v{$version}.{$formato}";
+            throw $e;
+        }
+
+        $extension = $formato === 'xlsx' ? 'xlsx' : 'pdf';
+        $ruta = "clientes/{$reporte->cliente_id}/reportes/{$reporte->numero}".($formato === 'pdf_cliente' ? '-cliente' : '')."-v{$version}.{$extension}";
         Storage::disk('local')->put($ruta, $contenido);
 
         try {
@@ -80,7 +99,10 @@ class PublicadorReporte
      * llega por parámetro, para que dos generaciones simultáneas del mismo
      * reporte se serialicen aquí en vez de calcular las dos la misma versión.
      *
-     * @return array{0: Reporte, 1: int}
+     * El tercer elemento dice si ESTA llamada fue la que pasó el reporte de borrador a listo,
+     * para poder deshacerlo si el render falla.
+     *
+     * @return array{0: Reporte, 1: int, 2: bool}
      */
     private function reservar(Reporte $reporte, string $formato): array
     {
@@ -90,14 +112,13 @@ class PublicadorReporte
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // El folio se fija en la primera publicación y se reutiliza en las
-            // siguientes: las dos entregas (PDF y XLSX) de un mismo reporte son
-            // el mismo documento en dos formatos, no dos documentos.
-            if (blank($emitido->numero)) {
-                $emitido->numero = $this->numeroSiguiente($emitido->area, bloqueando: true);
-            }
+            // El folio ya se asigna al crear el borrador (CreadorReporte); aquí solo se completa
+            // en reportes anteriores a ese cambio. Las entregas (PDF, XLSX y versión para cliente)
+            // de un mismo reporte comparten folio: son el mismo documento en distintos formatos.
+            $this->asignarFolio($emitido);
 
-            if ($emitido->estado === EstadoReporte::Borrador) {
+            $pasoAListo = $emitido->estado === EstadoReporte::Borrador;
+            if ($pasoAListo) {
                 $emitido->estado = EstadoReporte::Listo;
                 $emitido->fecha_emision = now();
             }
@@ -110,26 +131,53 @@ class PublicadorReporte
                 ->where('formato', $formato)
                 ->max('version') + 1;
 
-            return [$emitido, $version];
+            return [$emitido, $version, $pasoAListo];
         });
+    }
+
+    /**
+     * Fija el folio si falta. Bajo bloqueo (`FOR UPDATE` sobre el último folio del año) para
+     * que dos altas simultáneas no lean el mismo MAX. El año es el de emisión actual.
+     */
+    public function asignarFolio(Reporte $reporte): void
+    {
+        if (filled($reporte->numero)) {
+            return;
+        }
+
+        $reporte->numero = $this->numeroSiguiente($reporte->area, bloqueando: true);
+        $reporte->save();
+    }
+
+    /** Deshace el paso a «listo» de un render fallido, solo si no hay ningún entregable registrado. */
+    private function revertirAListo(Reporte $reporte): void
+    {
+        $revertido = Reporte::withTrashed()
+            ->whereKey($reporte->getKey())
+            ->where('estado', EstadoReporte::Listo->value)
+            ->whereDoesntHave('entregas')
+            ->update(['estado' => EstadoReporte::Borrador->value, 'fecha_emision' => null]);
+
+        if ($revertido) {
+            $reporte->estado = EstadoReporte::Borrador;
+            $reporte->fecha_emision = null;
+            $reporte->syncOriginal();
+        }
     }
 
     /** Paso 3: el fichero ya existe; queda darle una fila que lo referencie. */
     private function registrar(Reporte $reporte, string $formato, int $version, string $ruta): Archivo
     {
         return DB::transaction(function () use ($reporte, $formato, $version, $ruta) {
-            $cliente = $reporte->cliente;
-
             $archivo = Archivo::create([
                 'cliente_id' => $reporte->cliente_id,
-                // La versión va en el nombre porque el módulo de Archivos lista
-                // varios entregables del mismo reporte y, sin ella, se ven como
-                // filas duplicadas imposibles de distinguir.
-                'nombre' => "Reporte {$reporte->numero} v{$version} — ".($cliente?->empresa ?: $cliente?->nombre).".{$formato}",
+                // Mismo nombre que la descarga (cliente, periodo, folio y versión): el módulo
+                // de Archivos lista varios entregables del mismo reporte y así se distinguen.
+                'nombre' => NombreEntregable::para($reporte, $version, $formato),
                 'tipo' => 'reporte',
                 'ruta_archivo' => $ruta,
                 'tamano' => Storage::disk('local')->size($ruta),
-                'extension' => $formato,
+                'extension' => $formato === 'xlsx' ? 'xlsx' : 'pdf',
                 'subido_por' => Auth::id(),
             ]);
 

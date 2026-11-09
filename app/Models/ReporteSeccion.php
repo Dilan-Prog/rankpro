@@ -25,16 +25,20 @@ class ReporteSeccion extends Model
         'rotulo',
         'orden',
         'contenido',
+        'precarga',
         'aviso',
         'visible',
+        'interno',
     ];
 
     protected $casts = [
         'tipo' => TipoSeccion::class,
         'contenido' => 'array',
+        'precarga' => 'array',
         'aviso' => 'array',
         'orden' => 'integer',
         'visible' => 'boolean',
+        'interno' => 'boolean',
     ];
 
     public function reporte(): BelongsTo
@@ -58,6 +62,8 @@ class ReporteSeccion extends Model
             // de Eloquent: dentro de la clase, `$this->visible` devuelve ese array
             // vacío en vez de pasar por el cast. Hay que leer el atributo a mano.
             'visible' => (bool) $this->getAttribute('visible'),
+            // Sí hay que mandarlo: el editor lo usa para el interruptor y la etiqueta.
+            'interno' => (bool) $this->interno,
             'contenido' => $this->contenido ?? [],
             'aviso' => $this->aviso,
         ];

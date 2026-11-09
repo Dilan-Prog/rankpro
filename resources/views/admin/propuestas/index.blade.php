@@ -30,7 +30,7 @@
         <select class="select" id="propuestaClienteFilter">
             <option value="all">Todos los clientes</option>
             @foreach ($clientes as $cliente)
-                <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
             @endforeach
         </select>
         <select class="select" id="propuestaEstadoFilter">
@@ -60,7 +60,7 @@
                 <td><span style="color:var(--color-muted-foreground)">{{ $propuesta['titulo'] }}</span></td>
                 <td style="font-weight:600">{{ $propuesta['precio_mensual'] !== null ? '$'.number_format($propuesta['precio_mensual'], 0, '.', ',') : '—' }}</td>
                 <td><x-badge :status="$propuesta['estado']" /></td>
-                <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ $propuesta['fecha_emision'] ?? '—' }}</span></td>
+                <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ fecha_mx($propuesta['fecha_emision'] ?? null) }}</span></td>
                 <td>
                     <div style="display:flex; gap:4px; justify-content:flex-end;">
                         <a href="{{ $propuesta['show_url'] }}" class="btn--icon" title="Abrir propuesta"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
@@ -89,7 +89,7 @@
                 <select class="select" name="cliente_id" id="pf_cliente_id" required>
                     <option value="">— Selecciona cliente —</option>
                     @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                        <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
                     @endforeach
                 </select>
                 <span class="field__error" data-error-for="cliente_id"></span>

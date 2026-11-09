@@ -84,6 +84,7 @@ class FinanzasApiController extends ControladorApi
             'pagado' => (float) (clone $ingresos)->where('estado', 'pagado')->sum('monto'),
             'vencido' => (float) (clone $ingresos)->where('estado', 'vencido')->sum('monto'),
             'mrr' => FinanzasMetrics::mrr(),
+            'ingresos_por_proyecto' => FinanzasMetrics::ingresosPorProyecto()['total'],
         ]);
     }
 }

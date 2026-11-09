@@ -15,6 +15,7 @@
  * Mismo patrón que propuestas.js: fetch JSON, URLs por data-* con __ID__,
  * confirmaciones con window.confirm(), toasts de window.AgencyOS.
  */
+import { formatearFechaHora } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -149,7 +150,7 @@
     const hora = document.createElement("span");
     hora.className = "field__hint";
     hora.style.display = "inline";
-    hora.textContent = " (" + new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "medium" }) + ")";
+    hora.textContent = " (" + formatearFechaHora(new Date().toISOString()) + ")";
 
     el.append(icono, texto, hora);
   }
@@ -628,7 +629,7 @@
     function etiquetaChip(d) {
       const c = d.cliente_id ? clientes.find((x) => x.id === d.cliente_id) : null;
       const partes = [];
-      if (c) partes.push(c.empresa || c.nombre);
+      if (c) partes.push(c.nombre_comercial || c.empresa || c.nombre);
       if (c && c.contacto_nombre) partes.push(c.contacto_nombre);
       else if (!c && d.nombre) partes.push(d.nombre);
       return partes.join(" · ");
@@ -706,7 +707,7 @@
             .map(
               (c) => `
             <button type="button" class="correo-buscador__item" data-cliente="${c.id}">
-              <span class="correo-buscador__principal">${escapeHtml(c.empresa || c.nombre)}${c.contacto_nombre ? ` · ${escapeHtml(c.contacto_nombre)}` : ""}</span>
+              <span class="correo-buscador__principal">${escapeHtml(c.nombre_comercial || c.empresa || c.nombre)}${c.contacto_nombre ? ` · ${escapeHtml(c.contacto_nombre)}` : ""}</span>
               <span class="correo-buscador__email u-mono">${escapeHtml(c.email)}</span>
             </button>`
             )

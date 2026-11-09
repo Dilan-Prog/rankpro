@@ -69,7 +69,7 @@ class KeywordExportController extends Controller
                         foreach ($keywords as $k) {
                             fputcsv($salida, array_map([self::class, 'protegerFormula'], [
                                 $lista->nombre,
-                                $k->cliente?->nombre,
+                                $k->cliente?->nombre_comercial,
                                 $k->keyword,
                                 $k->tipo,
                                 $k->volumen_busqueda,

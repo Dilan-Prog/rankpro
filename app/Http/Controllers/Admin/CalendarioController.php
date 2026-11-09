@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use App\Models\EventoCalendario;
 use App\Models\User;
 use App\Support\Calendario\AgregadorEventos;
+use App\Support\ClienteActivo;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,11 +44,12 @@ class CalendarioController extends Controller
         return [
             'mes' => $mes->format('Y-m'),
             'hoy' => now()->toDateString(),
+            'clienteActivo' => ClienteActivo::modelo(),
             'eventos' => $this->eventosEntre($desde, $hasta, $request->user()),
             'tipos' => collect(TipoEventoCalendario::cases())->map(fn ($t) => ['valor' => $t->value, 'etiqueta' => $t->label()])->values(),
             // «Campaña» se alimenta sola desde Ads y SEO: no se ofrece al crear a mano.
             'tiposManuales' => collect(self::tiposManuales())->map(fn ($t) => ['valor' => $t->value, 'etiqueta' => $t->label()])->values(),
-            'clientes' => Cliente::query()->orderBy('nombre')->get(['id', 'nombre']),
+            'clientes' => Cliente::query()->ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
         ];
     }
 
@@ -75,7 +77,7 @@ class CalendarioController extends Controller
 
         $evento = EventoCalendario::create($datos + ['user_id' => $request->user()->id]);
 
-        return response()->json(self::serializar($evento->load('cliente:id,nombre'), $request->user()), 201);
+        return response()->json(self::serializar($evento->load('cliente:id,nombre,empresa'), $request->user()), 201);
     }
 
     /**
@@ -89,7 +91,7 @@ class CalendarioController extends Controller
         // Un evento heredado de tipo «campana» puede conservarlo, pero no se puede asignar a otro.
         $evento->update($this->validar($request, $evento->tipo === TipoEventoCalendario::Campana));
 
-        return response()->json(self::serializar($evento->fresh('cliente:id,nombre'), $request->user()));
+        return response()->json(self::serializar($evento->fresh('cliente:id,nombre,empresa'), $request->user()));
     }
 
     /** Solo se borran eventos manuales: los agregados no existen en esta tabla. Misma regla de autoría que editar. */
@@ -137,15 +139,19 @@ class CalendarioController extends Controller
     private function eventosEntre(Carbon $desde, Carbon $hasta, User $usuario): array
     {
         $manuales = EventoCalendario::query()
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()])
             ->get()
             ->map(fn (EventoCalendario $e) => self::serializar($e, $usuario))
             // Una colección Eloquent vacía sigue siendo Eloquent tras map() y su merge() exige modelos.
             ->toBase();
 
+        $clienteActivo = ClienteActivo::id();
+
         return $manuales
             ->merge(app(AgregadorEventos::class)->entre($desde, $hasta, $usuario->id))
+            // Con cliente activo se ocultan los eventos de OTROS clientes; los que no tienen cliente (de la agencia) se quedan.
+            ->filter(fn (array $e) => $clienteActivo === null || ($e['cliente_id'] ?? null) === null || $e['cliente_id'] === $clienteActivo)
             // Día, sin hora primero (todo el día), luego por hora.
             ->sortBy(fn (array $e) => $e['fecha'].' '.($e['hora'] ?? '00:00'))
             ->values()
@@ -163,7 +169,7 @@ class CalendarioController extends Controller
             'fecha' => $e->fecha->toDateString(),
             // La columna `time` llega como HH:MM:SS; la pantalla trabaja con HH:MM.
             'hora' => $e->hora ? substr((string) $e->hora, 0, 5) : null,
-            'cliente' => $e->cliente?->nombre,
+            'cliente' => $e->cliente?->nombre_comercial,
             'cliente_id' => $e->cliente_id,
             'origen' => 'manual',
             // Sin usuario (uso interno) se asume editable; con usuario, según autoría.

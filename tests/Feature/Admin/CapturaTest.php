@@ -105,7 +105,7 @@ class CapturaTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('admin.captura.index'))
             ->assertOk()
-            ->assertSee('pendientes del mes');
+            ->assertSee('clientes con pendientes de');
     }
 
     // --- fuentes ---------------------------------------------------------
@@ -184,7 +184,7 @@ class CapturaTest extends TestCase
 
         $this->assertSame('falta', $this->estado($this->tablero('2026-03'), $cliente, 'seo'));
         // La campaña arrancó en enero: en diciembre aún no existía.
-        $this->assertNull($this->estado($this->tablero('2025-12'), $cliente, 'seo'));
+        $this->assertSame('no_aplica', $this->estado($this->tablero('2025-12'), $cliente, 'seo'));
     }
 
     public function test_ads_en_sus_tres_estados_y_no_aplica(): void
@@ -254,15 +254,48 @@ class CapturaTest extends TestCase
         $t = $this->tablero();
         $this->assertNull($this->estado($t, $pausado, 'metricas'));
         $this->assertNull($this->estado($t, $cancelado, 'metricas'));
-        $this->assertSame(['pendientes' => 0, 'total' => 0], $t['resumen']);
+        $this->assertSame(0, $t['resumen']['clientes_activos']);
+        $this->assertSame(0, $t['resumen']['celdas_total']);
     }
 
-    public function test_cliente_activo_sin_ninguna_fuente_no_sale(): void
+    public function test_cliente_activo_sin_ninguna_fuente_sale_con_fila_sin_fuentes_y_enlaces(): void
     {
-        $cliente = Cliente::factory()->create();
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Vacio']);
         Servicio::factory()->create(['cliente_id' => $cliente->id]);
 
-        $this->assertNull($this->estado($this->tablero(), $cliente, 'seo'));
+        $t = $this->tablero();
+        $this->assertSame('no_aplica', $this->estado($t, $cliente, 'seo'));
+        $this->assertTrue($t['filas'][0]['sin_fuentes']);
+        $this->assertSame(0, $t['filas'][0]['pendientes']);
+        $this->assertSame(1, $t['resumen']['clientes_activos']);
+        $this->assertSame(1, $t['resumen']['clientes_sin_fuentes']);
+        $this->assertSame(0, $t['resumen']['clientes_con_pendientes']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('admin.captura.index', ['mes' => self::MES]))
+            ->assertOk()
+            ->assertSee('<th scope="row">Cliente Vacio</th>', false)
+            ->assertSee('Sin fuentes configuradas')
+            ->assertSee('data-configurar="keywords"', false)
+            ->assertSee(e(route('admin.metricas.index', ['cliente' => $cliente->id])), false)
+            ->assertSee('0</strong> clientes con pendientes de <strong>1</strong> activos', false);
+    }
+
+    public function test_el_resumen_distingue_clientes_de_celdas(): void
+    {
+        $conPendientes = Cliente::factory()->create();
+        $this->metrica($conPendientes);
+        $this->seo($conPendientes);
+        Cliente::factory()->count(3)->create();
+
+        $r = $this->tablero()['resumen'];
+        $this->assertSame(4, $r['clientes_activos']);
+        $this->assertSame(1, $r['clientes_con_pendientes']);
+        $this->assertSame(3, $r['clientes_sin_fuentes']);
+        $this->assertSame(2, $r['celdas_pendientes']);
+        // 2 de medición + 4 celdas de perfil (una por cliente activo, completas en la fábrica).
+        $this->assertSame(6, $r['celdas_total']);
+        $this->assertSame(2, $r['pendientes']);
     }
 
     // --- resumen y filtro ------------------------------------------------
@@ -280,26 +313,34 @@ class CapturaTest extends TestCase
         $b = Cliente::factory()->create();
         AdsMetrica::factory()->create(['ads_campana_id' => $this->ads($b)->id, 'cliente_id' => $b->id, 'mes' => 3, 'anio' => 2026]);
 
-        $this->assertSame(['pendientes' => 2, 'total' => 4], $this->tablero()['resumen']);
+        $r = $this->tablero()['resumen'];
+        $this->assertSame(2, $r['pendientes']);
+        // 4 celdas de medición + 2 de perfil (una por cliente activo).
+        $this->assertSame(6, $r['total']);
+        $this->assertSame(1, $r['clientes_con_pendientes']);
+        $this->assertSame(2, $r['clientes_activos']);
     }
 
     public function test_filtro_de_pendientes_oculta_clientes_completos_sin_alterar_el_resumen(): void
     {
-        $completo = Cliente::factory()->create(['nombre' => 'Cliente Al Dia']);
-        $pendiente = Cliente::factory()->create(['nombre' => 'Cliente Atrasado']);
+        $completo = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Al Dia']);
+        $pendiente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Atrasado']);
         MetricaClienteValor::create(['metrica_id' => $this->metrica($completo)->id, 'periodo' => '2026-03-01', 'valor' => 1]);
         $this->metrica($pendiente);
 
         $t = $this->tablero(self::MES, true);
         $this->assertNull($this->estado($t, $completo, 'metricas'));
         $this->assertSame('falta', $this->estado($t, $pendiente, 'metricas'));
-        $this->assertSame(['pendientes' => 1, 'total' => 2], $t['resumen']);
+        $this->assertSame(1, $t['resumen']['pendientes']);
+        // 2 de medición + 2 de perfil.
+        $this->assertSame(4, $t['resumen']['total']);
+        $this->assertSame(2, $t['resumen']['clientes_activos']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('admin.captura.index', ['mes' => self::MES, 'pendientes' => 1]))
             ->assertOk()
-            ->assertSee('Cliente Atrasado')
-            ->assertDontSee('Cliente Al Dia');
+            ->assertSee('<th scope="row">Cliente Atrasado</th>', false)
+            ->assertDontSee('<th scope="row">Cliente Al Dia</th>', false);
     }
 
     // --- enlaces y vista -------------------------------------------------
@@ -431,7 +472,7 @@ class CapturaTest extends TestCase
         $this->assertSame('no_aplica', $this->estado($t, $terminada, 'ads'));
         $this->assertSame('falta', $this->estado($t, $frontera, 'ads'));
         $this->assertSame('falta', $this->estado($t, $sinFin, 'ads'));
-        // Abril: la de fecha_fin 03-01 ya no exige captura y el cliente deja de salir.
-        $this->assertNull($this->estado($this->tablero('2026-04'), $frontera, 'ads'));
+        // Abril: la de fecha_fin 03-01 ya no exige captura y el cliente queda sin fuentes.
+        $this->assertSame('no_aplica', $this->estado($this->tablero('2026-04'), $frontera, 'ads'));
     }
 }

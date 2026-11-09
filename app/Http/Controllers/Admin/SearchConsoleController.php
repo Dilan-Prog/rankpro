@@ -10,6 +10,7 @@ use App\Services\SearchConsole\ClienteSearchConsole;
 use App\Services\SearchConsole\ErrorSearchConsole;
 use App\Services\SearchConsole\Sincronizador;
 use App\Services\SearchConsole\SincronizacionEnCurso;
+use App\Support\ClienteActivo;
 use App\Support\SearchConsole\Saneador;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,8 +31,16 @@ class SearchConsoleController extends Controller
     {
         $conexion = GscConexion::actual();
 
-        $clientes = Cliente::query()->orderBy('nombre')->get(['id', 'nombre', 'empresa', 'estado']);
-        $propiedades = GscPropiedad::query()->with('metricas')->get()
+        // Cliente activo del menú: acota la lista de clientes y de propiedades; la llave de la cuenta de servicio es global.
+        $clienteActivo = ClienteActivo::modelo();
+
+        $clientes = Cliente::query()
+            ->when($clienteActivo, fn ($q) => $q->where('id', $clienteActivo->id))
+            ->ordenadoPorNombreComercial()
+            ->get(['id', 'nombre', 'empresa', 'estado']);
+        $propiedades = GscPropiedad::query()->with('metricas')
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
+            ->get()
             // Un limit() dentro del with() es GLOBAL (6 filas entre todas las
             // propiedades), no por propiedad: se recortan los ultimos 6 meses
             // de cada una ya cargadas (la relacion viene ordenada por periodo desc).
@@ -40,6 +49,7 @@ class SearchConsoleController extends Controller
 
         return view('admin.integraciones.search-console', [
             'pageTitle' => 'Search Console',
+            'clienteActivo' => $clienteActivo,
             'conexion' => $conexion,
             'tieneLlave' => (bool) $conexion?->tieneLlave(),
             'clientes' => $clientes,
@@ -195,7 +205,7 @@ class SearchConsoleController extends Controller
         }
         $propiedad->save();
 
-        return $this->responder($request, true, "Propiedad de {$cliente->nombre} guardada.", extra: ['propiedad' => $propiedad->toRow()]);
+        return $this->responder($request, true, "Propiedad de {$cliente->nombre_comercial} guardada.", extra: ['propiedad' => $propiedad->toRow()]);
     }
 
     public function quitarPropiedad(Request $request, GscPropiedad $propiedad): RedirectResponse|JsonResponse

@@ -15,6 +15,8 @@
         </a>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     @if (session('status'))
         <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
     @endif

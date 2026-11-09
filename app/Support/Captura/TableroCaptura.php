@@ -34,7 +34,12 @@ class TableroCaptura
         'seo' => 'Métricas SEO',
         'ads' => 'Métricas Ads',
         'metricas' => 'Métricas personalizadas',
+        // No es mensual: ignora el mes; una unidad por cliente activo que es «hecha» cuando su perfil está completo.
+        'perfil' => 'Perfil del cliente',
     ];
+
+    /** Fuentes que son una medición mensual; `perfil` no cuenta para decidir si un cliente «no tiene fuentes». */
+    private const MEDICIONES = ['keywords', 'seo', 'ads', 'metricas'];
 
     public const COMPLETO = 'completo';
     public const PARCIAL = 'parcial';
@@ -52,16 +57,18 @@ class TableroCaptura
     }
 
     /**
-     * @return array{mes: Carbon, filas: array<int, array>, resumen: array{pendientes: int, total: int}}
+     * @return array{mes: Carbon, filas: array<int, array>, resumen: array<string, int>}
      */
-    public function calcular(Carbon $mes, bool $soloPendientes = false): array
+    public function calcular(Carbon $mes, bool $soloPendientes = false, ?int $clienteId = null): array
     {
         $mes = $mes->copy()->startOfMonth();
 
+        // `$clienteId` lo usa solo el panel (cliente activo); la API lo deja en null y ve toda la cartera.
         $clientes = Cliente::query()
             ->where('estado', EstadoClienteServicio::Activo)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre']);
+            ->when($clienteId, fn ($q) => $q->where('id', $clienteId))
+            ->ordenadoPorNombreComercial()
+            ->get(['id', 'nombre', 'empresa', 'contacto_nombre', 'email', 'telefono', 'fecha_renovacion_contrato']);
         $ids = $clientes->pluck('id')->all();
 
         $fuentes = [
@@ -69,11 +76,14 @@ class TableroCaptura
             'seo' => $this->seo($ids, $mes),
             'ads' => $this->ads($ids, $mes),
             'metricas' => $this->metricas($ids, $mes),
+            'perfil' => $this->perfil($clientes),
         ];
 
         $filas = [];
         $pendientes = 0;
         $total = 0;
+        $conPendientes = 0;
+        $sinFuentes = 0;
 
         foreach ($clientes as $cliente) {
             $celdas = [];
@@ -87,29 +97,67 @@ class TableroCaptura
                 if ($celda['estado'] === self::NO_APLICA) {
                     continue;
                 }
-                $aplicables++;
+                if (in_array($clave, self::MEDICIONES, true)) {
+                    $aplicables++;
+                }
                 if ($celda['estado'] !== self::COMPLETO) {
                     $pendientesFila++;
                 }
             }
 
-            // Sin ninguna fuente que genere captura, el cliente no tiene nada que medir.
-            if ($aplicables === 0) {
-                continue;
+            // Un cliente sin fuentes no se oculta: que no salga era justo lo que hacía invisible que le falta configurar su medición.
+            $sinFuente = $aplicables === 0;
+            if ($sinFuente) {
+                $sinFuentes++;
             }
 
             // El resumen cuenta todo el mes, aunque el filtro oculte filas completas.
             $pendientes += $pendientesFila;
-            $total += $aplicables;
+            // El perfil es una celda más del tablero (cuenta en el total), pero no una fuente de medición.
+            $total += $aplicables + ($celdas['perfil']['estado'] === self::NO_APLICA ? 0 : 1);
+            if ($pendientesFila > 0) {
+                $conPendientes++;
+            }
 
-            if ($soloPendientes && $pendientesFila === 0) {
+            // El filtro oculta a los completos, pero deja a los que no tienen fuentes: tienen algo por configurar.
+            if ($soloPendientes && $pendientesFila === 0 && ! $sinFuente) {
                 continue;
             }
 
-            $filas[] = ['cliente' => $cliente, 'celdas' => $celdas, 'pendientes' => $pendientesFila];
+            $filas[] = [
+                'cliente' => $cliente,
+                'celdas' => $celdas,
+                'pendientes' => $pendientesFila,
+                'sin_fuentes' => $sinFuente,
+                'configurar' => $sinFuente ? self::enlacesConfigurar($cliente) : [],
+            ];
         }
 
-        return ['mes' => $mes, 'filas' => $filas, 'resumen' => ['pendientes' => $pendientes, 'total' => $total]];
+        return [
+            'mes' => $mes,
+            'filas' => $filas,
+            // `pendientes`/`total` cuentan CELDAS (se conservan por compatibilidad con la API); los demás cuentan clientes.
+            'resumen' => [
+                'pendientes' => $pendientes,
+                'total' => $total,
+                'celdas_pendientes' => $pendientes,
+                'celdas_total' => $total,
+                'clientes_con_pendientes' => $conPendientes,
+                'clientes_activos' => $clientes->count(),
+                'clientes_sin_fuentes' => $sinFuentes,
+            ],
+        ];
+    }
+
+    /** Dónde empezar a dar de alta cada fuente de un cliente que aún no tiene ninguna. */
+    public static function enlacesConfigurar(Cliente $cliente): array
+    {
+        return [
+            ['fuente' => 'keywords', 'etiqueta' => 'Crear lista de keywords', 'url' => route('admin.keywords.index')],
+            ['fuente' => 'seo', 'etiqueta' => 'Crear campaña SEO', 'url' => route('admin.seo.index')],
+            ['fuente' => 'ads', 'etiqueta' => 'Crear campaña de Ads', 'url' => route('admin.ads.index')],
+            ['fuente' => 'metricas', 'etiqueta' => 'Definir una métrica', 'url' => route('admin.metricas.index', ['cliente' => $cliente->id])],
+        ];
     }
 
     /**
@@ -177,6 +225,17 @@ class TableroCaptura
             }
             $hechas = (int) ($medidas[$lista->id] ?? 0);
             $salida[$lista->cliente_id][] = ['hecho' => $hechas >= $total, 'parcial' => $hechas > 0 && $hechas < $total, 'url' => $url];
+        }
+
+        return $salida;
+    }
+
+    /** Unidad = el cliente mismo; hecha = perfil completo (contacto, correo, WhatsApp y renovación). Ignora el mes. El enlace abre su edición. */
+    private function perfil(Collection $clientes): array
+    {
+        $salida = [];
+        foreach ($clientes as $cliente) {
+            $salida[$cliente->id][] = ['hecho' => $cliente->perfilCompleto(), 'url' => route('admin.clientes.index', ['editar' => $cliente->id])];
         }
 
         return $salida;

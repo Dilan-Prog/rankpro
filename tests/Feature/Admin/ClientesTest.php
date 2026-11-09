@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Cliente;
+use App\Models\Servicio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -187,5 +188,55 @@ class ClientesTest extends TestCase
     {
         $this->assertFalse(Route::has('admin.clientes.create'));
         $this->assertFalse(Route::has('admin.clientes.edit'));
+    }
+
+    /** Fila <tr> de un cliente en el HTML del índice, para afirmar el texto real de sus columnas. */
+    private function filaDelCliente(string $html, Cliente $cliente): string
+    {
+        preg_match('/<tr[^>]*data-client-row-id="'.$cliente->id.'".*?<\/tr>/s', $html, $m);
+        $this->assertNotEmpty($m, 'No se encontró la fila del cliente en el índice.');
+
+        return $m[0];
+    }
+
+    /**
+     * Regresión: ->where('estado', 'activo') sobre la colección comparaba un enum con un string
+     * (siempre falso), así que el MRR salía 0 y la columna pintaba "—" para todos.
+     */
+    public function test_index_muestra_el_valor_del_mrr_y_solo_dice_sin_servicios_cuando_no_hay(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $conMrr = Cliente::factory()->create(['empresa' => 'Hotel Con MRR']);
+        Servicio::factory()->create(['cliente_id' => $conMrr->id, 'estado' => 'activo', 'precio_mensual' => 1500]);
+        Servicio::factory()->create(['cliente_id' => $conMrr->id, 'estado' => 'activo', 'precio_mensual' => 2265.22]);
+        Servicio::factory()->create(['cliente_id' => $conMrr->id, 'estado' => 'pausado', 'precio_mensual' => 9000]);
+        Servicio::factory()->unico()->create(['cliente_id' => $conMrr->id, 'estado' => 'activo', 'precio_mensual' => 7000]);
+
+        $soloProyecto = Cliente::factory()->create(['empresa' => 'Hotel Solo Proyecto']);
+        Servicio::factory()->unico()->create(['cliente_id' => $soloProyecto->id, 'estado' => 'activo', 'precio_mensual' => 7000]);
+
+        $sinServicios = Cliente::factory()->create(['empresa' => 'Hotel Vacio']);
+
+        $respuesta = $this->get(route('admin.clientes.index'))->assertOk();
+        $filas = $respuesta->viewData('clientes')->keyBy('id');
+        $html = $respuesta->getContent();
+
+        $this->assertSame(3765.22, round($filas[$conMrr->id]['mrr'], 2));
+        $this->assertSame(0.0, $filas[$soloProyecto->id]['mrr']);
+        $this->assertSame(0.0, $filas[$sinServicios->id]['mrr']);
+
+        $fila = $this->filaDelCliente($html, $conMrr);
+        $this->assertStringContainsString('$3,765', $fila);
+        $this->assertStringNotContainsString('Sin servicios', $fila);
+
+        // Con servicios pero sin cobro mensual: MRR en guion, y NO dice "Sin servicios".
+        $fila = $this->filaDelCliente($html, $soloProyecto);
+        $this->assertStringNotContainsString('Sin servicios', $fila);
+        $this->assertDoesNotMatchRegularExpression('/\$\d/', $fila);
+
+        $fila = $this->filaDelCliente($html, $sinServicios);
+        $this->assertStringContainsString('Sin servicios', $fila);
     }
 }

@@ -16,3 +16,21 @@
   height: auto;
   margin-bottom: var(--space-4);
 }
+
+.metricas__catalogo {
+  display: grid;
+  gap: var(--space-2);
+  max-height: 55vh;
+  overflow-y: auto;
+  margin-bottom: var(--space-4);
+}
+
+.metricas__catalogo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.metricas__catalogo-item input {
+  margin-top: 4px;
+}

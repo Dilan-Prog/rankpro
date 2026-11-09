@@ -33,7 +33,7 @@
                             <div class="timeline__pista" style="width: {{ $lt['ancho'] }}px;">
                                 <div class="timeline__barra {{ $b['vencido'] ? 'timeline__barra--vencida' : '' }}"
                                     style="left: {{ $b['left'] }}px; width: {{ $b['width'] }}px;"
-                                    title="{{ $p['nombre'] }}: {{ $p['fecha_inicio'] }} a {{ $p['fecha_entrega_estimada'] }} · {{ $b['avance'] }}%">
+                                    title="{{ $p['nombre'] }}: {{ fecha_mx($p['fecha_inicio']) }} a {{ fecha_mx($p['fecha_entrega_estimada']) }} · {{ $b['avance'] }}%">
                                     <span class="timeline__avance" style="width: {{ $b['avance'] }}%;"></span>
                                     <span class="timeline__texto">{{ $b['avance'] }}%</span>
                                 </div>

@@ -90,6 +90,8 @@ class Keyword extends Model
             'keyword' => $this->keyword,
             'cliente_id' => $this->cliente_id,
             'cliente' => $this->cliente?->nombre ?? '—',
+            // Campo aditivo: la API conserva `cliente` tal cual; el panel muestra este.
+            'cliente_nombre_comercial' => $this->cliente?->nombre_comercial ?? '—',
             'lista_id' => $this->lista_id,
             'lista_nombre' => $this->lista?->nombre,
             'tipo' => $this->tipo,

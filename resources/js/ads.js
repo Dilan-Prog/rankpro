@@ -6,6 +6,7 @@
  * child tables (grupos, creativos, métricas, optimizaciones) all use
  * vanilla fetch() — no page reloads for those.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -767,9 +768,9 @@
       errorMsg: "No se pudo guardar la optimización.",
       deleteUrl: (id) => `/admin/ads/optimizaciones/${id}`,
       rowHtml: (o) => {
-        const fecha = o.fecha ? String(o.fecha).slice(0, 10) : "—";
+        const fecha = o.fecha ? String(o.fecha).slice(0, 10) : "";
         return `<tr data-optimizacion-id="${o.id}" data-optimizacion-fecha="${fecha}" data-optimizacion-tipo="${o.tipo}" data-optimizacion-descripcion="${escapeHtml(o.descripcion)}" data-optimizacion-resultado="${escapeHtml(o.resultado || "")}">
-          <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${fecha}</td>
+          <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(fecha)}</td>
           <td>${TIPO_OPTIMIZACION[o.tipo] || o.tipo}</td>
           <td><span style="font-size:var(--text-sm);">${escapeHtml(o.descripcion)}</span></td>
           <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(o.resultado || "—")}</span></td>
@@ -908,7 +909,7 @@
       <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${OBJETIVO_LABELS[c.objetivo] || escapeHtml(c.objetivo)}</span></td>
       <td>${adsBadgeHtml(FASE_ADS_BADGE, c.fase_actual)}</td>
       <td>${adsBadgeHtml(ESTADO_CAMPANA_BADGE, c.estado)}</td>
-      <td class="u-mono">${fmtMoney(c.presupuesto_mensual)}</td>
+      <td class="u-mono">${fmtMoney(c.presupuesto_mensual)} <small style="color:var(--color-muted-foreground);">${escapeHtml(c.moneda || "MXN")}</small></td>
       <td class="u-mono">${fmtMoney(c.inversion)}</td>
       <td class="u-mono">${fmtCompact(c.impresiones)}</td>
       <td class="u-mono">${fmtNum(c.clics)}</td>
@@ -996,9 +997,7 @@
 
   /** Fecha ISO (YYYY-MM-DD) a dd/mm/aaaa sin pasar por Date: evita el desfase de un día por zona horaria. */
   function fmtFechaIso(iso) {
-    if (!iso) return "—";
-    const [y, m, d] = String(iso).split("-");
-    return `${d}/${m}/${y}`;
+    return formatearFecha(iso);
   }
 
   /** Tarjeta de la cuenta seleccionada con datos reales de Cliente (inyectados en data-cuentas); sin selección se oculta. */
@@ -1336,6 +1335,9 @@
       form.querySelector("#cf_plataforma").value = c.plataforma;
       form.querySelector("#cf_objetivo").value = c.objetivo;
       form.querySelector("#cf_presupuesto").value = c.presupuesto_mensual;
+      form.querySelector("#cf_moneda").value = c.moneda || "MXN";
+      form.querySelector("#cf_cuenta_id").value = c.plataforma_cuenta_id || "";
+      form.querySelector("#cf_campana_id").value = c.plataforma_campana_id || "";
       form.querySelector("#cf_estado").value = c.estado;
       form.querySelector("#cf_fecha_inicio").value = c.fecha_inicio || "";
       form.querySelector("#cf_fecha_fin").value = c.fecha_fin || "";

@@ -7,6 +7,7 @@
  * Todo texto del usuario entra al DOM con textContent (nunca innerHTML): los
  * títulos y descripciones son libres.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -85,12 +86,6 @@
     const f = parsear(iso);
     f.setDate(f.getDate() - ((f.getDay() + 6) % 7));
     return aIso(f);
-  }
-
-  function fechaCorta(iso) {
-    if (!iso) return "—";
-    const f = parsear(iso);
-    return `${f.getDate()} ${MESES[f.getMonth()].slice(0, 3)}`;
   }
 
   const etiquetaEstado = (id) => ESTADOS.find((e) => e.id === id)?.etiqueta || id;
@@ -174,7 +169,7 @@
         "div",
         { class: "me-tarjeta__pie" },
         t.cliente ? el("span", { class: "me-chip", text: t.cliente }) : null,
-        t.fecha_limite ? el("span", { class: `me-fecha ${atrasada(t) ? "is-atrasada" : ""}`, text: `Vence ${fechaCorta(t.fecha_limite)}` }) : null
+        t.fecha_limite ? el("span", { class: `me-fecha ${atrasada(t) ? "is-atrasada" : ""}`, text: `Vence ${formatearFecha(t.fecha_limite)}` }) : null
       )
     );
   }
@@ -382,8 +377,8 @@
       el("td", { text: t.cliente || "—" }),
       el("td", {}, selectorEnLinea(t, "estado", ESTADOS)),
       el("td", {}, selectorEnLinea(t, "prioridad", PRIORIDADES)),
-      el("td", { text: fechaCorta(t.fecha_inicio) }),
-      el("td", { class: atrasada(t) ? "me-fecha is-atrasada" : "", text: fechaCorta(t.fecha_limite) })
+      el("td", { text: formatearFecha(t.fecha_inicio) }),
+      el("td", { class: atrasada(t) ? "me-fecha is-atrasada" : "", text: formatearFecha(t.fecha_limite) })
     ));
 
     return el("div", { class: "table-wrap" }, el("table", { class: "table" }, el("thead", {}, cabecera), el("tbody", {}, cuerpo)));
@@ -466,7 +461,7 @@
       "div",
       { class: "me-mes__nav" },
       el("button", { type: "button", class: "btn btn--icon", "aria-label": "Semana anterior", onclick: () => moverSemana(-1) }, el("i", { class: "fa-solid fa-chevron-left" })),
-      el("strong", { class: "me-mes__titulo", text: `${fechaCorta(ini)} – ${fechaCorta(fin)}` }),
+      el("strong", { class: "me-mes__titulo", text: `${formatearFecha(ini)} – ${formatearFecha(fin)}` }),
       el("button", { type: "button", class: "btn btn--icon", "aria-label": "Semana siguiente", onclick: () => moverSemana(1) }, el("i", { class: "fa-solid fa-chevron-right" })),
       el("button", { type: "button", class: "btn btn--sm", onclick: () => { estado.lineaInicio = lunesDe(HOY); render(); } }, "Hoy")
     );
@@ -488,7 +483,7 @@
             type: "button",
             class: `me-barra-tarea me-barra-tarea--${t.prioridad} ${t.estado === "completada" ? "is-hecha" : ""} ${atrasada(t) ? "is-atrasada" : ""}`,
             style: `grid-column: ${a + 1} / ${b + 2}`,
-            title: `${t.titulo} (${fechaCorta(desde)} – ${fechaCorta(hasta)})`,
+            title: `${t.titulo} (${formatearFecha(desde)} – ${formatearFecha(hasta)})`,
             onclick: () => abrirModal(t),
           }, el("span", { text: etiquetaEstado(t.estado) }))));
     });

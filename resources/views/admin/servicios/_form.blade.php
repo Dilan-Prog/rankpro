@@ -52,10 +52,21 @@
         <span class="field__error" data-error-for="estado">@error('estado'){{ $message }}@enderror</span>
     </div>
     <div class="field">
-        <label class="field__label" for="precio_mensual">Precio mensual (MXN)</label>
-        <input class="input" type="number" step="0.01" min="0" name="precio_mensual" id="precio_mensual" value="{{ old('precio_mensual', $servicio?->precio_mensual ?? '0') }}" required>
-        <span class="field__error" data-error-for="precio_mensual">@error('precio_mensual'){{ $message }}@enderror</span>
+        <label class="field__label" for="tipo_cobro">Tipo de cobro</label>
+        <select class="select" name="tipo_cobro" id="tipo_cobro" required>
+            @foreach (\App\Enums\TipoCobro::cases() as $case)
+                <option value="{{ $case->value }}" @selected(old('tipo_cobro', $servicio?->tipo_cobro?->value ?? 'mensual') === $case->value)>{{ $case->label() }}</option>
+            @endforeach
+        </select>
+        <span class="field__error" data-error-for="tipo_cobro">@error('tipo_cobro'){{ $message }}@enderror</span>
     </div>
+</div>
+
+{{-- servicios.js cambia la etiqueta según el tipo de cobro y oculta el precio en los gratuitos. --}}
+<div class="field" id="precioCampo">
+    <label class="field__label" for="precio_mensual" id="precioEtiqueta">Precio mensual (MXN)</label>
+    <input class="input" type="number" step="0.01" min="0" name="precio_mensual" id="precio_mensual" value="{{ old('precio_mensual', $servicio?->precio_mensual ?? '0') }}" required>
+    <span class="field__error" data-error-for="precio_mensual">@error('precio_mensual'){{ $message }}@enderror</span>
 </div>
 
 <div class="srv-form__rejilla srv-form__rejilla--2">

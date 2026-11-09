@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\EstadoClienteServicio;
 use App\Enums\FormaPago;
 use App\Enums\MetodoPago;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +21,9 @@ class Cliente extends Model
     protected $fillable = [
         'nombre',
         'empresa',
+        'giro',
+        'sitio_web',
+        'ciudad',
         'email',
         'telefono',
         'contacto_nombre',
@@ -42,6 +47,64 @@ class Cliente extends Model
         'fecha_inicio_contrato' => 'date',
         'fecha_renovacion_contrato' => 'date',
     ];
+
+    /**
+     * `nombre` guarda a la persona de contacto; la identidad del cliente en todo el panel es la
+     * empresa. Con `nombre_comercial` una sola regla decide qué se muestra (y cae a `nombre` si
+     * la empresa está vacía), en vez de repetir `empresa ?: nombre` en cada vista.
+     */
+    protected function nombreComercial(): Attribute
+    {
+        return Attribute::get(function () {
+            $empresa = trim((string) $this->empresa);
+
+            return $empresa !== '' ? $empresa : (string) $this->nombre;
+        });
+    }
+
+    /** Campos que hacen "completo" un perfil; el alta rápida puede dejarlos vacíos y el tablero de captura los persigue. */
+    public const CAMPOS_PERFIL = [
+        'contacto_nombre' => 'Persona de contacto',
+        'email' => 'Correo',
+        'telefono' => 'WhatsApp',
+        'fecha_renovacion_contrato' => 'Fecha de renovación',
+    ];
+
+    /**
+     * `nombre` guarda a la persona en la mayoría de las fichas viejas y `contacto_nombre` quedó vacío, así que
+     * el contacto cuenta si hay contacto_nombre o si `nombre` es distinto del nombre comercial (misma regla que el CRM).
+     */
+    public function tieneContacto(): bool
+    {
+        return filled($this->contacto_nombre)
+            || (filled($this->nombre) && $this->nombre !== $this->nombre_comercial);
+    }
+
+    /** @return array<string, string> campo => etiqueta de lo que falta para tener el perfil completo */
+    public function camposFaltantes(): array
+    {
+        return array_filter(
+            self::CAMPOS_PERFIL,
+            fn (string $etiqueta, string $campo) => $campo === 'contacto_nombre' ? ! $this->tieneContacto() : blank($this->{$campo}),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    public function perfilCompleto(): bool
+    {
+        return $this->camposFaltantes() === [];
+    }
+
+    /** Misma regla que el accessor, para ORDER BY y SELECT crudos. */
+    public const SQL_NOMBRE_COMERCIAL = "COALESCE(NULLIF(TRIM(clientes.empresa), ''), clientes.nombre)";
+
+    /** Ordena por nombre comercial (empresa, o nombre si no hay) sin romper el orden alfabético de la lista. */
+    public function scopeOrdenadoPorNombreComercial(Builder $query, string $direccion = 'asc'): Builder
+    {
+        $direccion = strtolower($direccion) === 'desc' ? 'desc' : 'asc';
+
+        return $query->orderByRaw(self::SQL_NOMBRE_COMERCIAL.' '.$direccion);
+    }
 
     public function servicios(): HasMany
     {

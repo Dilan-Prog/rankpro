@@ -1,0 +1,646 @@
+{
+  "v": 1,
+  "mode": "omelette",
+  "root": "project/",
+  "title": "Acceso proyecto premium Vite",
+  "entry": "RankPro - Panel de Agencia.dc.html",
+  "pages": [
+    {
+      "path": "RankPro - Panel de Agencia.dc.html",
+      "title": "RankPro - Panel de Agencia",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Indice.dc.html",
+      "title": "RankPro - Indice",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Agendar Admin.dc.html",
+      "title": "RankPro - Agendar Admin",
+      "kind": "page"
+    },
+    {
+      "path": "Revisión 6 Plantillas de Correo.dc.html",
+      "title": "Revisión 6 Plantillas de Correo",
+      "kind": "page"
+    },
+    {
+      "path": "Casos de Éxito - Diseño.dc.html",
+      "title": "Casos de Éxito - Diseño",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Integraciones.dc.html",
+      "title": "AgencyOS - Integraciones",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Roles y Permisos.dc.html",
+      "title": "AgencyOS - Roles y Permisos",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Usuarios.dc.html",
+      "title": "AgencyOS - Usuarios",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Archivos.dc.html",
+      "title": "AgencyOS - Archivos",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Finanzas.dc.html",
+      "title": "AgencyOS - Finanzas",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Desarrollo.dc.html",
+      "title": "AgencyOS - Desarrollo",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Ads.dc.html",
+      "title": "AgencyOS - Ads",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Keywords.dc.html",
+      "title": "AgencyOS - Keywords",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - SEO.dc.html",
+      "title": "AgencyOS - SEO",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Servicios.dc.html",
+      "title": "AgencyOS - Servicios",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - CRM.dc.html",
+      "title": "AgencyOS - CRM",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS - Dashboard.dc.html",
+      "title": "AgencyOS - Dashboard",
+      "kind": "page"
+    },
+    {
+      "path": "AgencyOS.dc.html",
+      "title": "AgencyOS",
+      "kind": "page"
+    },
+    {
+      "path": "index.html",
+      "title": "RankPro — Agencia de Marketing Digital",
+      "kind": "plain"
+    },
+    {
+      "path": "RankPro - IT Automatizacion n8n.dc.html",
+      "title": "RankPro - IT Automatizacion n8n",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Web a la Medida.dc.html",
+      "title": "RankPro - Web a la Medida",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - SEO Conversion.dc.html",
+      "title": "RankPro - SEO Conversion",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - SEM Conversion.dc.html",
+      "title": "RankPro - SEM Conversion",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - DPMS Odontologico.dc.html",
+      "title": "RankPro - DPMS Odontologico",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Terminos.dc.html",
+      "title": "RankPro - Terminos",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Casos de Exito.dc.html",
+      "title": "RankPro - Casos de Exito",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Blog - Articulo.dc.html",
+      "title": "RankPro - Blog - Articulo",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - SEO Organico.dc.html",
+      "title": "RankPro - Servicio - SEO Organico",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - PMS Hotelero.dc.html",
+      "title": "RankPro - PMS Hotelero",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Registro.dc.html",
+      "title": "RankPro - Registro",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Login.dc.html",
+      "title": "RankPro - Login",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Privacidad.dc.html",
+      "title": "RankPro - Privacidad",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - FAQ.dc.html",
+      "title": "RankPro - FAQ",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Blog.dc.html",
+      "title": "RankPro - Blog",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Contacto.dc.html",
+      "title": "RankPro - Contacto",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Agendar.dc.html",
+      "title": "RankPro - Agendar",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Promociones.dc.html",
+      "title": "RankPro - Promociones",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Productos.dc.html",
+      "title": "RankPro - Productos",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - Social Media.dc.html",
+      "title": "RankPro - Servicio - Social Media",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - Analytics.dc.html",
+      "title": "RankPro - Servicio - Analytics",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - PageSpeed.dc.html",
+      "title": "RankPro - Servicio - PageSpeed",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - Desarrollo Web.dc.html",
+      "title": "RankPro - Servicio - Desarrollo Web",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - SEM - Google Ads.dc.html",
+      "title": "RankPro - Servicio - SEM - Google Ads",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicio - Detalle.dc.html",
+      "title": "RankPro - Servicio - Detalle",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Servicios.dc.html",
+      "title": "RankPro - Servicios",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Nosotros.dc.html",
+      "title": "RankPro - Nosotros",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro - Inicio.dc.html",
+      "title": "RankPro - Inicio",
+      "kind": "page"
+    },
+    {
+      "path": "RankPro Sitio.dc.html",
+      "title": "RankPro Sitio",
+      "kind": "page"
+    },
+    {
+      "path": "export/Archivos.html",
+      "title": "Archivos y Documentos — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Banco de Keywords.html",
+      "title": "Banco de Keywords — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Casos de Exito - Diseno.html",
+      "title": "Bundled Page",
+      "kind": "plain"
+    },
+    {
+      "path": "export/CRM Clientes.html",
+      "title": "CRM — Clientes — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Dashboard General.html",
+      "title": "Dashboard General — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Desarrollo.html",
+      "title": "Desarrollo — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Enviar Correo.html",
+      "title": "Enviar Correo — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Finanzas.html",
+      "title": "Finanzas — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Integraciones.html",
+      "title": "Integraciones — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Modulo Ads.html",
+      "title": "Módulo Ads — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Modulo SEO.html",
+      "title": "Módulo SEO — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Plantillas de Correo.html",
+      "title": "Plantillas de Correo — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Agendar Admin.html",
+      "title": "RankPro · Agendar Admin",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Agendar.html",
+      "title": "RankPro · Agendar",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Blog - Articulo.html",
+      "title": "RankPro · Blog - Articulo",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Blog.html",
+      "title": "RankPro · Blog",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Casos de Exito.html",
+      "title": "RankPro · Casos de Exito",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Contacto.html",
+      "title": "RankPro · Contacto",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - DPMS Odontologico.html",
+      "title": "RankPro · DPMS Odontologico",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - FAQ.html",
+      "title": "RankPro · FAQ",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Inicio.html",
+      "title": "RankPro · Inicio",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - IT Automatizacion n8n -pagina unica-.html",
+      "title": "RankPro IT · Automatización de procesos con n8n",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Login -pagina unica-.html",
+      "title": "RankPro · Iniciar sesión",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Login.html",
+      "title": "RankPro · Login",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Nosotros.html",
+      "title": "RankPro · Nosotros",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Panel de Agencia.html",
+      "title": "RankPro · Panel de Agencia",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - PMS Hotelero.html",
+      "title": "RankPro · PMS Hotelero",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Privacidad.html",
+      "title": "RankPro · Privacidad",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Productos.html",
+      "title": "RankPro · Productos",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Promociones.html",
+      "title": "RankPro · Promociones",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Registro.html",
+      "title": "RankPro · Registro",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - SEM Conversion -pagina unica-.html",
+      "title": "RankPro · SEM & Google Ads (orientada a conversión)",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - SEM Conversion.html",
+      "title": "RankPro · SEM Conversion",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - SEO Conversion -pagina unica-.html",
+      "title": "RankPro · SEO Orgánico (diagnóstico en vivo)",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - SEO Conversion.html",
+      "title": "RankPro · SEO Conversion",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - Analytics.html",
+      "title": "RankPro · Servicio - Analytics",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - Desarrollo Web.html",
+      "title": "RankPro · Servicio - Desarrollo Web",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - Detalle.html",
+      "title": "RankPro · Servicio - Detalle",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - PageSpeed.html",
+      "title": "RankPro · Servicio - PageSpeed",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - SEM y Google Ads.html",
+      "title": "RankPro · Servicio - SEM y Google Ads",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - SEO Organico.html",
+      "title": "RankPro · Servicio - SEO Organico",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicio - Social Media.html",
+      "title": "RankPro · Servicio - Social Media",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Servicios.html",
+      "title": "RankPro · Servicios",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Terminos.html",
+      "title": "RankPro · Terminos",
+      "kind": "plain"
+    },
+    {
+      "path": "export/RankPro - Web a la Medida -pagina unica-.html",
+      "title": "RankPro · Desarrollo web a la medida",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Roles y Permisos.html",
+      "title": "Roles y Permisos — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Servicios.html",
+      "title": "Servicios — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "export/Usuarios.html",
+      "title": "Usuarios del Sistema — AgencyOS",
+      "kind": "plain"
+    },
+    {
+      "path": "panel-agencia/RankPro - Panel de Agencia.dc.html",
+      "title": "RankPro - Panel de Agencia",
+      "kind": "page"
+    },
+    {
+      "path": "uploads/RankPro - SEM Conversion.dc.html",
+      "title": "RankPro - SEM Conversion",
+      "kind": "page"
+    },
+    {
+      "path": "uploads/Diseñar sitio web premium/index.html",
+      "title": "Diseñar sitio web premium",
+      "kind": "plain"
+    }
+  ],
+  "migratorVersion": "artifact-migrator (claude-design-backend a595f3769f57)",
+  "createdAt": "2026-11-01T22:10:15.355Z",
+  "source": {
+    "v": 1,
+    "app": "claude-design",
+    "url": "https://claude.ai/design/p/ca139d87-ba94-4582-9f6a-d40a63844206",
+    "projectId": "ca139d87-ba94-4582-9f6a-d40a63844206",
+    "exportedAt": "2026-11-01T22:10:15.355Z"
+  },
+  "report": {
+    "itemsVersion": 2,
+    "pages": {
+      "total": 99,
+      "ok": 52,
+      "partial": 47,
+      "notMigrated": 0
+    },
+    "items": [
+      {
+        "kind": "external_blocked",
+        "path": "export/Archivos.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Banco de Keywords.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/CRM Clientes.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Dashboard General.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Desarrollo.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Enviar Correo.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Finanzas.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Integraciones.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Modulo Ads.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Modulo SEO.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/Plantillas de Correo.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Agendar Admin.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Agendar.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Blog - Articulo.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Blog.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Casos de Exito.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Contacto.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - DPMS Odontologico.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - FAQ.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Inicio.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - IT Automatizacion n8n -pagina unica-.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Login -pagina unica-.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Login.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      },
+      {
+        "kind": "external_blocked",
+        "path": "export/RankPro - Nosotros.html",
+        "text": "https://esm.sh/react@18.3.1\nhttps://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1\nhttps://esm.sh/lucide-react@0.487.0?deps=react@18.3.1\nhttps://esm.sh/recharts@2.15.3?deps=react@18.3.1,react-dom@18.3.1"
+      }
+    ],
+    "truncated": 51,
+    "truncatedLeftOut": 0
+  }
+}

@@ -20,6 +20,6 @@
     <td>{{ $a->tipo?->label() ?? '—' }}</td>
     <td>{{ $a->cluster?->nombre ?? '—' }}</td>
     <td>{{ $a->responsable?->name ?? '—' }}</td>
-    <td class="u-mono">{{ $a->fecha_limite?->format('d/m/Y') ?? '—' }}</td>
+    <td class="u-mono">{{ fecha_mx($a->fecha_limite) }}</td>
     <td><x-badge :status="$a->estado" /></td>
 </tr>

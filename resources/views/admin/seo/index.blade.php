@@ -40,8 +40,14 @@
     <div class="seo-kpis">
         <x-stat-card label="Clientes con SEO" value="{{ $clientesConSeo }}" icon="fa-users" color="primary" />
         <x-stat-card label="Campañas Activas" value="{{ $campanasActivas }}" icon="fa-bullhorn" color="emerald" />
-        <x-stat-card label="SEO Score Promedio" value="{{ $scorePromedio !== null ? $scorePromedio.'/100' : '—' }}" :sub="$scorePromedio !== null ? 'promedio de campañas con score' : 'Sin dato todavía'" icon="fa-gauge-high" color="amber" />
-        <x-stat-card label="Tráfico Orgánico Total" value="{{ number_format($traficoTotal) }}" :sub="$traficoTotal > 0 ? 'suma del último reporte de cada campaña' : 'Sin dato todavía'" icon="fa-arrow-trend-up" color="teal" />
+        @php
+            // Con score pero sin fecha de auditoría (captura anterior a la columna) se dice tal cual: no se inventa una fecha.
+            $textoFechaScore = $scoreSinFecha > 0 ? ($scoreFecha ? fecha_mx($scoreFecha).' · ' : '').$scoreSinFecha.' sin fecha de auditoría' : null;
+        @endphp
+        <x-stat-card label="SEO Score Promedio" value="{{ $scorePromedio !== null ? $scorePromedio.'/100' : '—' }}" :sub="$scorePromedio !== null ? 'promedio de campañas con score' : 'Sin dato todavía'" icon="fa-gauge-high" color="amber"
+            :fuente="$scorePromedio !== null ? 'Auditorías SEO (la más antigua)' : null" :fecha="$scoreFecha" tipo="auditoria" :fecha-texto="$textoFechaScore" fecha-sin="Sin fecha de auditoría" />
+        <x-stat-card label="Tráfico Orgánico Total" value="{{ number_format($traficoTotal) }}" :sub="$traficoTotal > 0 ? 'suma del último reporte de cada campaña' : 'Sin dato todavía'" icon="fa-arrow-trend-up" color="teal"
+            :fuente="$traficoTotal > 0 ? 'Reportes SEO (edición más antigua)' : null" :fecha="$traficoFecha" />
     </div>
 
     {{-- ---------- Create/edit modal — minimal general-data fields only; phase-specific data entry stays on show.blade.php ---------- --}}

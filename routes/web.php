@@ -319,6 +319,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activo'])->group(fu
     Route::prefix('conversiones')->name('conversiones.')->middleware('permiso:conversiones')->group(function () {
         Route::get('/', [ConversionesController::class, 'index'])->name('index');
         Route::post('/exportar-excel', [ConversionesController::class, 'exportarExcel'])->name('exportar-excel');
+        Route::post('/lote/etapa', [ConversionesController::class, 'asignarEtapaLote'])->name('lote.etapa');
+        Route::post('/lote/duplicadas', [ConversionesController::class, 'marcarDuplicadas'])->name('lote.duplicadas');
+        Route::post('/{conversion}/desmarcar-duplicada', [ConversionesController::class, 'desmarcarDuplicada'])->name('desmarcar-duplicada');
         Route::post('/{conversion}/etapa', [ConversionesController::class, 'asignarEtapa'])->name('etapa');
         Route::put('/{conversion}', [ConversionesController::class, 'actualizar'])->name('actualizar');
         Route::post('/columnas', [AdsConversionColumnaController::class, 'store'])->name('columnas.store');
@@ -578,6 +581,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activo'])->group(fu
         Route::get('/', [MetricasController::class, 'index'])->name('index');
         Route::post('/valores', [MetricasController::class, 'guardarMes'])->name('valores.store');
         Route::post('/definiciones', [MetricaClienteController::class, 'store'])->name('definiciones.store');
+        Route::post('/definiciones/catalogo', [MetricaClienteController::class, 'agregarDelCatalogo'])->name('definiciones.catalogo');
         Route::put('/definiciones/{metrica}', [MetricaClienteController::class, 'update'])->name('definiciones.update');
         Route::post('/definiciones/{metrica}/alternar', [MetricaClienteController::class, 'alternar'])->name('definiciones.alternar');
         Route::delete('/definiciones/{metrica}', [MetricaClienteController::class, 'destroy'])->name('definiciones.destroy');

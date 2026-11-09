@@ -368,7 +368,7 @@ class ReporteSeccionesTest extends TestCase
         $this->actingAs($user)->putJson($this->ruta('admin.reportes.secciones.update', $seccion), [
             'titulo' => 'Alcance del reporte',
             'rotulo' => 'SECCIÓN 2',
-            'aviso' => ['texto' => 'Search Console no había consolidado agosto', 'fecha' => '18 ago 2026'],
+            'aviso' => ['texto' => 'Search Console no había consolidado agosto', 'fecha' => '2026-08-18'],
             'contenido' => ['formato' => 'pares', 'bloques' => []],
         ])->assertOk()
             ->assertJsonPath('rotulo', 'SECCIÓN 2')
@@ -380,7 +380,7 @@ class ReporteSeccionesTest extends TestCase
         // de una columna JSON al almacenarla.
         $this->assertEquals([
             'texto' => 'Search Console no había consolidado agosto',
-            'fecha' => '18 ago 2026',
+            'fecha' => '2026-08-18',
         ], $seccion->aviso);
     }
 
@@ -398,7 +398,7 @@ class ReporteSeccionesTest extends TestCase
 
         $this->actingAs($user)->putJson($this->ruta('admin.reportes.secciones.update', $seccion), [
             'titulo' => 'Alcance del reporte',
-            'aviso' => ['texto' => '', 'fecha' => '18 ago 2026'],
+            'aviso' => ['texto' => '', 'fecha' => '2026-08-18'],
             'contenido' => ['formato' => 'pares', 'bloques' => []],
         ])->assertOk()
             ->assertJsonPath('aviso', null);

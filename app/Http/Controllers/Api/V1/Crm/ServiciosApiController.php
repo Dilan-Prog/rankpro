@@ -17,7 +17,7 @@ class ServiciosApiController extends ControladorApi
     {
         return $this->listar(Servicio::query(), $request, new ConsultaOpciones(
             buscarEn: ['nombre', 'descripcion'],
-            filtrosExactos: ['cliente_id', 'responsable_id', 'estado', 'tipo'],
+            filtrosExactos: ['cliente_id', 'responsable_id', 'estado', 'tipo', 'tipo_cobro'],
             ordenables: ['id', 'nombre', 'precio_mensual', 'created_at', 'updated_at'],
             incluibles: ['cliente', 'responsable', 'eventos'],
         ));
@@ -30,7 +30,7 @@ class ServiciosApiController extends ControladorApi
 
     public function store(Request $request)
     {
-        $servicio = Servicio::create($request->validate(ReglasServicios::guardar()));
+        $servicio = Servicio::create(ReglasServicios::normalizar($request->validate(ReglasServicios::guardar())));
         $this->logEvento($servicio, 'Servicio creado.');
 
         return Respuesta::recurso(Serializador::modelo($servicio->fresh()), 201);
@@ -40,11 +40,15 @@ class ServiciosApiController extends ControladorApi
     {
         $estadoAnterior = $servicio->estado;
         $precioAnterior = (string) $servicio->precio_mensual;
+        $cobroAnterior = $servicio->tipo_cobro;
 
-        $servicio->update($request->validate(ReglasServicios::guardar()));
+        $servicio->update(ReglasServicios::normalizar($request->validate(ReglasServicios::guardar())));
 
         if ($servicio->estado !== $estadoAnterior) {
             $this->logEvento($servicio, "Estado cambiado a {$servicio->estado->value}.");
+        }
+        if ($servicio->tipo_cobro !== $cobroAnterior) {
+            $this->logEvento($servicio, "Tipo de cobro cambiado a {$servicio->tipo_cobro->label()}.");
         }
         if ((string) $servicio->precio_mensual !== $precioAnterior) {
             $this->logEvento($servicio, 'Precio mensual actualizado a $'.number_format((float) $servicio->precio_mensual, 2).' MXN.');

@@ -59,6 +59,7 @@ class MetricasApiController extends ControladorApi
             + $this->reglasDefinicion(parcial: false)
         );
         $data['sentido'] ??= SentidoMetrica::Mayor->value;
+        $data['fuente'] ??= 'manual';
         $data['umbral_amarillo_pct'] ??= 80;
         $data['orden'] ??= (int) MetricaCliente::where('cliente_id', $data['cliente_id'])->max('orden') + 1;
 
@@ -73,6 +74,9 @@ class MetricasApiController extends ControladorApi
         // `orden: null` se ignora: la columna es NOT NULL y un null daba 500.
         if (array_key_exists('orden', $data) && $data['orden'] === null) {
             unset($data['orden']);
+        }
+        if (array_key_exists('fuente', $data)) {
+            $data['fuente'] ??= 'manual';
         }
         $metrica->update($data);
 
@@ -283,6 +287,7 @@ class MetricasApiController extends ControladorApi
             'unidad' => $metrica->unidad,
             'meta' => $metrica->meta,
             'sentido' => $metrica->sentido->value,
+            'fuente' => $metrica->fuente ?? 'manual',
             'umbral_amarillo_pct' => $metrica->umbral_amarillo_pct,
         ];
     }

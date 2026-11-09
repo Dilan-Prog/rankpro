@@ -72,7 +72,7 @@
             'email' => $r->email,
             'telefono' => $r->telefono ?: null,
             'notas' => $r->notas ?: null,
-            'cliente' => $r->cliente?->nombre,
+            'cliente' => $r->cliente?->nombre_comercial,
             'fecha' => $r->inicia_en->format('Y-m-d'),
             'fechaLarga' => $fechaLarga($r->inicia_en),
             'horaInicio' => $r->inicia_en->format('g:i A'),
@@ -98,6 +98,8 @@
             </button>
         </div>
 
+        <x-cliente-activo-aviso :cliente="$clienteActivo" nota="Las reuniones sin cliente asignado no se muestran; el horario y los bloqueos son de toda la agencia." />
+
         @if (session('status'))
             <div class="form-status"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i><span>{{ session('status') }}</span></div>
         @endif
@@ -121,7 +123,7 @@
             <div class="agenda-stats__item">
                 <div class="agenda-stats__icono"><i class="fa-solid fa-clock"></i></div>
                 <div>
-                    <div class="agenda-stats__valor">{{ $proximaReunion ? $proximaReunion->inicia_en->format('d/m g:i A') : '—' }}</div>
+                    <div class="agenda-stats__valor">{{ $proximaReunion ? $proximaReunion->inicia_en->format('d/m/Y g:i A') : '—' }}</div>
                     <div class="agenda-stats__label">Próxima reunión</div>
                 </div>
             </div>
@@ -189,7 +191,7 @@
                                 data-agenda-ver="{{ $reunion->id }}">
                                 <td>{{ $reunion->nombre }}</td>
                                 <td>{{ $reunion->email }}</td>
-                                <td>{{ $reunion->cliente?->nombre ?? '—' }}</td>
+                                <td>{{ $reunion->cliente?->nombre_comercial ?? '—' }}</td>
                                 <td>{{ $reunion->inicia_en->format('d/m/Y g:i A') }}</td>
                                 <td><x-badge :status="$reunion->estado" /></td>
                                 <td><button type="button" class="btn btn--secondary btn--sm" data-agenda-ver="{{ $reunion->id }}">Ver</button></td>
@@ -345,7 +347,7 @@
                     <ul class="agenda-bloqueos">
                         @foreach ($bloqueos as $bloqueo)
                             <li class="agenda-bloqueos__item">
-                                <span class="agenda-bloqueos__fecha">{{ $bloqueo->fecha->format('d/m/Y') }}</span>
+                                <span class="agenda-bloqueos__fecha">{{ fecha_mx($bloqueo->fecha) }}</span>
                                 <span class="agenda-bloqueos__motivo">{{ $bloqueo->motivo ?: '—' }}</span>
                                 <form method="POST" action="{{ route('admin.agenda.bloqueos.destroy', $bloqueo->id) }}" data-confirm="¿Quitar este bloqueo?">
                                     @csrf

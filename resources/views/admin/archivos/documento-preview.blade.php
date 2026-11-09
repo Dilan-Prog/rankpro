@@ -29,7 +29,7 @@
     </div>
 
     <div class="card card--padded">
-        <form method="POST" action="{{ $formAction }}">
+        <form method="POST" action="{{ $formAction }}" data-descarga>
             @csrf
             @if (array_key_exists('cliente_id', $hidden))
                 <input type="hidden" name="cliente_id" value="{{ $hidden['cliente_id'] }}">

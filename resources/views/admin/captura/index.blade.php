@@ -19,8 +19,16 @@
             </div>
         </div>
 
+        <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
+        @include('admin.captura._reportes-por-salir', ['alertas' => $alertasProgramadas])
+
         <p data-captura-resumen>
-            <strong>{{ $resumen['pendientes'] }}</strong> de <strong>{{ $resumen['total'] }}</strong> pendientes del mes
+            <strong>{{ $resumen['clientes_con_pendientes'] }}</strong> {{ $resumen['clientes_con_pendientes'] === 1 ? 'cliente' : 'clientes' }} con pendientes de <strong>{{ $resumen['clientes_activos'] }}</strong> activos
+            · <strong>{{ $resumen['celdas_pendientes'] }}</strong> de <strong>{{ $resumen['celdas_total'] }}</strong> celdas por capturar este mes
+            @if ($resumen['clientes_sin_fuentes'] > 0)
+                · {{ $resumen['clientes_sin_fuentes'] }} sin fuentes configuradas
+            @endif
         </p>
 
         <form method="GET" action="{{ route('admin.captura.index') }}" class="filters-bar" data-captura-filtro>
@@ -34,9 +42,10 @@
 
         @if (count($tablero['filas']) === 0)
             <p class="field__hint" data-captura-vacio>
-                {{ $soloPendientes ? 'Ningún cliente tiene pendientes este mes.' : 'No hay clientes activos con captura que hacer.' }}
+                {{ $soloPendientes ? 'Ningún cliente tiene pendientes este mes.' : 'No hay clientes activos.' }}
             </p>
         @else
+            <div class="table-wrap">
             <table class="table" data-captura-tabla>
                 <thead>
                     <tr>
@@ -52,6 +61,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </div>
 @endsection

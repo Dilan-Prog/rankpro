@@ -4,7 +4,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-header__title">Editar Proyecto de Automatización</h1>
-            <p class="page-header__subtitle">{{ $proyecto->nombre }} — {{ $proyecto->cliente->nombre }}</p>
+            <p class="page-header__subtitle">{{ $proyecto->nombre }} — {{ $proyecto->cliente->nombre_comercial }}</p>
         </div>
         <a href="{{ route('admin.automatizaciones.show', $proyecto) }}" class="btn btn--secondary">
             <i class="fa-solid fa-arrow-left"></i> Volver al proyecto

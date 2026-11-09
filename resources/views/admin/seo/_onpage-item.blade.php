@@ -10,7 +10,7 @@
             <span class="u-mono" style="color:var(--color-primary); font-size:var(--text-xs); word-break:break-all;">{{ $accion->url_pagina }}</span>
             <p style="margin-top: var(--space-2); font-size:var(--text-sm);">{{ $accion->accion }}</p>
             <div style="margin-top: var(--space-2); font-size:var(--text-xs); color:var(--color-muted-foreground); display:flex; gap: var(--space-3); flex-wrap:wrap;">
-                <span><i class="fa-solid fa-calendar"></i> {{ $accion->fecha?->format('Y-m-d') ?? '—' }}</span>
+                <span><i class="fa-solid fa-calendar"></i> {{ fecha_mx($accion->fecha) }}</span>
                 <span><i class="fa-solid fa-user"></i> {{ $accion->responsable?->name ?? 'Sin asignar' }}</span>
             </div>
         </div>

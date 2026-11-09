@@ -64,7 +64,7 @@
                     @endif
                 </td>
                 <td><x-badge :status="$envio['estado']" data-estado-badge /></td>
-                <td><span class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ $envio['fecha'] ?? '—' }}</span></td>
+                <td><span class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground)">{{ fecha_mx($envio['fecha'] ?? null, true) }}</span></td>
                 <td>
                     @if ($envio['estado'] === 'enviado' && $envio['apertura'] !== null)
                         <span class="u-mono">{{ $envio['apertura'] }}%</span>

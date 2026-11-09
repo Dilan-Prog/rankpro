@@ -15,6 +15,8 @@
         </button>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     <div class="tabs" id="servicioTabs">
         <button type="button" class="tabs__item is-active" data-tipo="all">Todos</button>
         @foreach (\App\Enums\TipoServicio::cases() as $case)
@@ -29,7 +31,7 @@
             <button type="button" class="btn btn--primary" data-open-servicio-modal>Asignar el primer servicio</button>
         </div>
     @else
-        <x-data-table :headers="['Cliente', 'Servicio', 'Tipo', 'Estado', 'Responsable', 'Inicio', 'Precio Mensual', '']" data-paginate="15">
+        <x-data-table :headers="['Cliente', 'Servicio', 'Tipo', 'Estado', 'Responsable', 'Inicio', 'Precio', '']" data-paginate="15">
             @foreach ($servicios as $servicio)
                 <tr class="is-clickable" data-servicio-row data-servicio-row-id="{{ $servicio['id'] }}"
                     data-tipo="{{ $servicio['tipo'] }}" data-estado="{{ $servicio['estado'] }}"
@@ -37,10 +39,25 @@
                     <td><div style="font-weight:500">{{ $servicio['cliente'] }}</div></td>
                     <td>{{ $servicio['nombre'] }}</td>
                     <td>{{ \App\Support\Labels::servicioTipo($servicio['tipo']) }}</td>
-                    <td><x-badge :status="$servicio['estado']" /></td>
+                    <td>
+                        <x-badge :status="$servicio['estado']" />
+                        @if ($servicio['vencido'])
+                            <span class="badge badge--danger" title="La fecha de fin ya pasó y el servicio sigue activo: renuévalo o ciérralo.">Vencido</span>
+                        @endif
+                    </td>
                     <td class="srv-responsable{{ empty($servicio['responsable_nombre']) ? ' srv-responsable--vacio' : '' }}">{{ $servicio['responsable_nombre'] ?: '—' }}</td>
-                    <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ $servicio['fecha_inicio'] ?? '—' }}</span></td>
-                    <td class="u-mono">{{ $servicio['precio_mensual'] > 0 ? '$'.number_format($servicio['precio_mensual']) : '—' }}</td>
+                    <td><span style="font-size:var(--text-xs);color:var(--color-muted-foreground)">{{ fecha_mx($servicio['fecha_inicio'] ?? null) }}</span></td>
+                    @php
+                        $sufijoCobro = ['mensual' => '/mes', 'unico' => 'pago único'][$servicio['tipo_cobro']] ?? '';
+                    @endphp
+                    <td class="u-mono">
+                        @if ($servicio['tipo_cobro'] === 'gratuito')
+                            Gratuito
+                        @else
+                            {{ $servicio['precio_mensual'] > 0 ? '$'.number_format($servicio['precio_mensual']) : '—' }}
+                            <span class="srv-cobro">{{ $sufijoCobro }}</span>
+                        @endif
+                    </td>
                     <td>
                         <div style="display:flex; gap:4px;">
                             <button type="button" class="btn--icon" title="Editar" data-edit-servicio="{{ $servicio['id'] }}">
@@ -72,11 +89,13 @@
             </header>
 
             <div class="srv-modal__cuerpo">
+                <div id="servicioDetailVencido"></div>
+
                 <section class="srv-seccion" aria-labelledby="srvSecContratado">
                     <h3 class="srv-seccion__titulo srv-seccion__titulo--acento" id="srvSecContratado">Servicio contratado</h3>
                     <div class="srv-metricas">
                         <div class="srv-metrica">
-                            <span class="srv-metrica__etiqueta">MRR</span>
+                            <span class="srv-metrica__etiqueta" id="servicioDetailMrrEtiqueta">MRR</span>
                             <span class="srv-metrica__valor srv-metrica__valor--acento" id="servicioDetailMrr"></span>
                         </div>
                         <div class="srv-metrica">
@@ -101,7 +120,7 @@
                         <div class="srv-ficha__fila"><dt>Servicio</dt><dd id="servicioDetailNombre"></dd></div>
                         <div class="srv-ficha__fila"><dt>Inicio</dt><dd class="srv-mono" id="servicioDetailInicio"></dd></div>
                         <div class="srv-ficha__fila"><dt>Responsable</dt><dd id="servicioDetailResponsable"></dd></div>
-                        <div class="srv-ficha__fila"><dt>Facturación</dt><dd>Mensual · MXN</dd></div>
+                        <div class="srv-ficha__fila"><dt>Facturación</dt><dd id="servicioDetailFacturacion"></dd></div>
                         <div class="srv-ficha__fila"><dt>Ingreso acumulado</dt><dd class="srv-mono srv-acento" id="servicioDetailIngresoAcumulado"></dd></div>
                     </dl>
                 </section>

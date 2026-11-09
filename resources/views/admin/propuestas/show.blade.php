@@ -23,7 +23,7 @@
     <div class="page-header">
         <div>
             <p class="page-header__subtitle u-mono" style="margin-bottom:2px;">{{ $propuesta->folio ?? 'Sin folio — se asigna al generar el PDF' }}</p>
-            <h1 class="page-header__title">{{ $propuesta->cliente->empresa ?: $propuesta->cliente->nombre }} · {{ $propuesta->titulo }}</h1>
+            <h1 class="page-header__title">{{ $propuesta->cliente->nombre_comercial }} · {{ $propuesta->titulo }}</h1>
             <p class="page-header__subtitle">Campaña SEO: {{ $propuesta->seoCampana->nombre ?? 'Sin campaña vinculada' }}</p>
         </div>
         <div class="propuesta-header-actions">
@@ -75,7 +75,7 @@
                 <div class="form-grid form-grid--2" style="margin-top: var(--space-4);">
                     <div class="field">
                         <label class="field__label">Cliente (vinculado)</label>
-                        <div class="propuesta-readonly">{{ $propuesta->cliente->empresa ?: $propuesta->cliente->nombre }}</div>
+                        <div class="propuesta-readonly">{{ $propuesta->cliente->nombre_comercial }}</div>
                     </div>
                     <div class="field">
                         <label class="field__label">Campaña SEO vinculada</label>

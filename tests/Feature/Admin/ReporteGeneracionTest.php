@@ -98,7 +98,7 @@ class ReporteGeneracionTest extends TestCase
             'rotulo' => 'SECCIÓN 2',
             'orden' => 2,
             'contenido' => $tabla,
-            'aviso' => ['texto' => 'Search Console no había consolidado el último día', 'fecha' => '31 ago 2026'],
+            'aviso' => ['texto' => 'Search Console no había consolidado el último día', 'fecha' => '2026-08-31'],
             'visible' => true,
         ]);
 
@@ -356,8 +356,8 @@ class ReporteGeneracionTest extends TestCase
             [1, 2],
             ReporteEntrega::where('reporte_id', $reporte->id)->orderBy('version')->pluck('version')->all()
         );
-        $this->assertStringContainsString("{$folio} v1", $archivoV1->nombre);
-        $this->assertStringContainsString("{$folio} v2", $archivoV2->nombre);
+        $this->assertStringContainsString("{$folio}-v1.pdf", $archivoV1->nombre);
+        $this->assertStringContainsString("{$folio}-v2.pdf", $archivoV2->nombre);
     }
 
     /** B1 · Cada formato lleva su propia serie de versiones. */

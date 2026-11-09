@@ -26,15 +26,149 @@ class Plantillas
     ];
 
     /**
-     * @return array<int, array{tipo: TipoSeccion, titulo: string, contenido: array<string, mixed>}>
+     * Clave estable y marca `avanzada` de cada sección por título. Se resuelve por título
+     * para no tocar la definición de las secciones; los títulos son únicos dentro de cada área.
+     * Las avanzadas se ofrecen como casillas opcionales en "Generar reporte del mes";
+     * en el reporte personalizado se siembran todas, como siempre.
+     */
+    private const META = [
+        'seo' => [
+            'Alcance del reporte' => ['alcance', false],
+            'Indicadores del periodo' => ['kpis', false],
+            'Hallazgos críticos' => ['hallazgos', false],
+            'Tendencia diaria' => ['tendencia_diaria', true],
+            'Consultas' => ['consultas', true],
+            'Rendimiento por página' => ['paginas', true],
+            'Países' => ['paises', true],
+            'Dispositivos' => ['dispositivos', true],
+            'Cobertura de indexación' => ['indexacion', true],
+            'Auditoría on-page' => ['onpage', true],
+            'Análisis y riesgos' => ['analisis', false],
+            'Plan de acción' => ['plan', false],
+            'Metodología y fuentes' => ['metodologia', false],
+        ],
+        'ads' => [
+            'Alcance del reporte' => ['alcance', false],
+            'Indicadores del periodo' => ['kpis', false],
+            'Hallazgos y oportunidades' => ['hallazgos', false],
+            'Tendencia diaria' => ['tendencia_diaria', true],
+            'Rendimiento por campaña' => ['campanas', false],
+            'Palabras clave y públicos' => ['palabras', true],
+            'Creativos' => ['creativos', true],
+            'Conversiones por etapa del embudo' => ['embudo', true],
+            'Análisis y riesgos' => ['analisis', false],
+            'Plan de optimización' => ['plan', false],
+            'Metodología y fuentes' => ['metodologia', false],
+        ],
+        'web' => [
+            'Alcance del reporte' => ['alcance', false],
+            'Indicadores del periodo' => ['kpis', false],
+            'Hallazgos técnicos' => ['hallazgos', false],
+            'Tiempo de carga y disponibilidad' => ['tiempo_carga', true],
+            'Core Web Vitals por plantilla' => ['cwv', false],
+            'Auditoría técnica por página' => ['auditoria', true],
+            'Incidencias detectadas' => ['incidencias', true],
+            'Análisis y riesgos' => ['analisis', false],
+            'Plan de mejoras' => ['plan', false],
+            'Metodología y fuentes' => ['metodologia', false],
+        ],
+    ];
+
+    /** Orden de "Generar reporte del mes"; lo que no está en la plantilla clásica se construye en paraMes(). */
+    private const ORDEN_MES = [
+        'seo' => ['resumen', 'alcance', 'kpis', 'serie_mensual', 'movimientos', 'hallazgos', '@avanzadas', 'analisis', 'plan', 'metodologia'],
+        'ads' => ['resumen', 'alcance', 'kpis', 'serie_mensual', 'campanas', 'hallazgos', '@avanzadas', 'analisis', 'plan', 'metodologia'],
+        'web' => ['resumen', 'alcance', 'kpis', 'serie_mensual', 'metricas', 'hallazgos', 'cwv', '@avanzadas', 'analisis', 'plan', 'metodologia'],
+    ];
+
+    /** Qué clave de Precarga llena cada sección del modo mensual. */
+    private const PRECARGA = [
+        'resumen' => 'resumen',
+        'kpis' => 'kpis',
+        'serie_mensual' => 'serie',
+        'movimientos' => 'movimientos',
+        'campanas' => 'campanas',
+        'metricas' => 'metricas',
+    ];
+
+    /**
+     * Plantilla clásica (reporte personalizado): TODAS las secciones, vacías.
+     *
+     * @return array<int, array{tipo: TipoSeccion, titulo: string, contenido: array<string, mixed>, clave: ?string, avanzada: bool}>
      */
     public static function para(AreaReporte $area): array
     {
-        return match ($area) {
+        $secciones = match ($area) {
             AreaReporte::Seo => self::seo(),
             AreaReporte::Ads => self::ads(),
             AreaReporte::Web => self::web(),
         };
+
+        return array_map(function (array $seccion) use ($area) {
+            [$clave, $avanzada] = self::META[$area->value][$seccion['titulo']] ?? [null, false];
+
+            return $seccion + ['clave' => $clave, 'avanzada' => $avanzada];
+        }, $secciones);
+    }
+
+    /**
+     * Secciones opcionales que se ofrecen como casillas en "Generar reporte del mes".
+     *
+     * @return array<string, string> clave => título
+     */
+    public static function avanzadas(AreaReporte $area): array
+    {
+        $salida = [];
+        foreach (self::para($area) as $seccion) {
+            if ($seccion['avanzada']) {
+                $salida[$seccion['clave']] = $seccion['titulo'];
+            }
+        }
+
+        return $salida;
+    }
+
+    /**
+     * Plantilla de "Generar reporte del mes": resumen para el cliente, indicadores y gráfica
+     * precargados, lo básico del área y SOLO las avanzadas elegidas. Cada sección trae
+     * `precarga` (clave que llena App\Support\Reportes\Precarga\*) o null si es de captura manual.
+     *
+     * @param  array<int, string>  $avanzadas  claves de avanzadas elegidas
+     * @return array<int, array{tipo: TipoSeccion, titulo: string, contenido: array<string, mixed>, clave: ?string, avanzada: bool, precarga: ?string}>
+     */
+    public static function paraMes(AreaReporte $area, array $avanzadas = []): array
+    {
+        $base = collect(self::para($area))->keyBy('clave');
+        $salida = [];
+
+        foreach (self::ORDEN_MES[$area->value] as $clave) {
+            if ($clave === '@avanzadas') {
+                foreach ($base as $k => $seccion) {
+                    if ($seccion['avanzada'] && in_array($k, $avanzadas, true)) {
+                        $salida[] = $seccion + ['precarga' => null];
+                    }
+                }
+
+                continue;
+            }
+
+            $seccion = match ($clave) {
+                'resumen' => ['tipo' => TipoSeccion::ResumenCliente, 'titulo' => 'Resumen para el cliente', 'contenido' => EsquemaSeccion::vacio(TipoSeccion::ResumenCliente)],
+                'serie_mensual' => self::serie('Evolución mensual', []),
+                'movimientos' => self::tabla('Movimiento de keywords', []),
+                'metricas' => self::tabla('Métricas contra su meta', []),
+                'kpis' => self::kpis('Indicadores del mes'),
+                default => $base->get($clave),
+            };
+
+            if ($seccion === null) {
+                continue;
+            }
+
+            $salida[] = $seccion + ['clave' => $clave, 'avanzada' => false, 'precarga' => self::PRECARGA[$clave] ?? null];
+        }
+
+        return $salida;
     }
 
     /**

@@ -104,6 +104,7 @@ class RenderizadorXlsx
                 'ficha' => $this->hojaFicha($hoja, $seccion),
                 'plan' => $this->hojaPlan($hoja, $seccion),
                 'texto' => $this->hojaTexto($hoja, $seccion),
+                'resumen_cliente' => $this->hojaResumenCliente($hoja, $seccion),
                 default => 0,
             };
 
@@ -207,7 +208,7 @@ class RenderizadorXlsx
         }
 
         if (is_array($aviso) && ($aviso['texto'] ?? '') !== '') {
-            $fecha = trim((string) ($aviso['fecha'] ?? ''));
+            $fecha = trim((string) ($aviso['fecha_label'] ?? ''));
 
             return [
                 'estado' => 'aviso',
@@ -1058,6 +1059,58 @@ class RenderizadorXlsx
         return count($bloques);
     }
 
+    /**
+     * Resumen para el cliente en una hoja de dos columnas (apartado / contenido): los
+     * textos tal como los lee el cliente y, al final, los puntos de la gráfica clave
+     * como texto (el libro completo ya trae la serie con números para quien quiera graficar).
+     *
+     * @param  array<string, mixed>  $seccion
+     */
+    private function hojaResumenCliente(Worksheet $hoja, array $seccion): int
+    {
+        $d = (array) ($seccion['derivados'] ?? []);
+        $filas = [];
+
+        foreach ((array) ($d['logros'] ?? []) as $i => $texto) {
+            $filas[] = ['Logro '.($i + 1), (string) $texto];
+        }
+        foreach ((array) ($d['retos'] ?? []) as $i => $texto) {
+            $filas[] = ['Reto '.($i + 1), (string) $texto];
+        }
+        foreach ((array) ($d['proximos_pasos'] ?? []) as $i => $texto) {
+            $filas[] = ['Próximo paso '.($i + 1), (string) $texto];
+        }
+
+        $g = (array) ($d['grafica'] ?? []);
+        $series = array_values(array_filter((array) ($g['series'] ?? []), 'is_array'));
+        foreach ((array) ($g['barras'] ?? []) as $barra) {
+            $partes = [];
+            foreach ($series as $serie) {
+                $partes[] = ($serie['titulo'] ?? '').': '.($barra['valores'][$serie['clave']]['texto'] ?? EstiloXlsx::ND);
+            }
+            $filas[] = [trim(($g['titulo'] ?? 'Gráfica').' · '.($barra['x'] ?? '')), implode(' · ', $partes)];
+        }
+
+        $this->cabeceras($hoja, ['APARTADO', 'CONTENIDO']);
+
+        $fila = 2;
+        foreach ($filas as $i => [$apartado, $contenido]) {
+            $hoja->setCellValueExplicit('A'.$fila, $apartado, DataType::TYPE_STRING);
+            $hoja->setCellValueExplicit('B'.$fila, $contenido, DataType::TYPE_STRING);
+            if ($i % 2 === 1) {
+                EstiloXlsx::zebra($hoja, 'A'.$fila.':B'.$fila);
+            }
+            $fila++;
+        }
+
+        $this->cerrarBloque($hoja, 'B', $fila - 1);
+        EstiloXlsx::ajustar($hoja, 'A2:B'.max(2, $fila - 1));
+        $this->anchos($hoja, [34, 110]);
+        $this->pieDeSeccion($hoja, $seccion, $fila, 'B');
+
+        return count($filas);
+    }
+
     // ---------------------------------------------------------------------
     // Utilidades de escritura
     // ---------------------------------------------------------------------
@@ -1144,7 +1197,7 @@ class RenderizadorXlsx
 
         $aviso = $seccion['aviso'] ?? null;
         if (is_array($aviso) && trim((string) ($aviso['texto'] ?? '')) !== '') {
-            $fecha = trim((string) ($aviso['fecha'] ?? ''));
+            $fecha = trim((string) ($aviso['fecha_label'] ?? ''));
             $hoja->setCellValueExplicit(
                 'A'.$fila,
                 'DATO DESACTUALIZADO'.($fecha !== '' ? ' · '.$fecha : '').' — '.trim((string) $aviso['texto']),

@@ -6,6 +6,7 @@
  * contenido de celdas, nombres y opciones lo escribe un usuario y jamás se
  * interpola como HTML.
  */
+import { formatearFechaHora } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -996,8 +997,7 @@
     // ---------- Origen («foto» de una fuente real) ----------
 
     function formatoFechaHora(s) {
-      const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/.exec(s || "");
-      return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : s || "";
+      return formatearFechaHora(s, s || "");
     }
 
     function renderOrigen() {

@@ -10,6 +10,7 @@ use App\Models\DisponibilidadBloqueo;
 use App\Models\DisponibilidadHorario;
 use App\Models\Reunion;
 use App\Support\Agenda\CalculadorDisponibilidad;
+use App\Support\ClienteActivo;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,8 +43,12 @@ class AgendaController extends Controller
             ];
         }
 
+        // Cliente activo del menú: acota las reuniones; horario y bloqueos son de la agencia entera.
+        $clienteActivo = ClienteActivo::modelo();
+
         return view('admin.agenda.index', [
             'pageTitle' => 'Agenda',
+            'clienteActivo' => $clienteActivo,
             'config' => AgendaConfiguracion::actual(),
             'horarios' => $horarios,
             'bloqueos' => DisponibilidadBloqueo::orderBy('fecha')->get(),
@@ -51,6 +56,7 @@ class AgendaController extends Controller
             // "Citas" necesita poder filtrar por cualquier estado y ver lo
             // que ya pasó (completada/no_show/cancelada), no solo lo próximo.
             'reuniones' => Reunion::query()
+                ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
                 ->where('inicia_en', '>=', now()->subDays(90))
                 ->orderByDesc('inicia_en')
                 ->with('cliente')

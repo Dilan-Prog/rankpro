@@ -47,8 +47,12 @@ class AdsCampanaApiController extends ControladorApi
                 'servicio_id' => $data['servicio_id'],
                 'nombre' => $data['nombre'],
                 'plataforma' => $data['plataforma'],
+                'plataforma_cuenta_id' => $data['plataforma_cuenta_id'] ?? null,
+                'plataforma_campana_id' => $data['plataforma_campana_id'] ?? null,
                 'objetivo' => $data['objetivo'],
                 'presupuesto_mensual' => $data['presupuesto_mensual'],
+                // Sin moneda se usa el default de la columna (MXN), no un null.
+                'moneda' => $data['moneda'] ?? 'MXN',
                 'estado' => 'activa',
                 'fase_actual' => \App\Enums\FaseAds::Briefing->value,
                 'ciclo_actual' => 1,
@@ -72,6 +76,10 @@ class AdsCampanaApiController extends ControladorApi
     public function update(Request $request, AdsCampana $campana)
     {
         $data = $request->validate(ReglasAds::campana($campana));
+        // La columna es NOT NULL: una moneda vacía significa "no cambiar", no null (daba 500).
+        if (($data['moneda'] ?? null) === null) {
+            unset($data['moneda']);
+        }
 
         $campana->update($data);
 

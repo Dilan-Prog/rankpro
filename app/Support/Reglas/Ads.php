@@ -24,7 +24,12 @@ class Ads
             'nombre' => ['required', 'string', 'max:255'],
             'plataforma' => ['required', 'in:google_ads,meta_ads,tiktok_ads'],
             'objetivo' => ['required', 'in:leads,ventas,trafico,branding'],
-            'presupuesto_mensual' => ['required', 'numeric', 'min:0'],
+            // La columna es NOT NULL: se exige un monto. Al crear no se acepta 0 (era el valor prellenado y se guardaba sin querer); al editar sí, por las campañas que ya lo tenían.
+            'presupuesto_mensual' => ['required', 'numeric', $campana ? 'min:0' : 'gt:0'],
+            'moneda' => ['nullable', 'in:MXN,USD'],
+            // Formato libre (123-456-7890, 1234567890): solo letras, números y guiones, sin espacios ni símbolos.
+            'plataforma_cuenta_id' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9-]+$/'],
+            'plataforma_campana_id' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9-]+$/'],
             'fecha_inicio' => ['nullable', 'date'],
         ];
 

@@ -15,7 +15,7 @@
         <x-badge :status="$bug->prioridad" />
     </div>
     <div class="kanban__card-meta">
-        <span class="u-mono">{{ $bug->fecha_resolucion?->format('d/m/y') ?? 'Sin fecha de resolución' }}</span>
+        <span class="u-mono">{{ fecha_mx($bug->fecha_resolucion, false, 'Sin fecha de resolución') }}</span>
         <span>{{ $bug->responsable?->name ?? 'Sin asignar' }}</span>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:4px; margin-top: var(--space-2);">

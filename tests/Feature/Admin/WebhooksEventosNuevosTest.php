@@ -85,7 +85,7 @@ class WebhooksEventosNuevosTest extends TestCase
     public function test_valor_nuevo_emite_registrado_con_payload_completo_y_anterior(): void
     {
         $this->suscribir();
-        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol']);
+        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol', 'empresa' => null]);
         $metrica = $this->metrica($cliente);
         $this->valor($metrica, '2026-09-01', 90);
         WebhookEntrega::query()->delete();
@@ -95,9 +95,9 @@ class WebhooksEventosNuevosTest extends TestCase
         $entregas = $this->entregas('metrica.valor_registrado');
         $this->assertCount(1, $entregas);
         $this->assertEquals([
-            'cliente_id' => $cliente->id, 'cliente' => 'Hotel Sol', 'metrica_id' => $metrica->id,
+            'cliente_id' => $cliente->id, 'cliente' => 'Hotel Sol', 'cliente_nombre_comercial' => 'Hotel Sol', 'metrica_id' => $metrica->id,
             'nombre' => 'Llamadas', 'unidad' => 'llamadas', 'periodo' => '2026-10',
-            'valor' => 95.0, 'valor_anterior' => 90.0, 'meta' => 100.0, 'sentido' => 'mayor', 'semaforo' => 'amarillo',
+            'valor' => 95.0, 'valor_anterior' => 90.0, 'meta' => 100.0, 'sentido' => 'mayor', 'fuente' => 'manual', 'semaforo' => 'amarillo',
         ], $entregas->first()->payload['datos']);
         $this->assertCount(0, $this->entregas('metrica.semaforo_rojo'));
     }
@@ -193,7 +193,7 @@ class WebhooksEventosNuevosTest extends TestCase
     public function test_reporte_programado_enviado_se_emite_una_vez_desde_el_comando(): void
     {
         $this->suscribir(['reporte_programado.*']);
-        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol']);
+        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol', 'empresa' => null]);
         $reporte = $this->reporte($cliente);
         $prog = $this->programacion($cliente);
 
@@ -270,7 +270,7 @@ class WebhooksEventosNuevosTest extends TestCase
 
     private function lista(int $keywords = 3): array
     {
-        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol']);
+        $cliente = Cliente::factory()->create(['nombre' => 'Hotel Sol', 'empresa' => null]);
         $lista = KeywordLista::create(['cliente_id' => $cliente->id, 'nombre' => 'L', 'estado' => 'en_uso']);
         $ks = [];
         foreach (range(1, $keywords) as $i) {
@@ -298,7 +298,7 @@ class WebhooksEventosNuevosTest extends TestCase
         $entregas = $this->entregas('keyword.ronda_registrada');
         $this->assertCount(1, $entregas);
         $this->assertEquals([
-            'lista_id' => $lista->id, 'cliente_id' => $lista->cliente_id, 'cliente' => 'Hotel Sol', 'fecha' => '2026-10-15',
+            'lista_id' => $lista->id, 'cliente_id' => $lista->cliente_id, 'cliente' => 'Hotel Sol', 'cliente_nombre_comercial' => 'Hotel Sol', 'fecha' => '2026-10-15',
             'total_mediciones' => 3, 'con_posicion' => 2, 'posicion_promedio' => 6.0,
         ], $entregas->first()->payload['datos']);
     }
@@ -318,5 +318,20 @@ class WebhooksEventosNuevosTest extends TestCase
         $this->assertCount(2, $this->entregas('keyword.ronda_registrada'));
         $primera = $this->entregas('keyword.ronda_registrada')->first(fn ($e) => $e->payload['datos']['fecha'] === '2026-10-15');
         $this->assertEquals(3, $primera->payload['datos']['posicion_promedio']);
+    }
+
+    public function test_el_payload_de_metrica_incluye_la_fuente_sin_quitar_campos(): void
+    {
+        $this->suscribir(['metrica.valor_registrado']);
+        $metrica = $this->metrica(Cliente::factory()->create(), ['fuente' => 'google_ads']);
+
+        $this->valor($metrica, '2026-10-01', 95);
+
+        $datos = $this->entregas('metrica.valor_registrado')->first()->payload['datos'];
+        $this->assertSame('google_ads', $datos['fuente']);
+        // Aditivo: los campos que n8n ya leía siguen ahí.
+        foreach (['cliente_id', 'cliente', 'metrica_id', 'nombre', 'unidad', 'periodo', 'valor', 'valor_anterior', 'meta', 'sentido', 'semaforo'] as $campo) {
+            $this->assertArrayHasKey($campo, $datos);
+        }
     }
 }

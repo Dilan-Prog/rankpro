@@ -63,11 +63,11 @@
         $filaCuenta = $cuentas->firstWhere('cliente_id', $cliente->id);
         $contactoTexto = collect([$cliente->contacto_nombre, $cliente->email])->filter()->implode(' · ');
     @endphp
-    <section class="seo-resumen" aria-label="Resumen de la cuenta {{ $cliente->nombre }}">
+    <section class="seo-resumen" aria-label="Resumen de la cuenta {{ $cliente->nombre_comercial }}">
         <dl class="seo-resumen__datos">
             <div class="seo-resumen__dato">
                 <dt>Cuenta</dt>
-                <dd class="seo-resumen__valor--fuerte">{{ $cliente->nombre }}</dd>
+                <dd class="seo-resumen__valor--fuerte">{{ $cliente->nombre_comercial }}</dd>
             </div>
             <div class="seo-resumen__dato">
                 <dt>Contacto</dt>
@@ -81,7 +81,7 @@
                 <dt>Contrato</dt>
                 <dd class="u-mono">
                     @if ($cliente->fecha_inicio_contrato || $cliente->fecha_renovacion_contrato)
-                        {{ $cliente->fecha_inicio_contrato?->format('Y-m-d') ?? '—' }} → {{ $cliente->fecha_renovacion_contrato?->format('Y-m-d') ?? '—' }}
+                        {{ fecha_mx($cliente->fecha_inicio_contrato) }} → {{ fecha_mx($cliente->fecha_renovacion_contrato) }}
                     @else
                         <span class="seo-resumen__vacio">Sin dato</span>
                     @endif
@@ -163,7 +163,7 @@
                 </div>
                 <p style="color:var(--color-muted-foreground); font-size:var(--text-sm);">
                     Esta campaña se cerró
-                    @if ($campana->reporteActual?->fecha_aprobacion) el {{ $campana->reporteActual->fecha_aprobacion->format('Y-m-d') }} @endif
+                    @if ($campana->reporteActual?->fecha_aprobacion) el {{ fecha_mx($campana->reporteActual->fecha_aprobacion) }} @endif
                     después de {{ $campana->ciclo_actual }} {{ $campana->ciclo_actual === 1 ? 'ciclo' : 'ciclos' }}.
                 </p>
                 @if ($campana->reporteActual?->satisfaccion_cliente)
@@ -281,9 +281,9 @@
             </div>
         @else
             <div class="kpi-grid">
-                <x-stat-card label="LCP Móvil" value="{{ $auditoriaTecnico->lcp_mobile !== null ? $auditoriaTecnico->lcp_mobile . 's' : '—' }}" icon="fa-stopwatch" color="blue" />
-                <x-stat-card label="CLS Móvil" value="{{ $auditoriaTecnico->cls_mobile ?? '—' }}" icon="fa-arrows-up-down" color="amber" />
-                <x-stat-card label="Errores Técnicos" value="{{ $auditoriaTecnico->errores_tecnicos ?? '—' }}" icon="fa-triangle-exclamation" color="red" />
+                <x-stat-card label="LCP Móvil" value="{{ $auditoriaTecnico->lcp_mobile !== null ? $auditoriaTecnico->lcp_mobile . 's' : '—' }}" icon="fa-stopwatch" color="blue" fuente="Auditoría SEO" :fecha="$auditoriaTecnico->fecha_auditoria" tipo="auditoria" fecha-sin="Sin fecha de auditoría" />
+                <x-stat-card label="CLS Móvil" value="{{ $auditoriaTecnico->cls_mobile ?? '—' }}" icon="fa-arrows-up-down" color="amber" fuente="Auditoría SEO" :fecha="$auditoriaTecnico->fecha_auditoria" tipo="auditoria" fecha-sin="Sin fecha de auditoría" />
+                <x-stat-card label="Errores Técnicos" value="{{ $auditoriaTecnico->errores_tecnicos ?? '—' }}" icon="fa-triangle-exclamation" color="red" fuente="Auditoría SEO" :fecha="$auditoriaTecnico->fecha_auditoria" tipo="auditoria" fecha-sin="Sin fecha de auditoría" />
             </div>
 
             @foreach (\App\Models\SeoFaseAuditoria::TECNICO_CHECKLIST as $categoria => $items)
@@ -395,7 +395,7 @@
                             <td class="u-mono">{{ $r->keywords_top3 ?? 0 }} / {{ $r->keywords_top10 ?? 0 }}</td>
                             <td class="u-mono">{{ number_format($r->backlinks_total ?? 0) }}</td>
                             <td>{{ $r->continua_campana ? 'Sí' : 'No' }}</td>
-                            <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $r->fecha_aprobacion?->format('Y-m-d') }}</td>
+                            <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($r->fecha_aprobacion) }}</td>
                         </tr>
                     @endforeach
                 </x-data-table>

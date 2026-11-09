@@ -6,6 +6,7 @@ use App\Enums\PrioridadAccion;
 use App\Enums\SeveridadHallazgo;
 use App\Enums\TipoSeccion;
 use App\Models\Reporte;
+use App\Support\Reportes\AvisoSeccion;
 use App\Models\ReporteSeccion;
 use App\Support\Reportes\EsquemaSeccion;
 
@@ -97,6 +98,12 @@ class Armador
         $secciones = [];
 
         foreach ($reporte->seccionesVisibles as $seccion) {
+            // Interna = solo del equipo (p. ej. saldo de la cuenta de anuncios):
+            // se filtra aquí porque PDF, XLSX, envío programado y API pasan todos por el Armador.
+            if ($seccion->interno) {
+                continue;
+            }
+
             $secciones[] = $this->armarSeccion($seccion);
         }
 
@@ -114,7 +121,7 @@ class Armador
                 'area' => $reporte->area?->value ?? '',
                 'area_label' => $reporte->area?->label() ?? '',
                 'cliente' => [
-                    'nombre' => (string) ($reporte->cliente?->nombre ?? ''),
+                    'nombre' => (string) ($reporte->cliente?->nombre_comercial ?? ''),
                     'empresa' => (string) ($reporte->cliente?->empresa ?? ''),
                     'sitio_web' => $sitioWeb,
                 ],
@@ -149,9 +156,7 @@ class Armador
             'tipo' => $tipo->value,
             'titulo' => (string) $seccion->titulo,
             'rotulo' => $this->textoONull($seccion->rotulo),
-            // El aviso se pasa tal cual: su forma la deciden el editor y los
-            // renderizadores, aquí no hay nada que calcular sobre él.
-            'aviso' => is_array($seccion->aviso) && $seccion->aviso !== [] ? $seccion->aviso : null,
+            'aviso' => $this->aviso($seccion->aviso),
             'contenido' => $contenido,
             'derivados' => match ($tipo) {
                 TipoSeccion::Tabla => $this->derivadosTabla($contenido),
@@ -160,8 +165,130 @@ class Armador
                 TipoSeccion::Kpis => $this->derivadosKpis($contenido),
                 TipoSeccion::Plan => $this->derivadosPlan($contenido),
                 TipoSeccion::Hallazgos => $this->derivadosHallazgos($contenido),
+                TipoSeccion::ResumenCliente => $this->derivadosResumenCliente($contenido),
                 default => [],
             },
+        ];
+    }
+
+    // ---------------------------------------------------------------------
+    // Aviso de dato desactualizado
+    // ---------------------------------------------------------------------
+
+    /**
+     * La etiqueta "DATO DESACTUALIZADO" es fija en los entregables; del aviso solo
+     * viajan el texto y la fecha ISO (más su versión dd/mm/aaaa ya formateada, para
+     * que PDF y XLSX no formateen cada uno por su cuenta).
+     *
+     * @return array{texto: string, fecha: ?string, fecha_label: string}|null
+     */
+    private function aviso(mixed $aviso): ?array
+    {
+        $limpio = is_array($aviso) ? AvisoSeccion::normalizar($aviso) : null;
+
+        return $limpio === null ? null : $limpio + ['fecha_label' => AvisoSeccion::fechaVisible($limpio['fecha'])];
+    }
+
+    // ---------------------------------------------------------------------
+    // Versión para cliente (resumen de 1 página)
+    // ---------------------------------------------------------------------
+
+    /** Alto, en píxeles, de las barras de la gráfica del resumen (la de la serie completa mide 216). */
+    public const ALTO_GRAFICA_RESUMEN_PX = 110;
+
+    /**
+     * Logros, retos, próximos pasos y gráfica ya listos para pintar. Las barras se
+     * escalan por serie contra su propio máximo: las dos series de una gráfica
+     * (inversión y conversiones) casi nunca comparten escala. Un valor ausente no
+     * dibuja barra (altura null), nunca una de altura cero que parezca un dato.
+     *
+     * @param  array<string, mixed>  $contenido
+     * @return array<string, mixed>
+     */
+    private function derivadosResumenCliente(array $contenido): array
+    {
+        $textos = fn (string $lista) => array_values(array_filter(array_map(
+            fn ($fila) => trim((string) ($fila['texto'] ?? '')),
+            is_array($contenido[$lista] ?? null) ? $contenido[$lista] : []
+        ), fn ($t) => $t !== ''));
+
+        $g = is_array($contenido['grafica'] ?? null) ? $contenido['grafica'] : [];
+        $series = array_values(array_filter(
+            is_array($g['series'] ?? null) ? $g['series'] : [],
+            fn ($s) => is_array($s) && ($s['clave'] ?? '') !== ''
+        ));
+        $filas = array_values(array_filter(is_array($g['filas'] ?? null) ? $g['filas'] : [], 'is_array'));
+
+        $maximos = [];
+        foreach ($series as $serie) {
+            $max = 0.0;
+            foreach ($filas as $fila) {
+                $v = $this->numero($fila['valores'][$serie['clave']] ?? null);
+                if ($v !== null && $v > $max) {
+                    $max = $v;
+                }
+            }
+            $maximos[$serie['clave']] = $max;
+        }
+
+        $barras = [];
+        foreach ($filas as $fila) {
+            $valores = [];
+            foreach ($series as $serie) {
+                $clave = $serie['clave'];
+                $v = $this->numero($fila['valores'][$clave] ?? null);
+                $valores[$clave] = [
+                    'texto' => $v === null ? self::AUSENTE : $this->formatear($v, 'numero'),
+                    'altura' => $v === null || $maximos[$clave] <= 0 ? null : max(1, (int) round($v / $maximos[$clave] * self::ALTO_GRAFICA_RESUMEN_PX)),
+                ];
+            }
+            $barras[] = ['x' => (string) ($fila['x'] ?? ''), 'valores' => $valores];
+        }
+
+        return [
+            'logros' => $textos('logros'),
+            'retos' => $textos('retos'),
+            'proximos_pasos' => $textos('proximos_pasos'),
+            'grafica' => [
+                'titulo' => trim((string) ($g['titulo'] ?? '')),
+                'etiqueta_x' => trim((string) ($g['etiqueta_x'] ?? '')),
+                'series' => array_map(fn ($s) => ['clave' => $s['clave'], 'titulo' => (string) ($s['titulo'] ?? $s['clave'])], $series),
+                'barras' => $barras,
+            ],
+        ];
+    }
+
+    /**
+     * Datos de la versión para cliente (PDF de 1 página y vista pública), armados
+     * campo por campo desde una LISTA BLANCA: ningún dato interno (notas, fuentes,
+     * campañas, ids, otras secciones) puede colarse por añadir un campo al reporte.
+     * Las secciones internas o ocultas no cuentan, igual que en el resto de entregables.
+     *
+     * @return array{reporte: array<string, mixed>, resumen: ?array<string, mixed>}
+     */
+    public function armarCliente(Reporte $reporte): array
+    {
+        $reporte->loadMissing(['cliente', 'seccionesVisibles']);
+
+        $seccion = $reporte->seccionesVisibles
+            ->first(fn ($s) => $s->tipo === TipoSeccion::ResumenCliente && ! $s->interno);
+
+        $resumen = null;
+        if ($seccion) {
+            $armada = $this->armarSeccion($seccion);
+            $resumen = $armada['derivados'] + ['aviso' => $armada['aviso'], 'titulo' => $armada['titulo']];
+        }
+
+        return [
+            'reporte' => [
+                'titulo' => (string) $reporte->titulo,
+                'numero' => $reporte->numero,
+                'area_label' => (string) ($reporte->area?->label() ?? ''),
+                'cliente_nombre' => (string) ($reporte->cliente?->nombre_comercial ?? ''),
+                'periodo_label' => trim($this->fechaCorta($reporte->periodo_inicio).' — '.$this->fechaCorta($reporte->periodo_fin)),
+                'fecha_emision' => $this->fechaCorta($reporte->fecha_emision) ?: null,
+            ],
+            'resumen' => $resumen,
         ];
     }
 
@@ -191,7 +318,7 @@ class Armador
         }
 
         // Las listas llegan del JSON con claves posiblemente no contiguas.
-        foreach (['items', 'series', 'filas', 'filas_excluidas', 'columnas', 'dimensiones', 'campos', 'registros', 'acciones', 'bloques'] as $lista) {
+        foreach (['items', 'series', 'filas', 'filas_excluidas', 'columnas', 'dimensiones', 'campos', 'registros', 'acciones', 'bloques', 'logros', 'retos', 'proximos_pasos'] as $lista) {
             if (isset($out[$lista]) && is_array($out[$lista])) {
                 $out[$lista] = array_values(array_filter($out[$lista], 'is_array'));
             }
@@ -943,6 +1070,11 @@ class Armador
         if ($formato === 'nivel') {
             // ALTA / MEDIA / BAJA: escala cualitativa, siempre en mayúsculas.
             return is_scalar($valor) ? mb_strtoupper(trim((string) $valor)) : self::AUSENTE;
+        }
+
+        if ($formato === 'fecha' && is_string($valor) && ($legible = \App\Support\Fecha::mx($valor, false, '')) !== '') {
+            // Una fecha ISO en una celda de fecha se muestra dd/mm/aaaa; el resto del texto pasa tal cual.
+            return $legible;
         }
 
         if ($formato === 'texto' || $formato === 'fecha') {

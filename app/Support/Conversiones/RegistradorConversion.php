@@ -37,6 +37,14 @@ class RegistradorConversion
         }
 
         $data['ads_clic_id'] = $clic?->id;
+        $data['ads_campana_id'] = $clic?->ads_campana_id;
+
+        // Doble clic: se guarda igual (el dato no se pierde) pero marcada, y no cuenta en listas ni exportes.
+        $original = (new Deduplicador)->buscarOriginal($cliente->id, (string) ($data['tipo'] instanceof \BackedEnum ? $data['tipo']->value : $data['tipo']), $data['visitor_id'] ?? null, $data['gclid'] ?? null);
+        if ($original) {
+            $data['duplicada_de_id'] = $original->id;
+            $data['duplicada_at'] = now();
+        }
 
         return $cliente->adsConversiones()->create($data);
     }

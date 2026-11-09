@@ -75,7 +75,7 @@ class AgregadorEventos
     {
         // `inicia_en` se guarda en la zona de la app, igual que $desde/$hasta (now() de Laravel).
         return Reunion::query()
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->where('estado', '!=', EstadoReunion::Cancelada->value)
             ->whereBetween('inicia_en', [$desde->copy()->startOfDay(), $hasta->copy()->endOfDay()])
             ->get()
@@ -85,7 +85,8 @@ class AgregadorEventos
                 tipo: TipoEventoCalendario::Reunion,
                 fecha: $r->inicia_en->toDateString(),
                 hora: $r->inicia_en->format('H:i'),
-                cliente: $r->cliente?->nombre,
+                cliente: $r->cliente?->nombre_comercial,
+                clienteId: $r->cliente_id,
                 origen: 'agenda',
                 url: route('admin.agenda.index'),
             ));
@@ -98,7 +99,7 @@ class AgregadorEventos
         }
 
         return Tarea::query()
-            ->with(['proyecto:id,nombre,cliente_id', 'proyecto.cliente:id,nombre', 'cliente:id,nombre'])
+            ->with(['proyecto:id,nombre,cliente_id', 'proyecto.cliente:id,nombre,empresa', 'cliente:id,nombre,empresa'])
             ->where('estado', '!=', EstadoTarea::Completada->value)
             ->whereBetween('fecha_limite', [$desde->toDateString(), $hasta->toDateString()])
             ->where(function ($q) use ($userId, $conProyecto, $personales) {
@@ -116,7 +117,8 @@ class AgregadorEventos
                 tipo: TipoEventoCalendario::Entrega,
                 fecha: $t->fecha_limite->toDateString(),
                 hora: null,
-                cliente: $t->cliente?->nombre ?? $t->proyecto?->cliente?->nombre,
+                cliente: $t->cliente?->nombre_comercial ?? $t->proyecto?->cliente?->nombre_comercial,
+                clienteId: $t->cliente?->id ?? $t->proyecto?->cliente_id,
                 origen: 'tarea',
                 url: $t->proyecto_id ? route('admin.desarrollo.show', $t->proyecto_id) : route('admin.mi-espacio.index'),
             ));
@@ -125,7 +127,7 @@ class AgregadorEventos
     private function proyectos(CarbonInterface $desde, CarbonInterface $hasta): Collection
     {
         return Proyecto::query()
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->whereNotIn('estado', [EstadoProyecto::Cerrado->value, EstadoProyecto::Cancelado->value])
             ->whereBetween('fecha_entrega_estimada', [$desde->toDateString(), $hasta->toDateString()])
             ->get()
@@ -135,7 +137,8 @@ class AgregadorEventos
                 tipo: TipoEventoCalendario::Entrega,
                 fecha: $p->fecha_entrega_estimada->toDateString(),
                 hora: null,
-                cliente: $p->cliente?->nombre,
+                cliente: $p->cliente?->nombre_comercial,
+                clienteId: $p->cliente_id,
                 origen: 'proyecto',
                 url: route('admin.desarrollo.show', $p->id),
             ));
@@ -145,7 +148,7 @@ class AgregadorEventos
     {
         // Un cobro ya pagado deja de ser un pendiente del calendario.
         return Finanza::query()
-            ->with('cliente:id,nombre')
+            ->with('cliente:id,nombre,empresa')
             ->where('estado', '!=', EstadoFinanza::Pagado->value)
             ->whereBetween('fecha_vencimiento', [$desde->toDateString(), $hasta->toDateString()])
             ->get()
@@ -155,7 +158,8 @@ class AgregadorEventos
                 tipo: TipoEventoCalendario::Pago,
                 fecha: $f->fecha_vencimiento->toDateString(),
                 hora: null,
-                cliente: $f->cliente?->nombre,
+                cliente: $f->cliente?->nombre_comercial,
+                clienteId: $f->cliente_id,
                 origen: 'finanza',
                 url: route('admin.finanzas.index'),
             ));
@@ -185,7 +189,7 @@ class AgregadorEventos
             // Las campañas con borrado suave quedan fuera por su scope global (también en whereHas).
             $eventos = $eventos
                 ->merge(AdsCampana::query()
-                    ->with('cliente:id,nombre')
+                    ->with('cliente:id,nombre,empresa')
                     ->whereBetween('fecha_inicio', $rango)
                     ->get()
                     ->map(fn (AdsCampana $c) => $this->evento(
@@ -194,12 +198,13 @@ class AgregadorEventos
                         tipo: TipoEventoCalendario::Campana,
                         fecha: $c->fecha_inicio->toDateString(),
                         hora: null,
-                        cliente: $c->cliente?->nombre,
+                        cliente: $c->cliente?->nombre_comercial,
+                        clienteId: $c->cliente_id,
                         origen: 'ads',
                         url: route('admin.ads.show', $c->id),
                     )))
                 ->merge(AdsLanzamiento::query()
-                    ->with('adsCampana.cliente:id,nombre')
+                    ->with('adsCampana.cliente:id,nombre,empresa')
                     ->whereHas('adsCampana')
                     ->whereBetween('fecha_lanzamiento', $rango)
                     ->get()
@@ -209,7 +214,8 @@ class AgregadorEventos
                         tipo: TipoEventoCalendario::Campana,
                         fecha: $l->fecha_lanzamiento->toDateString(),
                         hora: null,
-                        cliente: $l->adsCampana->cliente?->nombre,
+                        cliente: $l->adsCampana->cliente?->nombre_comercial,
+                        clienteId: $l->adsCampana->cliente_id,
                         origen: 'ads',
                         url: route('admin.ads.show', $l->ads_campana_id),
                     )));
@@ -217,7 +223,7 @@ class AgregadorEventos
 
         if ($usuario->tienePermiso('seo')) {
             $eventos = $eventos->merge(SeoCampana::query()
-                ->with('cliente:id,nombre')
+                ->with('cliente:id,nombre,empresa')
                 ->whereBetween('fecha_inicio', $rango)
                 ->get()
                 ->map(fn (SeoCampana $c) => $this->evento(
@@ -226,7 +232,8 @@ class AgregadorEventos
                     tipo: TipoEventoCalendario::Campana,
                     fecha: $c->fecha_inicio->toDateString(),
                     hora: null,
-                    cliente: $c->cliente?->nombre,
+                    cliente: $c->cliente?->nombre_comercial,
+                    clienteId: $c->cliente_id,
                     origen: 'seo',
                     url: route('admin.seo.show', $c->id),
                 )));
@@ -236,7 +243,7 @@ class AgregadorEventos
     }
 
     /** @return array<string, mixed> */
-    private function evento(string $id, string $titulo, TipoEventoCalendario $tipo, string $fecha, ?string $hora, ?string $cliente, string $origen, string $url): array
+    private function evento(string $id, string $titulo, TipoEventoCalendario $tipo, string $fecha, ?string $hora, ?string $cliente, string $origen, string $url, ?int $clienteId = null): array
     {
         return [
             'id' => $id,
@@ -245,6 +252,8 @@ class AgregadorEventos
             'fecha' => $fecha,
             'hora' => $hora,
             'cliente' => $cliente,
+            // Permite al Calendario acotar por cliente activo; null = evento de la agencia (siempre visible).
+            'cliente_id' => $clienteId,
             'origen' => $origen,
             'editable' => false,
             'url' => $url,

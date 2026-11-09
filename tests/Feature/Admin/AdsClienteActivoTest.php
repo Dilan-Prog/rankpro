@@ -81,8 +81,8 @@ class AdsClienteActivoTest extends TestCase
 
     public function test_modal_de_nueva_campana_preselecciona_el_cliente_activo(): void
     {
-        $a = Cliente::factory()->create(['nombre' => 'Cliente Preseleccionado']);
-        Cliente::factory()->create(['nombre' => 'Cliente Otro']);
+        $a = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Preseleccionado']);
+        Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente Otro']);
 
         $html = $this->actingAs(User::factory()->create())
             ->withSession(['cliente_activo_id' => $a->id])

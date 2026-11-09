@@ -1,0 +1,23 @@
+/* Tarjeta «Portal del cliente» del Resumen de cliente. Prefijo .portal-adm; usa los tokens de global.css. */
+.portal-adm { margin-bottom: var(--space-5); min-width: 0; overflow: hidden; }
+.portal-adm__cuerpo { padding: var(--space-4) var(--space-5) var(--space-5); display: grid; gap: var(--space-4); }
+.portal-adm__ayuda { margin: 0; color: var(--color-muted-foreground); font-size: 0.875rem; }
+.portal-adm__form { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; }
+.portal-adm__campo { display: grid; gap: 4px; min-width: 0; flex: 1 1 180px; }
+.portal-adm__campo label, .portal-adm__nuevo label { font-size: 0.75rem; font-weight: 600; color: var(--color-muted-foreground); }
+.portal-adm__mensaje { margin: 0; font-size: 0.875rem; color: var(--text-success); }
+.portal-adm__mensaje--error { color: var(--text-danger); }
+.portal-adm__nuevo { display: grid; gap: 4px; }
+.portal-adm__nuevo-fila { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.portal-adm__nuevo-fila .input { flex: 1 1 260px; min-width: 0; }
+.portal-adm__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.portal-adm__fila { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; }
+.portal-adm__meta { flex: 1 1 220px; min-width: 0; font-size: 0.8125rem; color: var(--color-muted-foreground); overflow-wrap: anywhere; }
+.portal-adm__meta strong { color: var(--color-foreground); }
+.portal-adm__estado { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--color-muted); }
+.portal-adm__estado--vigente { color: var(--text-success); }
+.portal-adm__estado--vencido { color: var(--text-warning); }
+.portal-adm__estado--revocado { color: var(--text-danger); }
+.portal-adm__vacio { color: var(--color-muted-foreground); font-size: 0.875rem; margin: 0; }
+.portal-adm__visitas summary { cursor: pointer; font-size: 0.875rem; font-weight: 600; }
+.portal-adm__visitas ul { margin: var(--space-2) 0 0; padding-left: 1.1rem; font-size: 0.8125rem; color: var(--color-muted-foreground); overflow-wrap: anywhere; }

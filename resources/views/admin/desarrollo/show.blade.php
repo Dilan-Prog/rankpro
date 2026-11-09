@@ -13,7 +13,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-header__title">{{ $proyecto->nombre }}</h1>
-            <p class="page-header__subtitle">{{ $proyecto->cliente->nombre }} · {{ \App\Support\Labels::tipoProyecto($proyecto->tipo) }}</p>
+            <p class="page-header__subtitle">{{ $proyecto->cliente->nombre_comercial }} · {{ \App\Support\Labels::tipoProyecto($proyecto->tipo) }}</p>
         </div>
         <div style="display:flex; gap: var(--space-2);">
             <a href="{{ route('admin.desarrollo.index', ['editar' => $proyecto->id]) }}" class="btn btn--secondary">
@@ -71,7 +71,7 @@
             </div>
             <p style="color:var(--color-muted-foreground); font-size:var(--text-sm);">
                 Este proyecto completó las 4 fases del proceso administrativo y quedó cerrado
-                @if ($proyecto->control?->fecha_aprobacion) el {{ $proyecto->control->fecha_aprobacion->format('Y-m-d') }} @endif.
+                @if ($proyecto->control?->fecha_aprobacion) el {{ fecha_mx($proyecto->control->fecha_aprobacion) }} @endif.
             </p>
             @if ($proyecto->control?->satisfaccion_cliente)
                 <p style="margin-top: var(--space-2); font-size:var(--text-sm);">

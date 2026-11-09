@@ -30,7 +30,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Support/Webhooks/funciones.php"
+            "app/Support/Webhooks/funciones.php",
+            "app/Support/funciones_fecha.php"
         ]
     },
     "autoload-dev": {

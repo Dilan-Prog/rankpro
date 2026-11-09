@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Support\ErrorPanel;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -35,6 +36,25 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // 404/403 dentro de /admin/*: página de error DEL PANEL (el 404 público mostraba navbar y footer del sitio).
+        // Solo con sesión iniciada (el layout del panel la necesita) y nunca para peticiones JSON.
+        $this->renderable(function (Throwable $e, Request $request) {
+            if (! $request->is('admin', 'admin/*') || $request->expectsJson() || ! $e instanceof HttpExceptionInterface) {
+                return null;
+            }
+            $status = $e->getStatusCode();
+            if (! in_array($status, [403, 404], true) || ! $request->hasSession() || $request->user() === null) {
+                return null;
+            }
+
+            try {
+                return response()->view('errors.admin', ['pageTitle' => $status === 403 ? 'Sin permiso' : 'No encontrado', 'error' => ErrorPanel::contexto($e, $status)], $status);
+            } catch (Throwable) {
+                // Si el propio layout del panel falla, cae a la vista de error por defecto en vez de enmascarar el error original.
+                return null;
+            }
         });
 
         // Solo para /api/*: siempre JSON, nunca una redirección a /login ni una

@@ -12,6 +12,7 @@
  * the form simply means every record created/edited here keeps servicio_id
  * null — which was already the common case before.
  */
+import { formatearFecha } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -183,9 +184,9 @@
       <td><span style="font-size:var(--text-sm); color:var(--color-muted-foreground);">${escapeHtml(f.concepto)}</span></td>
       <td><span style="font-size:var(--text-xs); text-transform:capitalize; color:${tipoColor};">${escapeHtml(f.tipo)}</span></td>
       <td class="u-mono"><strong>${fmtMoney(f.monto)}</strong></td>
-      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${f.fecha_vencimiento || "—"}</td>
+      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(f.fecha_vencimiento)}</td>
       <td>${badgeHtml(f.estado)}</td>
-      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${f.fecha_pago || "—"}</td>
+      <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${formatearFecha(f.fecha_pago)}</td>
       <td>
         <div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-finanza="${f.id}"><i class="fa-solid fa-pen"></i></button>
@@ -355,6 +356,34 @@
     });
   }
 
+  /** Cambia de pestaña por código (el enlace «Editar» de la conciliación necesita la de Facturación). */
+  function activarPestana(nombre) {
+    document.querySelector(`#finanzasTabs .tabs__item[data-panel="${nombre}"]`)?.click();
+  }
+
+  /** Abre el modal de edición de una fila; devuelve false si la fila no está (p. ej. otro cliente activo). */
+  function editarFilaPorId(id) {
+    const row = document.querySelector(`[data-factura-row][data-factura-id="${id}"]`);
+    if (!row) return false;
+    openFinanzaFormModal(JSON.parse(row.dataset.factura));
+    return true;
+  }
+
+  // Los enlaces «Editar» de «Posibles duplicados» abren el modal sin recargar; con ?editar=ID (enlace directo) se abre al cargar.
+  function initRevisionEditar() {
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest("[data-revisar-editar]");
+      if (!link) return;
+      if (editarFilaPorId(link.dataset.revisarEditar)) e.preventDefault();
+    });
+
+    const id = new URLSearchParams(window.location.search).get("editar");
+    if (id && /^\d+$/.test(id)) {
+      activarPestana("facturacion");
+      editarFilaPorId(id);
+    }
+  }
+
   // ---------- Facturación tab: client-side filters + totals footer + export link ----------
 
   function applyFinanzasFilters() {
@@ -439,6 +468,7 @@
     initFinanzaDelete();
     initFinanzasFilters();
     applyFinanzasFilters();
+    initRevisionEditar();
     document.addEventListener("theme:change", () => {
       renderFinanceChart();
       renderClienteChart();

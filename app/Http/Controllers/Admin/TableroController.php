@@ -17,7 +17,7 @@ class TableroController extends Controller
 {
     public function index(Request $request): View
     {
-        $clientes = Cliente::query()->orderBy('empresa')->get(['id', 'empresa', 'nombre']);
+        $clientes = Cliente::query()->ordenadoPorNombreComercial()->get(['id', 'empresa', 'nombre']);
 
         // ?cliente= manda sobre el cliente activo del menú; un id inválido o inexistente cae al activo.
         $pedido = $request->query('cliente');
@@ -27,6 +27,7 @@ class TableroController extends Controller
         $datos = $cliente ? (new TableroCliente())->calcular($cliente) : null;
 
         return view('admin.reportes.tablero', [
+            'pageTitle' => 'Tablero por cliente',
             'clientes' => $clientes,
             'cliente' => $cliente,
             'datos' => $datos,

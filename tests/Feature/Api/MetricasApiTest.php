@@ -398,4 +398,48 @@ class MetricasApiTest extends TestCase
         $this->getJson("/api/v1/metricas/{$m->id}/valores?desde=2021-11&hasta=2026-10")->assertOk();
         $this->getJson("/api/v1/metricas/{$m->id}/valores?desde=2021-10&hasta=2026-10")->assertStatus(422);
     }
+
+    // --- fuente ------------------------------------------------------------
+
+    public function test_store_acepta_fuente_y_la_devuelve_con_default_manual(): void
+    {
+        $this->como(['metricas:escribir']);
+        $cliente = Cliente::factory()->create();
+
+        $this->postJson('/api/v1/metricas', ['cliente_id' => $cliente->id, 'nombre' => 'CPA', 'fuente' => 'google_ads'])
+            ->assertStatus(201)->assertJsonPath('data.fuente', 'google_ads');
+        $this->postJson('/api/v1/metricas', ['cliente_id' => $cliente->id, 'nombre' => 'Sin fuente'])
+            ->assertStatus(201)->assertJsonPath('data.fuente', 'manual');
+    }
+
+    public function test_fuente_invalida_es_422_en_store_y_update(): void
+    {
+        $this->como(['metricas:escribir']);
+        $m = $this->metrica(Cliente::factory()->create());
+
+        $this->postJson('/api/v1/metricas', ['cliente_id' => $m->cliente_id, 'nombre' => 'X', 'fuente' => 'instagram'])
+            ->assertStatus(422)->assertJsonValidationErrors('fuente');
+        $this->putJson("/api/v1/metricas/{$m->id}", ['fuente' => 'instagram'])
+            ->assertStatus(422)->assertJsonValidationErrors('fuente');
+    }
+
+    public function test_show_lista_y_valores_devuelven_la_fuente(): void
+    {
+        $this->como(['metricas:leer']);
+        $m = $this->metrica(Cliente::factory()->create(), ['fuente' => 'ga4', 'metrica_estandar' => 'sesiones_organicas']);
+
+        $this->getJson("/api/v1/metricas/{$m->id}")->assertOk()
+            ->assertJsonPath('data.fuente', 'ga4')->assertJsonPath('data.metrica_estandar', 'sesiones_organicas');
+        $this->getJson('/api/v1/metricas')->assertOk()->assertJsonPath('data.0.fuente', 'ga4');
+        $this->getJson("/api/v1/metricas/{$m->id}/valores")->assertOk()->assertJsonPath('meta.metrica.fuente', 'ga4');
+    }
+
+    public function test_update_cambia_la_fuente(): void
+    {
+        $this->como(['metricas:escribir']);
+        $m = $this->metrica(Cliente::factory()->create());
+
+        $this->putJson("/api/v1/metricas/{$m->id}", ['fuente' => 'n8n'])->assertOk()->assertJsonPath('data.fuente', 'n8n');
+        $this->assertSame('n8n', $m->fresh()->fuente);
+    }
 }

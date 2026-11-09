@@ -23,6 +23,17 @@ class RenderizadorPdf
     }
 
     /**
+     * Versión para cliente: UNA página con logros, retos, próximos pasos y la gráfica clave.
+     * Usa la lista blanca de Armador::armarCliente, así que no puede arrastrar datos internos.
+     *
+     * @return string Bytes del PDF.
+     */
+    public function generarCliente(Reporte $reporte): string
+    {
+        return Pdf::loadView('pdf.reporte-cliente', app(Armador::class)->armarCliente($reporte))->setPaper('letter')->output();
+    }
+
+    /**
      * El pie de página del diseño dice «Página 5 de 12», y el total es la mitad
      * que dompdf no sabe dar: resuelve `counter(page)` pero no tiene contador
      * `pages`. La alternativa habitual —`page_text()` del canvas— exige activar

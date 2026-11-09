@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\AreaUsuario;
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Role;
 use App\Models\Servicio;
 use App\Models\User;
@@ -211,9 +212,9 @@ class UsersController extends Controller
             ->join('clientes', 'clientes.id', '=', 'servicios.cliente_id')
             ->whereNotNull('clientes.nombre')
             ->whereNull('clientes.deleted_at') // igual que la relación: un cliente borrado no cuenta
-            ->select('servicios.responsable_id', 'clientes.nombre')
+            ->select('servicios.responsable_id')->selectRaw(Cliente::SQL_NOMBRE_COMERCIAL.' as nombre')
             ->distinct()
-            ->orderBy('clientes.nombre')
+            ->orderByRaw(Cliente::SQL_NOMBRE_COMERCIAL)
             ->get()
             ->groupBy('responsable_id')
             ->map(fn ($filas) => $filas->pluck('nombre')->sort()->values()->all())

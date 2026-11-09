@@ -755,6 +755,16 @@ a.kpi {
   color: var(--color-muted-foreground);
 }
 
+/* Sin min-width:0 un campo de grilla no baja del ancho de su contenido (opción larga de un select) y desborda. */
+.form-grid > .field,
+.select {
+  min-width: 0;
+}
+
+.select {
+  max-width: 100%;
+}
+
 .input:focus,
 .select:focus,
 .textarea:focus {
@@ -808,8 +818,9 @@ a.kpi {
 }
 
 @media (min-width: 560px) {
+  /* minmax(0,…): con 1fr la columna crecía hasta la opción más larga de un select y se salía del modal. */
   .form-grid--2 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1824,3 +1835,108 @@ a.kpi {
 .table tbody tr.is-pag-oculta {
   display: none;
 }
+
+/* ==========================================================================
+   Móvil (<= 768 px): objetivos táctiles de 40 px y desbordes de la auditoría.
+   Solo pantallas estrechas; el escritorio no cambia.
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Los hijos de la cabecera no se estiran más que la pantalla: sus botones pueden envolver. */
+  .page-header > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .btn--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* Con 4 pasos de 84 px más sus líneas el tracker medía 448 px: los pasos se encogen y la etiqueta parte palabras. */
+  .fase-tracker {
+    padding: var(--space-4) var(--space-2);
+    gap: 2px;
+  }
+
+  .fase-tracker__step {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .fase-tracker__line {
+    flex: 0 1 8px;
+    min-width: 4px;
+  }
+
+  .fase-tracker__label {
+    font-size: 10px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  /* Tabla de conversiones: selects y enlaces de fila de 23-33 px eran imposibles de tocar. */
+  [data-conversiones-table] select.select,
+  [data-conversiones-table] td > a,
+  [data-conversiones-table] .btn,
+  [data-conversiones-table] .btn--icon {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  [data-conversiones-table] select.select {
+    display: block;
+    min-width: 120px;
+  }
+
+  [data-conversiones-table] .conv-check input {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ==== Calidad de datos: fuente y fecha de cada cifra (.dato-fecha) ==== */
+.dato-fecha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-top: 4px;
+}
+
+.dato-fecha__alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+:root[data-theme="light"] .dato-fecha__alerta { color: #B45309; }
+
+.dato-alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.12);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.dato-alerta ul { margin: 4px 0 0; padding-left: 18px; }
+.dato-alerta a { text-decoration: underline; }
+/* ==== fin Calidad de datos ==== */

@@ -19,8 +19,8 @@ class KeywordsClienteActivoTest extends TestCase
 
     private function escenario(): array
     {
-        $a = Cliente::factory()->create(['nombre' => 'Clinica Alfa']);
-        $b = Cliente::factory()->create(['nombre' => 'Hotel Beta']);
+        $a = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Clinica Alfa']);
+        $b = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Hotel Beta']);
 
         $listaA = KeywordLista::create(['cliente_id' => $a->id, 'nombre' => 'Lista de Alfa', 'canal' => 'seo', 'estado' => 'en_uso']);
         $listaB = KeywordLista::create(['cliente_id' => $b->id, 'nombre' => 'Lista de Beta', 'canal' => 'seo', 'estado' => 'en_uso']);

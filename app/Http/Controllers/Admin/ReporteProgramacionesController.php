@@ -8,6 +8,7 @@ use App\Models\CorreoPlantilla;
 use App\Models\ReporteProgramacion;
 use App\Services\Reportes\EnviadorReporteProgramado;
 use App\Services\Reportes\GestorReporteProgramaciones;
+use App\Support\ClienteActivo;
 use App\Support\Reglas\ReporteProgramaciones as ReglasProgramaciones;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,10 @@ class ReporteProgramacionesController extends Controller
 
     public function index(): View
     {
+        $clienteActivo = ClienteActivo::modelo();
+
         $programaciones = ReporteProgramacion::with('cliente')
+            ->when($clienteActivo, fn ($q) => $q->where('cliente_id', $clienteActivo->id))
             ->orderByDesc('activo')
             ->orderBy('proximo_envio_en')
             ->get()
@@ -34,7 +38,8 @@ class ReporteProgramacionesController extends Controller
         return view('admin.reportes.programados.index', [
             'pageTitle' => 'Reportes programados',
             'programaciones' => $programaciones,
-            'clientes' => Cliente::orderBy('nombre')->get(['id', 'nombre', 'empresa']),
+            'clientes' => Cliente::ordenadoPorNombreComercial()->get(['id', 'nombre', 'empresa']),
+            'clienteActivo' => $clienteActivo,
             'plantillas' => CorreoPlantilla::where('estado', 'activa')->orderBy('nombre')->get(['id', 'nombre']),
         ]);
     }

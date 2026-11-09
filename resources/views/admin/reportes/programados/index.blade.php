@@ -18,6 +18,8 @@
         </button>
     </div>
 
+    <x-cliente-activo-aviso :cliente="$clienteActivo" />
+
     <div class="card empty-state" data-programaciones-empty {{ $programaciones->isEmpty() ? '' : 'hidden' }}>
         <div class="empty-state__icon"><i class="fa-solid fa-calendar-check"></i></div>
         <p class="empty-state__text">Aún no hay envíos programados.</p>
@@ -86,7 +88,7 @@
                     <select class="select" name="cliente_id" id="pf_cliente_id" required>
                         <option value="">— Selecciona un cliente —</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}">{{ $cliente->empresa ?: $cliente->nombre }}</option>
+                            <option value="{{ $cliente->id }}" @selected($cliente->id === $clienteActivo?->id)>{{ $cliente->nombre_comercial }}</option>
                         @endforeach
                     </select>
                     <span class="field__error" data-error-for="cliente_id"></span>

@@ -7,6 +7,7 @@ use App\Enums\TonoMarca;
 use App\Http\Controllers\Controller;
 use App\Models\IdentidadMarca;
 use App\Support\ClienteActivo;
+use App\Support\Reglas\Identidad as ReglasIdentidad;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -44,34 +45,11 @@ class IdentidadController extends Controller
             return redirect()->route('admin.identidad.index')->withErrors(['cliente' => 'Elige un cliente en el selector del menú antes de guardar.']);
         }
 
-        $data = $request->validate([
-            'logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
-            'quitar_logo' => ['nullable', 'boolean'],
-            'slogan' => ['nullable', 'string', 'max:200'],
-            'colores' => ['nullable', 'array', 'max:12'],
-            'colores.*.nombre' => ['nullable', 'string', 'max:40'],
-            'colores.*.hex' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'fuente_titulos' => ['nullable', Rule::enum(FuenteMarca::class)],
-            'fuente_texto' => ['nullable', Rule::enum(FuenteMarca::class)],
-            'voz' => ['nullable', 'string', 'max:3000'],
-            'tonos' => ['nullable', 'array'],
-            'tonos.*' => [Rule::enum(TonoMarca::class)],
-            'mision' => ['nullable', 'string', 'max:3000'],
-            'vision' => ['nullable', 'string', 'max:3000'],
-            'valores' => ['nullable', 'string', 'max:3000'],
-        ], [
-            'colores.*.hex.required' => 'Cada color necesita un código hexadecimal (por ejemplo #0F9D6E).',
-            'colores.*.hex.regex' => 'El código de color debe ser hexadecimal de 6 dígitos, como #0F9D6E.',
-            'logo.mimes' => 'El logo debe ser PNG, JPG, WEBP o SVG.',
-            'logo.max' => 'El logo no puede pesar más de 2 MB.',
-        ]);
+        $data = $request->validate(ReglasIdentidad::guardar(), ReglasIdentidad::mensajes());
 
         $identidad = $cliente->identidad ?? new IdentidadMarca(['cliente_id' => $cliente->id]);
 
-        $paleta = collect($data['colores'] ?? [])->map(fn (array $c) => [
-            'nombre' => trim((string) ($c['nombre'] ?? '')) ?: 'Color',
-            'hex' => strtoupper($c['hex']),
-        ])->values()->all();
+        $paleta = ReglasIdentidad::paleta($data['colores'] ?? []);
 
         $rutaAnterior = $identidad->logo_ruta;
         $rutaNueva = $rutaAnterior;

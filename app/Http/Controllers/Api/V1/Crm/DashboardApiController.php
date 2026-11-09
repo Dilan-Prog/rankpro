@@ -24,12 +24,16 @@ class DashboardApiController extends ControladorApi
             'clientes_activos' => Cliente::where('estado', 'activo')->count(),
             'clientes_total' => Cliente::count(),
             'mrr' => FinanzasMetrics::mrr(),
+            'ingresos_por_proyecto' => FinanzasMetrics::ingresosPorProyecto()['total'],
             'cobrado_mes' => $periodo['cobrado'],
-            'pendiente_mes' => $periodo['pendiente'],
+            // El contrato sigue siendo del mes; lo arrastrado de meses anteriores va en campos aparte.
+            'pendiente_mes' => $periodo['pendiente_mes'],
+            'vencido_meses_anteriores' => $periodo['vencido_anterior'],
             'gastos_mes' => $periodo['gastos'],
             'utilidad_mes' => $periodo['utilidad'],
             'facturas_pagadas_mes' => $periodo['facturas_pagadas'],
-            'facturas_pendientes_mes' => $periodo['facturas_pendientes'],
+            'facturas_pendientes_mes' => $periodo['facturas_pendientes_mes'],
+            'facturas_vencidas_meses_anteriores' => $periodo['facturas_vencidas_anterior'],
             'campanas_activas' => $campanasActivas,
             'revenue_6m' => FinanzasMetrics::revenueData($now),
         ]);

@@ -101,7 +101,7 @@ class FinanzasTest extends TestCase
         $id = $response->json('id');
         $response->assertJson([
             'cliente_id' => $cliente->id,
-            'cliente' => $cliente->nombre,
+            'cliente' => $cliente->nombre_comercial,
             'servicio_id' => $servicio->id,
             'concepto' => 'SEO + Google Ads — Julio 2026',
             'tipo' => 'ingreso',
@@ -399,7 +399,7 @@ class FinanzasTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('cliente_id', $otroCliente->id);
-        $response->assertJsonPath('cliente', $otroCliente->nombre);
+        $response->assertJsonPath('cliente', $otroCliente->nombre_comercial);
         $this->assertDatabaseHas('finanzas', [
             'id' => $finanza->id,
             'cliente_id' => $otroCliente->id,
@@ -505,7 +505,7 @@ class FinanzasTest extends TestCase
     public function test_exportar_streams_csv_with_expected_header_and_rows(): void
     {
         $user = User::factory()->create();
-        $cliente = Cliente::factory()->create(['nombre' => 'Cliente CSV']);
+        $cliente = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente CSV']);
         $finanza = $this->finanza([
             'cliente_id' => $cliente->id,
             'concepto' => 'Concepto exportado',
@@ -533,8 +533,8 @@ class FinanzasTest extends TestCase
     public function test_exportar_filters_by_cliente_id(): void
     {
         $user = User::factory()->create();
-        $clienteA = Cliente::factory()->create(['nombre' => 'Cliente A']);
-        $clienteB = Cliente::factory()->create(['nombre' => 'Cliente B']);
+        $clienteA = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente A']);
+        $clienteB = Cliente::factory()->create(['empresa' => null, 'nombre' => 'Cliente B']);
 
         $this->finanza(['cliente_id' => $clienteA->id, 'concepto' => 'Concepto de A']);
         $this->finanza(['cliente_id' => $clienteB->id, 'concepto' => 'Concepto de B']);
@@ -676,6 +676,8 @@ class FinanzasTest extends TestCase
         $clienteActivo = Cliente::factory()->create();
         Servicio::factory()->create(['cliente_id' => $clienteActivo->id, 'estado' => 'activo', 'precio_mensual' => 12000]);
         Servicio::factory()->create(['cliente_id' => $clienteActivo->id, 'estado' => 'pausado', 'precio_mensual' => 99999]);
+        Servicio::factory()->unico()->create(['cliente_id' => $clienteActivo->id, 'estado' => 'activo', 'precio_mensual' => 77777]);
+        Servicio::factory()->gratuito()->create(['cliente_id' => $clienteActivo->id, 'estado' => 'activo']);
 
         // Row belonging to the real current month — this is what SHOULD count.
         $this->finanza([
@@ -717,8 +719,12 @@ class FinanzasTest extends TestCase
         $dashboardResponse->assertOk();
         $kpis = collect($dashboardResponse->viewData('kpis'))->keyBy('label');
 
-        $expectedMrrLabel = '$' . number_format($expectedMrr / 1000, 0) . 'K';
-        $expectedPendienteLabel = '$' . number_format($expectedPeriodo['pendiente'] / 1000, 0) . 'K';
+        // Regla del KPI: menos de 10,000 completo; desde 10,000 en miles con un decimal.
+        $etiqueta = fn (float $monto): string => '$' . (abs($monto) < 10000
+            ? number_format($monto, 0)
+            : rtrim(rtrim(number_format($monto / 1000, 1), '0'), '.') . 'K');
+        $expectedMrrLabel = $etiqueta((float) $expectedMrr);
+        $expectedPendienteLabel = $etiqueta((float) $expectedPeriodo['pendiente']);
 
         $this->assertSame($expectedMrrLabel, $kpis['MRR Activo']['value']);
         $this->assertSame($expectedPendienteLabel, $kpis['Pagos Pendientes']['value']);

@@ -7,6 +7,7 @@
  * "Eliminar": non-destructive, PATCH-in-place (the row stays, only its
  * Estado/actions change), never a DOM removal.
  */
+import { formatearFechaHora } from "./utils/fecha.js";
 (function () {
   "use strict";
 
@@ -210,7 +211,7 @@
       <td>${escapeHtml(u.area_label || "—")}</td>
       <td><span class="usuario-cuentas-cell" title="${escapeHtml(cuentas)}">${escapeHtml(cuentas || "—")}</span></td>
       <td>${badgeHtml(u.is_active ? "activo" : "inactivo")}</td>
-      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(u.last_login_at || "Nunca")}</span></td>
+      <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">${escapeHtml(formatearFechaHora(u.last_login_at, "Nunca"))}</span></td>
       <td>
         <div style="display:flex; gap:4px;">
           <button type="button" class="btn--icon" title="Editar" data-edit-usuario="${u.id}">
@@ -259,7 +260,7 @@
     document.getElementById("usuarioDetailArea").textContent = u.area_label || "—";
     document.getElementById("usuarioDetailTelefono").textContent = u.telefono || "—";
     document.getElementById("usuarioDetailEstado").innerHTML = badgeHtml(u.is_active ? "activo" : "inactivo");
-    document.getElementById("usuarioDetailUltimoAcceso").textContent = u.last_login_at || "Nunca";
+    document.getElementById("usuarioDetailUltimoAcceso").textContent = formatearFechaHora(u.last_login_at, "Nunca");
 
     const cuentasEl = document.getElementById("usuarioDetailCuentas");
     cuentasEl.innerHTML = u.cuentas_asignadas && u.cuentas_asignadas.length

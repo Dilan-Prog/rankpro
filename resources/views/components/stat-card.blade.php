@@ -8,8 +8,10 @@
     follows the sign, but the color treats an increase as negative.
     Pass href to render the tile as a clickable <a> instead of a plain <div>
     (same inner markup and .kpi class either way).
+    Pass fuente / fecha / tipo (and optionally fecha-texto) to show where and when the figure
+    comes from via <x-dato-fecha>; without them the markup is exactly as before.
 --}}
-@props(['label', 'value', 'sub' => null, 'trend' => null, 'icon', 'color' => 'primary', 'href' => null, 'invertir' => false])
+@props(['label', 'value', 'sub' => null, 'trend' => null, 'icon', 'color' => 'primary', 'href' => null, 'invertir' => false, 'fuente' => null, 'fecha' => null, 'tipo' => null, 'fechaTexto' => null, 'fechaSin' => 'Sin fecha de captura'])
 @if ($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => 'kpi']) }}>
 @else
@@ -22,6 +24,9 @@
     <div class="kpi__value">{{ $value }}</div>
     @if ($sub)
         <div class="kpi__sub">{{ $sub }}</div>
+    @endif
+    @if ($fuente !== null || $fecha !== null || $tipo !== null)
+        <x-dato-fecha :fuente="$fuente" :fecha="$fecha" :tipo="$tipo" :texto="$fechaTexto" :sin-fecha="$fechaSin" class="kpi__fuente" />
     @endif
     @if (!is_null($trend))
         <div class="kpi__trend {{ ($invertir ? $trend <= 0 : $trend >= 0) ? 'kpi__trend--up' : 'kpi__trend--down' }}">

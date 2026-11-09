@@ -33,7 +33,7 @@ class EnviarReportesProgramados extends Command
                 }
 
                 $estado = $prog->ultimo_ok ? 'ok' : 'ERROR: '.$prog->ultimo_resultado;
-                $linea = "Programación #{$prog->id} ({$prog->cliente?->nombre}): {$estado}";
+                $linea = "Programación #{$prog->id} ({$prog->cliente?->nombre_comercial}): {$estado}";
                 $prog->ultimo_ok ? $this->line($linea) : $this->error($linea);
                 $procesadas++;
             });

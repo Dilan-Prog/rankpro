@@ -18,7 +18,7 @@
             <tbody>
                 @foreach ($clics as $clic)
                     <tr>
-                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $clic->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="u-mono" style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ fecha_mx($clic->created_at, true) }}</td>
                         <td><span class="badge badge--info">{{ $clic->gclid ? 'GCLID' : ($clic->gbraid ? 'GBRAID' : ($clic->wbraid ? 'WBRAID' : '—')) }}</span></td>
                         <td><span style="font-size:var(--text-xs); color:var(--color-muted-foreground);">{{ $clic->utm_campaign ?? '—' }}</span></td>
                         <td>

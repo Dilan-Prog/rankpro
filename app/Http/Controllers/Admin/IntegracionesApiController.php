@@ -37,6 +37,7 @@ class IntegracionesApiController extends Controller
             ]);
 
         return view('admin.integraciones.api', [
+            'pageTitle' => 'API y tokens',
             'tokens' => $tokens,
             'modulos' => Modulos::TODOS,
             'etiquetas' => collect(Modulos::TODOS)->mapWithKeys(fn ($m) => [$m => Modulos::etiqueta($m)]),
@@ -98,6 +99,7 @@ class IntegracionesApiController extends Controller
     public function docs(): View
     {
         return view('admin.integraciones.api-docs', [
+            'pageTitle' => 'Documentación de la API',
             'modulos' => Modulos::TODOS,
             'etiquetas' => collect(Modulos::TODOS)->mapWithKeys(fn ($m) => [$m => Modulos::etiqueta($m)]),
         ]);
