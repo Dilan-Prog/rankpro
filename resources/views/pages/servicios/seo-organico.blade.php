@@ -43,18 +43,27 @@
     $revisiones = [
         ['sev' => 'critico', 'label' => 'Alto impacto', 'title' => 'Canibalización entre páginas', 'detail' => 'Varias URLs compitiendo por la misma keyword: Google no sabe cuál mostrar y termina bajando las dos.'],
         ['sev' => 'critico', 'label' => 'Alto impacto', 'title' => 'Core Web Vitals en móvil', 'detail' => 'Medimos LCP, INP y CLS con datos de campo. Cada segundo de más cuesta conversiones orgánicas.'],
-        ['sev' => 'medio', 'label' => 'Medio', 'title' => 'Cobertura de intención comercial', 'detail' => 'Comparamos tu contenido con el de tus competidores: comparativas, precios y páginas de decisión.'],
         ['sev' => 'critico', 'label' => 'Alto impacto', 'title' => 'Enlaces internos hacia redirecciones', 'detail' => 'La autoridad se diluye antes de llegar a las páginas que venden.'],
+        ['sev' => 'critico', 'label' => 'Alto impacto', 'title' => 'Datos estructurados ausentes', 'detail' => 'Sin schema en producto y FAQ te quedas fuera de los resultados enriquecidos donde se gana el clic.'],
+        ['sev' => 'medio', 'label' => 'Medio', 'title' => 'Cobertura de intención comercial', 'detail' => 'Comparamos tu contenido con el de tus competidores: comparativas, precios y páginas de decisión.'],
         ['sev' => 'medio', 'label' => 'Medio', 'title' => 'Títulos y descripciones duplicados', 'detail' => 'Plantillas sin variables: Google reescribe tus títulos por su cuenta.'],
         ['sev' => 'medio', 'label' => 'Medio', 'title' => 'Perfil de enlaces frente al líder', 'detail' => 'Cuántos dominios de referencia te faltan para competir por tus keywords cabeza.'],
-        ['sev' => 'critico', 'label' => 'Alto impacto', 'title' => 'Datos estructurados ausentes', 'detail' => 'Sin schema en producto y FAQ te quedas fuera de los resultados enriquecidos donde se gana el clic.'],
         ['sev' => 'ok', 'label' => 'Base', 'title' => 'Estructura de URLs y sitemap', 'detail' => 'Si la base técnica está sana se puede construir encima sin rehacer el sitio.'],
     ];
 
+    $frentes = [
+        ['ico' => '<path d="m16 18 6-6-6-6"></path><path d="m8 6-6 6 6 6"></path>', 't' => 'SEO técnico', 'd' => 'Rastreo, indexación, Core Web Vitals, enlaces internos, redirecciones, datos estructurados y sitemap. Es la base: si Google no puede leer tu sitio, el contenido no rinde.'],
+        ['ico' => '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path>', 't' => 'SEO de contenidos', 'd' => 'Arquitectura de contenido y páginas pensadas para la intención de búsqueda: servicio, guías, comparativos y páginas por ciudad. Cada pieza tiene una keyword objetivo y una URL propia, sin canibalizar a otra.'],
+        ['ico' => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>', 't' => 'SEO de autoridad', 'd' => 'Perfil de enlaces frente a tu competencia directa y menciones de calidad. Se hace despacio y con criterio, sin paquetes de enlaces.'],
+    ];
+
+    // Solo las ciudades con landing publicada (ver Servicios::todos()).
+    $ciudades = array_filter($servicio['landings_ciudad'] ?? []);
+
     $pasos = [
-        ['n' => '01', 't' => 'Auditamos', 'd' => 'Rastreo técnico, contenido y enlaces de tu sitio real, con acceso de solo lectura.'],
-        ['n' => '02', 't' => 'Te mostramos', 'd' => 'Hallazgos priorizados por impacto y la brecha frente a tu competencia directa.'],
-        ['n' => '03', 't' => 'Tú decides', 'd' => 'Si quieres, ejecutamos. Si no, el informe se queda contigo sin compromiso.'],
+        ['n' => '01', 't' => 'Auditamos', 'd' => 'Acceso de solo lectura a tu sitio real.'],
+        ['n' => '02', 't' => 'Te mostramos', 'd' => 'Hallazgos priorizados por impacto y por brecha frente a tu competencia.'],
+        ['n' => '03', 't' => 'Tú decides', 'd' => 'Ejecutarlo con nosotros o con tu equipo. Sin compromiso.'],
     ];
 
     // Curva de ejemplo: proyectos propios, no del visitante.
@@ -113,18 +122,20 @@
                 </nav>
 
                 <div style="max-width:48rem;">
-                    <span class="cv-badge cv-badge--outline">{!! $ico($icoBusca, 12) !!} Auditoría SEO</span>
+                    <span class="cv-badge cv-badge--outline">{!! $ico($icoBusca, 12) !!} Agencia de servicios SEO</span>
 
-                    <h1 class="cv-title cv-title--light">Sabemos qué te está <span style="color:var(--brand-light);">frenando</span> en Google. Y cómo arreglarlo.</h1>
+                    <h1 class="cv-title cv-title--light">Agencia SEO en México que sabe qué te <span style="color:var(--brand-light);">frena</span> en Google</h1>
 
-                    <p class="cv-lead cv-lead--light">Auditoría técnica, de contenido y de enlaces sobre tu sitio real. Primero el diagnóstico, después decides si trabajamos juntos.</p>
+                    <p style="margin-top:1rem;font-size:1.25rem;font-weight:600;line-height:1.4;color:#ffffff;">Sabemos qué te está frenando en Google. Y cómo arreglarlo.</p>
+
+                    <p class="cv-lead cv-lead--light">Somos una agencia SEO en México especializada en posicionamiento web para empresas. Combinamos SEO técnico, de contenidos y de autoridad, y medimos cada avance en Google Search Console. Empezamos con una auditoría que te queda a ti, sin compromiso.</p>
 
                     <div class="cv-actions">
-                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Pedir mi auditoría {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría SEO') }}" class="cv-btn cv-btn--outline-light">Escribir por correo</a>
                     </div>
 
-                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">Sin llamadas de venta para empezar · No pedimos accesos de administrador · El informe es tuyo</p>
+                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">Sin llamadas de venta para empezar · Solo pedimos acceso de lectura · El informe es tuyo</p>
                 </div>
             </div>
         </section>
@@ -132,9 +143,32 @@
         {{-- Prueba social de apoyo: sectores con caso publicado (ver CasosExito). --}}
         @include('pages.servicios._casos-strip')
 
-        {{-- --------------------------------------------------------- pasos --}}
-        <section class="cv-section cv-section--tight">
+        {{-- ------------------------------------------ qué incluye el servicio --}}
+        <section class="cv-section" aria-labelledby="que-incluye">
             <div class="container">
+                <div class="cv-head">
+                    <h2 id="que-incluye">Servicio de posicionamiento SEO: qué hace una agencia SEO por tu sitio</h2>
+                    <p>Un buen servicio de posicionamiento SEO no es una lista de palabras clave. Es ordenar tu sitio para que Google entienda qué vendes, a quién y por qué mereces aparecer primero. Como agencia de marketing digital y SEO, trabajamos en tres frentes:</p>
+                </div>
+                <div class="cv-cards">
+                    @foreach ($frentes as $f)
+                        <div class="cv-card-soft">
+                            <div class="cv-card-soft__icon">{!! $ico($f['ico'], 20) !!}</div>
+                            <h3>{{ $f['t'] }}</h3>
+                            <p>{{ $f['d'] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        {{-- --------------------------------------------------------- pasos --}}
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="proceso">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="proceso">Cómo trabaja nuestra agencia SEO</h2>
+                    <p>Antes de contratar una agencia de posicionamiento SEO conviene saber qué vas a recibir y cuándo decides.</p>
+                </div>
                 <div class="cv-steps">
                     @foreach ($pasos as $p)
                         <div class="cv-step">
@@ -148,7 +182,7 @@
         </section>
 
         {{-- ------------------------------------------------ qué revisamos --}}
-        <section class="cv-section cv-section--alt">
+        <section class="cv-section">
             <div class="container">
                 <div class="cv-head">
                     <span class="cv-badge">{!! $ico($icoBusca, 12) !!} El alcance de la auditoría</span>
@@ -214,7 +248,7 @@
         </section>
 
         {{-- Casos de exito con datos reales (ver App\Support\CasosExito). --}}
-        @include('pages.servicios._casos-exito')
+        @include('pages.servicios._casos-exito', ['casosTitulo' => 'Resultados de nuestro servicio de SEO'])
 
         {{-- ------------------------------------------------ vista previa SERP --}}
         <section class="cv-section cv-section--tight">
@@ -244,11 +278,70 @@
             </div>
         </section>
 
+        {{-- ----------------------------------------------------- cobertura --}}
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="cobertura">
+            <div class="container">
+                <div class="cv-head" @if ($ciudades === []) style="margin-bottom:0;" @endif>
+                    <h2 id="cobertura">Agencia SEO para empresas en todo México</h2>
+                    <p>
+                        Trabajamos de forma remota con empresas de cualquier estado.
+                        {{-- Sin landings publicadas no se anuncia una lista que no existe. --}}
+                        @if ($ciudades === [])
+                            Si buscas una agencia de SEO en tu ciudad, podemos atenderte estés donde estés.
+                        @else
+                            Si buscas una agencia de SEO en tu ciudad, estas son las páginas con el detalle local:
+                        @endif
+                    </p>
+                </div>
+                @if ($ciudades !== [])
+                    <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;">
+                        @foreach ($ciudades as $ciudad => $ruta)
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ url($ruta) }}">Agencia SEO en {{ $ciudad }}</a></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </section>
+
+        {{-- ------------------------------------------------------ guías del blog --}}
+        {{-- Hub -> spoke: primero las guías fijas del plan (solo las publicadas) y
+             debajo los artículos recientes que no estén ya en esa lista. Sin
+             artículos no se pinta nada, para no dejar un bloque vacío. --}}
+        @php
+            $recientes = $articulos->reject(fn ($a) => isset($guias[$a->slug]));
+        @endphp
+        @if ($guias !== [] || $recientes->isNotEmpty())
+            <section class="cv-section cv-section--tight" aria-labelledby="guias">
+                <div class="container">
+                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
+                        <h2 id="guias">Antes de contratar, conviene entender el SEO</h2>
+                    </div>
+                    @if ($guias !== [])
+                        <ul style="display:grid;gap:0.75rem;margin-bottom:2rem;padding-left:1.25rem;">
+                            @foreach ($guias as $slugGuia => $textoGuia)
+                                <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    @if ($recientes->isNotEmpty())
+                        <div class="cv-cards">
+                            @foreach ($recientes as $articulo)
+                                <x-blog.tarjeta :articulo="$articulo" />
+                            @endforeach
+                        </div>
+                    @endif
+                    <p style="margin-top:1.5rem;">
+                        <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
+                    </p>
+                </div>
+            </section>
+        @endif
+
         {{-- ------------------------------------------------------ preguntas --}}
         <section class="cv-section cv-section--tight">
             <div class="container">
                 <div class="cv-head">
-                    <h2>Preguntas frecuentes</h2>
+                    <h2>Preguntas frecuentes sobre el servicio de SEO</h2>
                 </div>
 
                 <div class="cv-faq">
@@ -258,7 +351,12 @@
                                 <span>{{ $faq['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
                             </button>
-                            <div class="cv-faq__panel" id="faq-{{ $i }}" @if($i !== 0) hidden @endif>{{ $faq['r'] }}</div>
+                            <div class="cv-faq__panel" id="faq-{{ $i }}" @if($i !== 0) hidden @endif>
+                                {{ $faq['r'] }}
+                                @if (isset($faq['guia'], $guias[$faq['guia']]))
+                                    Más detalle en <a href="{{ route('blog.show', $faq['guia']) }}">{{ $guias[$faq['guia']] }}</a>.
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -270,7 +368,7 @@
             <div class="container">
                 <div class="cv-final">
                     <h2>Empieza por saber dónde estás parado</h2>
-                    <p>Buena parte de los sitios que revisamos pierde tráfico por contenido y problemas técnicos, no por presupuesto.</p>
+                    <p>La mayoría de las pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.</p>
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
@@ -278,27 +376,6 @@
                 </div>
             </div>
         </section>
-
-        {{-- ------------------------------------------------------ guías del blog --}}
-        {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se
-             pinta nada, para no dejar un bloque vacío en una landing de conversión. --}}
-        @if (isset($articulos) && $articulos->isNotEmpty())
-            <section class="cv-section cv-section--tight" aria-labelledby="guias">
-                <div class="container">
-                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                        <h2 id="guias" style="font-size:1.5rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
-                    </div>
-                    <div class="cv-cards">
-                        @foreach ($articulos as $articulo)
-                            <x-blog.tarjeta :articulo="$articulo" />
-                        @endforeach
-                    </div>
-                    <p style="margin-top:1.5rem;">
-                        <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
-                    </p>
-                </div>
-            </section>
-        @endif
 
         {{-- ------------------------------------------- otros servicios --}}
         <section class="cv-section cv-section--alt cv-section--tight">

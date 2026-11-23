@@ -95,9 +95,33 @@ class Servicios
                 'icon' => '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>',
                 'tags' => ['On-Page', 'Off-Page', 'Técnico'],
                 'resumen' => 'Estrategia de contenido, link building y SEO técnico para ganar posiciones en Google.',
-                'meta_title' => 'Agencia SEO en México | Posicionamiento Orgánico | RankPro',
-                'meta_description' => 'SEO técnico, de contenidos y de autoridad para empresas en México. Arquitectura de contenido, intención de búsqueda y medición en Search Console.',
-                'h1' => 'SEO orgánico: posicionamiento sostenible en Google',
+                'meta_title' => 'Agencia SEO en México: Posicionamiento Orgánico | RankPro',
+                'meta_description' => 'Agencia SEO en México: auditoría, SEO técnico, de contenidos y de autoridad. Servicio de posicionamiento SEO medido en Search Console. Pide tu auditoría.',
+                'h1' => 'Agencia SEO en México que sabe qué te frena en Google',
+                // Nombre y tipo del Service en el JSON-LD: el nombre comercial del
+                // catálogo ("SEO Orgánico") no es como se busca este servicio.
+                'schema_nombre' => 'Servicio de posicionamiento SEO',
+                'schema_tipo' => 'SEO orgánico',
+                // Guías que la landing enlaza, en este orden (slug => texto del
+                // enlace). Solo se pintan las publicadas: el slug del artículo
+                // debe coincidir con el de aquí para que el enlace aparezca.
+                'guias' => [
+                    'que-es-seo' => '¿Qué es SEO? Guía completa para empresas',
+                    'como-hacer-posicionamiento-seo' => 'Cómo hacer posicionamiento SEO paso a paso',
+                    'consultor-seo' => 'Consultor SEO en México: qué hace y cuándo contratarlo',
+                    'seo-local' => 'SEO local: qué es y cómo posicionar un negocio local',
+                    'herramientas-seo' => 'Las mejores herramientas SEO',
+                    'cuanto-cuesta-posicionamiento-seo' => '¿Cuánto cuesta el posicionamiento SEO?',
+                ],
+                // Landings por ciudad (S-03, S-06, S-09, S-10 y S-11). null = aún
+                // no publicada y no se enlaza; al publicarla, poner aquí su ruta.
+                'landings_ciudad' => [
+                    'CDMX' => null,
+                    'Monterrey' => null,
+                    'Guadalajara' => null,
+                    'Puebla' => null,
+                    'Querétaro' => null,
+                ],
                 'intro' => 'El SEO no es una lista de trucos, es la suma de tres cosas que tienen que funcionar al mismo tiempo: que Google pueda rastrear e indexar tu sitio sin fricción, que tu contenido responda mejor que el de la competencia a lo que la gente realmente busca, y que otras páginas te consideren una referencia legítima. Cuando falta cualquiera de las tres, el resto rinde a medias.',
                 'secciones' => [
                     [
@@ -134,22 +158,33 @@ class Servicios
                     'Estrategia de autoridad y menciones editoriales.',
                     'Reporte mensual con posiciones, clics e impresiones desde Search Console.',
                 ],
+                // El JSON-LD FAQPage sale de aquí mismo, así que siempre coincide
+                // con el texto visible. 'guia' añade un enlace si está publicada.
                 'faqs' => [
                     [
                         'p' => '¿Cuánto tarda el SEO en dar resultados?',
-                        'r' => 'Los cambios técnicos y de contenido suelen empezar a reflejarse entre el tercer y el sexto mes, dependiendo de la competencia de tu sector, la antigüedad del dominio y el estado inicial del sitio. Un sitio con problemas técnicos graves puede mejorar antes, porque se destraba algo que ya existía; un sector muy competido puede tardar más. Nadie serio puede darte una fecha exacta.',
+                        'r' => 'Los cambios suelen notarse entre el mes 3 y el 6. Depende de la competencia, la antigüedad del dominio y el estado inicial del sitio. Primero se corrige lo técnico, luego se publica contenido y después se mide el avance en Search Console.',
                     ],
                     [
                         'p' => '¿Pueden garantizar la primera posición en Google?',
-                        'r' => 'No. Google no vende ni garantiza posiciones orgánicas a nadie, y cualquier agencia que prometa el primer lugar está vendiendo humo o planea usar técnicas que ponen tu dominio en riesgo. Lo que sí garantizamos es el trabajo: auditoría, correcciones, contenido y reportes verificables en tu propia Search Console.',
+                        'r' => 'No, y desconfía de quien lo haga: Google no vende posiciones y nadie controla sus resultados. Lo que sí garantizamos es el trabajo: un diagnóstico claro, un plan priorizado y reportes con datos reales de clics, impresiones y posiciones.',
                     ],
                     [
                         'p' => '¿Necesito rehacer mi sitio web para hacer SEO?',
-                        'r' => 'No necesariamente. Muchos sitios mejoran mucho solo con corregir arquitectura, contenido y velocidad sobre la base existente. El rediseño se justifica cuando la plataforma actual impide crear páginas nuevas, genera URLs imposibles de optimizar o tiene un rendimiento que no se puede arreglar. Te decimos cuál es tu caso después de la auditoría, sin empujarte a un desarrollo que no necesitas.',
+                        'r' => 'Normalmente no. En la auditoría revisamos si los problemas se resuelven con ajustes de contenido y configuración. Solo recomendamos rehacer el sitio cuando la plataforma o la estructura impiden mejorar.',
                     ],
                     [
                         'p' => '¿Qué pasa si dejo de invertir en SEO?',
-                        'r' => 'A diferencia de la publicidad pagada, el tráfico no cae al día siguiente: las páginas ya posicionadas siguen trayendo visitas. Lo que se pierde es el avance, y con el tiempo la competencia que sí sigue publicando y actualizando termina desplazándote. El SEO se comporta como un activo que se deprecia lento, no como una llave que se cierra.',
+                        'r' => 'Lo que ya se construyó no desaparece de golpe, pero tu competencia sigue publicando y optimizando. Con el tiempo pierdes posiciones y el tráfico baja. Por eso el SEO funciona mejor como un proceso continuo.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una agencia SEO?',
+                        'r' => 'Depende del tamaño del sitio, la competencia y el alcance. Por eso empezamos con la auditoría: con ella te damos una propuesta concreta.',
+                        'guia' => 'cuanto-cuesta-posicionamiento-seo',
+                    ],
+                    [
+                        'p' => '¿Trabajan con empresas fuera de la Ciudad de México?',
+                        'r' => 'Sí. Atendemos empresas en todo México de forma remota.',
                     ],
                 ],
             ],

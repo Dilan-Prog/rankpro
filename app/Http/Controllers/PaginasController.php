@@ -62,6 +62,7 @@ class PaginasController extends Controller
             'servicio' => $servicios[$slug],
             'otrosServicios' => array_values(array_diff_key($servicios, [$slug => true])),
             'articulos' => $this->articulosDelServicio($slug),
+            'guias' => $this->guiasDelServicio($servicios[$slug]),
         ]);
     }
 
@@ -97,6 +98,30 @@ class PaginasController extends Controller
             })
             ->limit(3)
             ->get();
+    }
+
+    /**
+     * Guías fijas que declara el servicio y que ya están publicadas, en el
+     * orden del catálogo. Las no publicadas se descartan para no enlazar a 404.
+     *
+     * @param  array<string, mixed>  $servicio
+     * @return array<string, string> slug => texto del enlace
+     */
+    private function guiasDelServicio(array $servicio): array
+    {
+        $guias = $servicio['guias'] ?? [];
+
+        if ($guias === []) {
+            return [];
+        }
+
+        $publicadas = Articulo::query()
+            ->publicados()
+            ->whereIn('slug', array_keys($guias))
+            ->pluck('slug')
+            ->all();
+
+        return array_intersect_key($guias, array_flip($publicadas));
     }
 
     /**

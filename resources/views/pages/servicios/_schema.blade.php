@@ -8,9 +8,9 @@
                 [
                     '@type' => 'Service',
                     '@id' => route('servicios.show', $servicio['slug']).'#service',
-                    'name' => $servicio['nombre'],
+                    'name' => $servicio['schema_nombre'] ?? $servicio['nombre'],
                     'description' => $servicio['meta_description'],
-                    'serviceType' => $servicio['nombre'],
+                    'serviceType' => $servicio['schema_tipo'] ?? $servicio['nombre'],
                     'url' => route('servicios.show', $servicio['slug']),
                     'provider' => ['@id' => url('/#organization')],
                     'areaServed' => [
