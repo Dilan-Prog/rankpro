@@ -111,16 +111,7 @@ class Servicios
                     'consultor-seo' => 'Consultor SEO en México: qué hace y cuándo contratarlo',
                     'seo-local' => 'SEO local: qué es y cómo posicionar un negocio local',
                     'herramientas-seo' => 'Las mejores herramientas SEO',
-                    'cuanto-cuesta-posicionamiento-seo' => '¿Cuánto cuesta el posicionamiento SEO?',
-                ],
-                // Landings por ciudad (S-03, S-06, S-09, S-10 y S-11). null = aún
-                // no publicada y no se enlaza; al publicarla, poner aquí su ruta.
-                'landings_ciudad' => [
-                    'CDMX' => null,
-                    'Monterrey' => null,
-                    'Guadalajara' => null,
-                    'Puebla' => null,
-                    'Querétaro' => null,
+                    'cuanto-cuesta-el-posicionamiento-seo' => '¿Cuánto cuesta el posicionamiento SEO?',
                 ],
                 'intro' => 'El SEO no es una lista de trucos, es la suma de tres cosas que tienen que funcionar al mismo tiempo: que Google pueda rastrear e indexar tu sitio sin fricción, que tu contenido responda mejor que el de la competencia a lo que la gente realmente busca, y que otras páginas te consideren una referencia legítima. Cuando falta cualquiera de las tres, el resto rinde a medias.',
                 'secciones' => [
@@ -180,7 +171,7 @@ class Servicios
                     [
                         'p' => '¿Cuánto cuesta una agencia SEO?',
                         'r' => 'Depende del tamaño del sitio, la competencia y el alcance. Por eso empezamos con la auditoría: con ella te damos una propuesta concreta.',
-                        'guia' => 'cuanto-cuesta-posicionamiento-seo',
+                        'guia' => 'cuanto-cuesta-el-posicionamiento-seo',
                     ],
                     [
                         'p' => '¿Trabajan con empresas fuera de la Ciudad de México?',

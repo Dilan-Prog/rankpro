@@ -96,6 +96,10 @@ Route::get('/contacto', [PaginasController::class, 'contacto'])->name('contacto'
 
 Route::get('/servicios', [PaginasController::class, 'serviciosIndex'])->name('servicios.index');
 Route::get('/servicios/{slug}', [PaginasController::class, 'serviciosShow'])->name('servicios.show');
+// Landings de SEO por ciudad (App\Support\CiudadesSeo), hijas de /servicios/seo-organico.
+Route::get('/servicios/seo-organico/{slugCiudad}', [PaginasController::class, 'seoCiudad'])
+    ->where('slugCiudad', '[a-z-]+')
+    ->name('servicios.ciudad');
 
 // Casos de exito: prueba social con cifras verificables (App\Support\CasosExito).
 // Se restringe el slug para que una URL con mayusculas o caracteres raros no

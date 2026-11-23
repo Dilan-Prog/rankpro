@@ -57,8 +57,8 @@
         ['ico' => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>', 't' => 'SEO de autoridad', 'd' => 'Perfil de enlaces frente a tu competencia directa y menciones de calidad. Se hace despacio y con criterio, sin paquetes de enlaces.'],
     ];
 
-    // Solo las ciudades con landing publicada (ver Servicios::todos()).
-    $ciudades = array_filter($servicio['landings_ciudad'] ?? []);
+    // Solo las ciudades con landing publicada.
+    $ciudades = \App\Support\CiudadesSeo::enlaces();
 
     $pasos = [
         ['n' => '01', 't' => 'Auditamos', 'd' => 'Acceso de solo lectura a tu sitio real.'],
@@ -289,14 +289,14 @@
                         @if ($ciudades === [])
                             Si buscas una agencia de SEO en tu ciudad, podemos atenderte estés donde estés.
                         @else
-                            Si buscas una agencia de SEO en tu ciudad, estas son las páginas con el detalle local:
+                            Si buscas una agencia de SEO en tu ciudad, {{ count($ciudades) === 1 ? 'esta es la página' : 'estas son las páginas' }} con el detalle local:
                         @endif
                     </p>
                 </div>
                 @if ($ciudades !== [])
                     <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;">
-                        @foreach ($ciudades as $ciudad => $ruta)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ url($ruta) }}">Agencia SEO en {{ $ciudad }}</a></li>
+                        @foreach ($ciudades as $ciudad)
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ $ciudad['url'] }}">{{ $ciudad['label'] }}</a></li>
                         @endforeach
                     </ul>
                 @endif

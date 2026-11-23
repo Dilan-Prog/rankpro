@@ -13,6 +13,7 @@
 @php
     // La landing puede fijar su propio encabezado (p. ej. con su keyword).
     $casosTitulo ??= 'Lo que este servicio ya logró';
+    $casosTexto ??= 'Cifras de Google Search Console y de los propios clientes, cada una con su fuente. Donde hay nombre es porque el cliente autorizó publicarlo.';
     $casosTeaser = \App\Support\CasosExito::todos();
     $sectoresTeaser = \App\Support\CasosExito::SECTORES;
     $fuentesTeaser = \App\Support\CasosExito::FUENTES;
@@ -25,7 +26,7 @@
             <div>
                 <span class="cv-badge">Casos de éxito</span>
                 <h2 id="casos-titulo" class="cv-casos__title">{{ $casosTitulo }}</h2>
-                <p class="cv-casos__lead">Cifras de Google Search Console y de los propios clientes, cada una con su fuente. Donde hay nombre es porque el cliente autorizó publicarlo.</p>
+                <p class="cv-casos__lead">{{ $casosTexto }}</p>
             </div>
             <a class="cv-casos__todos" href="{{ route('casos.index') }}">Ver todos los casos →</a>
         </div>

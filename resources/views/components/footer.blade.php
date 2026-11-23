@@ -11,6 +11,7 @@
                     fn (array $s): array => ['label' => $s['nombre'], 'url' => $s['url']],
                     \App\Support\Servicios::navegacion()
                 ),
+                ...\App\Support\CiudadesSeo::enlaces(),
             ],
         ],
         [

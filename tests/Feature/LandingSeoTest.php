@@ -56,11 +56,10 @@ class LandingSeoTest extends TestCase
         }
     }
 
-    public function test_no_enlaza_guias_ni_ciudades_sin_publicar(): void
+    public function test_no_enlaza_guias_sin_publicar(): void
     {
         $respuesta = $this->get(self::URL)
-            ->assertDontSee('Antes de contratar, conviene entender el SEO')
-            ->assertDontSee('páginas con el detalle local');
+            ->assertDontSee('Antes de contratar, conviene entender el SEO');
 
         foreach (array_keys(Servicios::todos()['seo-organico']['guias']) as $slug) {
             $respuesta->assertDontSee('/blog/'.$slug.'"', false);
@@ -69,7 +68,7 @@ class LandingSeoTest extends TestCase
 
     public function test_una_guia_del_plan_se_enlaza_al_publicarse_tambien_desde_la_faq(): void
     {
-        $slug = 'cuanto-cuesta-posicionamiento-seo';
+        $slug = 'cuanto-cuesta-el-posicionamiento-seo';
         Articulo::factory()->delCluster('seo-organico')->create(['slug' => $slug]);
 
         $html = $this->get(self::URL)

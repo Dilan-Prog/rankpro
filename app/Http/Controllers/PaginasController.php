@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Articulo;
 use App\Support\CasosExito;
+use App\Support\CiudadesSeo;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Database\Eloquent\Collection;
@@ -63,6 +64,27 @@ class PaginasController extends Controller
             'otrosServicios' => array_values(array_diff_key($servicios, [$slug => true])),
             'articulos' => $this->articulosDelServicio($slug),
             'guias' => $this->guiasDelServicio($servicios[$slug]),
+        ]);
+    }
+
+    public function seoCiudad(string $slugCiudad): View
+    {
+        $ciudad = CiudadesSeo::encontrar($slugCiudad);
+
+        abort_if($ciudad === null, 404);
+
+        $servicios = $this->servicios();
+        $servicio = $servicios[CiudadesSeo::SERVICIO];
+
+        return view('pages.servicios.seo-ciudad', [
+            'ciudad' => $ciudad,
+            'servicio' => $servicio,
+            'otrasCiudades' => CiudadesSeo::enlaces($slugCiudad),
+            'otrosServicios' => array_map(
+                static fn (string $slug): array => $servicios[$slug],
+                ['desarrollo-web', 'sem-google-ads', 'pagespeed-core-web-vitals'],
+            ),
+            'guias' => $this->guiasDelServicio($servicio),
         ]);
     }
 
