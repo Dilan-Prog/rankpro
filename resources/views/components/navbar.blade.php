@@ -13,11 +13,12 @@
     $servicios = Servicios::navegacion();
 
     // Los clústeres se normalizan a la forma que espera el megamenú (nombre + resumen).
-    // No tienen icono propio, así que la tarjeta pinta el gradiente sin <svg>.
+    // El icono es el del servicio al que apoya cada uno (ver Clusters::navegacion).
     $clusters = array_map(static fn (array $c): array => [
         'slug' => $c['slug'],
         'nombre' => $c['nombre'],
         'resumen' => $c['descripcion'],
+        'icon' => $c['icon'],
         'gradient' => $c['gradient'],
         'url' => $c['url'],
     ], Clusters::navegacion());

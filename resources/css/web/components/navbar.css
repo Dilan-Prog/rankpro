@@ -104,8 +104,8 @@
     z-index: 50;
 }
 
-.navbar__item--mega:hover .megamenu,
-.navbar__item--mega:focus-within .megamenu,
+/* Solo con clic (o Enter): abrirlo con :hover o :focus-within lo mostraba al
+   pasar el raton sin querer. Sin JS, el enlace lleva a la pagina. */
 .nav-dropdown-trigger.is-open ~ .megamenu {
     opacity: 1;
     visibility: visible;
@@ -248,16 +248,6 @@
 
 .megamenu__aside-link:hover {
     color: #ffffff;
-}
-
-/* En pantallas sin hover fiable el megamenu no se despliega al pasar el raton;
-   queda el enlace directo a /servicios y el acordeon del menu movil. */
-@media (hover: none) {
-    .navbar__item--mega:hover .megamenu {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
 }
 
 .navbar__actions {

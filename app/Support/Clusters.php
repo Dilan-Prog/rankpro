@@ -116,10 +116,12 @@ class Clusters
     /**
      * Version reducida para navegacion (navbar, footer, indice del blog).
      *
-     * @return list<array{slug: string, nombre: string, nombre_corto: string, descripcion: string, url: string, gradient: string}>
+     * @return list<array{slug: string, nombre: string, nombre_corto: string, descripcion: string, url: string, gradient: string, icon: string|null}>
      */
     public static function navegacion(): array
     {
+        $servicios = Servicios::todos();
+
         return array_values(array_map(static fn (array $c) => [
             'slug' => $c['slug'],
             'nombre' => $c['nombre'],
@@ -127,6 +129,8 @@ class Clusters
             'descripcion' => $c['descripcion'],
             'url' => route('blog.cluster', $c['slug']),
             'gradient' => $c['gradient'],
+            // El del servicio al que apoya: sin el, el menu pinta un cuadro vacio.
+            'icon' => $servicios[$c['servicio']]['icon'] ?? null,
         ], self::todos()));
     }
 

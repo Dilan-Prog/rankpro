@@ -1,10 +1,8 @@
 /**
  * Megamenu de Servicios (escritorio) y acordeon de servicios (movil).
  *
- * En escritorio el despliegue base es CSS puro (:hover / :focus-within), asi que
- * el menu funciona aunque el JS falle. Este modulo solo anade lo que el CSS no
- * puede: abrir con clic/teclado, cerrar con Escape y mantener aria-expanded
- * sincronizado. En movil gestiona el acordeon, que si depende de JS.
+ * En escritorio el panel se abre solo con clic o Enter, nunca al pasar el raton.
+ * Si el JS falla, el disparador sigue siendo un enlace a la pagina. En movil gestiona el acordeon, que si depende de JS.
  */
 document.addEventListener('DOMContentLoaded', () => {
     const esEscritorio = () => window.matchMedia('(min-width: 1024px)').matches;
@@ -35,6 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!abierto) {
                 trigger.classList.add('is-open');
                 trigger.setAttribute('aria-expanded', 'true');
+            }
+        });
+
+        // Con teclado: al salir del panel con Tab, se cierra.
+        trigger.closest('li')?.addEventListener('focusout', (event) => {
+            if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
+                cerrarTodos();
             }
         });
     });

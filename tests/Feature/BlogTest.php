@@ -350,6 +350,16 @@ class BlogTest extends TestCase
         $this->assertSame([3], array_values(array_unique($recibidos)));
     }
 
+    public function test_cada_categoria_del_menu_blog_lleva_icono(): void
+    {
+        foreach (Clusters::navegacion() as $cluster) {
+            $this->assertNotEmpty($cluster['icon'], $cluster['slug']);
+        }
+
+        $html = $this->get('/nosotros')->getContent();
+        $this->assertDoesNotMatchRegularExpression('~megamenu__icon[^>]*>[[:space:]]*</span>~', $html);
+    }
+
     public function test_la_pagina_de_servicio_sin_articulos_no_muestra_bloque_vacio(): void
     {
         $this->get('/servicios/social-media')->assertOk();
