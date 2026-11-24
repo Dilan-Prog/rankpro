@@ -6,6 +6,7 @@
  * small shared helpers on window.AgencyOS used by module scripts.
  */
 import { iniciarDescargas } from "./lib/descargas.js";
+import { iniciarTeclado } from "./lib/teclado.js";
 
 (function () {
   "use strict";
@@ -635,6 +636,7 @@ import { iniciarDescargas } from "./lib/descargas.js";
     initCommandPalette();
     initTablePagination();
     iniciarDescargas();
+    iniciarTeclado();
     document.dispatchEvent(new CustomEvent("shell:ready"));
   });
 })();

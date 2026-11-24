@@ -45,6 +45,9 @@
         </button>
     </div>
     <div class="topbar__actions">
+        <button class="topbar__theme" type="button" data-atajos-abrir aria-label="Atajos de teclado" title="Atajos de teclado (?)">
+            <i class="fa-solid fa-keyboard"></i>
+        </button>
         <button class="topbar__theme" type="button" id="themeToggle" aria-label="Cambiar a modo claro" title="Cambiar tema">
             <i class="fa-solid fa-sun" data-theme-icon="light"></i>
             <i class="fa-solid fa-moon" data-theme-icon="dark"></i>

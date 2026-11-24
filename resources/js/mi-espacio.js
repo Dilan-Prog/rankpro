@@ -638,8 +638,8 @@ import { formatearFecha } from "./utils/fecha.js";
       if (t) abrirModal(t);
       return;
     }
-    // Solo en el kanban: en las otras vistas las flechas siguen desplazando la página.
-    if (estado.vista === "kanban" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    // Mayús+flechas mueve la tarjeta (solo en el kanban); las flechas solas navegan (lib/teclado.js).
+    if (estado.vista === "kanban" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key) && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       moverConTeclado(e.key, id);
     }

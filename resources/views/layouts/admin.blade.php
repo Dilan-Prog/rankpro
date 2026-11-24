@@ -47,6 +47,7 @@
     </div>
 
     <x-command-palette />
+    <x-atajos-teclado />
 
     @yield('scripts')
 </body>

@@ -1940,3 +1940,47 @@ a.kpi {
 .dato-alerta ul { margin: 4px 0 0; padding-left: 18px; }
 .dato-alerta a { text-decoration: underline; }
 /* ==== fin Calidad de datos ==== */
+
+/* ---------- Navegación con teclado (js/lib/teclado.js) ----------
+   !important: varios módulos quitan el outline de sus campos y, al moverse
+   con las flechas, siempre debe verse dónde está el foco. */
+.teclado-activo :focus {
+  outline: 2px solid var(--color-ring) !important;
+  outline-offset: 2px;
+}
+
+.teclado-activo tr:focus,
+.teclado-activo td:focus,
+.teclado-activo .sidebar__link:focus {
+  outline-offset: -2px;
+}
+
+.teclado-activo tr:focus > td {
+  background: var(--color-secondary);
+}
+
+.teclado-activo .modal:focus {
+  outline: none !important;
+}
+
+.atajos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3) var(--space-4);
+  align-items: center;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.atajos dd {
+  margin: 0;
+}
+
+.atajos kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-secondary);
+  font-family: var(--font-mono);
+}

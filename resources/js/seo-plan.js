@@ -229,12 +229,12 @@
       arrastrada = null;
     });
 
-    // Teclado: Enter abre el detalle; flechas izquierda/derecha cambian de columna.
+    // Teclado: Enter abre el detalle; Mayús+izquierda/derecha cambia de columna (las flechas solas navegan, lib/teclado.js).
     kanban.addEventListener("keydown", (e) => {
       const tarjeta = e.target.closest("[data-spl-item]");
       if (!tarjeta || e.target !== tarjeta) return;
       if (e.key === "Enter") { e.preventDefault(); abrirActividad(tarjeta); return; }
-      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      if (!e.shiftKey || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
       e.preventDefault();
       const columnas = [...kanban.querySelectorAll("[data-spl-col]")];
       const actual = columnas.indexOf(tarjeta.closest("[data-spl-col]"));
