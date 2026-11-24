@@ -71,6 +71,18 @@ class CiudadesSeoTest extends TestCase
             ->assertDontSee('Tlajomulco');
     }
 
+    public function test_queretaro_tiene_texto_propio(): void
+    {
+        $queretaro = '/servicios/seo-organico/queretaro';
+
+        $this->get($queretaro)->assertOk()
+            ->assertSee('<title>Agencia SEO en Querétaro: Posicionamiento Web | RankPro</title>', false)
+            ->assertSee('<link rel="canonical" href="'.url($queretaro).'">', false)
+            ->assertSee('Corregidora')
+            ->assertSee('no necesariamente de Querétaro')
+            ->assertDontSee('Cholula');
+    }
+
     public function test_una_ciudad_no_dada_de_alta_es_404(): void
     {
         $this->get('/servicios/seo-organico/cancun')->assertNotFound();
