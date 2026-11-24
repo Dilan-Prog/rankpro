@@ -56,6 +56,15 @@
         ['n' => '04', 'title' => 'Monitoreo y optimización', 'desc' => 'Alertas si algo falla, ajustes continuos y nuevos flujos conforme crece la operación.'],
     ];
 
+    // 'guia' enlaza la fila solo si ese artículo está publicado.
+    $procesos = [
+        ['area' => 'Ventas', 'proceso' => 'Lead de formulario, WhatsApp, Meta o Google Ads → CRM, asignado y etiquetado', 'resultado' => 'El vendedor se entera en segundos'],
+        ['area' => 'Marketing', 'proceso' => 'Seguimiento, avisos y automatización de marketing', 'resultado' => 'Menos leads fríos', 'guia' => 'automatizacion-de-marketing'],
+        ['area' => 'Operación', 'proceso' => 'Copiar datos entre hojas, CRM y facturación', 'resultado' => 'Menos errores y horas libres'],
+        ['area' => 'Dirección', 'proceso' => 'Reportes semanales automáticos', 'resultado' => 'Decisiones con datos'],
+        ['area' => 'Atención', 'proceso' => 'Chatbot de WhatsApp', 'resultado' => 'Respuesta inmediata', 'guia' => 'chatbot-whatsapp-business'],
+    ];
+
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
     $icoCheck = '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
     $icoFlecha = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>';
@@ -107,9 +116,11 @@
                     <div>
                         <span class="cv-badge cv-badge--auto">{!! $ico($icoZap, 12) !!} Área de IT · Automatización con n8n</span>
 
-                        <h1 class="cv-auto-title">Automatiza tus procesos,<br aria-hidden="true"> <em>recupera tu tiempo.</em></h1>
+                        <h1 class="cv-auto-title">Automatización de procesos para empresas: <em>recupera tu tiempo</em></h1>
 
-                        <p class="cv-auto-lead">Conectamos marketing, ventas y operaciones con automatización inteligente: los leads llegan solos al CRM, tu equipo se entera al instante y los reportes se arman sin nadie.</p>
+                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:700;color:#ffffff;">Automatiza tus procesos, recupera tu tiempo.</p>
+
+                        <p class="cv-auto-lead">Somos una agencia de automatización de procesos en México. Conectamos marketing, ventas y operaciones con n8n para que los leads lleguen solos al CRM, tu equipo se entere al instante y los reportes se armen sin nadie.</p>
 
                         <div class="cv-actions">
                             <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--acento" target="_blank" rel="noopener nofollow">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
@@ -124,10 +135,10 @@
                     </div>
 
                     {{-- Diagrama de nodos: decorativo, resumido para lectores de pantalla. --}}
-                    <div class="cv-flow-card" role="img" aria-label="Diagrama: un nuevo lead entra desde web, anuncios o WhatsApp, pasa por n8n que lo valida y enriquece, y de ahí va al CRM, al aviso al vendedor y al tablero.">
+                    <div class="cv-flow-card" role="img" aria-label="Diagrama de ejemplo: un nuevo lead entra desde web, anuncios o WhatsApp, pasa por n8n que lo valida y enriquece, y de ahí va al CRM, al aviso al vendedor y al tablero.">
                         <div class="cv-flow-card__head" aria-hidden="true">
-                            <span class="cv-flow-card__title">Flujo activo</span>
-                            <span class="cv-flow-card__live"><i></i>ejecutándose</span>
+                            <span class="cv-flow-card__title">Flujo de ejemplo</span>
+                            <span class="cv-flow-card__live">datos ilustrativos</span>
                         </div>
 
                         <div aria-hidden="true">
@@ -209,6 +220,59 @@
                         {!! $nodo($icoCampana, 'Notificación', 'al vendedor correcto') !!}
                     </div>
                     <p class="cv-dark-p" style="max-width:42rem;margin-top:2rem;">Cada paso queda registrado: si algo falla, se reintenta y se avisa. Ningún lead se queda en un correo sin abrir.</p>
+                </div>
+            </div>
+        </section>
+
+        {{-- ------------------------------------------------ qué se automatiza --}}
+        <section class="cv-dark-sec" aria-labelledby="procesos">
+            <div class="container">
+                <div style="max-width:44rem;">
+                    <h2 class="cv-dark-h2" id="procesos" style="margin-top:0;">Automatización de tareas: qué procesos de tu empresa se pueden automatizar</h2>
+                    <p class="cv-dark-p">Un buen proyecto de automatización de procesos empieza por lo repetitivo y con reglas claras: la automatización de procesos manuales de ventas y la de procesos administrativos, como capturas, avisos y reportes.</p>
+                </div>
+
+                <div style="overflow-x:auto;margin-top:2rem;" tabindex="0" role="region" aria-labelledby="procesos">
+                    <table style="width:100%;min-width:34rem;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:#ffffff;">
+                        <thead>
+                            <tr style="border-bottom:2px solid rgba(255,255,255,.3);text-align:left;">
+                                <th scope="col" style="padding:0.75rem;">Área</th>
+                                <th scope="col" style="padding:0.75rem;">Proceso</th>
+                                <th scope="col" style="padding:0.75rem;">Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($procesos as $p)
+                                <tr style="border-bottom:1px solid rgba(255,255,255,.15);">
+                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $p['area'] }}</th>
+                                    <td style="padding:0.75rem;">
+                                        @if (isset($p['guia'], $guias[$p['guia']]))
+                                            <a href="{{ route('blog.show', $p['guia']) }}" style="color:inherit;text-decoration:underline;">{{ $p['proceso'] }}</a>
+                                        @else
+                                            {{ $p['proceso'] }}
+                                        @endif
+                                    </td>
+                                    <td style="padding:0.75rem;">{{ $p['resultado'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {{-- ------------------------------------------------------- tecnología --}}
+        <section class="cv-dark-sec cv-dark-sec--line" aria-labelledby="n8n">
+            <div class="container">
+                <div style="max-width:44rem;">
+                    <h2 class="cv-dark-h2" id="n8n" style="margin-top:0;">Automatización con n8n</h2>
+                    <p class="cv-dark-p">
+                        Usamos n8n, una plataforma que conecta aplicaciones sin desarrollar todo desde cero y que puede vivir en tu propio servidor.
+                        @isset($guias['n8n-que-es'])
+                            Más en <a href="{{ route('blog.show', 'n8n-que-es') }}" style="color:inherit;text-decoration:underline;">¿Qué es n8n?</a>
+                        @endisset
+                    </p>
+                    <p class="cv-dark-p">Si comparas empresas de automatización o un programa de automatización de procesos, pregunta de quién quedan los flujos. Aquí son tuyos: viven en tu instancia, documentados y exportables.</p>
                 </div>
             </div>
         </section>
@@ -311,6 +375,20 @@
                 </div>
             </div>
         </section>
+
+        {{-- ---------------------------------------------- guías del servicio --}}
+        @if ($guias !== [])
+            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="guias-servicio">
+                <div class="container">
+                    <h2 id="guias-servicio" class="cv-dark-h2" style="font-size:1.5rem;margin:0 0 1.5rem;">Guías de automatización de procesos empresariales</h2>
+                    <ul style="display:grid;gap:0.75rem;list-style:none;padding:0;">
+                        @foreach ($guias as $slugGuia => $textoGuia)
+                            <li><a href="{{ route('blog.show', $slugGuia) }}" style="color:#ffffff;text-decoration:underline;">{{ $textoGuia }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
 
         {{-- ------------------------------------------------------ guías del blog --}}
         {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se

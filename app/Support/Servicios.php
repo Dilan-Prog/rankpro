@@ -492,9 +492,18 @@ class Servicios
                 'icon' => '<rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect>',
                 'tags' => ['n8n', 'CRM', 'Integraciones'],
                 'resumen' => 'Flujos automáticos con n8n: leads al CRM, avisos al vendedor y reportes solos.',
-                'meta_title' => 'Automatización de Procesos con n8n en México | RankPro',
-                'meta_description' => 'Conectamos marketing, ventas y operaciones con n8n: captación automática de leads, integración con tu CRM y reportes sin trabajo manual.',
-                'h1' => 'Automatización de procesos con n8n',
+                'meta_title' => 'Automatización de Procesos Empresariales con n8n | RankPro',
+                'meta_description' => 'Automatización de procesos para empresas en México: leads al CRM, avisos al equipo y reportes automáticos con n8n. Diagnóstico gratis de 45 minutos.',
+                'h1' => 'Automatización de procesos para empresas: recupera tu tiempo',
+                'schema_nombre' => 'Automatización de procesos para empresas',
+                'schema_tipo' => 'Automatización de procesos',
+                // Guías que la landing enlaza (slug => texto): solo las publicadas.
+                'guias' => [
+                    'que-es-la-automatizacion-de-procesos' => '¿Qué es la automatización de procesos?',
+                    'n8n-que-es' => 'n8n: qué es y casos de uso',
+                    'chatbot-whatsapp-business' => 'Cómo crear un chatbot para WhatsApp',
+                    'automatizacion-de-marketing' => 'Automatización de marketing',
+                ],
                 'intro' => 'La mayoría de las empresas que atendemos no tienen un problema de generación de demanda: tienen un problema de qué pasa después. Un formulario llega al correo de alguien que está en junta, un vendedor captura a mano el mismo dato en tres sistemas, y el reporte del lunes se arma copiando celdas. Automatizar no es comprar una herramienta más: es conectar lo que ya usas para que el trabajo repetitivo deje de consumir a gente capaz. Lo hacemos con n8n, que puede vivir en tu propia infraestructura, así que tus datos no salen de tu servidor y no pagas por cada ejecución.',
                 'secciones' => [
                     [
@@ -547,6 +556,18 @@ class Servicios
                     [
                         'p' => '¿Qué pasa si un flujo falla?',
                         'r' => 'Cada flujo lleva reintentos, registro de errores y alertas. Si algo se rompe, lo sabemos antes que tú y queda respaldo de cada ejecución para no perder ningún lead.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta automatizar un proceso?',
+                        'r' => 'Depende del número de sistemas que se conectan y de la lógica del flujo. En el diagnóstico gratuito de 45 minutos se define el alcance y se cotiza.',
+                    ],
+                    [
+                        'p' => '¿Qué procesos se pueden automatizar?',
+                        'r' => 'Captación de leads, asignación en CRM, avisos al equipo, reportes, y tareas repetitivas entre hojas de cálculo, facturación y otras herramientas.',
+                    ],
+                    [
+                        'p' => '¿Automatización de procesos es lo mismo que RPA?',
+                        'r' => 'No exactamente. RPA suele imitar clics en pantallas; la automatización con n8n conecta aplicaciones por sus APIs, lo que suele ser más estable. Se elige según el caso.',
                     ],
                 ],
             ],
