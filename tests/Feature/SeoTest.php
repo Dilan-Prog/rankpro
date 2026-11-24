@@ -423,9 +423,9 @@ class SeoTest extends TestCase
         }
 
         $this->assertCount(1, $organizaciones, 'Debe haber un solo nodo Organization.');
-        $this->assertSame('+527341036410', $organizaciones[0]['telephone']);
-        $this->assertSame('+527341036410', $organizaciones[0]['contactPoint']['telephone']);
-        $this->assertStringNotContainsString('+52-734', $html);
+        $this->assertSame('+525562230266', $organizaciones[0]['telephone']);
+        $this->assertSame('+525562230266', $organizaciones[0]['contactPoint']['telephone']);
+        $this->assertStringNotContainsString('+52-55', $html);
     }
 
     public function test_el_json_ld_de_la_portada_usa_la_misma_url_que_la_canonica(): void

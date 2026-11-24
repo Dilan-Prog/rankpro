@@ -377,6 +377,8 @@ class ValidarBlog extends Command
             'blog.show' => isset($this->slugsExistentes()[$parametros['slug'] ?? '']),
             'blog.cluster' => Clusters::existe((string) ($parametros['cluster'] ?? '')),
             'servicios.show' => array_key_exists((string) ($parametros['slug'] ?? ''), Servicios::todos()),
+            'servicios.ciudad' => \App\Support\CiudadesSeo::encontrar((string) ($parametros['slugCiudad'] ?? '')) !== null,
+            'casos.show' => \App\Support\CasosExito::porSlug((string) ($parametros['slug'] ?? '')) !== null,
             default => true,
         };
     }

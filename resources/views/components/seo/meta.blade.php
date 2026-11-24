@@ -83,7 +83,7 @@
 <meta property="og:image" content="{{ $seoImage }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="{{ $seoTitle }}">
+<meta property="og:image:alt" content="{{ trim($__env->yieldContent('og_image_alt')) ?: 'RankPro, agencia de marketing digital en México' }}">
 
 {{-- Twitter / X --}}
 <meta name="twitter:card" content="summary_large_image">

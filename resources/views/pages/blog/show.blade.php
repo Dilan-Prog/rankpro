@@ -12,6 +12,7 @@
 @section('og_type', 'article')
 @if ($ogImage)
     @section('og_image', $ogImage)
+    @section('og_image_alt', $articulo->imagen_alt ?: $articulo->titulo)
 @endif
 
 @push('styles')
@@ -54,10 +55,10 @@
                             <li><a href="{{ route('blog.index') }}">Blog</a></li>
                             @if ($cluster)
                                 <li aria-hidden="true" class="breadcrumb__sep">/</li>
-                                <li><a href="{{ route('blog.cluster', $cluster['slug']) }}">{{ $cluster['nombre_corto'] }}</a></li>
+                                <li><a href="{{ route('blog.cluster', $cluster['slug']) }}">{{ $cluster['nombre'] }}</a></li>
                             @endif
                             <li aria-hidden="true" class="breadcrumb__sep">/</li>
-                            <li><span aria-current="page">{{ Str::limit($articulo->titulo, 40) }}</span></li>
+                            <li><span aria-current="page">{{ $articulo->titulo }}</span></li>
                         </ol>
                     </nav>
 

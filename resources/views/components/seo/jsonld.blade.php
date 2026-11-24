@@ -78,7 +78,7 @@
         'description' => 'Agencia de marketing digital en México: SEM, SEO, desarrollo web y optimización de velocidad.',
         'slogan' => 'Marketing digital medible para empresas en México.',
         'email' => 'administracion@rankprosolutions.com.mx',
-        'telephone' => '+527341036410',
+        'telephone' => '+525562230266',
         'knowsAbout' => $seoKnowsAbout,
         'areaServed' => [
             '@type' => 'Country',
@@ -88,7 +88,7 @@
             '@type' => 'ContactPoint',
             'contactType' => 'customer service',
             'email' => 'administracion@rankprosolutions.com.mx',
-            'telephone' => '+527341036410',
+            'telephone' => '+525562230266',
             'areaServed' => 'MX',
             'availableLanguage' => ['es-MX'],
         ],

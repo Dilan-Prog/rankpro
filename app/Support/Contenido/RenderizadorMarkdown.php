@@ -74,7 +74,7 @@ class RenderizadorMarkdown
      */
     public function procesar(string $markdown): array
     {
-        $html = (string) $this->converter->convert($markdown);
+        $html = $this->soloHtml($markdown);
 
         return [
             'html' => $html,
@@ -85,7 +85,13 @@ class RenderizadorMarkdown
 
     public function soloHtml(string $markdown): string
     {
-        return (string) $this->converter->convert($markdown);
+        // El permalink va con aria-hidden: si ademas recibe foco, quien navega con
+        // teclado y lector de pantalla cae en un enlace que no existe para el.
+        return str_replace(
+            'class="ancla-titulo"',
+            'class="ancla-titulo" tabindex="-1"',
+            (string) $this->converter->convert($markdown),
+        );
     }
 
     /**

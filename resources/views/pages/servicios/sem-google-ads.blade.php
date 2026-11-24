@@ -324,7 +324,7 @@
 
     {{-- Barra fija de contacto en móvil. --}}
     <div class="cv-bar">
-        <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
+        <a href="tel:+525562230266" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
         <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener nofollow">Auditoría gratis {!! $ico($icoFlecha, 16) !!}</a>
     </div>

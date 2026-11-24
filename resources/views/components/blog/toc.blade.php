@@ -2,7 +2,7 @@
 
 @if (! empty($toc))
     <nav class="toc" aria-labelledby="toc-titulo">
-        <h2 class="toc__titulo" id="toc-titulo">En este artículo</h2>
+        <p class="toc__titulo" id="toc-titulo">En este artículo</p>
         <ol class="toc__lista">
             @foreach ($toc as $item)
                 <li class="toc__item toc__item--n{{ $item['nivel'] ?? 2 }}">

@@ -3,8 +3,8 @@
      Espera $articulo, $autor, $cluster y $servicios.
 
      Decisiones que NO deben deshacerse:
-       - No hay FAQPage: la portada y las paginas de servicio ya lo declaran, y
-         un FAQPage duplicado entre URLs penaliza en lugar de sumar.
+       - El FAQPage sale de contenido_html (FaqDelArticulo), nunca de un campo
+         aparte: asi no puede decir algo distinto de lo visible.
        - publisher reutiliza el nodo Organization global (components/seo/jsonld)
          por @id en vez de duplicarlo.
        - about apunta por @id a los nodos Service que ya emite
@@ -21,6 +21,8 @@
 
     $publicada = $articulo->fecha_publicacion?->toIso8601String();
     $modificada = $articulo->fechaEfectiva()?->toIso8601String();
+
+    $faqsArticulo = \App\Support\Contenido\FaqDelArticulo::extraer($articulo->contenido_html);
 
     $imagen = $articulo->og_image ?: $articulo->imagen_destacada;
     if ($imagen && ! Str::startsWith($imagen, ['http://', 'https://'])) {
@@ -74,6 +76,15 @@
                         ['@type' => 'ListItem', 'position' => 4, 'name' => $articulo->titulo, 'item' => $articulo->url()],
                     ],
                 ],
+                ...($faqsArticulo === [] ? [] : [[
+                    '@type' => 'FAQPage',
+                    '@id' => $articulo->url().'#faq',
+                    'mainEntity' => array_map(static fn (array $f): array => [
+                        '@type' => 'Question',
+                        'name' => $f['p'],
+                        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['r']],
+                    ], $faqsArticulo),
+                ]]),
             ],
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>

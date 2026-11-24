@@ -74,14 +74,18 @@ class BlogController extends Controller
                 && $a->fecha_publicacion->lte(now()))
             ->values();
 
-        // Sin relaciones declaradas a mano, se derivan del cluster: mantener
-        // 30 listas manuales no aporta nada frente a "lo mas reciente del tema".
+        // Sin relaciones declaradas a mano, se derivan del cluster: no hay que
+        // mantener 30 listas manuales.
         if ($relacionados->isEmpty()) {
-            $relacionados = Articulo::publicados()
+            // Los 3 que siguen por id, en circulo: cada guia recibe tantos enlaces
+            // como da. Con "los mas recientes" las viejas se quedaban sin ninguno.
+            [$siguientes, $anteriores] = Articulo::publicados()->reorder('id')
                 ->delCluster($articulo->cluster)
                 ->whereKeyNot($articulo->getKey())
-                ->limit(3)
-                ->get();
+                ->get()
+                ->partition(fn (Articulo $a) => $a->id > $articulo->id);
+
+            $relacionados = $siguientes->concat($anteriores)->take(3)->values();
         }
 
         // Mismo patron que PaginasController::serviciosShow: permite maquetar a

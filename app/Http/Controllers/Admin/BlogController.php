@@ -190,7 +190,8 @@ class BlogController extends Controller
             'titulo' => ['required', 'string', 'max:255'],
             // 60 / 70-160 no son cifras arbitrarias: es lo que Google muestra
             // sin truncar en la SERP, y tests/Feature/SeoTest.php lo verifica.
-            'meta_title' => ['required', 'string', 'max:60'],
+            // Sin corchetes: "[2026]" caduca y ensucia el resultado de Google.
+            'meta_title' => ['required', 'string', 'max:60', 'not_regex:/[\[\]]/'],
             'meta_description' => ['required', 'string', 'min:70', 'max:160'],
             'resumen' => ['required', 'string', 'max:500'],
             'contenido' => ['required', 'string', 'min:500'],
@@ -207,6 +208,7 @@ class BlogController extends Controller
             'imagen_alt' => ['nullable', 'string', 'max:255'],
             'og_image' => ['nullable', 'string', 'max:255'],
         ], [
+            'meta_title.not_regex' => 'El meta title no puede llevar corchetes.',
             'meta_title.max' => 'El meta title no puede pasar de 60 caracteres: Google lo truncaría en la SERP.',
             'meta_description.min' => 'La meta description necesita al menos 70 caracteres.',
             'meta_description.max' => 'La meta description no puede pasar de 160 caracteres: Google la truncaría.',

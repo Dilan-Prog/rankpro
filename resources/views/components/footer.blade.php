@@ -60,12 +60,13 @@
                 </picture>
             </div>
             <p class="site-footer__desc">Agencia de marketing digital y desarrollo de software. Atendemos a negocios en todo México.</p>
-            <p class="site-footer__desc"><a href="tel:+527341036410">+52 734 103 6410</a></p>
+            <p class="site-footer__desc"><a href="tel:+525562230266">+52 55 6223 0266</a></p>
         </div>
 
         @foreach ($footerColumns as $column)
             <div>
-                <h2 class="site-footer__col-title">{{ $column['title'] }}</h2>
+                {{-- <p>: un h2 en el pie competiria con los encabezados del contenido. --}}
+                <p class="site-footer__col-title">{{ $column['title'] }}</p>
                 <ul class="site-footer__links">
                     @foreach ($column['links'] as $link)
                         <li><a href="{{ $link['url'] }}">{{ $link['label'] }}</a></li>

@@ -85,7 +85,7 @@
                     <p>
                         Para cualquier asunto relacionado con este aviso puedes contactarnos en
                         <a href="mailto:administracion@rankprosolutions.com.mx">administracion@rankprosolutions.com.mx</a>
-                        o al teléfono <strong>+52 734 103 6410</strong>. El departamento encargado de atender las
+                        o al teléfono <strong>+52 55 6223 0266</strong>. El departamento encargado de atender las
                         solicitudes en materia de datos personales es <strong>[COMPLETAR: nombre del área o
                         persona designada]</strong>.
                     </p>

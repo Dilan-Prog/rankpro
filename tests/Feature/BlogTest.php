@@ -317,6 +317,39 @@ class BlogTest extends TestCase
             ->assertSee($articulo->titulo, false);
     }
 
+    public function test_el_faqpage_sale_de_las_preguntas_visibles(): void
+    {
+        $html = '<h2>Preguntas frecuentes<a class="ancla-titulo">#</a></h2><p><strong>¿Qué es?</strong> Esto.</p>'
+            .'<h2>Cierre</h2><p><strong>¿No cuenta?</strong> No.</p>';
+        $esperado = [['p' => '¿Qué es?', 'r' => 'Esto.']];
+
+        $this->assertSame($esperado, \App\Support\Contenido\FaqDelArticulo::extraer($html));
+        $this->assertSame([], \App\Support\Contenido\FaqDelArticulo::extraer('<p>Sin preguntas</p>'));
+
+        $con = Articulo::factory()->delCluster('seo-organico')->create(['contenido_html' => $html]);
+        $sin = Articulo::factory()->delCluster('seo-organico')->create(['contenido_html' => '<p>Nada</p>']);
+
+        $this->get('/blog/'.$con->slug)->assertOk()
+            ->assertSee('"@type":"FAQPage"', false)
+            ->assertSee('"name":"¿Qué es?"', false)
+            ->assertDontSee('"name":"¿No cuenta?"', false);
+        $this->get('/blog/'.$sin->slug)->assertDontSee('"@type":"FAQPage"', false);
+    }
+
+    public function test_sigue_leyendo_reparte_los_enlaces_entre_todas_las_guias(): void
+    {
+        $guias = Articulo::factory()->count(6)->delCluster('seo-organico')->create();
+        $recibidos = array_fill_keys($guias->pluck('slug')->all(), 0);
+
+        foreach ($guias as $guia) {
+            foreach ($this->get('/blog/'.$guia->slug)->viewData('relacionados') as $r) {
+                $recibidos[$r->slug]++;
+            }
+        }
+
+        $this->assertSame([3], array_values(array_unique($recibidos)));
+    }
+
     public function test_la_pagina_de_servicio_sin_articulos_no_muestra_bloque_vacio(): void
     {
         $this->get('/servicios/social-media')->assertOk();

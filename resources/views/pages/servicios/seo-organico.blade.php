@@ -218,13 +218,14 @@
                     </div>
 
                     <div class="cv-chart__canvas">
-                        <svg viewBox="0 0 640 300" role="img" aria-label="Comparación de sesiones orgánicas proyectadas a 12 meses: sin cambios frente a con RankPro">
+                        <svg viewBox="0 0 640 300" role="img" aria-label="Ejemplo ilustrativo de sesiones orgánicas al mes durante 12 meses: sin cambios frente a con trabajo de SEO">
                             <defs>
                                 <linearGradient id="seoUp" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stop-color="#0F9D6E" stop-opacity="0.3"></stop>
                                     <stop offset="100%" stop-color="#0F9D6E" stop-opacity="0.02"></stop>
                                 </linearGradient>
                             </defs>
+                            <text x="0" y="18" font-size="12" fill="#6B7280">Sesiones orgánicas al mes (ejemplo)</text>
                             @for ($i = 0; $i < 5; $i++)
                                 <line x1="40" x2="600" y1="{{ 40 + $i * 55 }}" y2="{{ 40 + $i * 55 }}" stroke="rgba(0,0,0,0.06)" stroke-dasharray="4 4"></line>
                                 <text x="32" y="{{ 44 + $i * 55 }}" text-anchor="end" font-size="12" fill="#6B7280">{{ number_format(round($maxV * (1 - $i / 4))) }}</text>
@@ -397,7 +398,7 @@
     </main>
 
     <div class="cv-bar">
-        <a href="tel:+527341036410" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
+        <a href="tel:+525562230266" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
         <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener nofollow">Auditoría SEO {!! $ico($icoFlecha, 16) !!}</a>
     </div>
