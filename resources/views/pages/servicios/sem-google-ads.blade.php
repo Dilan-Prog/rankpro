@@ -57,12 +57,19 @@
         ['icon' => '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>', 'title' => 'Primeras campañas en 7 días', 'desc' => 'Del kickoff al lanzamiento en una semana, con seguimiento configurado.'],
     ];
 
-    $objections = [
-        ['q' => '¿Cuánto presupuesto necesito para empezar?', 'a' => 'Desde $30,000 MXN mensuales de inversión publicitaria obtenemos datos suficientes para optimizar. Con menos podemos trabajar, pero el aprendizaje toma más tiempo y te lo diremos antes de firmar.'],
-        ['q' => 'Ya intenté Google Ads y no funcionó, ¿qué cambia?', 'a' => 'En la mayoría de las cuentas que auditamos el problema no es el canal: es estructura, términos de búsqueda sin filtrar y conversiones mal medidas. La auditoría te muestra exactamente dónde se está yendo el dinero, con capturas de tu propia cuenta.'],
-        ['q' => '¿En cuánto tiempo veo resultados?', 'a' => 'Primeros leads en la semana 1-2. Rentabilidad estable entre el día 60 y 90, cuando el algoritmo ya tiene volumen de conversiones limpias.'],
-        ['q' => '¿Qué incluye la fee mensual?', 'a' => 'Estrategia, creación y optimización de campañas, anuncios, seguimiento, reportes y juntas. La inversión publicitaria se paga directo a Google desde tu tarjeta.'],
-        ['q' => '¿Firmo algo para la auditoría?', 'a' => 'Nada. Nos das acceso de solo lectura a tu cuenta, la revisamos y te entregamos el diagnóstico en 48 horas. Si decides no trabajar con nosotros, el documento es tuyo.'],
+    $campanas = [
+        ['tipo' => 'Búsqueda', 'uso' => 'Captar a quien ya busca lo que vendes'],
+        ['tipo' => 'Shopping', 'uso' => 'Vender productos con foto y precio en Google'],
+        ['tipo' => 'Display', 'uso' => 'Alcance y remarketing a quienes ya te visitaron'],
+        ['tipo' => 'YouTube', 'uso' => 'Video para alcance y consideración'],
+    ];
+
+    $trabajo = [
+        ['t' => 'Auditoría gratuita en 48 h', 'd' => 'Diagnóstico de desperdicio, estructura, pujas, anuncios, landing y conversiones.'],
+        ['t' => 'Plan de 90 días', 'd' => 'Con prioridades: qué se corrige primero y por qué.'],
+        ['t' => 'Primeras campañas en 7 días', 'd' => 'Contados desde el kickoff.'],
+        ['t' => 'Seguimiento con GA4 y GTM', 'd' => 'Y reporte de costo por lead y ROAS.'],
+        ['t' => 'Mes a mes', 'd' => 'Sin contratos forzosos.'],
     ];
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
@@ -94,9 +101,11 @@
                     <div>
                         <span class="cv-badge">{!! $ico('<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>', 12) !!} SEM &amp; Google Ads</span>
 
-                        <h1 class="cv-title">Deja de pagar clics.<br aria-hidden="true"> Empieza a pagar <span class="text-brand">ventas.</span></h1>
+                        <h1 class="cv-title">Agencia de Google Ads en México: deja de pagar clics, paga <span class="text-brand">ventas</span></h1>
 
-                        <p class="cv-lead">Auditamos tu cuenta de Google Ads gratis y te mostramos, con capturas, cuánto presupuesto se está yendo en búsquedas que nunca van a comprar. Después lo arreglamos.</p>
+                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:700;color:var(--ink);">Deja de pagar clics. Empieza a pagar ventas.</p>
+
+                        <p class="cv-lead">Somos una agencia de Google Ads en México. Auditamos tu cuenta gratis, te mostramos con capturas dónde se va el presupuesto y reconstruimos estructura, pujas y seguimiento, con reportes de costo por lead y ROAS, no de impresiones.</p>
 
                         <ul class="cv-checklist">
                             @foreach (['Diagnóstico en 48 horas, sin contrato ni tarjeta.', 'Estructura, pujas y seguimiento reconstruidos desde cero.', 'Reportes con costo por lead y ROAS, no con impresiones.'] as $punto)
@@ -174,7 +183,7 @@
                     </div>
 
                     <div class="cv-calc__panel">
-                        <p class="cv-calc__panel-eyebrow">Proyección a 90 días</p>
+                        <p class="cv-calc__panel-eyebrow">Proyección a 90 días · Estimación ilustrativa</p>
                         <div class="cv-calc__grid">
                             <div>
                                 <div class="cv-calc__metric" data-out-clics>5,714</div>
@@ -228,6 +237,55 @@
             </div>
         </section>
 
+        {{-- ------------------------------------------------------ campañas --}}
+        <section class="cv-section cv-section--tight" aria-labelledby="campanas">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head">
+                    <h2 id="campanas">Campañas de Google Ads que gestionamos</h2>
+                    <p>Como agencia de publicidad en Google, elegimos el tipo de campaña según lo que vendes y cómo te buscan.</p>
+                </div>
+                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="campanas">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:var(--ink);">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                <th scope="col" style="padding:0.75rem;">Campaña</th>
+                                <th scope="col" style="padding:0.75rem;">Para qué sirve</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($campanas as $c)
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $c['tipo'] }}</th>
+                                    <td style="padding:0.75rem;">{{ $c['uso'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @isset($guias['ejemplos-de-google-ads'])
+                    <p style="margin-top:1.5rem;">Más en <a href="{{ route('blog.show', 'ejemplos-de-google-ads') }}">{{ $guias['ejemplos-de-google-ads'] }}</a>.</p>
+                @endisset
+            </div>
+        </section>
+
+        {{-- ------------------------------------------------- cómo trabajamos --}}
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="trabajo">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="trabajo">Cómo es trabajar con nuestra agencia de Google Ads</h2>
+                    <p>Si buscas una «Google Ads agency» —agencia de Google Ads, en inglés— o una asesoría de Google Ads para tu cuenta actual, el proceso empieza igual: con una auditoría de Google Ads hecha por expertos en Google Ads, en español y sobre tus propios datos.</p>
+                </div>
+                <div class="cv-cards">
+                    @foreach ($trabajo as $t)
+                        <div class="cv-card-soft" style="background:#ffffff;">
+                            <h3>{{ $t['t'] }}</h3>
+                            <p>{{ $t['d'] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
         {{-- ------------------------------------------------------ garantías --}}
         <section class="cv-section cv-section--tight">
             <div class="container">
@@ -247,17 +305,17 @@
         <section class="cv-section cv-section--tight">
             <div class="container">
                 <div class="cv-head">
-                    <h2>Antes de que preguntes</h2>
+                    <h2>Preguntas frecuentes sobre nuestra agencia Google Ads</h2>
                 </div>
 
                 <div class="cv-faq">
-                    @foreach ($objections as $i => $o)
+                    @foreach ($servicio['faqs'] as $i => $o)
                         <div class="cv-faq__item">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="obj-{{ $i }}">
-                                <span>{{ $o['q'] }}</span>
+                                <span>{{ $o['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
                             </button>
-                            <div class="cv-faq__panel" id="obj-{{ $i }}" @if($i !== 0) hidden @endif>{{ $o['a'] }}</div>
+                            <div class="cv-faq__panel" id="obj-{{ $i }}" @if($i !== 0) hidden @endif>{{ $o['r'] }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -281,6 +339,22 @@
                 </div>
             </div>
         </section>
+
+        {{-- ---------------------------------------------- guías del servicio --}}
+        @if ($guias !== [])
+            <section class="cv-section cv-section--tight" aria-labelledby="guias-servicio">
+                <div class="container">
+                    <div class="cv-head cv-head--left" style="margin-bottom:1.5rem;">
+                        <h2 id="guias-servicio" style="font-size:1.5rem;">Guías de Google Ads</h2>
+                    </div>
+                    <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
+                        @foreach ($guias as $slugGuia => $textoGuia)
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
 
         {{-- ------------------------------------------------------ guías del blog --}}
         {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se

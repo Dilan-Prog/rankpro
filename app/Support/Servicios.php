@@ -48,8 +48,17 @@ class Servicios
                 'tags' => ['Google Ads', 'Shopping', 'Display'],
                 'resumen' => 'Campañas de búsqueda, display y shopping para maximizar tu ROI.',
                 'meta_title' => 'Agencia de Google Ads en México | Campañas SEM | RankPro',
-                'meta_description' => 'Campañas de Google Ads en búsqueda, Shopping, Display y YouTube con medición de conversiones real. Estructura, pujas y creatividades rentables.',
-                'h1' => 'Google Ads y SEM para empresas en México',
+                'meta_description' => 'Agencia de Google Ads en México: auditoría gratis en 48 horas, campañas en búsqueda, Shopping, Display y YouTube, y reportes con costo por lead y ROAS.',
+                'h1' => 'Agencia de Google Ads en México: deja de pagar clics, paga ventas',
+                'schema_nombre' => 'Agencia de Google Ads en México',
+                'schema_tipo' => 'Google Ads',
+                // Guías que la landing enlaza (slug => texto): solo las publicadas.
+                'guias' => [
+                    'que-es-google-ads' => '¿Qué es Google Ads y cómo funciona?',
+                    'como-hacer-una-campana-google-ads' => 'Cómo hacer una campaña en Google Ads paso a paso',
+                    'cuanto-cuesta-google-ads' => '¿Cuánto cuesta Google Ads?',
+                    'ejemplos-de-google-ads' => 'Ejemplos y formatos de anuncios en Google Ads',
+                ],
                 'intro' => 'Google Ads es el canal más rápido para poner tu oferta frente a alguien que ya está buscando lo que vendes. También es el más fácil de desperdiciar: basta una estructura de campañas mal armada, concordancias demasiado abiertas o una conversión mal configurada para quemar presupuesto durante meses sin darte cuenta. En RankPro trabajamos la publicidad de búsqueda como un sistema medible, no como un botón de "promocionar".',
                 'secciones' => [
                     [
@@ -86,10 +95,36 @@ class Servicios
                     'Optimización semanal de pujas, presupuestos, segmentación y creatividades.',
                     'Reporte mensual con inversión, conversiones, costo por conversión y siguientes pasos.',
                 ],
+                // El FAQPage sale de aquí, igual que lo visible. Antes la landing
+                // pintaba otra lista y el schema declaraba preguntas que no se veían.
                 'faqs' => [
                     [
+                        'p' => '¿Qué hace una agencia de Google Ads?',
+                        'r' => 'Diseña, lanza y optimiza tus campañas de publicidad en Google: estructura de cuenta, palabras clave, anuncios, pujas, seguimiento de conversiones y reportes. Su objetivo es que cada peso invertido se pueda ligar a leads o ventas.',
+                    ],
+                    [
+                        'p' => '¿Qué incluye la auditoría gratuita?',
+                        'r' => 'Un diagnóstico de desperdicio (términos, ubicaciones y horarios), revisión de estructura, pujas y anuncios, análisis de landing pages y seguimiento de conversiones, y una proyección con tu presupuesto. Se entrega en 48 horas, sin contrato ni tarjeta.',
+                    ],
+                    [
+                        'p' => '¿Firmo algo para la auditoría?',
+                        'r' => 'Nada. Nos das acceso de solo lectura a tu cuenta, la revisamos y te entregamos el diagnóstico en 48 horas. Si decides no trabajar con nosotros, el documento es tuyo.',
+                    ],
+                    [
+                        'p' => '¿Trabajan con cuentas que ya tengo?',
+                        'r' => 'Sí. Trabajamos sobre tu propia cuenta con acceso administrativo, o creamos una a nombre de tu empresa. La cuenta y su historial son tuyos.',
+                    ],
+                    [
+                        'p' => 'Ya intenté Google Ads y no funcionó, ¿qué cambia?',
+                        'r' => 'En la mayoría de las cuentas que auditamos el problema no es el canal: es estructura, términos de búsqueda sin filtrar y conversiones mal medidas. La auditoría te muestra exactamente dónde se está yendo el dinero, con capturas de tu propia cuenta.',
+                    ],
+                    [
+                        'p' => '¿Qué incluye la fee mensual?',
+                        'r' => 'Estrategia, creación y optimización de campañas, anuncios, seguimiento, reportes y juntas. La inversión publicitaria se paga directo a Google desde tu tarjeta.',
+                    ],
+                    [
                         'p' => '¿Cuánto presupuesto necesito para empezar con Google Ads?',
-                        'r' => 'Depende del costo por clic de tu sector y de cuántas conversiones necesitas para tomar decisiones con datos. Antes de proponerte una cifra revisamos estimaciones de volumen y competencia de tus palabras clave; la idea es que el presupuesto alcance para generar suficientes conversiones al mes como para optimizar, no solo para estar presente. La inversión publicitaria se paga directamente a Google desde tu propia cuenta, y es independiente de nuestros honorarios de gestión.',
+                        'r' => 'Depende del costo por clic de tu sector y de cuántas conversiones necesitas para tomar decisiones con datos. Antes de proponerte una cifra revisamos estimaciones de volumen y competencia de tus palabras clave; la idea es que el presupuesto alcance para generar suficientes conversiones al mes como para optimizar, no solo para estar presente. Como referencia, desde $30,000 MXN mensuales de inversión publicitaria obtenemos datos suficientes para optimizar; con menos podemos trabajar, pero el aprendizaje toma más tiempo. La inversión publicitaria se paga directamente a Google desde tu propia cuenta, y es independiente de nuestros honorarios de gestión.',
                     ],
                     [
                         'p' => '¿En cuánto tiempo veo resultados?',

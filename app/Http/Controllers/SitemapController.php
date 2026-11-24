@@ -59,7 +59,7 @@ class SitemapController extends Controller
         'pages.index'                                => '2026-11-01',
         'pages.nosotros'                             => '2026-11-02',
         'pages.servicios.index'                      => '2026-09-03',
-        'pages.servicios.sem-google-ads'             => '2026-11-01',
+        'pages.servicios.sem-google-ads'             => '2026-11-23',
         'pages.servicios.seo-organico'               => '2026-11-23',
         'pages.servicios.desarrollo-web'             => '2026-11-23',
         'pages.servicios.automatizacion-de-procesos' => '2026-11-23',
