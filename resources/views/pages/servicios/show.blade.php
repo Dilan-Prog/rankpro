@@ -37,7 +37,7 @@
                     <p class="page-hero__lead">{{ $servicio['intro'] }}</p>
 
                     <div class="page-hero__actions">
-                        <a href="{{ route('contacto') }}" class="btn btn-primary">Solicitar propuesta</a>
+                        <a href="{{ route('contacto') }}" class="btn btn-primary">{{ $servicio['cta'] ?? 'Solicitar propuesta' }}</a>
                         <a href="https://wa.me/525562230266" class="btn btn-outline" rel="noopener nofollow">WhatsApp directo</a>
                     </div>
                 </div>
@@ -53,6 +53,36 @@
                             <p>{{ $parrafo }}</p>
                         @endforeach
                     @endforeach
+
+                    @isset($servicio['tabla'])
+                        <h2 id="tabla">{{ $servicio['tabla']['titulo'] }}</h2>
+                        <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="tabla">
+                            <table style="width:100%;border-collapse:collapse;color:var(--ink);">
+                                <thead>
+                                    <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                        @foreach ($servicio['tabla']['encabezados'] as $encabezado)
+                                            <th scope="col" style="padding:0.75rem;">{{ $encabezado }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($servicio['tabla']['filas'] as $fila)
+                                        <tr style="border-bottom:1px solid var(--border);">
+                                            @foreach ($fila as $celda)
+                                                <td style="padding:0.75rem;">{{ $celda }}</td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>{{ $servicio['tabla']['nota'] }}</p>
+                    @endisset
+
+                    @isset($servicio['relacionado'])
+                        <h2>{{ $servicio['relacionado']['titulo'] }}</h2>
+                        <p>{{ $servicio['relacionado']['texto'] }} <a href="{{ route('servicios.show', $servicio['relacionado']['servicio']) }}">{{ $servicio['relacionado']['ancla'] }}</a>.</p>
+                    @endisset
                 </div>
             </div>
         </section>
@@ -99,19 +129,30 @@
              la apoyan. Sin este bloque el blog sería un silo que no alimenta a las
              páginas que convierten. Si el servicio aún no tiene artículos publicados
              no se pinta nada: un bloque vacío solo añade ruido. --}}
-        @if (isset($articulos) && $articulos->isNotEmpty())
+        @php
+            // Las guías fijas del servicio van en lista; debajo, las recientes que no estén en ella.
+            $recientes = $articulos->reject(fn ($a) => isset($guias[$a->slug]));
+        @endphp
+        @if ($guias !== [] || $recientes->isNotEmpty())
             <section class="page-section" aria-labelledby="guias">
                 <div class="container">
                     <div class="page-section__inner prose">
-                        <h2 id="guias">Guías sobre {{ $servicio['nombre'] }}</h2>
+                        <h2 id="guias">{{ $servicio['guias_titulo'] ?? 'Guías sobre '.$servicio['nombre'] }}</h2>
                         <p>
                             Lo que publicamos sobre este tema, con el mismo criterio con el que trabajamos:
                             qué se puede esperar, qué no, y cómo comprobarlo por tu cuenta.
                         </p>
+                        @if ($guias !== [])
+                            <ul>
+                                @foreach ($guias as $slugGuia => $textoGuia)
+                                    <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
 
                     <div class="services__grid" style="margin-top: 2rem;">
-                        @foreach ($articulos as $articulo)
+                        @foreach ($recientes as $articulo)
                             <x-blog.tarjeta :articulo="$articulo" />
                         @endforeach
                     </div>
@@ -160,7 +201,7 @@
                         y una propuesta de alcance concreta, sin compromiso.
                     </p>
                     <div class="page-cta__actions">
-                        <a href="{{ route('contacto') }}" class="btn btn-light">Solicitar propuesta</a>
+                        <a href="{{ route('contacto') }}" class="btn btn-light">{{ $servicio['cta'] ?? 'Solicitar propuesta' }}</a>
                         <a href="https://wa.me/525562230266" class="btn btn-ghost" rel="noopener nofollow">WhatsApp +52 55 6223 0266</a>
                     </div>
                 </div>

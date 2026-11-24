@@ -369,7 +369,7 @@
                     </div>
                     <div class="cv-card-soft" style="background:#ffffff;">
                         <h3>Velocidad y accesibilidad</h3>
-                        <p>Medimos Core Web Vitals y revisamos contraste y navegación por teclado (WCAG AA). No prometemos una calificación, medimos y corregimos.</p>
+                        <p>Medimos Core Web Vitals y revisamos contraste y navegación por teclado (WCAG AA). No prometemos una calificación, medimos y corregimos. Si tu sitio ya existe, mira la <a href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">optimización de velocidad de carga</a>.</p>
                     </div>
                     <div class="cv-card-soft" style="background:#ffffff;">
                         <h3>SEO desde la arquitectura</h3>

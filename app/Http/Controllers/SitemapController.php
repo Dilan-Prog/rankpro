@@ -141,7 +141,7 @@ class SitemapController extends Controller
             if ($path === '/servicios') {
                 foreach (Servicios::todos() as $servicio) {
                     $slug = $servicio['slug'];
-                    $paginas["/servicios/{$slug}"] = ['monthly', '0.8', $this->vistaDeServicio($slug)];
+                    $paginas["/servicios/{$slug}"] = ['monthly', '0.8', $this->vistaDeServicio($slug), $servicio['actualizado'] ?? null];
 
                     if ($slug === LandingsWeb::SERVICIO) {
                         foreach (LandingsWeb::todos() as $landing) {

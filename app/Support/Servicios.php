@@ -337,9 +337,36 @@ class Servicios
                 'tags' => ['Performance', 'CWV', 'Lighthouse'],
                 'resumen' => 'Optimización técnica de velocidad con mejoras medibles en Lighthouse y datos de campo.',
                 'meta_title' => 'Optimización de PageSpeed y Core Web Vitals | RankPro',
-                'meta_description' => 'Diagnóstico y corrección de LCP, INP y CLS con datos de laboratorio y de campo. Mejoramos la velocidad real de tu sitio en dispositivos móviles.',
+                'meta_description' => 'Optimización de velocidad de carga web: diagnóstico y corrección de LCP, INP y CLS con datos de laboratorio y de campo. Mejoras reales en móvil.',
                 'h1' => 'Optimización de velocidad y Core Web Vitals',
-                'intro' => 'La velocidad de un sitio se paga dos veces: en posicionamiento, porque la experiencia de página es una señal que Google considera, y en ventas, porque cada segundo de espera aumenta el abandono. Lo importante es que la velocidad no se mide con una sola calificación: se diagnostica con métricas concretas y se corrige atacando causas específicas.',
+                // lastmod propio: la plantilla genérica la comparten varios servicios.
+                'actualizado' => '2026-11-23',
+                'cta' => 'Solicitar un diagnóstico de velocidad',
+                'guias_titulo' => 'Antes de contratar, aprende a leer tus datos',
+                // Solo se enlazan las publicadas (slug => texto).
+                'guias' => [
+                    'pagespeed-insights' => 'PageSpeed Insights: cómo leer tu reporte',
+                    'como-medir-velocidad-de-carga' => 'Cómo medir la velocidad de carga de una página web',
+                    'como-mejorar-la-velocidad-de-carga' => 'Cómo mejorar la velocidad de carga de tu sitio',
+                ],
+                // Umbrales verificados en web.dev/articles/vitals el 2026-11-23.
+                'tabla' => [
+                    'titulo' => 'Referencia rápida de Core Web Vitals',
+                    'encabezados' => ['Métrica', 'Qué mide', 'Referencia «buena»'],
+                    'filas' => [
+                        ['LCP', 'Cuándo aparece el elemento principal', '≤ 2.5 s'],
+                        ['INP', 'Qué tan rápido responde a una interacción', '≤ 200 ms'],
+                        ['CLS', 'Cuánto se mueve el contenido al cargar', '≤ 0.1'],
+                    ],
+                    'nota' => 'Son los umbrales que Google considera buenos, medidos en el percentil 75 de las visitas reales. Sirven para juzgar la velocidad de carga de una página con los datos de campo, no con una sola prueba.',
+                ],
+                'relacionado' => [
+                    'titulo' => 'Velocidad desde el desarrollo',
+                    'texto' => 'Una página nueva puede nacer rápida. Si necesitas rehacer el sitio, conoce nuestro servicio, que mide Core Web Vitals antes de entregar:',
+                    'servicio' => 'desarrollo-web',
+                    'ancla' => 'desarrollo web',
+                ],
+                'intro' => 'Mejoramos la velocidad de carga de tu sitio web donde importa: en el celular de tus clientes, medida con datos reales y no solo con una calificación de laboratorio. La velocidad de un sitio se paga dos veces: en posicionamiento, porque la experiencia de página es una señal que Google considera, y en ventas, porque cada segundo de espera aumenta el abandono. Lo importante es que la velocidad no se mide con una sola calificación: se diagnostica con métricas concretas y se corrige atacando causas específicas.',
                 'secciones' => [
                     [
                         'titulo' => 'Qué medimos realmente: LCP, INP y CLS',
@@ -387,6 +414,18 @@ class Servicios
                     [
                         'p' => '¿Cuánto tarda ver reflejadas las mejoras?',
                         'r' => 'En laboratorio, de inmediato al terminar los cambios. En los datos de campo de Search Console la ventana de medición es de veintiocho días, así que la mejora aparece completa varias semanas después de publicar las correcciones. Es normal y no significa que algo esté fallando.',
+                    ],
+                    [
+                        'p' => '¿Qué es la velocidad de carga de un sitio web?',
+                        'r' => 'Es el tiempo que tarda una página en mostrar su contenido y responder al usuario. Se mide con métricas como LCP, INP y CLS, que Google agrupa en Core Web Vitals.',
+                    ],
+                    [
+                        'p' => '¿Cómo sé si mi sitio es lento?',
+                        'r' => 'Revisa el informe de Core Web Vitals de Search Console y prueba tus páginas con PageSpeed Insights. Si ambas fuentes difieren, confía en los datos de campo (usuarios reales).',
+                    ],
+                    [
+                        'p' => '¿Qué incluye el diagnóstico?',
+                        'r' => 'Una revisión con datos de laboratorio y de campo para identificar qué retrasa tu sitio (imágenes, scripts, fuentes, servidor, diseño) y un plan de correcciones priorizado.',
                     ],
                 ],
             ],
