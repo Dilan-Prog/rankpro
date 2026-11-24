@@ -91,6 +91,7 @@ class Navigation
                 ['route' => 'admin.integraciones.index', 'active' => 'admin.integraciones.*', 'icon' => 'fa-plug', 'label' => 'Integraciones', 'permiso' => 'integraciones'],
                 ['route' => 'admin.configuracion.smtp.edit', 'active' => 'admin.configuracion.smtp.*', 'icon' => 'fa-server', 'label' => 'Configuración de correo', 'permiso' => 'configuracion'],
                 ['route' => 'admin.configuracion.medicion.edit', 'active' => 'admin.configuracion.medicion.*', 'icon' => 'fa-chart-pie', 'label' => 'Medición y Google', 'permiso' => 'configuracion'],
+                ['route' => 'admin.configuracion.redes.edit', 'active' => 'admin.configuracion.redes.*', 'icon' => 'fa-share-nodes', 'label' => 'Redes sociales', 'permiso' => 'configuracion'],
             ],
             self::GRUPO_MAS => [
                 ['route' => 'admin.mi-espacio.index', 'active' => 'admin.mi-espacio.*', 'icon' => 'fa-circle-check', 'label' => 'Mi espacio', 'permiso' => 'mi-espacio'],

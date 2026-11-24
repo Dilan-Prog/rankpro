@@ -58,8 +58,10 @@
     // Perfiles sociales: se leen de config/services.php (alimentado por .env).
     // Mientras las cuentas no existan las variables van vacías y NO se emite
     // sameAs: declarar perfiles inexistentes es peor que no declarar nada.
+    // Mandan los del panel (Configuración > Redes sociales); sin ninguno, los del .env.
+    $seoPerfiles = array_column(array_filter(\App\Models\RedSocial::delPie(), static fn (array $r): bool => $r['perfil']), 'url');
     $seoSameAs = array_values(array_filter(
-        array_map(static fn ($url): string => trim((string) $url), array_values((array) config('services.social', []))),
+        array_map(static fn ($url): string => trim((string) $url), $seoPerfiles ?: array_values((array) config('services.social', []))),
         static fn (string $url): bool => $url !== '' && filter_var($url, FILTER_VALIDATE_URL) !== false
     ));
 

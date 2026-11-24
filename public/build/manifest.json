@@ -49,7 +49,7 @@
     "isEntry": true
   },
   "resources/css/admin/configuracion.css": {
-    "file": "assets/configuracion-CEl-BhhA.css",
+    "file": "assets/configuracion-D7n9iKUN.css",
     "src": "resources/css/admin/configuracion.css",
     "isEntry": true
   },
@@ -194,7 +194,7 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-B_HxqEN6.css",
+    "file": "assets/app-BhhMtVat.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
@@ -444,6 +444,12 @@
     "file": "assets/propuestas-akAe8poy.js",
     "name": "propuestas",
     "src": "resources/js/propuestas.js",
+    "isEntry": true
+  },
+  "resources/js/redes-sociales.js": {
+    "file": "assets/redes-sociales-CVNHkpAr.js",
+    "name": "redes-sociales",
+    "src": "resources/js/redes-sociales.js",
     "isEntry": true
   },
   "resources/js/reporte-programaciones.js": {

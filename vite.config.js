@@ -57,6 +57,7 @@ export default defineConfig({
                 'resources/js/roles.js',
                 'resources/css/admin/configuracion.css',
                 'resources/js/configuracion.js',
+                'resources/js/redes-sociales.js',
                 'resources/css/admin/agenda.css',
                 'resources/js/agenda.js',
                 'resources/css/admin/metricas.css',

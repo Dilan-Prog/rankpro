@@ -31,6 +31,33 @@
     line-height: 1.6;
 }
 
+.site-footer__redes {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin-top: 1rem;
+}
+
+/* 44px: area tactil comoda en movil. */
+.site-footer__redes a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    color: #ffffff;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-footer__redes a:hover,
+.site-footer__redes a:focus-visible {
+    color: var(--brand-light);
+    border-color: var(--brand-light);
+}
+
 .site-footer__col-title {
     font-weight: 700;
     font-size: 0.875rem;

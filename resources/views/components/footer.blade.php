@@ -61,6 +61,18 @@
             </div>
             <p class="site-footer__desc">Agencia de marketing digital y desarrollo de software. Atendemos a negocios en todo México.</p>
             <p class="site-footer__desc"><a href="tel:+525562230266">+52 55 6223 0266</a></p>
+            {{-- Se eligen en el panel: Configuración > Redes sociales. --}}
+            @if ($redes = \App\Models\RedSocial::delPie())
+                <ul class="site-footer__redes">
+                    @foreach ($redes as $red)
+                        <li>
+                            <a href="{{ $red['url'] }}" target="_blank" rel="noopener{{ $red['perfil'] ? ' me' : ' nofollow' }}" aria-label="RankPro en {{ $red['nombre'] }} (se abre en otra pestaña)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $red['icon'] !!}</svg>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
 
         @foreach ($footerColumns as $column)

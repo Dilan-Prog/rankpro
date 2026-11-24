@@ -387,3 +387,54 @@
   .cfg-med__estado { flex-direction: column; gap: var(--space-2); }
   .cfg-med__guardar .btn { width: 100%; justify-content: center; }
 }
+
+/* ---------------------------------------------------- Redes sociales */
+.cfg-redes { display: grid; gap: var(--space-4); }
+
+.cfg-redes__lista { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+
+.cfg-red {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.cfg-red__iconos { margin: 0; padding: 0; border: 0; min-width: 0; }
+
+.cfg-red__rejilla { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+
+.cfg-red__icono { position: relative; cursor: pointer; }
+
+.cfg-red__icono input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.cfg-red__icono > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 84px;
+  min-height: 60px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-muted-foreground);
+  text-align: center;
+}
+
+.cfg-red__icono-nombre { font-size: 11px; line-height: 1.2; }
+
+.cfg-red__icono input:checked + span {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+  color: var(--color-primary);
+}
+
+.cfg-red__icono input:focus-visible + span { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+
+.cfg-red__pie,
+.cfg-redes__acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3, 12px); }
+
+.cfg-red__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
