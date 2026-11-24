@@ -27,7 +27,7 @@ class SeoTest extends TestCase
             '/', '/nosotros', '/contacto', '/servicios',
             '/casos-de-exito', '/casos-de-exito/hotel-fratelli',
             '/servicios/seo-organico/cdmx', '/servicios/seo-organico/monterrey',
-            '/servicios/seo-organico/guadalajara',
+            '/servicios/seo-organico/guadalajara', '/servicios/seo-organico/puebla',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 

@@ -57,6 +57,20 @@ class CiudadesSeoTest extends TestCase
         $this->get($guadalajara)->assertSee('Más en nuestra guía');
     }
 
+    public function test_puebla_apunta_a_posicionamiento_seo_y_tiene_texto_propio(): void
+    {
+        $puebla = '/servicios/seo-organico/puebla';
+
+        $this->get($puebla)->assertOk()
+            ->assertSee('<title>Posicionamiento SEO en Puebla: Agencia SEO | RankPro</title>', false)
+            ->assertSee('<link rel="canonical" href="'.url($puebla).'">', false)
+            ->assertSee('"name":"Posicionamiento SEO en Puebla"', false)
+            ->assertSee('Servicio de posicionamiento SEO para empresas en Puebla')
+            ->assertSee('San Andrés Cholula')
+            ->assertSee('no necesariamente de Puebla')
+            ->assertDontSee('Tlajomulco');
+    }
+
     public function test_una_ciudad_no_dada_de_alta_es_404(): void
     {
         $this->get('/servicios/seo-organico/cancun')->assertNotFound();

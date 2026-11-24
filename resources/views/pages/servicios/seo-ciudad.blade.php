@@ -49,7 +49,7 @@
                 [
                     '@type' => 'Service',
                     '@id' => $urlCiudad.'#service',
-                    'name' => 'Agencia SEO en '.$ciudad['nombre'],
+                    'name' => $ciudad['schema_nombre'] ?? 'Agencia SEO en '.$ciudad['nombre'],
                     'description' => $ciudad['meta_description'],
                     'serviceType' => 'SEO orgánico',
                     'url' => $urlCiudad,
@@ -137,7 +137,7 @@
         <section class="cv-section cv-section--alt" aria-labelledby="servicio">
             <div class="container">
                 <div class="cv-head">
-                    <h2 id="servicio">Servicio de SEO para empresas en {{ $ciudad['nombre'] }}</h2>
+                    <h2 id="servicio">{{ $ciudad['servicio_titulo'] ?? 'Servicio de SEO para empresas en '.$ciudad['nombre'] }}</h2>
                 </div>
                 {{-- Son 4 frentes: rejilla propia para que no quede uno suelto en la de 3. --}}
                 <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">

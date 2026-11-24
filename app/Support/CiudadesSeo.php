@@ -244,6 +244,80 @@ class CiudadesSeo
                 ],
                 'cierre' => 'Muchas pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
             ],
+
+            // La keyword con volumen es "posicionamiento seo en puebla"; "agencia"
+            // va de apoyo. Por eso fija su propio nombre de schema y título.
+            'puebla' => [
+                'slug' => 'puebla',
+                'nombre' => 'Puebla',
+                'nombre_largo' => 'Puebla',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Posicionamiento SEO en Puebla: Agencia SEO | RankPro',
+                'meta_description' => 'Posicionamiento SEO en Puebla para empresas poblanas. Agencia con SEO técnico, de contenidos y local, medido en Search Console. Pide tu auditoría.',
+                'h1' => 'Posicionamiento SEO en Puebla: aparece cuando te buscan',
+                'schema_nombre' => 'Posicionamiento SEO en Puebla',
+                'servicio_titulo' => 'Servicio de posicionamiento SEO para empresas en Puebla',
+                'intro' => '¿Buscas posicionamiento SEO en Puebla? Somos una agencia SEO que ayuda a empresas de la ciudad y su zona metropolitana a aparecer en Google cuando sus clientes buscan lo que venden. Empezamos con una auditoría técnica, de contenido y de enlaces, medida en Google Search Console.',
+                'contexto' => [
+                    'titulo' => 'Posicionamiento SEO en Puebla: qué conviene tener en cuenta',
+                    'texto' => null,
+                    'puntos' => [
+                        ['t' => 'Zona metropolitana', 'd' => 'Se busca por municipio y zona: Puebla capital, San Andrés Cholula, San Pedro Cholula, Angelópolis, Centro Histórico. Las páginas y la ficha local deben reflejar dónde atiendes.'],
+                        ['t' => 'Mercado diverso', 'd' => 'Puebla combina industria (incluida la automotriz y de autopartes), comercio, educación, turismo y gastronomía. Cada giro se busca de forma distinta, así que el SEO se planea por tipo de cliente.'],
+                        ['t' => 'Menos competencia en muchas categorías', 'd' => 'Puede haber menos sitios optimizados que en CDMX, y eso da oportunidad de posicionar con una página bien hecha.'],
+                        ['t' => 'Búsquedas desde móvil y «cerca de mí»', 'd' => 'Por eso cuidamos la velocidad y la ficha de Google Business Profile.'],
+                        ['t' => 'Turismo y estacionalidad', 'd' => 'Si tu negocio depende de visitantes (hoteles, restaurantes, tours), conviene planear contenido para temporadas altas y puentes.'],
+                    ],
+                ],
+                'frentes' => [
+                    ['t' => 'SEO técnico', 'd' => 'Rastreo, indexación, Core Web Vitals en móvil, redirecciones, enlaces internos, datos estructurados y sitemap.'],
+                    ['t' => 'SEO de contenidos', 'd' => 'Páginas por servicio, giro y zona, sin que unas compitan con otras.'],
+                    ['t' => 'SEO local', 'd' => 'Ficha de Google Business Profile, consistencia de nombre, dirección y teléfono, reseñas y páginas por zona. Aplica si atiendes en una ubicación o área concreta.', 'guia' => 'seo-local'],
+                    ['t' => 'SEO de autoridad', 'd' => 'Perfil de enlaces frente a tus competidores directos y menciones de calidad, sin paquetes de enlaces.'],
+                ],
+                'pasos' => [
+                    ['t' => 'Auditamos', 'd' => 'Revisamos tu sitio, tu ficha local y a tus tres competidores principales en Puebla.'],
+                    ['t' => 'Te mostramos', 'd' => 'Hallazgos priorizados por impacto y por brecha frente a la competencia.'],
+                    ['t' => 'Tú decides', 'd' => 'Ejecutar con nosotros o con tu equipo, sin compromiso.'],
+                ],
+                'modalidad' => 'Trabajamos de forma remota con reuniones por videollamada.',
+                'revisiones' => [
+                    ['sev' => 'critico', 't' => 'Canibalización entre páginas'],
+                    ['sev' => 'critico', 't' => 'Core Web Vitals en móvil'],
+                    ['sev' => 'critico', 't' => 'Ficha de Google Business Profile y consistencia NAP'],
+                    ['sev' => 'critico', 't' => 'Datos estructurados ausentes'],
+                    ['sev' => 'medio', 't' => 'Cobertura de intención comercial por servicio y zona'],
+                    ['sev' => 'medio', 't' => 'Títulos y descripciones duplicados'],
+                    ['sev' => 'medio', 't' => 'Perfil de enlaces frente al líder de tu categoría'],
+                    ['sev' => 'ok', 't' => 'Estructura de URLs y sitemap'],
+                ],
+                'casos_titulo' => 'Casos publicados',
+                'faqs' => [
+                    [
+                        'p' => '¿Cuánto tarda el posicionamiento SEO en Puebla?',
+                        'r' => 'Normalmente se notan cambios entre el mes 3 y el 6, según la competencia, la antigüedad del dominio y el estado inicial del sitio.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta el posicionamiento SEO en Puebla?',
+                        'r' => 'Depende del tamaño del sitio, la competencia y el alcance. Con la auditoría te damos una propuesta concreta.',
+                        'guia' => 'cuanto-cuesta-el-posicionamiento-seo',
+                    ],
+                    [
+                        'p' => '¿Necesito oficina en Puebla para aparecer en búsquedas de la ciudad?',
+                        'r' => 'Para el mapa de Google se requiere una ubicación o área de servicio válida. Para resultados orgánicos normales, no.',
+                    ],
+                    [
+                        'p' => '¿Trabajan solo con empresas de Puebla?',
+                        'r' => 'No. Atendemos empresas en todo México.',
+                        'padre' => true,
+                    ],
+                    [
+                        'p' => '¿Pueden garantizar la primera posición en Google?',
+                        'r' => 'No. Google no vende posiciones. Garantizamos un diagnóstico claro, un plan priorizado y reportes con datos reales.',
+                    ],
+                ],
+                'cierre' => 'Muchas pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
+            ],
         ];
     }
 
