@@ -204,6 +204,91 @@ class LandingsWeb
                     'texto' => 'Elige tipo de sitio e integraciones en el configurador y obtén un rango antes de la primera reunión.',
                 ],
             ],
+
+            'puebla' => [
+                'slug' => 'puebla',
+                'nombre' => 'Puebla',
+                'enlace' => 'Diseño de páginas web en Puebla',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web en Puebla | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en Puebla para pymes, escuelas y negocios locales. Proyectos por fases, con precio y fecha claros. Desde {$p['sencilla']} MXN.",
+                'h1' => 'Diseño de páginas web en Puebla',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en Puebla',
+                'area' => ['@type' => 'City', 'name' => 'Puebla'],
+                'intro' => 'Diseño de páginas web en Puebla para negocios que quieren empezar bien y crecer por etapas: primero una página clara que genere contactos y, después, catálogo, reservas o tienda cuando el negocio lo pida.',
+                'precio' => "Puedes arrancar con una landing sencilla desde {$p['sencilla']} y pasar a un sitio corporativo desde {$p['corporativo']}. Precios en MXN + IVA.",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en Puebla',
+                    'texto' => 'Si tu presupuesto es acotado, tiene sentido ver resultados antes de invertir más. Por eso proponemos avanzar por fases: una primera versión que sirva ya, con una estructura que permita agregar funciones sin rehacer el sitio.',
+                ],
+                'publico' => [
+                    'titulo' => 'Negocios poblanos con los que tiene sentido empezar',
+                    'puntos' => [
+                        'Pymes y comercios que quieren vender o captar clientes en línea',
+                        'Escuelas, universidades y centros de capacitación',
+                        'Restaurantes, hoteles y negocios turísticos',
+                        'Clínicas, consultorios y despachos',
+                        'Empresas de manufactura y proveedores de la región',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en Puebla, etapa por etapa',
+                    'puntos' => [
+                        ['t' => 'Primero: una landing', 'd' => 'Para inscripciones, una promoción o un servicio concreto, con un solo formulario.'],
+                        ['t' => 'Luego: el sitio completo', 'd' => 'Páginas por servicio, contacto, WhatsApp y blog.'],
+                        ['t' => 'Cuando haya citas', 'd' => 'Reservas para clínicas, restaurantes y talleres.'],
+                        ['t' => 'Cuando quieras vender en línea', 'd' => 'Tienda con productos, cobro y envíos.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Qué hace que crecer no signifique rehacer',
+                    'puntos' => [
+                        ['t' => 'Hitos claros', 'd' => 'Cada pago va ligado a algo que ya puedes revisar.'],
+                        ['t' => 'Edición sin programar', 'd' => 'Con el CMS, tu equipo actualiza avisos, precios y fotos por su cuenta.'],
+                        ['t' => 'Ubicación fácil de encontrar', 'd' => 'Mapa y ficha de Google con los mismos datos que tu página.', 'guia' => 'seo-local'],
+                        ['t' => 'Ligera en el celular', 'd' => 'Se revisa la carga con datos móviles antes de publicar cada etapa.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Cómo se decide qué va en cada fase',
+                    'texto' => 'Hacemos una lista de lo indispensable para abrir y otra de lo que puede esperar. Ves una demo desde la segunda semana y, al cerrar cada etapa, decides si sigues. El código es tuyo aunque te detengas ahí. Los plazos por tipo de proyecto se explican en',
+                    'enlace' => 'desarrollo web a la medida',
+                ],
+                'casos' => [
+                    'titulo' => 'Dos proyectos que avanzaron por pasos',
+                    'texto' => 'Ninguno se presenta como cliente poblano; sirven para ver cómo se escala.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm: inversión conservadora y progresiva', 'd' => 'Comenzó con cautela y hoy suma más de 30 módulos. En un trimestre, sus clics aumentaron 790 % partiendo de muy pocos, según Google Search Console.'],
+                        ['slug' => 'hotel-fratelli', 't' => 'Hotel Fratelli, en Aguascalientes', 'd' => 'Digitalizó su operación y sumó SEO y anuncios; su ocupación fue de 10 % a 50 %, dato del hotel.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Puedo empezar con una página sencilla y crecer después?',
+                        'r' => 'Sí. Se diseña la estructura pensando en crecer: más páginas, catálogo o tienda se suman sin rehacer lo anterior.',
+                    ],
+                    [
+                        'p' => '¿Puedo editar el contenido yo mismo?',
+                        'r' => 'Con el módulo de CMS editable, tu equipo actualiza textos e imágenes sin programar.',
+                    ],
+                    [
+                        'p' => '¿Cómo se paga el proyecto?',
+                        'r' => 'Por hitos ligados a entregas; el configurador muestra el esquema. Si lo necesitas, podemos acordar un plan de pagos.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta el diseño de una página web en Puebla?',
+                        'r' => "Depende de la etapa: {$p['sencilla']} es el punto de partida de una landing sencilla, {$p['landing']} el de una de campaña, {$p['corporativo']} el de un sitio corporativo, {$p['ecommerce']} el de una tienda y {$p['plataforma']} el de una plataforma. A todos se suma el IVA.",
+                    ],
+                    [
+                        'p' => 'Estoy en Puebla, ¿cómo serían las juntas?',
+                        'r' => 'Por videollamada, con avances que puedes revisar cada semana desde tu celular o computadora.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => '¿Con qué etapa empezamos en Puebla?',
+                    'texto' => 'Marca solo lo indispensable en el configurador y guarda lo demás para después.',
+                ],
+            ],
         ];
     }
 
