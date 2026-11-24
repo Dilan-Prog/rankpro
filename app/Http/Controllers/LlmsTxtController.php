@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsWeb;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Http\Response;
@@ -48,6 +49,9 @@ class LlmsTxtController extends Controller
         }
         foreach (CiudadesSeo::todos() as $c) {
             $l[] = sprintf('- [Agencia SEO en %s](%s): %s', $c['nombre'], route('servicios.ciudad', $c['slug']), $c['meta_description']);
+        }
+        foreach (LandingsWeb::todos() as $w) {
+            $l[] = sprintf('- [%s](%s): %s', $w['enlace'], route('servicios.web', $w['slug']), $w['meta_description']);
         }
         $l[] = sprintf('- [Todos los servicios](%s): indice de las siete areas de trabajo.', route('servicios.index'));
         $l[] = '';

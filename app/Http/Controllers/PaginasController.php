@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
 use App\Support\Clusters;
+use App\Support\LandingsWeb;
 use App\Support\Servicios;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
@@ -85,6 +86,24 @@ class PaginasController extends Controller
                 ['desarrollo-web', 'sem-google-ads', 'pagespeed-core-web-vitals'],
             ),
             'guias' => $this->guiasDelServicio($servicio),
+        ]);
+    }
+
+    public function webLanding(string $slugLanding): View
+    {
+        $landing = LandingsWeb::encontrar($slugLanding);
+
+        abort_if($landing === null, 404);
+
+        $servicios = $this->servicios();
+        $servicio = $servicios[LandingsWeb::SERVICIO];
+
+        return view('pages.servicios.web-landing', [
+            'landing' => $landing,
+            'servicio' => $servicio,
+            'otrasLandings' => LandingsWeb::enlaces($slugLanding),
+            // Las de desarrollo mas las de SEO: la landing enlaza a la guia de SEO local.
+            'guias' => $this->guiasDelServicio($servicio) + $this->guiasDelServicio($servicios[CiudadesSeo::SERVICIO]),
         ]);
     }
 

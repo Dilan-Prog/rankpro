@@ -82,7 +82,7 @@
     ];
 
     // Solo lo publicado: ver Servicios::todos().
-    $landingsWeb = array_filter($servicio['landings_web'] ?? []);
+    $landingsWeb = \App\Support\LandingsWeb::enlaces();
     $slugsPrecio = ['cuanto-cuesta-una-pagina-web', 'como-crear-una-pagina-web', 'como-hacer-una-tienda-en-linea'];
     $guiasPrecio = array_intersect_key($guias, array_flip($slugsPrecio));
     $guiasProceso = array_diff_key($guias, $guiasPrecio);
@@ -217,7 +217,7 @@
                 <div style="max-width:40rem;">
                     <span class="cv-badge">Configurador</span>
                     <h2 class="cv-calc__title">Arma tu proyecto y mira el precio moverse</h2>
-                    <p class="cv-card__text">Rangos reales de proyectos entregados en México. La propuesta final se ajusta después de entender tu operación, pero el orden de magnitud es este.</p>
+                    <p class="cv-card__text">Son precios base de referencia por tipo de proyecto. Los proyectos a la medida que hemos entregado van de $200 mil a $2 millones de pesos + IVA; la propuesta final se ajusta después de entender tu operación.</p>
                 </div>
 
                 <div class="cv-config" data-cv-config='@json($cfgJs)' data-wa="{{ $wa }}">
@@ -324,6 +324,11 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr style="border-bottom:1px solid var(--border);">
+                                <th scope="row" style="padding:0.75rem;text-align:left;">Landing sencilla</th>
+                                <td style="padding:0.75rem;">Una página de presentación (se cotiza aparte del configurador)</td>
+                                <td style="padding:0.75rem;text-align:right;white-space:nowrap;">{{ $money(\App\Support\Servicios::PRECIO_LANDING_SENCILLA) }}</td>
+                            </tr>
                             @foreach ($tipos as $key => $t)
                                 <tr style="border-bottom:1px solid var(--border);">
                                     <th scope="row" style="padding:0.75rem;text-align:left;">{{ $t['label'] }}</th>
@@ -451,8 +456,8 @@
                 </div>
                 @if ($landingsWeb !== [])
                     <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;padding:0;">
-                        @foreach ($landingsWeb as $texto => $ruta)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ url($ruta) }}">{{ $texto }}</a></li>
+                        @foreach ($landingsWeb as $l)
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ $l['url'] }}">{{ $l['label'] }}</a></li>
                         @endforeach
                     </ul>
                 @endif

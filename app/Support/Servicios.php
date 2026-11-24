@@ -24,6 +24,12 @@ class Servicios
     ];
 
     /**
+     * Landing sencilla, MXN sin IVA. Va aparte porque no está en el
+     * configurador: su alcance se cotiza a mano.
+     */
+    public const PRECIO_LANDING_SENCILLA = 7000;
+
+    /**
      * Catalogo completo. La clave del array es el slug de la URL.
      *
      * Cada icono es el interior de un <svg> de 24x24 con stroke currentColor,
@@ -212,18 +218,6 @@ class Servicios
                     'ejemplos-de-diseno-de-paginas-web' => 'Ejemplos de diseño de páginas web',
                     'desarrollo-de-aplicaciones-web' => 'Desarrollo de aplicaciones web: qué son y cuándo conviene',
                 ],
-                // Landings de diseño web. null = sin publicar y no se enlaza; al
-                // publicarla, poner aquí su ruta.
-                'landings_web' => [
-                    'Diseño de páginas web en Cancún' => null,
-                    'Páginas web en Monterrey' => null,
-                    'Diseño de páginas web en Guadalajara' => null,
-                    'Diseño de páginas web en Puebla' => null,
-                    'Diseño de páginas web en Tijuana' => null,
-                    'Diseño de páginas web en CDMX' => null,
-                    'Diseño de páginas web en Querétaro' => null,
-                    'Diseño de páginas web para hoteles' => null,
-                ],
                 'intro' => 'Un sitio web no es un folleto digital: es la infraestructura donde aterriza todo tu marketing. Si carga lento, no se entiende en celular o no deja claro qué hacer a continuación, cada peso invertido en anuncios y contenido rinde menos. Desarrollamos sitios pensando desde el primer boceto en tres cosas simultáneas: que la gente entienda, que Google pueda leerlo y que puedas medir lo que pasa dentro.',
                 'secciones' => [
                     [
@@ -285,8 +279,8 @@ class Servicios
                     [
                         'p' => '¿Cuánto cuesta el desarrollo de una página web?',
                         'r' => sprintf(
-                            'Depende del tipo de proyecto: una landing de campaña parte desde %s, un sitio corporativo desde %s, un e-commerce desde %s y una plataforma o SaaS desde %s MXN + IVA. En el configurador de esta página ves el rango y las semanas de entrega según lo que elijas.',
-                            ...array_map(static fn (int $n): string => '$'.number_format($n), array_values(self::PRECIOS_WEB)),
+                            'Depende del tipo de proyecto: una landing sencilla parte desde %s, una landing de campaña desde %s, un sitio corporativo desde %s, un e-commerce desde %s y una plataforma o SaaS desde %s MXN + IVA. En el configurador de esta página ves el rango y las semanas de entrega según lo que elijas; la landing sencilla se cotiza aparte. También se puede acordar un plan de pagos.',
+                            ...array_map(static fn (int $n): string => '$'.number_format($n), [self::PRECIO_LANDING_SENCILLA, ...array_values(self::PRECIOS_WEB)]),
                         ),
                     ],
                     [

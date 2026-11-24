@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsWeb;
 use App\Support\Clusters;
 use App\Support\Servicios;
 use Illuminate\Http\Response;
@@ -139,6 +140,12 @@ class SitemapController extends Controller
                 foreach (Servicios::todos() as $servicio) {
                     $slug = $servicio['slug'];
                     $paginas["/servicios/{$slug}"] = ['monthly', '0.8', $this->vistaDeServicio($slug)];
+
+                    if ($slug === LandingsWeb::SERVICIO) {
+                        foreach (LandingsWeb::todos() as $landing) {
+                            $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
+                        }
+                    }
 
                     // Las landings de ciudad cuelgan de su servicio padre.
                     if ($slug === CiudadesSeo::SERVICIO) {

@@ -58,7 +58,7 @@ class LandingDesarrolloWebTest extends TestCase
     public function test_solo_enlaza_guias_y_landings_publicadas(): void
     {
         $this->get(self::URL)
-            ->assertDontSee('Si buscas un proveedor en tu ciudad')
+            ->assertSee('href="'.url('/servicios/desarrollo-web/cancun').'"', false)
             ->assertDontSee('/blog/cuanto-cuesta-una-pagina-web', false);
 
         Articulo::factory()->delCluster('desarrollo-web')->create(['slug' => 'cuanto-cuesta-una-pagina-web']);
