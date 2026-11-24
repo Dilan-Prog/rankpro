@@ -42,6 +42,10 @@ class CasosExito
         'gsc' => 'Google Search Console',
         'ads' => 'Google Ads',
         'cliente' => 'datos del cliente',
+        'crm' => 'reporte de Google Ads y CRM',
+        // Cifra anterior al CRM: se publica siempre como estimación, nunca sumada
+        // ni dividida con lo medido.
+        'estimacion' => 'estimación de RankPro, sin registro en CRM',
         // Lo que construyó RankPro y puede enseñar: módulos, tablas, flujos.
         'rankpro' => 'proyecto RankPro',
     ];
@@ -64,8 +68,8 @@ class CasosExito
     public static function todos(): array
     {
         return [
-            // El caso con la cifra de negocio más sólida va primero: inversión y
-            // retorno declarados por el cliente.
+            // El caso con la cifra de negocio más sólida va primero: ventas y
+            // retorno registrados en CRM.
             [
                 'slug' => 'industrial-b2b',
                 'nombre' => null,
@@ -73,14 +77,16 @@ class CasosExito
                 'iniciales' => null,
                 'sector' => 'industrial',
                 'ubicacion' => null,
-                'duracion' => '3 años',
+                'duracion' => 'Más de 3 años',
                 'titulo' => 'De cero presencia digital a la mayoría de clientes nuevos por Google',
                 'resumen' => 'Comercializadora industrial B2B que empezó sin ningún cliente desde internet. Ecommerce, automatizaciones, SEO y Google Ads durante tres años.',
                 'servicios' => ['desarrollo', 'seo', 'ads', 'automatizacion'],
                 'kpis' => [
-                    ['valor' => '10x', 'label' => 'Retorno sobre la inversión', 'fuente' => 'cliente'],
-                    ['valor' => '$3 M', 'label' => 'MXN generados con $300 mil invertidos', 'fuente' => 'cliente'],
-                    ['valor' => '251 mil', 'label' => 'Impresiones y 5,520 clics acumulados', 'fuente' => 'gsc'],
+                    // 2026 medido, periodo cerrado: octubre y noviembre no son definitivos
+                    // (ciclo de venta de unos 3 meses).
+                    ['valor' => '8.6x', 'label' => 'Retorno de Google Ads, enero a septiembre de 2026', 'fuente' => 'crm'],
+                    ['valor' => '$2.2 M', 'label' => 'MXN en ventas de Google Ads, enero a septiembre de 2026', 'fuente' => 'crm'],
+                    ['valor' => '+350', 'label' => 'Clientes cerrados en más de 3 años, aproximado', 'fuente' => 'estimacion'],
                 ],
                 'reto' => [
                     'titulo' => 'Ningún cliente llegaba desde internet',
@@ -107,7 +113,7 @@ class CasosExito
                 ],
                 'resultados' => [
                     'titulo' => 'Hoy la mayoría de sus clientes nuevos llegan por Google',
-                    'parrafo' => 'Con $300 mil pesos invertidos a lo largo de tres años, el canal digital generó más de $3 millones en negocio: un retorno de diez a uno. En búsqueda, el acumulado llegó a 251 mil impresiones y 5,520 clics, y la empresa sigue creciendo en clientes e ingresos recurrentes.',
+                    'parrafo' => 'De enero a septiembre de 2026, Google Ads generó $2.2 millones en ventas registradas: 8.6 pesos por cada peso invertido. Antes no había CRM, así que lo anterior es una estimación nuestra: unos $6 millones más en ventas y más de 350 clientes cerrados en más de tres años, con una inversión total cercana a $400 mil. En búsqueda, el acumulado llegó a 251 mil impresiones y 5,520 clics (Google Search Console).',
                     'puntos' => [
                         ['titulo' => '+300 % en clientes potenciales', 'texto' => 'generados digitalmente respecto al arranque del proyecto.'],
                         ['titulo' => 'El canal cambió:', 'texto' => 'de vender solo por cartera a que Google sea la entrada principal.'],

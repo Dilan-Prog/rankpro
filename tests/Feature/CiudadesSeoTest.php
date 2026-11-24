@@ -20,7 +20,7 @@ class CiudadesSeoTest extends TestCase
             ->assertSee('<title>Agencia SEO en CDMX: Posicionamiento Web | RankPro</title>', false)
             ->assertSee('<link rel="canonical" href="'.url(self::URL).'">', false)
             ->assertSee('Agencia SEO en CDMX: posiciona tu empresa en Google')
-            ->assertSee('no de CDMX')
+            ->assertSee('no necesariamente de CDMX')
             ->assertDontSee('CONFIRMAR');
     }
 
@@ -33,7 +33,7 @@ class CiudadesSeoTest extends TestCase
             ->assertSee('<link rel="canonical" href="'.url($monterrey).'">', false)
             ->assertSee('Posicionamiento SEO en Monterrey: qué hay que tener en cuenta')
             ->assertSee('San Pedro Garza García')
-            ->assertSee('no de Monterrey')
+            ->assertSee('no necesariamente de Monterrey')
             ->assertDontSee('Polanco')
             ->assertSee('href="'.url(self::URL).'"', false);
 

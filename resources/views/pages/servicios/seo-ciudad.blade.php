@@ -186,11 +186,12 @@
             </div>
         </section>
 
-        {{-- Los casos publicados no son de la ciudad: el texto lo dice para que
-             nadie los lea como clientes locales. --}}
+        {{-- No se presentan como clientes locales, pero tampoco se niega que lo
+             sean: decir "no son de X" en unas ciudades y callar en otras revela
+             por descarte la ubicación de un cliente anonimizado. --}}
         @include('pages.servicios._casos-exito', [
             'casosTitulo' => $ciudad['casos_titulo'] ?? 'Sectores con los que trabajamos',
-            'casosTexto' => 'Casos reales de otras partes de México, no de '.$ciudad['nombre'].'. Cada cifra lleva su fuente y solo nombramos a quien lo autorizó.',
+            'casosTexto' => 'Casos de empresas mexicanas, no necesariamente de '.$ciudad['nombre'].'. Cada cifra lleva su fuente y solo nombramos a quien lo autorizó.',
         ])
 
         <section class="cv-section cv-section--tight" aria-labelledby="faq">

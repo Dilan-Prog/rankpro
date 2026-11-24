@@ -107,10 +107,13 @@ class CasosExitoTest extends TestCase
     {
         $html = $this->get('/casos-de-exito/industrial-b2b')->assertOk()->getContent();
 
-        $this->assertStringContainsString('10x', $html);
-        $this->assertStringContainsString('$3 M', $html);
+        $this->assertStringContainsString('8.6x', $html);
+        $this->assertStringContainsString('$2.2 M', $html);
         $this->assertStringContainsString('Google Search Console', $html);
-        $this->assertStringContainsString('datos del cliente', $html);
+        $this->assertStringContainsString('reporte de Google Ads y CRM', $html);
+        // Lo anterior al CRM no puede pasar por cifra medida.
+        $this->assertStringContainsString('es una estimación nuestra', $html);
+        $this->assertStringContainsString('estimación de RankPro', $html);
 
         // Desde eb45151 este caso sí documenta su solución por servicio (e-commerce,
         // automatizaciones, estructura SEO/AEO); lo que sigue sin datos es la

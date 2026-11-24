@@ -354,7 +354,7 @@
                         <div>
                             <span class="cs-kicker">Cómo verificamos este caso</span>
                             <h2 id="verificacion">Sin nombre no significa sin pruebas</h2>
-                            <p class="cs-verifica__p">Cada cifra de arriba lleva su fuente: {{ implode(', ', array_map(fn ($f) => $fuentes[$f] ?? $f, array_keys($verificacion))) }}. No publicamos la marca porque el cliente no nos autorizó a hacerlo, y no inventamos una cita para llenar el hueco. Las cifras se revisan contigo, con las capturas a la vista, en una llamada.</p>
+                            <p class="cs-verifica__p">Cada cifra de arriba lleva su fuente: {{ implode(', ', array_map(fn ($f) => $fuentes[$f] ?? $f, array_keys($verificacion))) }}. No publicamos la marca porque el cliente no nos autorizó a hacerlo, y no inventamos una cita para llenar el hueco. Las cifras medidas se revisan contigo, con las capturas a la vista, en una llamada.</p>
                         </div>
                         <ul class="cs-verifica__fuentes">
                             @foreach ($verificacion as $fuente => $labels)

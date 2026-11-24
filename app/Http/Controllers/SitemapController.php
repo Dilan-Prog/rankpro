@@ -63,7 +63,7 @@ class SitemapController extends Controller
         'pages.servicios.automatizacion-de-procesos' => '2026-11-02',
         'pages.servicios.show'                       => '2026-11-02',
         'pages.casos.index'                          => '2026-09-22',
-        'pages.casos.show'                           => '2026-09-22',
+        'pages.casos.show'                           => '2026-11-23',
         'pages.contacto'                             => '2026-09-03',
         'agendar.mostrar'                            => '2026-09-22',
         'pages.legal.terminos'                       => '2026-08-23',
