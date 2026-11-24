@@ -36,11 +36,13 @@
     $waGenerico = $wa . '?text=' . rawurlencode('Hola RankPro, quiero cotizar un sitio web a la medida.');
     $correo = 'administracion@rankprosolutions.com.mx';
 
+    $precios = \App\Support\Servicios::PRECIOS_WEB;
+
     $tipos = [
-        'landing' => ['label' => 'Landing de campaña', 'desc' => '1 objetivo, máxima conversión', 'base' => 38000, 'semanas' => 3, 'icon' => '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>'],
-        'corporativo' => ['label' => 'Sitio corporativo', 'desc' => 'Servicios, contenido, blog', 'base' => 78000, 'semanas' => 6, 'icon' => '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path>'],
-        'ecommerce' => ['label' => 'E-commerce', 'desc' => 'Catálogo, pagos, envíos', 'base' => 145000, 'semanas' => 10, 'icon' => '<circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>'],
-        'plataforma' => ['label' => 'Plataforma / SaaS', 'desc' => 'Cuentas, panel, roles', 'base' => 240000, 'semanas' => 16, 'icon' => '<rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect>'],
+        'landing' => ['label' => 'Landing de campaña', 'desc' => '1 objetivo, máxima conversión', 'base' => $precios['landing'], 'semanas' => 3, 'icon' => '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>'],
+        'corporativo' => ['label' => 'Sitio corporativo', 'desc' => 'Servicios, contenido, blog', 'base' => $precios['corporativo'], 'semanas' => 6, 'icon' => '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path>'],
+        'ecommerce' => ['label' => 'E-commerce', 'desc' => 'Catálogo, pagos, envíos', 'base' => $precios['ecommerce'], 'semanas' => 10, 'icon' => '<circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>'],
+        'plataforma' => ['label' => 'Plataforma / SaaS', 'desc' => 'Cuentas, panel, roles', 'base' => $precios['plataforma'], 'semanas' => 16, 'icon' => '<rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect>'],
     ];
 
     $features = [
@@ -71,13 +73,19 @@
         ['valor' => 'AA', 'label' => 'Accesibilidad WCAG', 'nota' => 'Contraste y navegación por teclado'],
     ];
 
-    $objections = [
-        ['q' => '¿Por qué a medida y no WordPress con plantilla?', 'a' => 'Si tu sitio es informativo y no vas a crecer, una plantilla puede bastar y te lo diremos. A medida gana cuando necesitas velocidad real, integraciones, procesos propios o un diseño que no se parezca al de todos: se paga solo en conversión y en no rehacerlo en 18 meses.'],
-        ['q' => '¿De quién es el código?', 'a' => 'Tuyo. Trabajamos en tu repositorio de GitHub desde el primer commit, con acceso de propietario para ti. Sin licencias atadas a nosotros ni hosting cautivo.'],
-        ['q' => '¿Qué pasa si el alcance cambia a medio proyecto?', 'a' => 'Cotizamos por fases. Los cambios dentro del alcance entran sin costo; lo nuevo se cotiza aparte y tú apruebas antes de que se programe una línea.'],
-        ['q' => '¿Incluye contenido y fotos?', 'a' => 'Incluye estructura, redacción de la copy base y montaje. Fotografía y video se cotizan aparte o los aporta tu equipo.'],
-        ['q' => '¿Y después del lanzamiento?', 'a' => '30 días de garantía sobre cualquier bug, más planes de mantenimiento mensuales opcionales con mejoras continuas y monitoreo de velocidad.'],
+    // Para qué sirve cada tipo, en la tabla de precios.
+    $usos = [
+        'landing' => 'Un objetivo y máxima conversión',
+        'corporativo' => 'Servicios, contenido y blog',
+        'ecommerce' => 'Catálogo, pagos y envíos',
+        'plataforma' => 'Cuentas, panel y roles',
     ];
+
+    // Solo lo publicado: ver Servicios::todos().
+    $landingsWeb = array_filter($servicio['landings_web'] ?? []);
+    $slugsPrecio = ['cuanto-cuesta-una-pagina-web', 'como-crear-una-pagina-web', 'como-hacer-una-tienda-en-linea'];
+    $guiasPrecio = array_intersect_key($guias, array_flip($slugsPrecio));
+    $guiasProceso = array_diff_key($guias, $guiasPrecio);
 
     // Estado inicial del configurador: corporativo, 8 plantillas, CMS + SEO.
     // Se calcula en PHP para que la pagina se sirva ya con numeros correctos
@@ -131,9 +139,13 @@
                     <div>
                         <span class="cv-badge">{!! $ico('<path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path>', 12) !!} Desarrollo web a la medida</span>
 
-                        <h1 class="cv-title">Tu sitio, armado a tu medida.<br aria-hidden="true"> <span class="text-brand">Con precio y fecha</span> antes de la junta.</h1>
+                        <h1 class="cv-title"><span class="text-brand">Desarrollo web</span> y diseño de páginas web a la medida en México</h1>
 
-                        <p class="cv-lead">Elige lo que necesitas y verás el rango de inversión, las semanas de entrega y el cronograma por fases al instante. Sin correos de ida y vuelta para saber cuánto cuesta.</p>
+                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:600;line-height:1.4;color:var(--ink);">Tu sitio, armado a tu medida. Con precio y fecha antes de la junta.</p>
+
+                        <p class="cv-lead">Somos una agencia de desarrollo web en México. Diseñamos y desarrollamos páginas web, tiendas en línea y plataformas a la medida, con precio, semanas de entrega y cronograma por fases antes de la primera junta.</p>
+
+                        <p class="cv-lead" style="font-size:0.9375rem;">Elige lo que necesitas y verás el rango de inversión, las semanas de entrega y el cronograma por fases al instante. Sin correos de ida y vuelta para saber cuánto cuesta.</p>
 
                         <div class="cv-actions">
                             <a href="#configurador" class="cv-btn cv-btn--primary">Armar mi cotización {!! $ico($icoFlecha, 17) !!}</a>
@@ -296,6 +308,72 @@
             </div>
         </section>
 
+        {{-- ----------------------------------------------- tipos de proyecto --}}
+        <section class="cv-section cv-section--tight" aria-labelledby="tipos">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head">
+                    <h2 id="tipos">Qué tipo de sitio necesitas</h2>
+                </div>
+                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="tipos">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                <th scope="col" style="padding:0.75rem;">Proyecto</th>
+                                <th scope="col" style="padding:0.75rem;">Para qué sirve</th>
+                                <th scope="col" style="padding:0.75rem;text-align:right;">Desde (MXN + IVA)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($tipos as $key => $t)
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $t['label'] }}</th>
+                                    <td style="padding:0.75rem;">{{ $usos[$key] }}</td>
+                                    <td style="padding:0.75rem;text-align:right;white-space:nowrap;">{{ $money($t['base']) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <p class="cv-card__text" style="margin-top:1.25rem;">Extras que se suman en el configurador: plantillas de página adicionales, CMS editable por tu equipo, multi-idioma, pagos en línea, reservas o agenda, integración con CRM, panel de administración, integraciones por API y SEO técnico con schema.</p>
+                @if ($guiasPrecio !== [])
+                    <p class="cv-card__text" style="margin-top:0.75rem;">
+                        Más información:
+                        @foreach ($guiasPrecio as $slugGuia => $textoGuia)
+                            <a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a>{{ $loop->last ? '' : ' · ' }}
+                        @endforeach
+                    </p>
+                @endif
+            </div>
+        </section>
+
+        {{-- ----------------------------------------------- diseño y desarrollo --}}
+        <section class="cv-section cv-section--alt" aria-labelledby="equipo">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="equipo">Diseño de páginas web y desarrollo web en un solo equipo</h2>
+                    <p>Un sitio que se ve bien pero carga lento o no se puede editar cuesta más después. Por eso el diseño y el desarrollo van juntos: el prototipo se valida antes de programar, el código se mide en velocidad móvil antes de entregar y la estructura se prepara desde el inicio para posicionar en Google.</p>
+                </div>
+                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>Diseño</h3>
+                        <p>Prototipo en las semanas 1 y 2, validado contigo antes de programar.</p>
+                    </div>
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>Desarrollo</h3>
+                        <p>Entregas semanales en ambiente de pruebas.</p>
+                    </div>
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>Velocidad y accesibilidad</h3>
+                        <p>Medimos Core Web Vitals y revisamos contraste y navegación por teclado (WCAG AA). No prometemos una calificación, medimos y corregimos.</p>
+                    </div>
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>SEO desde la arquitectura</h3>
+                        <p>Estructura de URLs, encabezados, datos estructurados y redirecciones. Si quieres ir más allá, mira nuestro <a href="{{ route('servicios.show', 'seo-organico') }}">servicio de SEO</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {{-- --------------------------------------------------- cronograma --}}
         <section class="cv-section">
             <div class="container" style="max-width:64rem;">
@@ -359,21 +437,43 @@
             </div>
         </section>
 
-        {{-- ----------------------------------------------------- objeciones --}}
+        {{-- ------------------------------------------------------ ciudades --}}
+        <section class="cv-section cv-section--tight" aria-labelledby="ciudades">
+            <div class="container">
+                <div class="cv-head" @if ($landingsWeb === []) style="margin-bottom:0;" @endif>
+                    <h2 id="ciudades">Desarrollo web cerca de ti</h2>
+                    <p>
+                        Trabajamos con empresas de todo México, de forma remota.
+                        @if ($landingsWeb !== [])
+                            Si buscas un proveedor en tu ciudad:
+                        @endif
+                    </p>
+                </div>
+                @if ($landingsWeb !== [])
+                    <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;padding:0;">
+                        @foreach ($landingsWeb as $texto => $ruta)
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ url($ruta) }}">{{ $texto }}</a></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </section>
+
+        {{-- --------------------------------------------- preguntas frecuentes --}}
         <section class="cv-section cv-section--alt">
             <div class="container">
                 <div class="cv-head">
-                    <h2>Antes de que preguntes</h2>
+                    <h2>Preguntas frecuentes sobre desarrollo web</h2>
                 </div>
 
                 <div class="cv-faq">
-                    @foreach ($objections as $i => $o)
+                    @foreach ($servicio['faqs'] as $i => $o)
                         <div class="cv-faq__item" style="background:#ffffff;">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="obj-{{ $i }}">
-                                <span>{{ $o['q'] }}</span>
+                                <span>{{ $o['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
                             </button>
-                            <div class="cv-faq__panel" id="obj-{{ $i }}" @if($i !== 0) hidden @endif>{{ $o['a'] }}</div>
+                            <div class="cv-faq__panel" id="obj-{{ $i }}" @if($i !== 0) hidden @endif>{{ $o['r'] }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -394,20 +494,54 @@
             </div>
         </section>
 
+        {{-- --------------------------------------------------------- casos --}}
+        {{-- Cada cifra con su fuente; el cliente anonimizado, sin nombre ni lugar. --}}
+        <section class="cv-section cv-section--tight" aria-labelledby="casos">
+            <div class="container">
+                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
+                    <h2 id="casos" style="font-size:1.5rem;">Sitios que ya entregamos</h2>
+                </div>
+                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">
+                    <div class="cv-card-soft">
+                        <h3>Equiterm Industries, sitio hecho a la medida</h3>
+                        <p>+790 % en clics en tres meses; partía de una base pequeña. Fuente: Google Search Console.</p>
+                        <p><a href="{{ route('casos.show', 'equiterm-industries') }}">Ver el caso de Equiterm</a></p>
+                    </div>
+                    <div class="cv-card-soft">
+                        <h3>Industrial B2B, cliente anonimizado</h3>
+                        <p>Ecommerce con 8.6x de retorno en Google Ads, de enero a septiembre de 2026. Fuente: reporte de Google Ads y CRM.</p>
+                        <p><a href="{{ route('casos.show', 'industrial-b2b') }}">Ver el caso industrial</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {{-- ------------------------------------------------------ guías del blog --}}
-        {{-- Hub -> spoke: si no hay artículos publicados para este servicio no se
-             pinta nada, para no dejar un bloque vacío en una landing de conversión. --}}
-        @if (isset($articulos) && $articulos->isNotEmpty())
+        {{-- Guías fijas del plan (solo publicadas) y debajo las recientes que no
+             estén ya enlazadas arriba. Sin ninguna, no se pinta el bloque. --}}
+        @php
+            $recientes = $articulos->reject(fn ($a) => isset($guias[$a->slug]));
+        @endphp
+        @if ($guiasProceso !== [] || $recientes->isNotEmpty())
             <section class="cv-section cv-section--tight" aria-labelledby="guias">
                 <div class="container">
                     <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                        <h2 id="guias" style="font-size:1.5rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
+                        <h2 id="guias" style="font-size:1.5rem;">Antes de cotizar, conviene entender el proceso</h2>
                     </div>
-                    <div class="cv-cards">
-                        @foreach ($articulos as $articulo)
-                            <x-blog.tarjeta :articulo="$articulo" />
-                        @endforeach
-                    </div>
+                    @if ($guiasProceso !== [])
+                        <ul style="display:grid;gap:0.75rem;margin-bottom:2rem;padding-left:1.25rem;">
+                            @foreach ($guiasProceso as $slugGuia => $textoGuia)
+                                <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    @if ($recientes->isNotEmpty())
+                        <div class="cv-cards">
+                            @foreach ($recientes as $articulo)
+                                <x-blog.tarjeta :articulo="$articulo" />
+                            @endforeach
+                        </div>
+                    @endif
                     <p style="margin-top:1.5rem;">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>

@@ -12,6 +12,18 @@ namespace App\Support;
 class Servicios
 {
     /**
+     * Precio base por tipo de proyecto web, MXN sin IVA. De aquí salen el
+     * configurador, la tabla y la FAQ de precios de /servicios/desarrollo-web:
+     * son un compromiso comercial y no pueden decir cosas distintas.
+     */
+    public const PRECIOS_WEB = [
+        'landing' => 38000,
+        'corporativo' => 78000,
+        'ecommerce' => 145000,
+        'plataforma' => 240000,
+    ];
+
+    /**
      * Catalogo completo. La clave del array es el slug de la URL.
      *
      * Cada icono es el interior de un <svg> de 24x24 con stroke currentColor,
@@ -187,9 +199,31 @@ class Servicios
                 'icon' => '<path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path>',
                 'tags' => ['React', 'Shopify', 'WordPress'],
                 'resumen' => 'Sitios web y tiendas online de alto rendimiento con diseño único.',
-                'meta_title' => 'Desarrollo Web y Tiendas en Línea en México | RankPro',
-                'meta_description' => 'Diseñamos y desarrollamos sitios web y e-commerce rápidos, medibles y preparados para SEO desde la arquitectura. WordPress, Shopify y desarrollo a medida.',
-                'h1' => 'Desarrollo web orientado a conversión y posicionamiento',
+                'meta_title' => 'Desarrollo Web y Diseño de Páginas Web en México | RankPro',
+                'meta_description' => 'Diseño y desarrollo de páginas web, tiendas en línea y plataformas a la medida en México. Precio y cronograma al instante. Código en tu repositorio.',
+                'h1' => 'Desarrollo web y diseño de páginas web a la medida en México',
+                // Guías que la landing enlaza (slug => texto): solo las publicadas.
+                // Las tres primeras acompañan a la tabla de precios.
+                'guias' => [
+                    'cuanto-cuesta-una-pagina-web' => '¿Cuánto cuesta una página web?',
+                    'como-crear-una-pagina-web' => 'Cómo crear una página web paso a paso',
+                    'como-hacer-una-tienda-en-linea' => 'Cómo hacer una tienda en línea',
+                    'que-es-el-desarrollo-web' => '¿Qué es el desarrollo web?',
+                    'ejemplos-de-diseno-de-paginas-web' => 'Ejemplos de diseño de páginas web',
+                    'desarrollo-de-aplicaciones-web' => 'Desarrollo de aplicaciones web: qué son y cuándo conviene',
+                ],
+                // Landings de diseño web. null = sin publicar y no se enlaza; al
+                // publicarla, poner aquí su ruta.
+                'landings_web' => [
+                    'Diseño de páginas web en Cancún' => null,
+                    'Páginas web en Monterrey' => null,
+                    'Diseño de páginas web en Guadalajara' => null,
+                    'Diseño de páginas web en Puebla' => null,
+                    'Diseño de páginas web en Tijuana' => null,
+                    'Diseño de páginas web en CDMX' => null,
+                    'Diseño de páginas web en Querétaro' => null,
+                    'Diseño de páginas web para hoteles' => null,
+                ],
                 'intro' => 'Un sitio web no es un folleto digital: es la infraestructura donde aterriza todo tu marketing. Si carga lento, no se entiende en celular o no deja claro qué hacer a continuación, cada peso invertido en anuncios y contenido rinde menos. Desarrollamos sitios pensando desde el primer boceto en tres cosas simultáneas: que la gente entienda, que Google pueda leerlo y que puedas medir lo que pasa dentro.',
                 'secciones' => [
                     [
@@ -225,22 +259,43 @@ class Servicios
                     'Instalación y prueba de GA4, Google Tag Manager y Search Console.',
                     'Capacitación al equipo para administrar el contenido sin depender de nosotros.',
                 ],
+                // El FAQPage sale de aquí, igual que lo visible. Antes la landing
+                // pintaba otra lista y el schema declaraba preguntas que no se veían.
                 'faqs' => [
                     [
-                        'p' => '¿Cuánto tarda el desarrollo de un sitio web?',
-                        'r' => 'Un sitio corporativo con las páginas principales suele tomar de cuatro a ocho semanas; un e-commerce o un proyecto con integraciones puede extenderse más. El factor que más mueve el calendario no es el código sino el contenido: textos, fotografías y aprobaciones. Cuando ese material está listo desde el inicio, los tiempos se cumplen sin sobresaltos.',
+                        'p' => '¿Por qué a medida y no WordPress con plantilla?',
+                        'r' => 'Si tu sitio es informativo y no vas a crecer, una plantilla puede bastar y te lo diremos. A medida gana cuando necesitas velocidad real, integraciones, procesos propios o un diseño que no se parezca al de todos: se paga solo en conversión y en no rehacerlo en 18 meses.',
                     ],
                     [
-                        'p' => '¿Voy a poder editar el sitio yo mismo?',
-                        'r' => 'Sí. Construimos con un gestor de contenido y entregamos capacitación para que tu equipo edite textos, imágenes, publique entradas y cree páginas nuevas sin depender de nosotros. Reservamos el trabajo técnico para lo que realmente lo requiere.',
+                        'p' => '¿De quién es el código?',
+                        'r' => 'Tuyo. Trabajamos en tu repositorio de GitHub desde el primer commit, con acceso de propietario para ti. Sin licencias atadas a nosotros ni hosting cautivo.',
                     ],
                     [
-                        'p' => '¿El hosting y el dominio están incluidos?',
-                        'r' => 'Se cotizan por separado porque son servicios de terceros con costo recurrente, y preferimos que estén a nombre de tu empresa. Te asesoramos en la elección según el tráfico y la plataforma, y hacemos la configuración e implementación del certificado SSL como parte del proyecto.',
+                        'p' => '¿Qué pasa si el alcance cambia a medio proyecto?',
+                        'r' => 'Cotizamos por fases. Los cambios dentro del alcance entran sin costo; lo nuevo se cotiza aparte y tú apruebas antes de que se programe una línea.',
                     ],
                     [
-                        'p' => '¿Qué pasa después de la entrega?',
-                        'r' => 'Incluimos un periodo de garantía para corregir errores atribuibles al desarrollo. Además ofrecemos mantenimiento mensual opcional: actualizaciones de plataforma y plugins, respaldos, monitoreo de disponibilidad y ajustes menores de contenido. Un sitio sin actualizar es un riesgo de seguridad, no solo un tema estético.',
+                        'p' => '¿Incluye contenido y fotos?',
+                        'r' => 'Incluye estructura, redacción de la copy base y montaje. Fotografía y video se cotizan aparte o los aporta tu equipo.',
+                    ],
+                    [
+                        'p' => '¿Y después del lanzamiento?',
+                        'r' => '30 días de garantía sobre cualquier bug, más planes de mantenimiento mensuales opcionales con mejoras continuas y monitoreo de velocidad.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta el desarrollo de una página web?',
+                        'r' => sprintf(
+                            'Depende del tipo de proyecto: una landing de campaña parte desde %s, un sitio corporativo desde %s, un e-commerce desde %s y una plataforma o SaaS desde %s MXN + IVA. En el configurador de esta página ves el rango y las semanas de entrega según lo que elijas.',
+                            ...array_map(static fn (int $n): string => '$'.number_format($n), array_values(self::PRECIOS_WEB)),
+                        ),
+                    ],
+                    [
+                        'p' => '¿Cuál es la diferencia entre diseño web y desarrollo web?',
+                        'r' => 'El diseño web define cómo se ve y cómo se usa el sitio. El desarrollo web lo construye para que funcione: programación, integraciones, panel de administración, velocidad y seguridad. En un proyecto completo se hacen los dos.',
+                    ],
+                    [
+                        'p' => '¿Trabajan con empresas fuera de mi ciudad?',
+                        'r' => 'Sí. Trabajamos de forma remota con empresas de todo México, con demo desde la semana 2 y entregas semanales.',
                     ],
                 ],
             ],
