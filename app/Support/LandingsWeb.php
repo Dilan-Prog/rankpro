@@ -22,7 +22,8 @@ class LandingsWeb
      * `actualizado` es el lastmod del sitemap: subirlo a mano al cambiar texto.
      * `afines` son los slugs que enlaza al pie: 2 o 3, no todas. Enlazarlas
      * todas sumaba una frase común por cada landing nueva. Las no publicadas se
-     * omiten solas. `guias` son las del blog que enlaza, también si existen.
+     * omiten solas. `seo_ciudad` enlaza la landing de SEO de la misma ciudad y
+     * `servicio`, dentro de un punto, otra página de servicio. `guias` son las del blog que enlaza, también si existen.
      *
      * En una FAQ, `r` es idéntico en la página y en el FAQPage.
      *
@@ -469,6 +470,180 @@ class LandingsWeb
                 'cierre' => [
                     'titulo' => 'Que te entiendan de los dos lados',
                     'texto' => 'Activa «Multi-idioma» en el configurador y mira cuánto suma a tu proyecto.',
+                ],
+            ],
+
+            'cdmx' => [
+                'slug' => 'cdmx',
+                'afines' => ['puebla', 'queretaro'],
+                'seo_ciudad' => 'cdmx',
+                'nombre' => 'CDMX',
+                'enlace' => 'Diseño de páginas web en CDMX',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web en CDMX | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en CDMX para empresas, startups y tiendas en línea. Sitios rápidos, medibles y a la medida. Desde {$p['sencilla']} MXN + IVA.",
+                'h1' => 'Diseño de páginas web en CDMX',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en CDMX',
+                'area' => ['@type' => 'City', 'name' => 'Ciudad de México'],
+                'intro' => 'Diseño de páginas web en CDMX a la medida, rápidas y medibles. En una ciudad donde tanta oferta compite por la misma persona, te ayudamos a que tu empresa se distinga, se encuentre en Google y convierta.',
+                'precio' => "Un rediseño corporativo arranca en {$p['corporativo']} y una tienda con catálogo propio en {$p['ecommerce']}, sin incluir IVA.",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en CDMX',
+                    'texto' => 'En CDMX, un sitio genérico se pierde entre muchos parecidos. Lo que diferencia es la claridad de la propuesta, la velocidad, la estructura para posicionar cada servicio por separado y la medición para decidir con datos.',
+                ],
+                'publico' => [
+                    'titulo' => 'A quién le conviene en la capital',
+                    'puntos' => [
+                        'Consultoras y firmas de servicios profesionales',
+                        'Empresas de tecnología que cambiaron de propuesta y su sitio no lo refleja',
+                        'Tiendas en línea con catálogo propio',
+                        'Empresas con varias líneas de servicio que necesitan ordenar su sitio',
+                        'Organizaciones que requieren portales internos o de clientes',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en CDMX: sitio nuevo o rediseño',
+                    'puntos' => [
+                        ['t' => 'Rediseño del sitio actual', 'd' => 'Con inventario de URLs y plan de redirecciones para cuidar lo que ya posiciona.'],
+                        ['t' => 'Sitio por líneas de servicio', 'd' => 'Una página para cada servicio, con blog y casos.'],
+                        ['t' => 'Comercio electrónico', 'd' => 'Productos, cobro y logística conectados a tu operación.'],
+                        ['t' => 'Portal interno o de clientes', 'd' => 'Acceso con contraseña, documentos y permisos por área.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Lo que protegemos cuando cambias de sitio',
+                    'puntos' => [
+                        ['t' => 'Migración ordenada', 'd' => 'Cada dirección antigua con valor lleva a su equivalente con una redirección 301.'],
+                        ['t' => 'Medición desde el primer día', 'd' => 'Search Console y GA4 listos antes de publicar, para comparar el antes y el después.'],
+                        ['t' => 'Estructura para buscar por servicio', 'd' => 'El trabajo continúa, si lo quieres, con nuestro', 'servicio' => 'seo-organico', 'ancla' => 'servicio de SEO'],
+                        ['t' => 'Accesible y veloz', 'd' => 'Lo comprobamos con mediciones previas a la entrega, sin prometer una calificación.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Cómo se planea el cambio sin apagar lo que funciona',
+                    'texto' => 'Revisamos qué páginas traen visitas y contactos hoy, construimos la nueva versión en paralelo y elegimos contigo el día del cambio. Después vigilamos errores y posiciones. Las fases completas están descritas en',
+                    'enlace' => 'desarrollo de sitios web',
+                ],
+                'casos' => [
+                    'titulo' => 'Sitios que puedes abrir y evaluar',
+                    'texto' => 'No afirmamos que sean de la capital; valen como muestra de método y de medición.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm Industries, páginas por línea', 'd' => 'Calderas, calentadores y tratamiento de agua con URL propia. Avance de 790 % en clics durante tres meses, con base inicial chica, en Search Console.'],
+                        ['slug' => 'industrial-b2b', 't' => 'Ecommerce B2B con nombre protegido', 'd' => 'Su cuenta de Google Ads dio un retorno de 8.6 entre enero y septiembre de 2026; lo respaldan el reporte y el CRM.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Hacen rediseño de una página que ya tengo?',
+                        'r' => 'Sí. Se planea la migración con redirecciones para cuidar el posicionamiento que ya tienes. Toda migración puede mover posiciones un tiempo, por eso se vigila después de publicar.',
+                    ],
+                    [
+                        'p' => '¿Pueden hacer la página y el SEO?',
+                        'r' => 'Sí. El desarrollo prepara la estructura técnica, y el servicio de SEO la continúa con contenido y seguimiento.',
+                    ],
+                    [
+                        'p' => '¿Qué necesito entregar para empezar un rediseño?',
+                        'r' => 'Acceso de lectura a Search Console y a tu analítica, los textos que quieras conservar y quién aprueba los cambios.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una página web en CDMX?',
+                        'r' => "El precio base es de {$p['corporativo']} para un sitio corporativo, {$p['ecommerce']} para una tienda y {$p['plataforma']} para un portal o plataforma. Si solo requieres una página, la sencilla comienza en {$p['sencilla']} y la de campaña en {$p['landing']}. Falta sumar IVA, y hay plan de pagos.",
+                    ],
+                    [
+                        'p' => '¿Las reuniones son presenciales o en línea?',
+                        'r' => 'En línea, por videollamada. Puedes invitar a todas las áreas que deban aprobar el sitio.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => '¿Tu sitio actual se queda corto?',
+                    'texto' => 'Configura la versión que necesitas y compárala con lo que cuesta seguir igual.',
+                ],
+            ],
+
+            'queretaro' => [
+                'slug' => 'queretaro',
+                'afines' => ['monterrey', 'puebla'],
+                'seo_ciudad' => 'queretaro',
+                'nombre' => 'Querétaro',
+                'enlace' => 'Diseño de páginas web en Querétaro',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web en Querétaro | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en Querétaro para empresas industriales, logísticas y de servicios. Portales y catálogos a medida. Desde {$p['sencilla']} MXN.",
+                'h1' => 'Diseño de páginas web en Querétaro',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en Querétaro',
+                'area' => ['@type' => 'City', 'name' => 'Querétaro'],
+                'intro' => 'Diseño de páginas web en Querétaro para empresas que venden a otras empresas y para negocios que crecen: catálogos de productos o servicios, portales para proveedores y clientes, y sitios que explican con claridad lo que haces.',
+                'precio' => "Presenta tus capacidades en un sitio corporativo desde {$p['corporativo']}, o abre un portal con cuentas desde {$p['plataforma']}. Son montos en MXN, sin IVA.",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en Querétaro',
+                    'texto' => 'Cuando una empresa te evalúa como proveedor, pregunta por procesos, certificaciones y capacidad. Una página que lo explica bien y un formulario que califica al prospecto ahorran juntas y aceleran la cotización.',
+                ],
+                'publico' => [
+                    'titulo' => 'Para qué empresas de Querétaro lo hacemos',
+                    'puntos' => [
+                        'Industria, sector aeroespacial y manufactura avanzada',
+                        'Proveedores y operadores logísticos',
+                        'Compañías de software y servicios especializados',
+                        'Inmobiliarias y desarrolladores',
+                        'Negocios locales que quieren vender en línea',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en Querétaro: proyectos que podemos construir',
+                    'puntos' => [
+                        ['t' => 'Sitio para ser evaluado', 'd' => 'Capacidades, industrias que atiendes, certificaciones y contacto, en el orden en que las revisa un comprador.'],
+                        ['t' => 'Portal de proveedores o clientes', 'd' => 'Cada cuenta entra a sus documentos y solicitudes, según su rol.'],
+                        ['t' => 'Catálogo con cotización', 'd' => 'El visitante elige un producto o servicio y envía la solicitud con sus datos.'],
+                        ['t' => 'Venta directa', 'd' => 'Una tienda en línea para lo que no requiere cotización.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Lo que revisa quien va a darte de alta',
+                    'puntos' => [
+                        ['t' => 'Evidencia vigente', 'd' => 'Las certificaciones se publican con su alcance y fecha, a partir de los documentos que nos entregues.'],
+                        ['t' => 'Accesos bien delimitados', 'd' => 'En un portal, cada empresa ve solo su información.'],
+                        ['t' => 'Conexión por API', 'd' => 'Si tu sistema la ofrece, se valora qué datos pueden intercambiarse antes de fijar el alcance.'],
+                        ['t' => 'SEO técnico de origen', 'd' => 'Páginas separadas por proceso o servicio, para que aparezcan en búsquedas concretas.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'De la ficha de empresa al sitio publicado',
+                    'texto' => 'Partimos de tu presentación comercial y de las preguntas que te repiten los compradores. La demo se puede navegar desde la semana 2 y hay entregas semanales; todo el código queda en tu cuenta de GitHub desde el primer commit. Fases y plazos, en',
+                    'enlace' => 'la página de desarrollo web',
+                ],
+                'casos' => [
+                    'titulo' => 'Resultados que puedes verificar',
+                    'texto' => 'Se incluyen por el método y no se presentan como clientes de Querétaro.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm Industries, hecho a la medida', 'd' => 'Clics: +790 % en tres meses, con una base pequeña al inicio. La fuente es Google Search Console.'],
+                        ['slug' => 'industrial-b2b', 't' => 'Industrial B2B, nombre reservado', 'd' => 'Retorno de 8.6x en Google Ads durante enero-septiembre de 2026, según el reporte de la cuenta y el CRM.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Pueden hacer un portal para proveedores?',
+                        'r' => "Sí. Entra en el tipo de proyecto \"Plataforma\", con cuentas, panel y roles, desde {$p['plataforma']} MXN + IVA.",
+                    ],
+                    [
+                        'p' => '¿Pueden mostrar certificaciones y capacidades?',
+                        'r' => 'Sí. Se diseña una sección clara con tu información verificada.',
+                    ],
+                    [
+                        'p' => '¿Cómo es el proceso?',
+                        'r' => 'Demo desde la semana 2, avances cada semana y pago por hitos.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una página web en Querétaro?',
+                        'r' => "Los precios iniciales son {$p['sencilla']} para una landing sencilla, {$p['landing']} para una de campaña, {$p['corporativo']} para un sitio corporativo, {$p['ecommerce']} para un e-commerce y {$p['plataforma']} para una plataforma, todos en MXN + IVA. El configurador calcula rango y semanas, salvo en la landing sencilla, que se cotiza aparte.",
+                    ],
+                    [
+                        'p' => '¿Todo el proyecto se puede llevar a distancia?',
+                        'r' => 'Sí. Nos reunimos por videollamada, revisas los avances en línea y el repositorio está a tu nombre.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => '¿Hablamos de tu proyecto en Querétaro?',
+                    'texto' => 'Elige portal, catálogo o sitio corporativo y conoce inversión y cronograma al instante.',
                 ],
             ],
         ];

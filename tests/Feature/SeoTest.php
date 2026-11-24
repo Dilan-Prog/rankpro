@@ -31,6 +31,8 @@ class SeoTest extends TestCase
             '/servicios/seo-organico/queretaro', '/servicios/desarrollo-web/cancun',
             '/servicios/desarrollo-web/monterrey', '/servicios/desarrollo-web/puebla',
             '/servicios/desarrollo-web/guadalajara', '/servicios/desarrollo-web/tijuana',
+            '/servicios/desarrollo-web/queretaro',
+            '/servicios/desarrollo-web/cdmx',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 

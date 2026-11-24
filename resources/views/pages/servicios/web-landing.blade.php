@@ -150,6 +150,9 @@
                             <h3>{{ $punto['t'] }}</h3>
                             <p>
                                 {{ $punto['d'] }}
+                                @isset($punto['servicio'])
+                                    <a href="{{ route('servicios.show', $punto['servicio']) }}">{{ $punto['ancla'] }}</a>.
+                                @endisset
                                 @if (isset($punto['guia'], $guias[$punto['guia']]))
                                     Más en <a href="{{ route('blog.show', $punto['guia']) }}">{{ $guias[$punto['guia']] }}</a>.
                                 @endif
@@ -230,6 +233,9 @@
                             <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
                     @endforeach
+                    @isset($landing['seo_ciudad'])
+                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
+                    @endisset
                     @foreach ($otrasLandings as $otra)
                         <li><a class="cv-chip" style="text-decoration:none;" href="{{ $otra['url'] }}">{{ $otra['label'] }}</a></li>
                     @endforeach

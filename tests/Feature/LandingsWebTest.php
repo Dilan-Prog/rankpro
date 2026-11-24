@@ -94,6 +94,22 @@ class LandingsWebTest extends TestCase
         }
     }
 
+    public function test_cdmx_enlaza_a_su_landing_de_seo_y_al_servicio(): void
+    {
+        $this->get('/servicios/desarrollo-web/cdmx')->assertOk()
+            ->assertSee('href="'.url('/servicios/seo-organico/cdmx').'">SEO en CDMX', false)
+            ->assertSee('servicio de SEO</a>', false);
+    }
+
+    public function test_queretaro_enlaza_a_su_landing_de_seo_y_a_monterrey(): void
+    {
+        $this->get('/servicios/desarrollo-web/queretaro')->assertOk()
+            ->assertSee('<title>Diseño de Páginas Web en Querétaro | RankPro</title>', false)
+            ->assertSee('href="'.url('/servicios/seo-organico/queretaro').'">SEO en Querétaro', false)
+            ->assertSee('href="'.url('/servicios/desarrollo-web/monterrey').'"', false)
+            ->assertDontSee('[VERIFICAR')->assertDontSee('[DATO REAL');
+    }
+
     public function test_los_precios_salen_del_catalogo(): void
     {
         $html = $this->get(self::URL)->getContent();
