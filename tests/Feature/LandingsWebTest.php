@@ -83,6 +83,17 @@ class LandingsWebTest extends TestCase
         }
     }
 
+    public function test_toda_landing_recibe_enlace_del_padre_y_solo_enlaza_afines(): void
+    {
+        $padre = $this->get('/servicios/desarrollo-web')->getContent();
+
+        foreach (LandingsWeb::todos() as $slug => $landing) {
+            $this->assertStringContainsString('href="'.url('/servicios/desarrollo-web/'.$slug).'"', $padre);
+            $this->assertLessThanOrEqual(3, count(LandingsWeb::enlaces($slug)));
+            $this->assertNotContains($slug, $landing['afines']);
+        }
+    }
+
     public function test_los_precios_salen_del_catalogo(): void
     {
         $html = $this->get(self::URL)->getContent();

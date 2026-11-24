@@ -225,7 +225,7 @@
                 </div>
                 <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
                     <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de desarrollo web</a></li>
-                    @foreach (['cuanto-cuesta-una-pagina-web', 'como-crear-una-pagina-web'] as $slugGuia)
+                    @foreach (['cuanto-cuesta-una-pagina-web', 'como-crear-una-pagina-web', ...($landing['guias'] ?? [])] as $slugGuia)
                         @isset($guias[$slugGuia])
                             <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset

@@ -20,6 +20,10 @@ class LandingsWeb
 
     /**
      * `actualizado` es el lastmod del sitemap: subirlo a mano al cambiar texto.
+     * `afines` son los slugs que enlaza al pie: 2 o 3, no todas. Enlazarlas
+     * todas sumaba una frase común por cada landing nueva. Las no publicadas se
+     * omiten solas. `guias` son las del blog que enlaza, también si existen.
+     *
      * En una FAQ, `r` es idéntico en la página y en el FAQPage.
      *
      * @return array<string, array<string, mixed>>
@@ -34,6 +38,7 @@ class LandingsWeb
         return [
             'cancun' => [
                 'slug' => 'cancun',
+                'afines' => ['monterrey', 'hoteles'],
                 'nombre' => 'Cancún',
                 'enlace' => 'Diseño de páginas web en Cancún',
                 'actualizado' => '2026-11-23',
@@ -121,6 +126,7 @@ class LandingsWeb
 
             'monterrey' => [
                 'slug' => 'monterrey',
+                'afines' => ['queretaro', 'guadalajara'],
                 'nombre' => 'Monterrey',
                 'enlace' => 'Páginas web en Monterrey',
                 'actualizado' => '2026-11-23',
@@ -207,6 +213,7 @@ class LandingsWeb
 
             'puebla' => [
                 'slug' => 'puebla',
+                'afines' => ['cdmx', 'queretaro', 'cancun'],
                 'nombre' => 'Puebla',
                 'enlace' => 'Diseño de páginas web en Puebla',
                 'actualizado' => '2026-11-23',
@@ -289,6 +296,181 @@ class LandingsWeb
                     'texto' => 'Marca solo lo indispensable en el configurador y guarda lo demás para después.',
                 ],
             ],
+
+            'guadalajara' => [
+                'slug' => 'guadalajara',
+                'afines' => ['monterrey', 'puebla'],
+                'guias' => ['desarrollo-de-aplicaciones-web'],
+                'nombre' => 'Guadalajara',
+                'enlace' => 'Diseño de páginas web en Guadalajara',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web en Guadalajara | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en Guadalajara para empresas de tecnología, servicios y comercio. MVP, e-commerce y plataformas. Desde {$p['sencilla']} MXN.",
+                'h1' => 'Diseño de páginas web en Guadalajara',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en Guadalajara',
+                'area' => ['@type' => 'City', 'name' => 'Guadalajara'],
+                'intro' => 'Diseño de páginas web en Guadalajara, tiendas en línea y plataformas: desde una landing para probar una idea hasta un producto digital con cuentas de usuario, con entregas cada semana y código tuyo.',
+                'precio' => "Validar una oferta cuesta desde {$p['landing']} con una landing de lanzamiento; un MVP con cuentas y panel, desde {$p['plataforma']} (pesos, más IVA).",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en Guadalajara',
+                    'texto' => 'Un proyecto digital nuevo casi nunca sale bien a la primera: necesita usuarios reales y ajustes. La mejor manera es publicar pronto lo esencial, con demo navegable desde la semana 2 y cambios dentro del alcance sin costo.',
+                ],
+                'publico' => [
+                    'titulo' => 'Equipos tapatíos a los que les sirve',
+                    'puntos' => [
+                        'Startups y empresas de tecnología que necesitan lanzar un MVP',
+                        'Agencias y estudios creativos que requieren un portafolio a medida',
+                        'Marcas locales que venden en línea',
+                        'Organizadores de eventos y negocios de servicios',
+                        'Empresas que quieren pasar de procesos en Excel a una plataforma',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en Guadalajara: del experimento al producto',
+                    'puntos' => [
+                        ['t' => 'Landing de lanzamiento', 'd' => 'Para validar una oferta antes de construir lo demás.'],
+                        ['t' => 'MVP o plataforma', 'd' => 'Registro de usuarios, panel y roles, con lo mínimo para aprender.'],
+                        ['t' => 'Portafolio o sitio de marca', 'd' => 'Diseño propio, no plantilla, con proyectos que Google pueda leer.'],
+                        ['t' => 'E-commerce', 'd' => 'Para marcas que ya venden por redes y quieren su propio canal.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Código que otro equipo pueda continuar',
+                    'puntos' => [
+                        ['t' => 'Tecnología de mercado', 'd' => 'Sin depender de un proveedor: cualquier desarrollador puede tomarlo.'],
+                        ['t' => 'Repositorio a tu nombre', 'd' => 'Con acceso de propietario desde el inicio.'],
+                        ['t' => 'Retroalimentación continua', 'd' => 'Pruebas lo construido cada semana, no al final.'],
+                        ['t' => 'Calidad antes de publicar', 'd' => 'Se revisan velocidad y accesibilidad, y se corrige lo que falle.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Cómo pasamos de la idea a la primera versión',
+                    'texto' => 'Definimos qué hipótesis quieres probar y recortamos todo lo que no ayude a responderla. Lo que aprendas con usuarios ordena la siguiente entrega. La duración depende del tipo de proyecto, que puedes ver en',
+                    'enlace' => 'nuestro configurador y cronograma',
+                ],
+                'casos' => [
+                    'titulo' => 'Software propio que ya está en operación',
+                    'texto' => 'No los mostramos como clientes tapatíos, sino como evidencia de lo que sabemos construir.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm: de sitio a plataforma', 'd' => 'Ecommerce, ERP, administración y estadísticas en un mismo desarrollo. Fuente: proyecto RankPro. En Search Console, +790 % de clics en tres meses, con un punto de partida bajo.'],
+                        ['slug' => 'industrial-b2b', 't' => 'Ecommerce y automatización, cliente reservado', 'd' => 'Procesos conectados a la tienda. Entre enero y septiembre de 2026, su publicidad en Google retornó 8.6 veces lo invertido, según el reporte y el CRM.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Pueden construir un MVP?',
+                        'r' => "Sí. Un producto con cuentas, panel y roles entra en el tipo \"Plataforma / SaaS\", desde {$p['plataforma']} MXN + IVA.",
+                    ],
+                    [
+                        'p' => '¿Quién es dueño del código?',
+                        'r' => 'Tú. Vive en un repositorio de GitHub a tu nombre desde el primer commit.',
+                    ],
+                    [
+                        'p' => '¿Se puede hacer por etapas?',
+                        'r' => 'Sí. Una primera versión con lo esencial y funciones nuevas en fases posteriores.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta diseñar una página web en Guadalajara?',
+                        'r' => "Una presentación sencilla inicia en {$p['sencilla']}; una landing de campaña, en {$p['landing']}; un sitio de marca o corporativo, en {$p['corporativo']}, y una tienda, en {$p['ecommerce']}, siempre más IVA. Los productos con usuarios se cotizan como plataforma.",
+                    ],
+                    [
+                        'p' => '¿Mi equipo técnico puede participar?',
+                        'r' => 'Sí. Puede revisar el código, proponer cambios y quedarse con el mantenimiento. Nos coordinamos a distancia.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => '¿Qué quieres probar primero?',
+                    'texto' => 'Arma la versión mínima en el configurador y te decimos si todavía se puede recortar.',
+                ],
+            ],
+
+            // El cobro en línea es solo en pesos (confirmado por el dueño): la
+            // página habla de mostrar dólares como referencia, no de cobrarlos.
+            'tijuana' => [
+                'slug' => 'tijuana',
+                'afines' => ['cancun', 'monterrey'],
+                'nombre' => 'Tijuana',
+                'enlace' => 'Diseño de páginas web en Tijuana',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web en Tijuana | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en Tijuana para negocios que atienden a clientes de México y EE. UU. Sitios bilingües a la medida. Desde {$p['sencilla']} MXN.",
+                'h1' => 'Diseño de páginas web en Tijuana',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en Tijuana',
+                'area' => ['@type' => 'City', 'name' => 'Tijuana'],
+                'intro' => 'Diseño de páginas web en Tijuana para negocios que atienden a ambos lados de la frontera: sitios bilingües, claros en precios y moneda, y pensados para convertir visitas en llamadas, citas o compras.',
+                'precio' => "Sitio corporativo desde {$p['corporativo']} y landing de citas desde {$p['landing']}, en pesos mexicanos más IVA; la versión en inglés se agrega como extra.",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en Tijuana',
+                    'texto' => 'Un negocio en Tijuana a menudo habla con dos públicos: quien busca en español y quien busca en inglés, a veces desde EE. UU. El sitio debe presentarse bien en ambos idiomas y dejar claro en qué moneda se cotiza, cómo contactar y cómo llegar.',
+                ],
+                'publico' => [
+                    'titulo' => 'Giros fronterizos para los que está pensado',
+                    'puntos' => [
+                        'Clínicas y servicios de salud que atienden pacientes de EE. UU.',
+                        'Empresas de manufactura y maquila que necesitan presencia B2B',
+                        'Comercios y servicios de barrio',
+                        'Agencias de logística y comercio exterior',
+                        'Restaurantes y turismo de fin de semana',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en Tijuana para dos públicos',
+                    'puntos' => [
+                        ['t' => 'Español e inglés separados', 'd' => 'Cada versión con su dirección y las etiquetas correctas para Google.'],
+                        ['t' => 'Landing de citas o cotización', 'd' => 'Formulario corto y botón de llamada o WhatsApp.'],
+                        ['t' => 'Tienda con precios claros', 'd' => 'Cobro en pesos y, si ayuda al comprador, el equivalente en dólares como referencia.'],
+                        ['t' => 'Presencia B2B', 'd' => 'Sectores, capacidades y contacto para quien evalúa proveedores desde otro país.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Detalles que pesan al cruzar la frontera',
+                    'puntos' => [
+                        ['t' => 'Inglés revisado por una persona', 'd' => 'Una mala traducción resta confianza, sobre todo en salud.'],
+                        ['t' => 'Cómo llegar y cómo llamar', 'd' => 'Horario, dirección y teléfono con lada internacional a la vista y coherentes con tu ficha de Google.', 'guia' => 'seo-local'],
+                        ['t' => 'Carga rápida con datos de roaming', 'd' => 'Imágenes ligeras y lo importante primero.'],
+                        ['t' => 'Datos personales', 'd' => 'Pedimos solo lo necesario y publicamos el aviso de privacidad que valide tu asesor legal.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Cómo se coordina un sitio en dos idiomas',
+                    'texto' => 'Primero se aprueba el contenido en español y después se adapta al inglés, para no corregir dos veces. Compartimos un enlace de prueba con cada avance y conservas la propiedad del código. Revisa tiempos en',
+                    'enlace' => 'el cronograma del servicio',
+                ],
+                'casos' => [
+                    'titulo' => 'Trabajo publicado con fuente',
+                    'texto' => 'Estos proyectos no se atribuyen a Tijuana: muestran cómo medimos.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm, proveedor industrial y hotelero', 'd' => 'Sitio propio con cotizaciones integradas; los clics subieron 790 % en un trimestre, desde una cifra inicial baja. Medido en Google Search Console.'],
+                        ['slug' => 'industrial-b2b', 't' => 'Proveedor B2B con identidad reservada', 'd' => 'Por cada peso en Google Ads vendió 8.6, de enero a septiembre de 2026. Datos del reporte de la cuenta y del CRM.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Hacen sitios en español e inglés?',
+                        'r' => 'Sí. Cada idioma tiene su URL y su texto, y se configura para que Google muestre la versión adecuada.',
+                    ],
+                    [
+                        'p' => '¿Se puede mostrar precios en pesos y dólares?',
+                        'r' => 'Sí, el sitio puede mostrar dólares como referencia. El cobro en línea se configura en pesos mexicanos.',
+                    ],
+                    [
+                        'p' => '¿Un paciente o cliente de EE. UU. puede agendar desde la página?',
+                        'r' => 'Sí, con formulario, llamada o un módulo de citas en su idioma. Conviene indicar la zona horaria de Tijuana en la confirmación.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una página web en Tijuana?',
+                        'r' => "Va de {$p['sencilla']} por una landing sencilla a {$p['plataforma']} por una plataforma, como precio inicial más IVA. En medio están la landing de campaña ({$p['landing']}), el sitio corporativo ({$p['corporativo']}) y la tienda ({$p['ecommerce']}). Se puede pagar por plan.",
+                    ],
+                    [
+                        'p' => '¿Atienden fuera de Tijuana?',
+                        'r' => 'Sí, trabajamos a distancia en toda la república; nos reunimos por videollamada en el horario del noroeste.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => 'Que te entiendan de los dos lados',
+                    'texto' => 'Activa «Multi-idioma» en el configurador y mira cuánto suma a tu proyecto.',
+                ],
+            ],
         ];
     }
 
@@ -299,13 +481,17 @@ class LandingsWeb
     }
 
     /**
-     * Enlaces a las landings publicadas, sin la indicada.
+     * Enlaces a las landings publicadas: todas, o solo las afines a una.
      *
      * @return list<array{label: string, url: string}>
      */
-    public static function enlaces(?string $excepto = null): array
+    public static function enlaces(?string $afinesA = null): array
     {
-        $landings = array_filter(self::todos(), static fn (array $l): bool => $l['slug'] !== $excepto);
+        $landings = self::todos();
+
+        if ($afinesA !== null) {
+            $landings = array_intersect_key($landings, array_flip($landings[$afinesA]['afines']));
+        }
 
         return array_values(array_map(static fn (array $l): array => [
             'label' => $l['enlace'],
