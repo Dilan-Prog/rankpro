@@ -379,6 +379,7 @@ class ValidarBlog extends Command
             'servicios.show' => array_key_exists((string) ($parametros['slug'] ?? ''), Servicios::todos()),
             'servicios.ciudad' => \App\Support\CiudadesSeo::encontrar((string) ($parametros['slugCiudad'] ?? '')) !== null,
             'servicios.web' => \App\Support\LandingsWeb::encontrar((string) ($parametros['slugLanding'] ?? '')) !== null,
+            'servicios.social' => \App\Support\LandingsSocial::encontrar((string) ($parametros['slugLanding'] ?? '')) !== null,
             'servicios.ads' => \App\Support\LandingsAds::encontrar((string) ($parametros['slugLanding'] ?? '')) !== null,
             'servicios.automatizacion' => \App\Support\LandingsAutomatizacion::encontrar((string) ($parametros['slugLanding'] ?? '')) !== null,
             'casos.show' => \App\Support\CasosExito::porSlug((string) ($parametros['slug'] ?? '')) !== null,

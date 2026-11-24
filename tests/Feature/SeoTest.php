@@ -33,7 +33,7 @@ class SeoTest extends TestCase
             '/servicios/desarrollo-web/guadalajara', '/servicios/desarrollo-web/tijuana',
             '/servicios/desarrollo-web/queretaro', '/servicios/desarrollo-web/hoteles',
             '/servicios/desarrollo-web/cdmx', '/servicios/automatizacion-de-procesos/puebla',
-            '/servicios/sem-google-ads/publicidad-digital',
+            '/servicios/sem-google-ads/publicidad-digital', '/servicios/social-media/monterrey',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 

@@ -22,7 +22,8 @@ class LandingSocialMediaTest extends TestCase
             ->assertSee('Un social media manager coordina')
             ->assertSee('social media management')
             ->assertSee('"name":"Gestión de redes sociales y pauta en Meta"', false)
-            ->assertDontSee('Redes sociales por ciudad')
+            ->assertSee('Redes sociales por ciudad')
+            ->assertSee('href="'.url('/servicios/social-media/monterrey').'"', false)
             ->assertDontSee('CONFIRMAR');
     }
 

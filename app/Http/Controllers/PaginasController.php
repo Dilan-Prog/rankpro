@@ -8,6 +8,7 @@ use App\Support\CiudadesSeo;
 use App\Support\Clusters;
 use App\Support\LandingsAds;
 use App\Support\LandingsAutomatizacion;
+use App\Support\LandingsSocial;
 use App\Support\LandingsWeb;
 use App\Support\Servicios;
 use Illuminate\Database\Eloquent\Collection;
@@ -134,6 +135,22 @@ class PaginasController extends Controller
             'landing' => $landing,
             'servicio' => $this->servicios()[LandingsAds::SERVICIO],
             'guias' => $this->guiasDelServicio($landing),
+        ]);
+    }
+
+    public function socialLanding(string $slugLanding): View
+    {
+        $landing = LandingsSocial::encontrar($slugLanding);
+
+        abort_if($landing === null, 404);
+
+        $servicio = $this->servicios()[LandingsSocial::SERVICIO];
+
+        return view('pages.servicios.social-landing', [
+            'landing' => $landing,
+            'servicio' => $servicio,
+            'afines' => LandingsSocial::afines($slugLanding),
+            'guias' => $this->guiasDelServicio($servicio),
         ]);
     }
 

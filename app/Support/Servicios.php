@@ -555,7 +555,7 @@ class Servicios
                 // Landings por ciudad: texto => ruta. null = sin publicar, no se enlaza.
                 'landings_titulo' => 'Redes sociales por ciudad',
                 'landings' => [
-                    'Agencia de redes sociales en Monterrey' => null,
+                    'Agencia de redes sociales en Monterrey' => 'servicios/social-media/monterrey',
                     'Manejo de redes sociales en Guadalajara' => null,
                     'Community manager en Puebla' => null,
                 ],
