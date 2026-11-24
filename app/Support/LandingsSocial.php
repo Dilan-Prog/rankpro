@@ -245,6 +245,118 @@ class LandingsSocial
                     'texto' => 'Cuéntanos qué vendes y en qué punto están tus cuentas. Te respondemos con una propuesta de redes, líneas y frecuencia.',
                 ],
             ],
+
+            'puebla' => [
+                'slug' => 'puebla',
+                'afines' => ['guadalajara', 'monterrey'],
+                'guias' => ['cuanto-cuesta-manejo-de-redes-sociales', 'community-manager', 'herramientas-para-community-manager'],
+                'nombre' => 'Puebla',
+                'enlace' => 'Community manager en Puebla',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Community Manager en Puebla | RankPro',
+                'meta_description' => 'Community manager en Puebla para pymes, restaurantes, escuelas y negocios turísticos: estrategia, contenido y atención a tu comunidad en redes sociales.',
+                'h1' => 'Community manager en Puebla',
+                'area' => ['@type' => 'City', 'name' => 'Puebla'],
+                'intro' => 'Si buscas un community manager en Puebla, te ofrecemos un equipo completo: estrategia, contenido, atención diaria a tu comunidad y reportes, sin que tengas que contratar y coordinar a varias personas.',
+                'secciones' => [
+                    [
+                        'titulo' => 'Qué necesita tu negocio poblano de sus redes',
+                        'parrafos' => [
+                            'En un negocio de cercanía, la gente pregunta antes de ir: si hay lugar, cuánto cuesta, a qué hora cierran, si aceptan mascotas. Quien contesta primero y con buen trato suele quedarse con la visita. Las redes sirven para mostrar el día a día, resolver dudas rápido y generar confianza.',
+                            'Un community manager atento y un contenido constante hacen la diferencia, sobre todo con presupuestos acotados. No hace falta publicar a diario en cinco plataformas: hace falta que lo publicado sea tuyo, esté vigente y que alguien responda.',
+                        ],
+                    ],
+                    [
+                        'titulo' => 'Negocios a los que les sirve',
+                        'lista' => [
+                            'Pymes y comercios de barrio, del Centro a Angelópolis',
+                            'Restaurantes, cafeterías y cocinas tradicionales',
+                            'Escuelas, universidades y centros de capacitación',
+                            'Hoteles y experiencias en Puebla y las Cholulas',
+                            'Clínicas, consultorios y despachos',
+                        ],
+                    ],
+                    [
+                        'titulo' => 'Lo que haría tu community manager',
+                        'puntos' => [
+                            ['t' => 'Responder', 'd' => 'Comentarios y mensajes con el tono de tu marca, y aviso a tu equipo cuando hace falta una persona del negocio.'],
+                            ['t' => 'Publicar', 'd' => 'Publicaciones, historias y video corto con identidad propia.'],
+                            ['t' => 'Ordenar', 'd' => 'Elección de plataformas y un calendario que se pueda mantener.'],
+                            ['t' => 'Moderar', 'd' => 'Cuidado de la conversación: quejas, dudas delicadas y comentarios ofensivos con un criterio acordado.'],
+                            ['t' => 'Informar', 'd' => 'Un resumen claro de qué funcionó y qué se cambia el mes siguiente.'],
+                            ['t' => 'Promocionar, si conviene', 'd' => 'Pauta opcional en redes, según tu objetivo y con presupuesto aparte.'],
+                        ],
+                    ],
+                    [
+                        'titulo' => 'Un calendario que sigue el de Puebla',
+                        'parrafos' => [
+                            'Buena parte de los giros locales vive de fechas. Un restaurante necesita anunciar el chile en nogada antes de que empiece la temporada; un hotel, los puentes; una escuela, sus inscripciones; una cafetería cerca de la universidad, el regreso a clases. El calendario se arma hacia atrás: primero la fecha, luego lo que debe verse semanas antes.',
+                            'Fuera de temporada también hay trabajo. Es buen momento para responder dudas que se repiten, presentar al equipo, renovar fotos y pedir a los clientes satisfechos que cuenten su experiencia.',
+                        ],
+                    ],
+                    [
+                        'titulo' => 'Cómo respondemos según el giro',
+                        'parrafos' => [
+                            'No es igual contestar una reservación que una queja médica. Antes de empezar escribimos contigo una guía breve: qué se responde de inmediato, qué se consulta, qué nunca se comenta en público y a quién se le pasa. Algunos ejemplos:',
+                        ],
+                        'lista' => [
+                            'Restaurante: disponibilidad, alergias y cambios de horario en días festivos',
+                            'Escuela: requisitos, costos y fechas, siempre con la información vigente',
+                            'Clínica: citas y ubicación; nada de diagnósticos por mensaje',
+                            'Hotel: tarifas, políticas y cómo llegar, con enlace directo para reservar',
+                            'Comercio: existencias, apartados y entregas',
+                        ],
+                    ],
+                    [
+                        'titulo' => 'De la primera charla al primer mes',
+                        'parrafos' => [
+                            'Conocemos tu negocio, revisamos tus cuentas y vemos qué hace la competencia cercana. Después acordamos temas, tono y cantidad de piezas; tú apruebas el calendario antes de que salga. Al cierre del primer mes decidimos juntos qué se queda y qué se quita.',
+                        ],
+                    ],
+                    [
+                        'titulo' => 'Reglas claras desde el principio',
+                        'puntos' => [
+                            ['t' => 'Horario de atención', 'd' => 'Se pacta por escrito en qué horas respondemos y qué pasa en fin de semana.'],
+                            ['t' => 'Material auténtico', 'd' => 'Fotos de tus productos, tu gente y tu local, con tu autorización.'],
+                            ['t' => 'Aprobación sencilla', 'd' => 'Un solo lugar para mandar información y dar el visto bueno.'],
+                            ['t' => 'Cuentas tuyas', 'd' => 'Las páginas y accesos permanecen siempre a nombre de tu empresa.'],
+                        ],
+                    ],
+                    [
+                        'titulo' => '¿Lo llevas tú, alguien interno o un equipo externo?',
+                        'parrafos' => [
+                            'Si vendes poco por redes y te gusta hacerlo, llevarlo tú puede bastar al inicio. Una persona interna conoce el negocio mejor que nadie, aunque difícilmente diseña, edita video, responde y analiza a la vez. Un equipo externo reparte esas tareas, pero depende de que le compartas información a tiempo. Te ayudamos a elegir, incluso si la respuesta es empezar por tu cuenta.',
+                        ],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Community manager o agencia?',
+                        'r' => 'Un community manager atiende la comunidad; una agencia suma estrategia, diseño, video y reportes.',
+                        'guia' => 'community-manager',
+                    ],
+                    [
+                        'p' => '¿Cuántas publicaciones al mes incluye?',
+                        'r' => 'Se define en la propuesta según tus objetivos y tu capacidad de aprobación.',
+                    ],
+                    [
+                        'p' => '¿Las cuentas quedan a mi nombre?',
+                        'r' => 'Sí. Las cuentas son siempre de tu empresa.',
+                    ],
+                    [
+                        'p' => '¿Cómo me atienden si no están en mi local?',
+                        'r' => 'A distancia: nos vemos por videollamada, compartes fotos y novedades desde tu celular y apruebas el calendario en línea.',
+                    ],
+                    [
+                        'p' => '¿En qué redes conviene que esté?',
+                        'r' => 'Depende de tu cliente. Instagram y Facebook suelen servir a negocios locales, TikTok a los que tienen algo que enseñar en video y LinkedIn a los que venden a empresas. Mejor pocas y bien atendidas.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => 'Que nadie se quede sin respuesta',
+                    'texto' => 'Dinos qué te preguntan más tus clientes y te proponemos cómo contestarlo, publicarlo y medirlo.',
+                ],
+            ],
         ];
     }
 

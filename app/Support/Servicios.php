@@ -557,7 +557,7 @@ class Servicios
                 'landings' => [
                     'Agencia de redes sociales en Monterrey' => 'servicios/social-media/monterrey',
                     'Manejo de redes sociales en Guadalajara' => 'servicios/social-media/guadalajara',
-                    'Community manager en Puebla' => null,
+                    'Community manager en Puebla' => 'servicios/social-media/puebla',
                 ],
                 'relacionado' => [
                     'titulo' => 'Si tu cliente ya te busca en Google',
