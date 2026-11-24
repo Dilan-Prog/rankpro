@@ -120,7 +120,8 @@
                     <h2 id="contexto">{{ $ciudad['contexto']['titulo'] }}</h2>
                     <p>{{ $ciudad['contexto']['texto'] }}</p>
                 </div>
-                <div class="cv-cards">
+                {{-- Con 4 puntos la rejilla de 3 dejaría uno suelto. --}}
+                <div class="cv-cards" @if (count($ciudad['contexto']['puntos']) === 4) style="grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));" @endif>
                     @foreach ($ciudad['contexto']['puntos'] as $punto)
                         <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
@@ -188,7 +189,7 @@
         {{-- Los casos publicados no son de la ciudad: el texto lo dice para que
              nadie los lea como clientes locales. --}}
         @include('pages.servicios._casos-exito', [
-            'casosTitulo' => 'Sectores con los que trabajamos',
+            'casosTitulo' => $ciudad['casos_titulo'] ?? 'Sectores con los que trabajamos',
             'casosTexto' => 'Casos reales de otras partes de México, no de '.$ciudad['nombre'].'. Cada cifra lleva su fuente y solo nombramos a quien lo autorizó.',
         ])
 

@@ -24,9 +24,25 @@ class CiudadesSeoTest extends TestCase
             ->assertDontSee('CONFIRMAR');
     }
 
+    /** Una ciudad que solo cambia el nombre sería contenido casi duplicado. */
+    public function test_monterrey_tiene_texto_propio_y_se_cruza_con_cdmx(): void
+    {
+        $monterrey = '/servicios/seo-organico/monterrey';
+
+        $this->get($monterrey)->assertOk()
+            ->assertSee('<link rel="canonical" href="'.url($monterrey).'">', false)
+            ->assertSee('Posicionamiento SEO en Monterrey: qué hay que tener en cuenta')
+            ->assertSee('San Pedro Garza García')
+            ->assertSee('no de Monterrey')
+            ->assertDontSee('Polanco')
+            ->assertSee('href="'.url(self::URL).'"', false);
+
+        $this->get(self::URL)->assertSee('href="'.url($monterrey).'"', false);
+    }
+
     public function test_una_ciudad_no_dada_de_alta_es_404(): void
     {
-        $this->get('/servicios/seo-organico/monterrey')->assertNotFound();
+        $this->get('/servicios/seo-organico/cancun')->assertNotFound();
         $this->get('/servicios/sem-google-ads/cdmx')->assertNotFound();
     }
 

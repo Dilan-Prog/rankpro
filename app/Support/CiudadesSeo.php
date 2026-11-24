@@ -101,6 +101,80 @@ class CiudadesSeo
                 ],
                 'cierre' => 'Muchas pérdidas de tráfico en CDMX son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
             ],
+
+            'monterrey' => [
+                'slug' => 'monterrey',
+                'nombre' => 'Monterrey',
+                'nombre_largo' => 'Monterrey',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Agencia SEO en Monterrey: Posicionamiento Web | RankPro',
+                'meta_description' => 'Agencia SEO en Monterrey para empresas de Nuevo León. SEO técnico, de contenidos y local, medido en Search Console. Pide tu auditoría sin compromiso.',
+                'h1' => 'Agencia SEO en Monterrey: posiciona tu empresa en Google',
+                'intro' => '¿Buscas una agencia SEO en Monterrey? Ayudamos a empresas de la ciudad y el área metropolitana a aparecer cuando sus clientes buscan lo que venden. Empezamos con una auditoría técnica, de contenido y de enlaces, medida en Google Search Console.',
+                'contexto' => [
+                    'titulo' => 'Posicionamiento SEO en Monterrey: qué hay que tener en cuenta',
+                    'texto' => 'Monterrey tiene un mercado distinto al de otras ciudades. Estas son las diferencias que cambian cómo se planea el SEO:',
+                    'puntos' => [
+                        ['t' => 'Mucha demanda B2B e industrial', 'd' => 'Monterrey y su zona metropolitana concentran industria, manufactura, proveedores y servicios para empresas. En B2B, las búsquedas son más específicas y de menor volumen, pero de alto valor por cliente. Conviene páginas por servicio, por sector y por tipo de comprador.'],
+                        ['t' => 'Zona metropolitana, no solo la ciudad', 'd' => 'La gente busca por municipio: San Pedro Garza García, San Nicolás de los Garza, Guadalupe, Apodaca, Escobedo, Santa Catarina. Las páginas y la ficha local deben reflejar dónde atiendes.'],
+                        ['t' => 'Competencia en SEO moderada', 'd' => 'En muchas categorías puede haber menos sitios optimizados que en CDMX, lo que da oportunidad de posicionar con contenido bien hecho.'],
+                        ['t' => 'Compradores que investigan antes de contactar', 'd' => 'Las guías, comparativos y fichas técnicas suelen pesar mucho en el proceso de compra de servicios y equipos.'],
+                    ],
+                ],
+                'frentes' => [
+                    ['t' => 'SEO técnico', 'd' => 'Rastreo, indexación, Core Web Vitals en móvil, redirecciones, enlaces internos, datos estructurados y sitemap.'],
+                    ['t' => 'SEO de contenidos', 'd' => 'Arquitectura de contenido y páginas por servicio, sector y zona, sin que unas compitan con otras. Para B2B, guías técnicas, comparativos y casos de uso.'],
+                    ['t' => 'SEO local', 'd' => 'Ficha de Google Business Profile, consistencia de nombre, dirección y teléfono, reseñas y páginas por municipio. Aplica si atiendes en una ubicación o área concreta.'],
+                    ['t' => 'SEO de autoridad', 'd' => 'Perfil de enlaces frente a tus competidores directos y menciones de calidad, sin paquetes de enlaces.'],
+                ],
+                'pasos' => [
+                    ['t' => 'Auditamos', 'd' => 'Revisamos tu sitio, tu ficha local y a tus tres competidores principales de Monterrey.'],
+                    ['t' => 'Te mostramos', 'd' => 'Hallazgos priorizados por impacto y por brecha frente a la competencia.'],
+                    ['t' => 'Tú decides', 'd' => 'Ejecutar con nosotros o con tu equipo, sin compromiso.'],
+                ],
+                'modalidad' => 'Trabajamos de forma remota con reuniones por videollamada.',
+                'revisiones' => [
+                    ['sev' => 'critico', 't' => 'Canibalización entre páginas'],
+                    ['sev' => 'critico', 't' => 'Core Web Vitals en móvil'],
+                    ['sev' => 'critico', 't' => 'Ficha de Google Business Profile y consistencia NAP'],
+                    ['sev' => 'critico', 't' => 'Datos estructurados ausentes'],
+                    ['sev' => 'medio', 't' => 'Cobertura de intención comercial por servicio y zona'],
+                    ['sev' => 'medio', 't' => 'Títulos y descripciones duplicados'],
+                    ['sev' => 'medio', 't' => 'Perfil de enlaces frente al líder de tu categoría'],
+                    ['sev' => 'ok', 't' => 'Estructura de URLs y sitemap'],
+                ],
+                'casos_titulo' => 'Experiencia en SEO para empresas industriales y de servicios',
+                'faqs' => [
+                    [
+                        'p' => '¿Cuánto tarda el posicionamiento SEO en Monterrey?',
+                        'r' => 'Normalmente se notan cambios entre el mes 3 y el 6. Depende de la competencia de tu categoría, la antigüedad del dominio y el estado inicial del sitio.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una agencia SEO en Monterrey?',
+                        'r' => 'Depende del tamaño del sitio, la competencia y el alcance. Con la auditoría te damos una propuesta concreta.',
+                        'guia' => 'cuanto-cuesta-el-posicionamiento-seo',
+                    ],
+                    [
+                        'p' => '¿Sirve el SEO para empresas B2B o industriales?',
+                        'r' => 'Sí. Las búsquedas B2B tienen menos volumen pero más intención y más valor por cliente. El trabajo se enfoca en páginas por servicio, guías técnicas y casos de uso.',
+                    ],
+                    [
+                        'p' => '¿Necesito oficina en Monterrey para posicionar en búsquedas de la ciudad?',
+                        'r' => 'Para aparecer en el mapa de Google (Google Business Profile) se requiere una ubicación o área de servicio válida. Para resultados orgánicos normales, no.',
+                        'guia' => 'seo-local',
+                    ],
+                    [
+                        'p' => '¿Trabajan solo con empresas de Monterrey?',
+                        'r' => 'No. Atendemos empresas en todo México.',
+                        'padre' => true,
+                    ],
+                    [
+                        'p' => '¿Pueden garantizar la primera posición en Google?',
+                        'r' => 'No. Google no vende posiciones. Garantizamos un diagnóstico claro, un plan priorizado y reportes con datos reales.',
+                    ],
+                ],
+                'cierre' => 'Muchas pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
+            ],
         ];
     }
 

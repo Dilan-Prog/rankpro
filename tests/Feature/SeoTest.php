@@ -26,7 +26,7 @@ class SeoTest extends TestCase
         $urls = [
             '/', '/nosotros', '/contacto', '/servicios',
             '/casos-de-exito', '/casos-de-exito/hotel-fratelli',
-            '/servicios/seo-organico/cdmx',
+            '/servicios/seo-organico/cdmx', '/servicios/seo-organico/monterrey',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 
