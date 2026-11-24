@@ -79,6 +79,15 @@
                         <p>{{ $servicio['tabla']['nota'] }}</p>
                     @endisset
 
+                    @if ($landings = array_filter($servicio['landings'] ?? []))
+                        <h2>{{ $servicio['landings_titulo'] }}</h2>
+                        <ul>
+                            @foreach ($landings as $textoLanding => $ruta)
+                                <li><a href="{{ url($ruta) }}">{{ $textoLanding }}</a></li>
+                            @endforeach
+                        </ul>
+                    @endif
+
                     @isset($servicio['relacionado'])
                         <h2>{{ $servicio['relacionado']['titulo'] }}</h2>
                         <p>{{ $servicio['relacionado']['texto'] }} <a href="{{ route('servicios.show', $servicio['relacionado']['servicio']) }}">{{ $servicio['relacionado']['ancla'] }}</a>.</p>
@@ -91,6 +100,9 @@
             <div class="container">
                 <div class="page-section__inner prose">
                     <h2 id="entregables">Qué incluye el servicio</h2>
+                    @isset($servicio['incluye'])
+                        <p>{{ $servicio['incluye'] }}</p>
+                    @endisset
                     <p>
                         Estos son los entregables base. El alcance final se ajusta a tu situación y se define
                         por escrito en la propuesta antes de empezar, sin partidas ambiguas.
@@ -118,6 +130,9 @@
                             <article class="faq__item">
                                 <h3>{{ $faq['p'] }}</h3>
                                 <p>{{ $faq['r'] }}</p>
+                                @if (isset($faq['guia'], $guias[$faq['guia']]))
+                                    <p>Más detalle en <a href="{{ route('blog.show', $faq['guia']) }}">{{ $guias[$faq['guia']] }}</a>.</p>
+                                @endif
                             </article>
                         @endforeach
                     </div>

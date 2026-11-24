@@ -538,7 +538,34 @@ class Servicios
                 'meta_title' => 'Gestión de Redes Sociales y Pauta Digital | RankPro',
                 'meta_description' => 'Estrategia de contenido, producción, community management y campañas pagadas en Meta, Instagram, TikTok y LinkedIn para marcas en México.',
                 'h1' => 'Gestión de redes sociales y pauta en Meta',
-                'intro' => 'Las redes sociales operan con una lógica distinta a la búsqueda: en Google alguien ya está buscando lo que vendes, en redes tú interrumpes para generar interés donde todavía no lo había. Eso cambia todo —el tipo de contenido, cómo se mide, cuánto tarda en convertir— y explica por qué copiar la estrategia de un canal al otro casi nunca funciona.',
+                'actualizado' => '2026-11-23',
+                'schema_nombre' => 'Gestión de redes sociales y pauta en Meta',
+                'schema_tipo' => 'Gestión de redes sociales',
+                'cta' => 'Cotizar mi estrategia de redes',
+                'incluye' => 'Un social media manager coordina el trabajo. El social media management abarca desde la estrategia hasta el reporte, no solo publicar.',
+                'guias_titulo' => 'Antes de contratar, esto te conviene saber',
+                // Solo se enlazan las publicadas (slug => texto).
+                'guias' => [
+                    'que-es-social-media-marketing' => '¿Qué es el social media marketing?',
+                    'community-manager' => 'Community manager: qué hace y cuándo contratarlo',
+                    'herramientas-para-community-manager' => 'Herramientas para community manager',
+                    'cuanto-cuesta-manejo-de-redes-sociales' => '¿Cuánto cuesta el manejo de redes sociales?',
+                    'social-media-ads' => 'Social media ads',
+                ],
+                // Landings por ciudad: texto => ruta. null = sin publicar, no se enlaza.
+                'landings_titulo' => 'Redes sociales por ciudad',
+                'landings' => [
+                    'Agencia de redes sociales en Monterrey' => null,
+                    'Manejo de redes sociales en Guadalajara' => null,
+                    'Community manager en Puebla' => null,
+                ],
+                'relacionado' => [
+                    'titulo' => 'Si tu cliente ya te busca en Google',
+                    'texto' => 'Las redes generan interés; la búsqueda captura a quien ya decidió. Conoce nuestro servicio de',
+                    'servicio' => 'sem-google-ads',
+                    'ancla' => 'SEM y Google Ads',
+                ],
+                'intro' => 'Somos una agencia de redes sociales en México: hacemos el manejo de redes sociales de tu marca con estrategia, contenido, community management y, si lo necesitas, pauta. Las redes sociales operan con una lógica distinta a la búsqueda: en Google alguien ya está buscando lo que vendes, en redes tú interrumpes para generar interés donde todavía no lo había. Eso cambia todo —el tipo de contenido, cómo se mide, cuánto tarda en convertir— y explica por qué copiar la estrategia de un canal al otro casi nunca funciona.',
                 'secciones' => [
                     [
                         'titulo' => 'Estrategia antes que calendario',
@@ -589,6 +616,19 @@ class Servicios
                     [
                         'p' => '¿Puedo medir ventas que vienen de redes sociales?',
                         'r' => 'Sí, con el píxel y los eventos bien configurados, aunque con matices. Las restricciones de privacidad en iOS y el bloqueo de cookies hacen que la atribución en redes sea menos precisa que en búsqueda, y buena parte de la conversación termina en mensajes directos o WhatsApp, fuera del sitio. Por eso combinamos los datos de plataforma con preguntas directas al cliente sobre cómo nos encontró.',
+                    ],
+                    [
+                        'p' => '¿Qué hace un social media manager?',
+                        'r' => 'Define la estrategia de redes, planea el contenido, coordina su producción, publica, atiende a la comunidad y mide resultados. A veces también gestiona la publicidad en redes.',
+                    ],
+                    [
+                        'p' => '¿Qué incluye el manejo de redes sociales?',
+                        'r' => 'Estrategia, calendario editorial, producción de piezas, community management, reportes y, si se contrata, pauta. El alcance exacto se define en la propuesta.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta el manejo de redes sociales?',
+                        'r' => 'Depende del número de redes, la frecuencia, el tipo de producción y si incluye pauta. Se cotiza tras entender tu caso.',
+                        'guia' => 'cuanto-cuesta-manejo-de-redes-sociales',
                     ],
                 ],
             ],
