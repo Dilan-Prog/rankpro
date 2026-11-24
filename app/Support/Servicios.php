@@ -440,13 +440,34 @@ class Servicios
                 'meta_title' => 'Analítica Digital: GA4, GTM y Dashboards | RankPro',
                 'meta_description' => 'Implementación de Google Analytics 4, Tag Manager y tableros en Looker Studio. Medición de conversiones confiable para decidir con datos reales.',
                 'h1' => 'Analítica digital y medición de conversiones',
-                'intro' => 'La mayoría de las cuentas de analítica que auditamos miden mal. No porque falte la herramienta —casi todos tienen GA4 instalado— sino porque nadie definió qué era una conversión, los eventos se duplican, el tráfico interno nunca se filtró y los reportes se ven sin saber si los números significan algo. Medir bien no es instalar un script: es decidir qué preguntas necesitas responder y construir el sistema que las responde.',
+                'actualizado' => '2026-11-23',
+                'schema_nombre' => 'Analítica digital y medición de conversiones',
+                'schema_tipo' => 'Analítica digital',
+                'cta' => 'Solicitar mi plan de medición',
+                'guias_titulo' => 'Aprende antes de contratar',
+                // Solo se enlazan las publicadas (slug => texto).
+                'guias' => [
+                    'google-analytics-4' => 'Google Analytics 4: qué cambió y cómo configurarlo',
+                    'que-es-google-analytics' => '¿Qué es Google Analytics y para qué sirve?',
+                    'google-tag-manager' => 'Google Tag Manager: qué es y cómo instalarlo',
+                    'como-configurar-google-analytics' => 'Cómo instalar y configurar Google Analytics',
+                    'dashboards-de-google-analytics' => 'Dashboards de Google Analytics',
+                    'conectar-google-ads-con-google-analytics' => 'Cómo conectar Google Ads con Google Analytics',
+                    'adobe-analytics-vs-google-analytics' => 'Adobe Analytics vs Google Analytics',
+                ],
+                'relacionado' => [
+                    'titulo' => 'Medición y campañas, juntas',
+                    'texto' => 'La analítica web rinde más cuando las campañas optimizan con esas mismas conversiones. Conoce nuestro servicio de',
+                    'servicio' => 'sem-google-ads',
+                    'ancla' => 'SEM y Google Ads',
+                ],
+                'intro' => 'Hacemos analítica web que sirve para decidir: un plan de medición, GA4 y Tag Manager bien configurados y reportes que tu equipo usa. La mayoría de las cuentas de analítica que auditamos miden mal. No porque falte la herramienta —casi todos tienen GA4 instalado— sino porque nadie definió qué era una conversión, los eventos se duplican, el tráfico interno nunca se filtró y los reportes se ven sin saber si los números significan algo. Medir bien no es instalar un script: es decidir qué preguntas necesitas responder y construir el sistema que las responde.',
                 'secciones' => [
                     [
                         'titulo' => 'Del plan de medición a la implementación',
                         'parrafos' => [
                             'Arrancamos con un plan de medición: qué acciones importan en tu negocio, cuáles son macroconversiones (una compra, una cotización solicitada) y cuáles microconversiones (ver un precio, iniciar un formulario, dar clic al teléfono). Ese documento evita el error más común, que es medir todo y no poder interpretar nada.',
-                            'La implementación va por Google Tag Manager, para que el seguimiento sea mantenible sin tocar el código del sitio cada vez. Configuramos GA4 con eventos nombrados de forma consistente, marcamos las conversiones clave, filtramos el tráfico interno, activamos la vinculación con Google Ads y Search Console, y ajustamos la retención de datos.',
+                            'La configuración de Google Analytics va por Google Tag Manager y la lleva un especialista en Google Analytics, para que el seguimiento sea mantenible sin tocar el código del sitio cada vez. Configuramos GA4 con eventos nombrados de forma consistente, marcamos las conversiones clave, filtramos el tráfico interno, activamos la vinculación con Google Ads y Search Console, y ajustamos la retención de datos.',
                             'Después viene la parte que casi nadie hace: verificar. Probamos cada evento en modo de depuración, confirmamos que no haya duplicados, revisamos que los formularios registren solo envíos exitosos y que los clics de WhatsApp o teléfono se cuenten una sola vez. Un dato incorrecto es peor que no tener dato, porque lleva a decisiones equivocadas con confianza.',
                         ],
                     ],
@@ -491,6 +512,18 @@ class Servicios
                     [
                         'p' => '¿Los datos y las cuentas quedan a mi nombre?',
                         'r' => 'Sí. Las propiedades de GA4, el contenedor de Tag Manager y los tableros se crean o se mantienen en cuentas de tu empresa. Nosotros trabajamos con accesos, y todo el histórico permanece contigo.',
+                    ],
+                    [
+                        'p' => '¿Qué es un plan de medición?',
+                        'r' => 'Es un documento que define qué acciones importan en tu negocio (macroconversiones y microconversiones), cómo se nombran los eventos y qué reportes necesitas, antes de configurar nada.',
+                    ],
+                    [
+                        'p' => '¿Qué hace un especialista en Google Analytics?',
+                        'r' => 'Configura GA4 y Google Tag Manager, define y valida las conversiones, vincula Google Ads y Search Console, y arma reportes para decidir. Su trabajo incluye verificar que los datos sean confiables.',
+                    ],
+                    [
+                        'p' => '¿Cuánto tarda la configuración de Google Analytics?',
+                        'r' => 'Depende del número de sitios, formularios y eventos. Se estima tras revisar tu caso.',
                     ],
                 ],
             ],
