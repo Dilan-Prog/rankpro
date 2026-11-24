@@ -40,6 +40,23 @@ class CiudadesSeoTest extends TestCase
         $this->get(self::URL)->assertSee('href="'.url($monterrey).'"', false);
     }
 
+    public function test_guadalajara_tiene_texto_propio_y_enlaza_a_las_otras_ciudades(): void
+    {
+        $guadalajara = '/servicios/seo-organico/guadalajara';
+
+        $this->get($guadalajara)->assertOk()
+            ->assertSee('<link rel="canonical" href="'.url($guadalajara).'">', false)
+            ->assertSee('Tlajomulco')
+            ->assertSee('no necesariamente de Guadalajara')
+            ->assertDontSee('San Pedro Garza')
+            ->assertDontSee('/blog/seo-local', false)
+            ->assertSee('href="'.url('/servicios/seo-organico/monterrey').'"', false);
+
+        Articulo::factory()->delCluster('seo-organico')->create(['slug' => 'seo-local']);
+
+        $this->get($guadalajara)->assertSee('Más en nuestra guía');
+    }
+
     public function test_una_ciudad_no_dada_de_alta_es_404(): void
     {
         $this->get('/servicios/seo-organico/cancun')->assertNotFound();

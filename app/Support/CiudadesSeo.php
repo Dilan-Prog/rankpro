@@ -175,6 +175,75 @@ class CiudadesSeo
                 ],
                 'cierre' => 'Muchas pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
             ],
+
+            'guadalajara' => [
+                'slug' => 'guadalajara',
+                'nombre' => 'Guadalajara',
+                'nombre_largo' => 'Guadalajara',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Agencia SEO en Guadalajara: Posicionamiento Web | RankPro',
+                'meta_description' => 'Agencia SEO en Guadalajara para empresas de Jalisco. SEO técnico, de contenidos y local, medido en Search Console. Pide tu auditoría sin compromiso.',
+                'h1' => 'Agencia SEO en Guadalajara: posiciona tu empresa en Google',
+                'intro' => '¿Buscas una agencia SEO en Guadalajara? Ayudamos a empresas de la ciudad y su zona metropolitana a aparecer cuando sus clientes buscan lo que venden. Empezamos con una auditoría técnica, de contenido y de enlaces, medida en Google Search Console.',
+                'contexto' => [
+                    'titulo' => 'SEO en Guadalajara: qué conviene tener en cuenta',
+                    'texto' => null,
+                    'puntos' => [
+                        ['t' => 'Zona metropolitana', 'd' => 'La gente busca por municipio: Zapopan, Tlaquepaque, Tonalá, Tlajomulco. Las páginas y la ficha local deben reflejar dónde atiendes.'],
+                        ['t' => 'Mercado diverso', 'd' => 'En Guadalajara conviven servicios profesionales, comercio, industria, tecnología, turismo y negocios creativos. Cada giro busca distinto: el SEO se planea por tipo de cliente, no con una plantilla única.'],
+                        ['t' => 'Búsquedas locales desde móvil', 'd' => 'Muchas consultas son «cerca de mí» o por colonia, y se hacen desde el celular. Por eso cuidamos la velocidad y la ficha de Google Business Profile.'],
+                        ['t' => 'Competencia moderada', 'd' => 'En varias categorías puede haber menos sitios optimizados que en CDMX, lo que da oportunidad de posicionar con contenido bien hecho.'],
+                    ],
+                ],
+                'frentes' => [
+                    ['t' => 'SEO técnico', 'd' => 'Rastreo, indexación, Core Web Vitals en móvil, redirecciones, enlaces internos, datos estructurados y sitemap.'],
+                    ['t' => 'SEO de contenidos', 'd' => 'Páginas por servicio, giro y zona, sin que unas compitan con otras.'],
+                    ['t' => 'SEO local', 'd' => 'Ficha de Google Business Profile, consistencia de nombre, dirección y teléfono, reseñas y páginas por municipio. Aplica si atiendes en una ubicación o área concreta.', 'guia' => 'seo-local'],
+                    ['t' => 'SEO de autoridad', 'd' => 'Perfil de enlaces frente a tus competidores directos y menciones de calidad, sin paquetes de enlaces.'],
+                ],
+                'pasos' => [
+                    ['t' => 'Auditamos', 'd' => 'Revisamos tu sitio, tu ficha local y a tus tres competidores principales en Guadalajara.'],
+                    ['t' => 'Te mostramos', 'd' => 'Hallazgos priorizados por impacto y por brecha frente a la competencia.'],
+                    ['t' => 'Tú decides', 'd' => 'Ejecutar con nosotros o con tu equipo, sin compromiso.'],
+                ],
+                'modalidad' => 'Trabajamos de forma remota con reuniones por videollamada.',
+                'revisiones' => [
+                    ['sev' => 'critico', 't' => 'Canibalización entre páginas'],
+                    ['sev' => 'critico', 't' => 'Core Web Vitals en móvil'],
+                    ['sev' => 'critico', 't' => 'Ficha de Google Business Profile y consistencia NAP'],
+                    ['sev' => 'critico', 't' => 'Datos estructurados ausentes'],
+                    ['sev' => 'medio', 't' => 'Cobertura de intención comercial por servicio y zona'],
+                    ['sev' => 'medio', 't' => 'Títulos y descripciones duplicados'],
+                    ['sev' => 'medio', 't' => 'Perfil de enlaces frente al líder de tu categoría'],
+                    ['sev' => 'ok', 't' => 'Estructura de URLs y sitemap'],
+                ],
+                'casos_titulo' => 'Casos publicados',
+                'faqs' => [
+                    [
+                        'p' => '¿Cuánto tarda el posicionamiento SEO en Guadalajara?',
+                        'r' => 'Normalmente se notan cambios entre el mes 3 y el 6, según la competencia, la antigüedad del dominio y el estado inicial del sitio.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta una agencia SEO en Guadalajara?',
+                        'r' => 'Depende del tamaño del sitio, la competencia y el alcance. Con la auditoría te damos una propuesta concreta.',
+                        'guia' => 'cuanto-cuesta-el-posicionamiento-seo',
+                    ],
+                    [
+                        'p' => '¿Necesito oficina en Guadalajara para aparecer en búsquedas de la ciudad?',
+                        'r' => 'Para el mapa de Google se requiere una ubicación o área de servicio válida. Para resultados orgánicos normales, no.',
+                    ],
+                    [
+                        'p' => '¿Trabajan solo con empresas de Guadalajara?',
+                        'r' => 'No. Atendemos empresas en todo México.',
+                        'padre' => true,
+                    ],
+                    [
+                        'p' => '¿Pueden garantizar la primera posición en Google?',
+                        'r' => 'No. Google no vende posiciones. Garantizamos un diagnóstico claro, un plan priorizado y reportes con datos reales.',
+                    ],
+                ],
+                'cierre' => 'Muchas pérdidas de tráfico son de contenido y de técnica, no de presupuesto. La auditoría te muestra cuáles son las tuyas.',
+            ],
         ];
     }
 

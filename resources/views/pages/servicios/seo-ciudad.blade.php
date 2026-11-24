@@ -118,7 +118,9 @@
             <div class="container">
                 <div class="cv-head">
                     <h2 id="contexto">{{ $ciudad['contexto']['titulo'] }}</h2>
-                    <p>{{ $ciudad['contexto']['texto'] }}</p>
+                    @if ($ciudad['contexto']['texto'])
+                        <p>{{ $ciudad['contexto']['texto'] }}</p>
+                    @endif
                 </div>
                 {{-- Con 4 puntos la rejilla de 3 dejaría uno suelto. --}}
                 <div class="cv-cards" @if (count($ciudad['contexto']['puntos']) === 4) style="grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));" @endif>
@@ -142,7 +144,12 @@
                     @foreach ($ciudad['frentes'] as $frente)
                         <div class="cv-card-soft" style="background:#ffffff;">
                             <h3>{{ $frente['t'] }}</h3>
-                            <p>{{ $frente['d'] }}</p>
+                            <p>
+                                {{ $frente['d'] }}
+                                @if (isset($frente['guia'], $guias[$frente['guia']]))
+                                    Más en nuestra guía: <a href="{{ route('blog.show', $frente['guia']) }}">{{ $guias[$frente['guia']] }}</a>.
+                                @endif
+                            </p>
                         </div>
                     @endforeach
                 </div>
