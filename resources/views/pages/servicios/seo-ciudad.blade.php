@@ -109,7 +109,7 @@
                         <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
                     </div>
 
-                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">Sin llamadas de venta para empezar · Solo pedimos acceso de lectura · El informe es tuyo</p>
+                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">{{ $ciudad['confianza'] }}</p>
                 </div>
             </div>
         </section>
@@ -177,7 +177,7 @@
         <section class="cv-section cv-section--alt" aria-labelledby="revisiones">
             <div class="container">
                 <div class="cv-head">
-                    <h2 id="revisiones">Qué revisamos en tu sitio</h2>
+                    <h2 id="revisiones">{{ $ciudad['revisiones_titulo'] }}</h2>
                 </div>
                 <ul class="cv-findings">
                     @foreach ($ciudad['revisiones'] as $r)
@@ -185,6 +185,7 @@
                             <span class="cv-finding__icon">{!! $ico($sevIcono[$r['sev']], 18) !!}</span>
                             <div>
                                 <div class="cv-finding__title">{{ $r['t'] }}</div>
+                                <p class="cv-finding__detail">{{ $r['d'] }}</p>
                                 <span class="cv-finding__sev">{{ $sevTexto[$r['sev']] }}</span>
                             </div>
                         </li>
@@ -193,13 +194,21 @@
             </div>
         </section>
 
-        {{-- No se presentan como clientes locales, pero tampoco se niega que lo
-             sean: decir "no son de X" en unas ciudades y callar en otras revela
-             por descarte la ubicación de un cliente anonimizado. --}}
-        @include('pages.servicios._casos-exito', [
-            'casosTitulo' => $ciudad['casos_titulo'] ?? 'Sectores con los que trabajamos',
-            'casosTexto' => 'Casos de empresas mexicanas, no necesariamente de '.$ciudad['nombre'].'. Cada cifra lleva su fuente y solo nombramos a quien lo autorizó.',
-        ])
+        {{-- Texto propio en lugar de las tarjetas comunes: repetían las mismas tres
+             en todas las ciudades. Ningún caso se presenta como cliente local. --}}
+        <section class="cv-section cv-section--alt" aria-labelledby="casos-titulo">
+            <div class="container" style="max-width:48rem;">
+                <span class="cv-badge">Casos de éxito</span>
+                <h2 id="casos-titulo" class="cv-casos__title">{{ $ciudad['casos']['titulo'] }}</h2>
+                @foreach ($ciudad['casos']['parrafos'] as $parrafo)
+                    <p style="margin-top:1rem;line-height:1.7;color:var(--muted);">{{ $parrafo }}</p>
+                @endforeach
+                <p style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:1.25rem;">
+                    <a class="cv-casos__todos" href="{{ route('casos.show', $ciudad['casos']['caso']) }}">{{ $ciudad['casos']['enlace'] }} →</a>
+                    <a class="cv-casos__todos" href="{{ route('casos.index') }}">Ver todos los casos →</a>
+                </p>
+            </div>
+        </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="faq">
             <div class="container">
@@ -218,13 +227,8 @@
                                 @if (isset($faq['guia'], $guias[$faq['guia']]))
                                     Más detalle en <a href="{{ route('blog.show', $faq['guia']) }}">{{ $guias[$faq['guia']] }}</a>.
                                 @endif
-                                @if ($faq['padre'] ?? false)
-                                    Si estás en otra ciudad, revisa
-                                    @foreach ($otrasCiudades as $otra)
-                                        <a href="{{ $otra['url'] }}">{{ $otra['label'] }}</a>,
-                                    @endforeach
-                                    @if ($otrasCiudades !== []) o @endif
-                                    <a href="{{ $urlPadre }}">la página general del servicio</a>.
+                                @if (isset($faq['padre']))
+                                    {{ $faq['padre'] }} <a href="{{ $urlPadre }}">la página general del servicio</a>.
                                 @endif
                             </div>
                         </div>
@@ -236,7 +240,7 @@
         <section class="cv-section cv-section--brand">
             <div class="container">
                 <div class="cv-final">
-                    <h2>Empieza por saber dónde estás parado</h2>
+                    <h2>{{ $ciudad['cierre_titulo'] }}</h2>
                     <p>{{ $ciudad['cierre'] }}</p>
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">{{ $ctaAuditoria }} {!! $ico($icoFlecha, 17) !!}</a>
@@ -249,7 +253,7 @@
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="otros">
             <div class="container">
                 <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="otros" style="font-size:1.5rem;">{{ $otrasCiudades === [] ? 'Otros servicios' : 'Otras ciudades y servicios' }}</h2>
+                    <h2 id="otros" style="font-size:1.5rem;">{{ 'SEO fuera de '.$ciudad['nombre'].' y otros servicios' }}</h2>
                 </div>
                 <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
                     @foreach ($otrasCiudades as $otra)
