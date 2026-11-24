@@ -113,7 +113,7 @@ class CasosExito
                 ],
                 'resultados' => [
                     'titulo' => 'Hoy la mayoría de sus clientes nuevos llegan por Google',
-                    'parrafo' => 'De enero a septiembre de 2026, Google Ads generó $2.2 millones en ventas registradas: 8.6 pesos por cada peso invertido. Antes no había CRM, así que lo anterior es una estimación nuestra: unos $6 millones más en ventas y más de 350 clientes cerrados en más de tres años, con una inversión total cercana a $400 mil. En búsqueda, el acumulado llegó a 251 mil impresiones y 5,520 clics (Google Search Console).',
+                    'parrafo' => 'De enero a septiembre de 2026, Google Ads generó $2.2 millones en ventas registradas: 8.6 pesos por cada peso invertido. Antes no había CRM, así que lo anterior es una estimación nuestra: unos $6 millones más en ventas y más de 350 clientes cerrados en más de tres años. La inversión fue de unos $100 mil en 2025 y cerca de $300 mil en 2026. En búsqueda, el acumulado llegó a 251 mil impresiones y 5,520 clics (Google Search Console).',
                     'puntos' => [
                         ['titulo' => '+300 % en clientes potenciales', 'texto' => 'generados digitalmente respecto al arranque del proyecto.'],
                         ['titulo' => 'El canal cambió:', 'texto' => 'de vender solo por cartera a que Google sea la entrada principal.'],
