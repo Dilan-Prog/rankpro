@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Clusters;
 use App\Support\Servicios;
@@ -61,7 +62,7 @@ class SitemapController extends Controller
         'pages.servicios.sem-google-ads'             => '2026-11-01',
         'pages.servicios.seo-organico'               => '2026-11-23',
         'pages.servicios.desarrollo-web'             => '2026-11-23',
-        'pages.servicios.automatizacion-de-procesos' => '2026-11-02',
+        'pages.servicios.automatizacion-de-procesos' => '2026-11-23',
         'pages.servicios.show'                       => '2026-11-02',
         'pages.casos.index'                          => '2026-09-22',
         'pages.casos.show'                           => '2026-11-23',
@@ -143,6 +144,12 @@ class SitemapController extends Controller
 
                     if ($slug === LandingsWeb::SERVICIO) {
                         foreach (LandingsWeb::todos() as $landing) {
+                            $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
+                        }
+                    }
+
+                    if ($slug === LandingsAutomatizacion::SERVICIO) {
+                        foreach (LandingsAutomatizacion::todos() as $landing) {
                             $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
                         }
                     }

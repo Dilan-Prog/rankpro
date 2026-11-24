@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
 use App\Support\Clusters;
+use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Servicios;
 use Illuminate\Database\Eloquent\Collection;
@@ -104,6 +105,21 @@ class PaginasController extends Controller
             'otrasLandings' => LandingsWeb::enlaces($slugLanding),
             // Las de desarrollo mas las de SEO: la landing enlaza a la guia de SEO local.
             'guias' => $this->guiasDelServicio($servicio) + $this->guiasDelServicio($servicios[CiudadesSeo::SERVICIO]),
+        ]);
+    }
+
+    public function automatizacionLanding(string $slugLanding): View
+    {
+        $landing = LandingsAutomatizacion::encontrar($slugLanding);
+
+        abort_if($landing === null, 404);
+
+        $servicio = $this->servicios()[LandingsAutomatizacion::SERVICIO];
+
+        return view('pages.servicios.automatizacion-landing', [
+            'landing' => $landing,
+            'servicio' => $servicio,
+            'guias' => $this->guiasDelServicio($servicio),
         ]);
     }
 

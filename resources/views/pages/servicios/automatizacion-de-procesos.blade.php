@@ -56,6 +56,8 @@
         ['n' => '04', 'title' => 'Monitoreo y optimización', 'desc' => 'Alertas si algo falla, ajustes continuos y nuevos flujos conforme crece la operación.'],
     ];
 
+    $landingsCiudad = \App\Support\LandingsAutomatizacion::enlaces();
+
     // 'guia' enlaza la fila solo si ese artículo está publicado.
     $procesos = [
         ['area' => 'Ventas', 'proceso' => 'Lead de formulario, WhatsApp, Meta o Google Ads → CRM, asignado y etiquetado', 'resultado' => 'El vendedor se entera en segundos'],
@@ -375,6 +377,21 @@
                 </div>
             </div>
         </section>
+
+        {{-- ------------------------------------------------------ ciudades --}}
+        @if ($landingsCiudad !== [])
+            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="ciudades">
+                <div class="container">
+                    <h2 id="ciudades" class="cv-dark-h2" style="font-size:1.5rem;margin:0 0 1.5rem;">Automatización de procesos cerca de ti</h2>
+                    <p class="cv-dark-p" style="margin-bottom:1rem;">Trabajamos de forma remota con empresas de todo México.</p>
+                    <ul style="display:grid;gap:0.75rem;list-style:none;padding:0;">
+                        @foreach ($landingsCiudad as $l)
+                            <li><a href="{{ $l['url'] }}" style="color:#ffffff;text-decoration:underline;">{{ $l['label'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
 
         {{-- ---------------------------------------------- guías del servicio --}}
         @if ($guias !== [])

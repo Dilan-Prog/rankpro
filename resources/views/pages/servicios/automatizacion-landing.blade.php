@@ -1,0 +1,226 @@
+{{--
+    Landing de automatización por ciudad, hija de
+    /servicios/automatizacion-de-procesos. El texto vive en
+    App\Support\LandingsAutomatizacion; aquí solo está el marco. Canónica a sí
+    misma y sin LocalBusiness: no hay oficina verificable en la ciudad.
+--}}
+@extends('layouts.app')
+
+@section('title', $landing['meta_title'])
+@section('description', $landing['meta_description'])
+@section('canonical', route('servicios.automatizacion', $landing['slug']))
+
+@push('styles')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+@endpush
+
+@push('scripts')
+    @vite('resources/js/servicios-conversion.js')
+@endpush
+
+@php
+    $urlPadre = route('servicios.show', $servicio['slug']);
+    $urlLanding = route('servicios.automatizacion', $landing['slug']);
+    $wa = 'https://wa.me/525562230266';
+    $waDiagnostico = $wa.'?text='.rawurlencode('Hola RankPro, quiero el diagnóstico gratuito de automatización para mi empresa en '.$landing['nombre'].'.');
+    $rejilla = 'display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));';
+
+    $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
+    $icoFlecha = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>';
+    $icoWa = '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>';
+    $icoTel = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>';
+@endphp
+
+@push('jsonld')
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'Service',
+                    '@id' => $urlLanding.'#service',
+                    'name' => $landing['schema_nombre'],
+                    'description' => $landing['meta_description'],
+                    'serviceType' => 'Automatización de procesos',
+                    'url' => $urlLanding,
+                    'provider' => ['@id' => url('/#organization')],
+                    'areaServed' => $landing['area'],
+                ],
+                [
+                    '@type' => 'FAQPage',
+                    'mainEntity' => array_map(static fn (array $f): array => [
+                        '@type' => 'Question',
+                        'name' => $f['p'],
+                        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['r']],
+                    ], $landing['faqs']),
+                ],
+                [
+                    '@type' => 'BreadcrumbList',
+                    'itemListElement' => [
+                        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio', 'item' => url('/')],
+                        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Servicios', 'item' => route('servicios.index')],
+                        ['@type' => 'ListItem', 'position' => 3, 'name' => $servicio['nombre'], 'item' => $urlPadre],
+                        ['@type' => 'ListItem', 'position' => 4, 'name' => $landing['nombre'], 'item' => $urlLanding],
+                    ],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
+@section('content')
+    @include('components.topbar')
+    @include('components.navbar')
+
+    <main>
+        <section class="cv-hero" style="background:#ffffff;">
+            <div class="container">
+                <nav class="breadcrumb" aria-label="Ruta de navegación">
+                    <ol>
+                        <li><a href="{{ route('home') }}">Inicio</a></li>
+                        <li><span class="breadcrumb__sep" aria-hidden="true">/</span></li>
+                        <li><a href="{{ route('servicios.index') }}">Servicios</a></li>
+                        <li><span class="breadcrumb__sep" aria-hidden="true">/</span></li>
+                        <li><a href="{{ $urlPadre }}">{{ $servicio['nombre'] }}</a></li>
+                        <li><span class="breadcrumb__sep" aria-hidden="true">/</span></li>
+                        <li><span aria-current="page">{{ $landing['nombre'] }}</span></li>
+                    </ol>
+                </nav>
+
+                <div style="max-width:48rem;">
+                    <h1 class="cv-title">{{ $landing['h1'] }}</h1>
+                    <p class="cv-lead" style="max-width:44rem;">{{ $landing['intro'] }}</p>
+                    <p style="margin-top:1.25rem;font-weight:700;line-height:1.5;color:var(--ink);">{{ $landing['notas'] }}</p>
+
+                    <div class="cv-actions">
+                        <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ route('contacto') }}" class="cv-btn cv-btn--ghost">Cuéntanos qué te quita tiempo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="publico">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="publico">{{ $landing['publico']['titulo'] }}</h2>
+                </div>
+                <div style="{{ $rejilla }}">
+                    @foreach ($landing['publico']['puntos'] as $punto)
+                        <div class="cv-card-soft" style="background:#ffffff;">
+                            <h3>{{ $punto['t'] }}</h3>
+                            <p>{{ $punto['d'] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--tight" aria-labelledby="procesos">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head">
+                    <h2 id="procesos">{{ $landing['procesos']['titulo'] }}</h2>
+                    <p>{{ $landing['procesos']['texto'] }}</p>
+                </div>
+                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="procesos">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:var(--ink);">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                <th scope="col" style="padding:0.75rem;">Proceso</th>
+                                <th scope="col" style="padding:0.75rem;">Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($landing['procesos']['filas'] as [$proceso, $resultado])
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $proceso }}</th>
+                                    <td style="padding:0.75rem;">{{ $resultado }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="trabajo">
+            <div class="container">
+                <div class="cv-head" style="margin-bottom:0;">
+                    <h2 id="trabajo">{{ $landing['trabajo']['titulo'] }}</h2>
+                    <p>{{ $landing['trabajo']['texto'] }} <a href="{{ $urlPadre }}">{{ $landing['trabajo']['enlace'] }}</a>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--tight" aria-labelledby="remoto">
+            <div class="container">
+                <div class="cv-head" style="margin-bottom:0;">
+                    <h2 id="remoto">{{ $landing['remoto']['titulo'] }}</h2>
+                    <p>{{ $landing['remoto']['texto'] }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="faq">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="faq">Preguntas frecuentes</h2>
+                </div>
+                <div class="cv-faq">
+                    @foreach ($landing['faqs'] as $i => $faq)
+                        <div class="cv-faq__item" style="background:#ffffff;">
+                            <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">
+                                <span>{{ $faq['p'] }}</span>
+                                {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
+                            </button>
+                            <div class="cv-faq__panel" id="faq-{{ $i }}" @if($i !== 0) hidden @endif>{{ $faq['r'] }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--brand">
+            <div class="container">
+                <div class="cv-final">
+                    <h2>{{ $landing['cierre']['titulo'] }}</h2>
+                    <p>{{ $landing['cierre']['texto'] }}</p>
+                    <div class="cv-actions">
+                        <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--white" target="_blank" rel="noopener nofollow">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
+                        <a href="{{ route('contacto') }}" class="cv-btn cv-btn--outline-light">Cuéntanos qué te quita tiempo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="revisa">
+            <div class="container">
+                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
+                    <h2 id="revisa" style="font-size:1.5rem;">Más información</h2>
+                </div>
+                <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
+                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de automatización de procesos</a></li>
+                    @foreach (['que-es-la-automatizacion-de-procesos', 'chatbot-whatsapp-business'] as $slugGuia)
+                        @isset($guias[$slugGuia])
+                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
+                        @endisset
+                    @endforeach
+                    @isset($landing['web'])
+                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.web', $landing['web']) }}">Páginas web en {{ $landing['nombre'] }}</a></li>
+                    @endisset
+                    @isset($landing['seo_ciudad'])
+                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
+                    @endisset
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <div class="cv-bar">
+        <a href="tel:+525562230266" class="cv-bar__icon" aria-label="Llamar a RankPro">{!! $ico($icoTel, 18) !!}</a>
+        <a href="{{ $wa }}" class="cv-bar__icon cv-bar__icon--wa" aria-label="Escribir por WhatsApp" target="_blank" rel="noopener nofollow">{!! $ico($icoWa, 18) !!}</a>
+        <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--primary cv-bar__cta" target="_blank" rel="noopener nofollow">Diagnóstico gratis {!! $ico($icoFlecha, 16) !!}</a>
+    </div>
+
+    @include('components.footer')
+@endsection

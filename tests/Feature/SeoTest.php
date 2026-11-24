@@ -32,7 +32,7 @@ class SeoTest extends TestCase
             '/servicios/desarrollo-web/monterrey', '/servicios/desarrollo-web/puebla',
             '/servicios/desarrollo-web/guadalajara', '/servicios/desarrollo-web/tijuana',
             '/servicios/desarrollo-web/queretaro', '/servicios/desarrollo-web/hoteles',
-            '/servicios/desarrollo-web/cdmx',
+            '/servicios/desarrollo-web/cdmx', '/servicios/automatizacion-de-procesos/puebla',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 

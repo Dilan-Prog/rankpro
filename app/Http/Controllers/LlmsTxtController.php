@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Clusters;
 use App\Support\Servicios;
@@ -52,6 +53,9 @@ class LlmsTxtController extends Controller
         }
         foreach (LandingsWeb::todos() as $w) {
             $l[] = sprintf('- [%s](%s): %s', $w['enlace'], route('servicios.web', $w['slug']), $w['meta_description']);
+        }
+        foreach (LandingsAutomatizacion::todos() as $a) {
+            $l[] = sprintf('- [%s](%s): %s', $a['enlace'], route('servicios.automatizacion', $a['slug']), $a['meta_description']);
         }
         $l[] = sprintf('- [Todos los servicios](%s): indice de las siete areas de trabajo.', route('servicios.index'));
         $l[] = '';
