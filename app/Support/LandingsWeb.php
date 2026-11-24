@@ -79,7 +79,8 @@ class LandingsWeb
                 ],
                 'trabajo' => [
                     'titulo' => 'Cómo trabajamos contigo',
-                    'texto' => 'Demo navegable desde la semana 2, entregas semanales en un ambiente de pruebas y el código en un repositorio de GitHub a tu nombre desde el primer commit.',
+                    'texto' => 'Demo navegable desde la semana 2, entregas semanales en un ambiente de pruebas y el código en un repositorio de GitHub a tu nombre desde el primer commit. El detalle de fases y plazos está en',
+                    'enlace' => 'la página del servicio',
                 ],
                 'casos' => [
                     'titulo' => 'Resultados que ya mostramos',
@@ -115,6 +116,92 @@ class LandingsWeb
                 'cierre' => [
                     'titulo' => '¿Hablamos de tu proyecto en Cancún?',
                     'texto' => 'Arma tu cotización y mira rango, semanas y cronograma al instante.',
+                ],
+            ],
+
+            'monterrey' => [
+                'slug' => 'monterrey',
+                'nombre' => 'Monterrey',
+                'enlace' => 'Páginas web en Monterrey',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Páginas Web en Monterrey: Diseño y Desarrollo | RankPro',
+                'meta_description' => "Diseño y desarrollo de páginas web en Monterrey para empresas industriales y de servicios. Catálogos, cotizadores e integraciones. Desde {$p['sencilla']} MXN.",
+                'h1' => 'Páginas web en Monterrey: diseño y desarrollo a la medida',
+                'schema_nombre' => 'Desarrollo web y diseño de páginas web en Monterrey',
+                'area' => ['@type' => 'City', 'name' => 'Monterrey'],
+                'intro' => 'Construimos páginas web en Monterrey y el área metropolitana para negocios que venden a otras empresas: catálogos técnicos, cotizadores, formularios que califican prospectos e integración con tus sistemas.',
+                'precio' => "Un sitio corporativo B2B parte de {$p['corporativo']}; una plataforma para distribuidores, de {$p['plataforma']}, más IVA.",
+                'necesidad' => [
+                    'titulo' => 'Qué necesita una página web en Monterrey',
+                    'texto' => 'Una empresa B2B en Monterrey suele vender con ciclos largos: el comprador compara fichas técnicas, pide cotización y quiere hablar con alguien. La página debe responder rápido a eso: catálogo claro, formularios de cotización que llegan a ventas y contenido que explique el producto.',
+                ],
+                'publico' => [
+                    'titulo' => 'Diseño de páginas web en Monterrey: para qué empresas',
+                    'puntos' => [
+                        'Empresas industriales, de manufactura y proveedores B2B',
+                        'Distribuidores con catálogos grandes de productos',
+                        'Despachos y firmas que venden conocimiento especializado',
+                        'Empresas de logística y construcción',
+                        'Startups y empresas de tecnología',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Desarrollo web en Monterrey para vender a otras empresas',
+                    'puntos' => [
+                        ['t' => 'Sitio corporativo B2B', 'd' => 'Servicios, sectores atendidos, casos y blog.'],
+                        ['t' => 'Catálogo con filtros', 'd' => 'Fichas técnicas, descargas en PDF y solicitud de cotización por producto.'],
+                        ['t' => 'Cotizador en línea', 'd' => 'Formulario guiado que envía datos al equipo comercial.'],
+                        ['t' => 'Conexión con tu CRM', 'd' => 'Cada solicitud entra como oportunidad, con la herramienta que ya uses si ofrece API.'],
+                        ['t' => 'Plataforma o portal', 'd' => 'Acceso para clientes o distribuidores, con permisos por rol.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'En qué ponemos atención cuando el comprador es técnico',
+                    'puntos' => [
+                        ['t' => 'Catálogo pensado para Google', 'd' => 'Una URL por producto y categoría, para que cada modelo pueda encontrarse.'],
+                        ['t' => 'Sistemas que se hablan', 'd' => 'Antes de cotizar revisamos qué permite cada herramienta: CRM, correo o ERP.'],
+                        ['t' => 'Prospectos calificados', 'd' => 'Formularios que piden lo necesario para cotizar y nada más.'],
+                        ['t' => 'Información que resiste una auditoría', 'd' => 'Normas, capacidades y certificados publicados solo con respaldo tuyo.'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Del levantamiento al lanzamiento',
+                    'texto' => 'Empezamos con ventas e ingeniería para ordenar productos y requisitos. Cada semana revisas avances en un entorno privado, y el repositorio queda a nombre de tu empresa. Consulta las fases en',
+                    'enlace' => 'nuestro servicio de desarrollo',
+                ],
+                'casos' => [
+                    'titulo' => 'Proyectos B2B que puedes revisar',
+                    'texto' => 'Son ejemplos de cómo resolvemos este tipo de venta, sin atribuirles una ubicación en Nuevo León.',
+                    'puntos' => [
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm: plataforma y cotizaciones', 'd' => 'Sitio y panel a la medida con gestión de cotizaciones por folio, estado y vigencia. Sus clics crecieron 790 % en tres meses desde una base pequeña (Google Search Console).'],
+                        ['slug' => 'industrial-b2b', 't' => 'Ecommerce industrial sin nombre público', 'd' => 'Catálogo estructurado por línea de producto. Google Ads devolvió 8.6 pesos de venta por cada peso entre enero y septiembre de 2026 (reporte de la cuenta y CRM).'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Pueden mostrar mi catálogo técnico completo?',
+                        'r' => 'Sí. Se arma un catálogo con categorías, filtros y fichas descargables. El tamaño del catálogo influye en el alcance.',
+                    ],
+                    [
+                        'p' => '¿Se puede conectar la página con mi CRM?',
+                        'r' => 'En general sí, vía API o integraciones disponibles. Se confirma en la primera reunión según la herramienta que uses.',
+                    ],
+                    [
+                        'p' => '¿El cotizador puede dar precios automáticos?',
+                        'r' => 'Si tus reglas de precio son claras, puede mostrar un rango. Cuando dependen de ingeniería, conviene que reúna los datos y avise a un vendedor.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuestan las páginas web en Monterrey?',
+                        'r' => "Para una empresa B2B lo habitual es un sitio corporativo, desde {$p['corporativo']}, o una plataforma, desde {$p['plataforma']}. Si vendes en línea, el e-commerce inicia en {$p['ecommerce']}; una landing de campaña, en {$p['landing']}, y una sencilla, en {$p['sencilla']}. Son pesos mexicanos más IVA, con opción de plan de pagos.",
+                    ],
+                    [
+                        'p' => '¿Atienden empresas fuera de Monterrey?',
+                        'r' => 'Sí, en cualquier estado. Las reuniones son por videollamada y pueden sumarse tus áreas de compras, ventas o sistemas.',
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => 'Pongamos tu catálogo a trabajar',
+                    'texto' => 'Elige tipo de sitio e integraciones en el configurador y obtén un rango antes de la primera reunión.',
                 ],
             ],
         ];

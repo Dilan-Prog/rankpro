@@ -58,6 +58,31 @@ class LandingsWebTest extends TestCase
         }
     }
 
+    /** Regla del plan: no más de ~10 % de frases iguales entre landings. */
+    public function test_dos_landings_comparten_menos_del_10_por_ciento(): void
+    {
+        $frases = [];
+
+        foreach (array_keys(LandingsWeb::todos()) as $slug) {
+            preg_match('/<main>(.*)<\/main>/s', $this->get('/servicios/desarrollo-web/'.$slug)->getContent(), $m);
+
+            $texto = preg_replace(['/<nav.*?<\/nav>/s', '/<svg.*?<\/svg>/s'], ' ', $m[1]);
+            $texto = html_entity_decode(strip_tags(preg_replace('/<\/(p|h1|h2|h3|li|div|span|button|a)>/', "\n", $texto)), ENT_QUOTES);
+
+            $frases[$slug] = collect(preg_split('/\n\s*|(?<=[.?!:;])\s+| · /u', $texto))
+                ->map(fn ($f) => mb_strtolower(trim(preg_replace('/\s+/u', ' ', $f))))
+                ->filter(fn ($f) => count(explode(' ', $f)) >= 4)
+                ->unique()->values()->all();
+        }
+
+        foreach ($frases as $a => $deA) {
+            foreach (array_diff_key($frases, [$a => true]) as $b => $deB) {
+                $comunes = array_intersect($deA, $deB);
+                $this->assertLessThan(0.10, count($comunes) / count($deA), count($comunes).'/'.count($deA)." {$a}-{$b}: ".implode(' | ', $comunes));
+            }
+        }
+    }
+
     public function test_los_precios_salen_del_catalogo(): void
     {
         $html = $this->get(self::URL)->getContent();

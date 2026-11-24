@@ -164,7 +164,7 @@
             <div class="container">
                 <div class="cv-head" style="margin-bottom:0;">
                     <h2 id="trabajo">{{ $landing['trabajo']['titulo'] }}</h2>
-                    <p>{{ $landing['trabajo']['texto'] }} El detalle de fases y plazos está en <a href="{{ $urlPadre }}">la página del servicio</a>.</p>
+                    <p>{{ $landing['trabajo']['texto'] }} <a href="{{ $urlPadre }}">{{ $landing['trabajo']['enlace'] }}</a>.</p>
                 </div>
             </div>
         </section>

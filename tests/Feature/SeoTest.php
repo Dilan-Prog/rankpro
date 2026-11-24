@@ -29,6 +29,7 @@ class SeoTest extends TestCase
             '/servicios/seo-organico/cdmx', '/servicios/seo-organico/monterrey',
             '/servicios/seo-organico/guadalajara', '/servicios/seo-organico/puebla',
             '/servicios/seo-organico/queretaro', '/servicios/desarrollo-web/cancun',
+            '/servicios/desarrollo-web/monterrey',
             '/terminos-y-condiciones', '/aviso-de-privacidad', '/politica-de-cookies',
         ];
 
