@@ -32,7 +32,7 @@
 @include('pages.servicios._schema')
 
 @php
-    $wa = 'https://wa.me/527341036410';
+    $wa = 'https://wa.me/525562230266';
     $waDiagnostico = $wa . '?text=' . rawurlencode('Hola RankPro, quiero el diagnóstico gratuito de automatización de procesos.');
     $correo = 'administracion@rankprosolutions.com.mx';
 
@@ -290,7 +290,7 @@
                             <span class="cv-auto-canal__icon cv-auto-canal__icon--wa">{!! $ico($icoWa, 20) !!}</span>
                             <span>
                                 <span class="cv-auto-canal__label">Escríbenos por WhatsApp</span>
-                                <span class="cv-auto-canal__sub">+52 734 103 6410 · respuesta en horario hábil</span>
+                                <span class="cv-auto-canal__sub">+52 55 6223 0266 · respuesta en horario hábil</span>
                             </span>
                         </a>
                         <a class="cv-auto-canal" href="mailto:{{ $correo }}?subject={{ rawurlencode('Diagnóstico de automatización de procesos') }}">

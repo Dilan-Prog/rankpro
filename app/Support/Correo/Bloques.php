@@ -64,7 +64,7 @@ class Bloques
             'tagline' => 'Digital Solutions & Services',
             'redes' => [
                 ['nombre' => 'Sitio web', 'url' => 'https://rankprosolutions.com.mx'],
-                ['nombre' => 'WhatsApp', 'url' => 'https://wa.me/527341036410'],
+                ['nombre' => 'WhatsApp', 'url' => 'https://wa.me/525562230266'],
             ],
         ];
     }

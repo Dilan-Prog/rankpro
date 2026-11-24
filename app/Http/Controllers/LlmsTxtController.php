@@ -102,7 +102,7 @@ class LlmsTxtController extends Controller
         // --- Contacto directo -------------------------------------------
         $l[] = '## Contacto';
         $l[] = '';
-        $l[] = '- WhatsApp: +52 734 103 6410';
+        $l[] = '- WhatsApp: +52 55 6223 0266';
         $l[] = '- Correo: administracion@rankprosolutions.com.mx';
         $l[] = '- Zona de servicio: Mexico (atencion remota en toda la Republica)';
         $l[] = '';

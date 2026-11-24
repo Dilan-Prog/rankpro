@@ -53,7 +53,7 @@
                         <h2>Agendar reuniones no está disponible por ahora.</h2>
                         <p>Escríbenos por WhatsApp o usa el formulario de contacto y te respondemos lo antes posible.</p>
                         <div class="agendar-no-disponible__acciones">
-                            <a href="https://wa.me/527341036410" class="btn btn-primary" rel="noopener nofollow">WhatsApp +52 734 103 6410</a>
+                            <a href="https://wa.me/525562230266" class="btn btn-primary" rel="noopener nofollow">WhatsApp +52 55 6223 0266</a>
                             <a href="{{ route('contacto') }}" class="btn btn-outline">Ir a contacto</a>
                         </div>
                     </div>

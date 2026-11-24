@@ -32,7 +32,7 @@
 @include('pages.servicios._schema')
 
 @php
-    $wa = 'https://wa.me/527341036410';
+    $wa = 'https://wa.me/525562230266';
     $waGenerico = $wa . '?text=' . rawurlencode('Hola RankPro, quiero cotizar un sitio web a la medida.');
     $correo = 'administracion@rankprosolutions.com.mx';
 

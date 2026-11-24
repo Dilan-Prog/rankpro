@@ -34,7 +34,7 @@
 @include('pages.servicios._schema')
 
 @php
-    $wa = 'https://wa.me/527341036410';
+    $wa = 'https://wa.me/525562230266';
     $waAuditoria = $wa . '?text=' . rawurlencode('Hola RankPro, quiero una auditoría SEO de mi sitio.');
     $correo = 'administracion@rankprosolutions.com.mx';
 

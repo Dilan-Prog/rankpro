@@ -23,7 +23,7 @@
 @php
     $urlPadre = route('servicios.show', $servicio['slug']);
     $urlCiudad = route('servicios.ciudad', $ciudad['slug']);
-    $wa = 'https://wa.me/527341036410';
+    $wa = 'https://wa.me/525562230266';
     $waAuditoria = $wa.'?text='.rawurlencode('Hola RankPro, quiero una auditoría SEO de mi sitio en '.$ciudad['nombre'].'.');
     $ctaAuditoria = 'Pedir mi auditoría SEO en '.$ciudad['nombre'];
 
