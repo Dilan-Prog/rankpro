@@ -646,6 +646,99 @@ class LandingsWeb
                     'texto' => 'Elige portal, catálogo o sitio corporativo y conoce inversión y cronograma al instante.',
                 ],
             ],
+
+            // Hotel Fratelli se cita solo por su resultado en búsqueda: lo que se
+            // construyó fue el PMS y las fichas, no una página como la que aquí
+            // se vende.
+            'hoteles' => [
+                'slug' => 'hoteles',
+                'afines' => ['cancun', 'puebla'],
+                'nombre' => 'Hoteles',
+                'enlace' => 'Diseño de páginas web para hoteles',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Diseño de Páginas Web para Hoteles | RankPro',
+                'meta_description' => "Páginas web para hoteles con reservas directas, varios idiomas y velocidad en móvil. Diseño y desarrollo a la medida en México. Desde {$p['corporativo']} + IVA.",
+                'h1' => 'Diseño de páginas web para hoteles',
+                'schema_nombre' => 'Diseño de páginas web para hoteles',
+                'area' => ['@type' => 'Country', 'name' => 'México'],
+                'intro' => 'Diseño de páginas web para hoteles, hostales y rentas vacacionales con un objetivo claro: que el huésped encuentre tu propiedad, la entienda en segundos y reserve directo.',
+                'precio' => "El sitio de un hotel parte de {$p['corporativo']} MXN + IVA. Con reservas y multi-idioma, el rango sube; el configurador te lo muestra.",
+                'necesidad' => [
+                    'titulo' => 'De la búsqueda a la reserva, sin rodeos',
+                    'texto' => 'Quien busca hospedaje compara varias opciones a la vez. Si tu página tarda, esconde las tarifas o manda a otro sitio para consultar disponibilidad, es fácil que vuelva al intermediario donde te vio. La página de un hotel tiene que resolver dudas y dejar reservar.',
+                ],
+                'publico' => [
+                    'titulo' => 'Qué necesita la página de un hotel',
+                    'puntos' => [
+                        'Reserva directa visible desde cualquier pantalla',
+                        'Galería rápida, que no pese de más',
+                        'Habitaciones y tarifas claras, con disponibilidad',
+                        'Textos en español e inglés como mínimo',
+                        'Ubicación, accesos y cómo llegar',
+                        'Reseñas reales, publicadas con autorización',
+                    ],
+                ],
+                'proyectos' => [
+                    'titulo' => 'Módulos que construimos para tu hotel',
+                    'puntos' => [
+                        ['t' => 'Motor o módulo de reservas', 'd' => 'Consulta de fechas, disponibilidad y confirmación al huésped.'],
+                        ['t' => 'Multi-idioma', 'd' => 'Dirección propia para cada lengua, sin mezclar textos.'],
+                        ['t' => 'Pagos en línea', 'd' => 'Anticipo o total de la estancia, según tu política.'],
+                        ['t' => 'Galería optimizada', 'd' => 'Fotos bonitas sin lentitud.'],
+                        ['t' => 'CMS editable', 'd' => 'Recepción o ventas cambian tarifas y promociones sin esperar a nadie.'],
+                        ['t' => 'SEO técnico y schema', 'd' => 'Datos estructurados del hotel y sus habitaciones para Google.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Velocidad en móvil y posicionamiento local',
+                    'puntos' => [
+                        ['t' => 'Fotos que no frenan', 'd' => 'Suelen ser lo más pesado de un hotel: las comprimimos y medimos Core Web Vitals antes de entregar.'],
+                        ['t' => 'Reserva con el pulgar', 'd' => 'Calendario, botones y formulario se prueban en celular, no solo en escritorio.'],
+                        ['t' => 'Ficha de Google coherente', 'd' => 'Nombre, teléfono y dirección iguales en el sitio y en tu perfil de empresa.', 'guia' => 'seo-local'],
+                        ['t' => 'Contenido sobre la zona', 'd' => 'Playas, eventos o centros de negocio cercanos ayudan a que te encuentren. Lo desarrolla nuestro', 'servicio' => 'seo-organico', 'ancla' => 'servicio de SEO para posicionar tu hotel'],
+                    ],
+                ],
+                'trabajo' => [
+                    'titulo' => 'Cómo se trabaja sin detener la operación',
+                    'texto' => 'Reunimos fotos, tipos de habitación y políticas, y acordamos cómo se conectará la reserva. Desde la semana 2 navegas una demo y después hay entregas semanales en un ambiente de pruebas; el código vive en un repositorio de GitHub que es tuyo. Conoce las etapas en',
+                    'enlace' => 'nuestro desarrollo de páginas web',
+                ],
+                'casos' => [
+                    'titulo' => 'Resultados publicados y qué demuestra cada uno',
+                    'texto' => 'El del hotel se incluye solo por su posicionamiento; los otros dos son de otros giros.',
+                    'puntos' => [
+                        ['slug' => 'hotel-fratelli', 't' => 'Hotel Fratelli: resultado en búsqueda', 'd' => 'Con SEO pasó de no aparecer a 1,330 impresiones y un CTR de 3.1 % en el periodo medido. Fuente: Google Search Console.'],
+                        ['slug' => 'equiterm-industries', 't' => 'Equiterm Industries: desarrollo a la medida', 'd' => 'Creció 790 % en clics a lo largo de tres meses; su base era pequeña. Lo registra Search Console.'],
+                        ['slug' => 'industrial-b2b', 't' => 'Industrial B2B: anuncios, sin revelar el nombre', 'd' => 'Google Ads le devolvió 8.6x de enero a septiembre de 2026. Consta en el reporte y en su CRM.'],
+                    ],
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Pueden hacer una página web para mi hotel con reservas?',
+                        'r' => 'Sí. Se construye con un módulo de reservas o se integra tu motor actual, si permite hacerlo. Lo confirmamos contigo antes de cotizar, según el motor que uses.',
+                    ],
+                    [
+                        'p' => '¿Se puede hacer en varios idiomas?',
+                        'r' => 'Sí. Se arma una URL por idioma, con textos revisados, para que cada huésped vea su versión.',
+                    ],
+                    [
+                        'p' => '¿Cómo ayuda la página a reducir comisiones de intermediarios?',
+                        'r' => 'Una página rápida, clara y con reserva directa invita a reservar sin pasar por terceros. El efecto depende de tu mercado y de tu tráfico; no lo garantizamos.',
+                    ],
+                    [
+                        'p' => '¿También se encargan del posicionamiento en Google?',
+                        'r' => 'Sí, como servicio aparte. El desarrollo deja lista la base técnica y el SEO sigue con contenido y seguimiento.',
+                    ],
+                    [
+                        'p' => '¿Cuánto cuesta la página web de un hotel?',
+                        'r' => "Un sitio corporativo parte desde {$p['corporativo']} MXN + IVA; con reservas, multi-idioma o pagos, el rango sube. El configurador muestra el rango.",
+                    ],
+                ],
+                'cierre' => [
+                    'titulo' => '¿Quieres más reservas directas?',
+                    'texto' => 'Arma tu cotización con los módulos que necesita tu hotel o cuéntanos tu caso.',
+                ],
+            ],
         ];
     }
 

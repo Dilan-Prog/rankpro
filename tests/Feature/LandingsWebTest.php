@@ -110,6 +110,20 @@ class LandingsWebTest extends TestCase
             ->assertDontSee('[VERIFICAR')->assertDontSee('[DATO REAL');
     }
 
+    /** Fratelli se cita por su resultado en búsqueda, no por su ocupación ni como desarrollo. */
+    public function test_hoteles_cita_a_fratelli_solo_por_busqueda(): void
+    {
+        $this->get('/servicios/desarrollo-web/hoteles')->assertOk()
+            ->assertSee('<title>Diseño de Páginas Web para Hoteles | RankPro</title>', false)
+            ->assertSee('Hotel Fratelli: resultado en búsqueda')
+            ->assertDontSee('10 % a 50 %')
+            ->assertSee('href="'.url('/servicios/seo-organico').'"', false)
+            ->assertSee('href="'.url('/servicios/desarrollo-web/cancun').'"', false)
+            ->assertDontSee('[VERIFICAR')->assertDontSee('[CONFIRMAR')->assertDontSee('[DATO REAL');
+
+        $this->get(self::URL)->assertSee('href="'.url('/servicios/desarrollo-web/hoteles').'"', false);
+    }
+
     public function test_los_precios_salen_del_catalogo(): void
     {
         $html = $this->get(self::URL)->getContent();
