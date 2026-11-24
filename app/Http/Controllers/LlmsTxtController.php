@@ -65,7 +65,7 @@ class LlmsTxtController extends Controller
         foreach (LandingsAutomatizacion::todos() as $a) {
             $l[] = sprintf('- [%s](%s): %s', $a['enlace'], route('servicios.automatizacion', $a['slug']), $a['meta_description']);
         }
-        $l[] = sprintf('- [Todos los servicios](%s): indice de las siete areas de trabajo.', route('servicios.index'));
+        $l[] = sprintf('- [Todos los servicios](%s): indice de todas las areas de trabajo.', route('servicios.index'));
         $l[] = '';
 
         // --- Casos de exito --------------------------------------------

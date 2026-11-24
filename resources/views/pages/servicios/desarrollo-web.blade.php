@@ -339,7 +339,7 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="cv-card__text" style="margin-top:1.25rem;">Extras que se suman en el configurador: plantillas de página adicionales, CMS editable por tu equipo, multi-idioma, pagos en línea, reservas o agenda, integración con CRM, panel de administración, integraciones por API y SEO técnico con schema.</p>
+                <p class="cv-card__text" style="margin-top:1.25rem;">Extras que se suman en el configurador: plantillas de página adicionales, CMS editable por tu equipo, multi-idioma, pagos en línea, reservas o agenda, integración con CRM, panel de administración, integraciones por API y SEO técnico con schema. ¿Necesitas una app? Conoce el <a href="{{ route('servicios.show', 'desarrollo-de-aplicaciones-moviles') }}">desarrollo de aplicaciones móviles</a>.</p>
                 @if ($guiasPrecio !== [])
                     <p class="cv-card__text" style="margin-top:0.75rem;">
                         Más información:

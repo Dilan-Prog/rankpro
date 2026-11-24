@@ -718,6 +718,80 @@ class Servicios
                     ],
                 ],
             ],
+
+            // Sin precios, plazos ni tecnologías: no hay datos confirmados.
+            'desarrollo-de-aplicaciones-moviles' => [
+                'slug' => 'desarrollo-de-aplicaciones-moviles',
+                'nombre' => 'Aplicaciones Móviles',
+                'gradient' => 'gradient-3',
+                'icon' => '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path>',
+                'tags' => ['Android', 'iOS', 'Apps internas'],
+                'resumen' => 'Apps para clientes o para tu equipo: diseño, desarrollo, publicación en tiendas y mejora continua.',
+                'actualizado' => '2026-11-23',
+                'meta_title' => 'Desarrollo de Aplicaciones Móviles en México | RankPro',
+                'meta_description' => 'Desarrollo de aplicaciones móviles para negocios en México: diseño, desarrollo para Android y iOS, publicación en tiendas y mantenimiento. Cotiza tu app.',
+                'h1' => 'Desarrollo de aplicaciones móviles en México',
+                'schema_nombre' => 'Desarrollo de aplicaciones móviles en México',
+                'schema_tipo' => 'Desarrollo de aplicaciones móviles',
+                'intro' => 'El desarrollo de aplicaciones móviles que hacemos en México acompaña a tu negocio desde la idea y el diseño hasta la publicación en las tiendas y el mantenimiento. Antes de escribir código, validamos que una app sea lo que tu negocio necesita.',
+                'secciones' => [],
+                // Solo se enlazan las publicadas (slug => texto).
+                'guias' => [
+                    'como-crear-una-app' => 'Cómo crear una app',
+                    'como-crear-una-app-para-mi-negocio' => 'Cómo crear una app para mi negocio',
+                    'cuanto-cuesta-crear-una-app' => 'Cuánto cuesta crear una app',
+                    'diseno-de-aplicaciones-moviles' => 'Diseño de aplicaciones móviles',
+                    'como-crear-una-app-para-android' => 'Cómo crear una app para Android',
+                    'ciclo-de-desarrollo-de-una-app' => 'Ciclo de desarrollo de una app',
+                    'plataformas-para-crear-aplicaciones-moviles' => 'Plataformas para crear aplicaciones móviles',
+                ],
+                // texto => ruta. null = sin publicar, no se enlaza.
+                'landings' => [
+                    'Desarrollo de apps en Querétaro' => null,
+                ],
+                'entregables' => [
+                    'Definición de alcance y funciones.',
+                    'Diseño de interfaz y experiencia de usuario.',
+                    'Desarrollo e integraciones necesarias.',
+                    'Pruebas antes de publicar.',
+                    'Publicación en las tiendas con cuentas a nombre de tu empresa.',
+                    'Medición del uso con Google Analytics 4.',
+                    'Documentación y entrega de accesos.',
+                ],
+                'faqs' => [
+                    [
+                        'p' => '¿Cuánto cuesta desarrollar una aplicación móvil?',
+                        'r' => 'Depende de las funciones, las plataformas (iOS, Android o ambas), el diseño, las integraciones y el mantenimiento. Se cotiza tras entender tu caso.',
+                        'guia' => 'cuanto-cuesta-crear-una-app',
+                    ],
+                    [
+                        'p' => '¿Cuánto tarda en desarrollarse una app?',
+                        'r' => 'Depende del alcance. Una primera versión con pocas funciones tarda menos que una app con pagos, cuentas y paneles. El plazo se define en la propuesta.',
+                    ],
+                    [
+                        'p' => '¿Desarrollan apps para Android y para iPhone?',
+                        'r' => 'Sí, según lo que necesite tu proyecto: una plataforma o ambas.',
+                    ],
+                    [
+                        'p' => '¿Necesito una app o me basta con un sitio web?',
+                        'r' => 'Depende de qué quieres lograr. Si tus clientes buscan información o compran ocasionalmente, un sitio rápido puede bastar. Una app tiene sentido cuando hay uso frecuente, cuentas o funciones del dispositivo.',
+                        'guia' => 'como-crear-una-app-para-mi-negocio',
+                    ],
+                    [
+                        'p' => '¿Quién es dueño del código y de las cuentas de las tiendas?',
+                        'r' => 'Las cuentas de desarrollador deben estar a nombre de tu empresa. La entrega y la propiedad del código se acuerdan por escrito en la propuesta.',
+                    ],
+                    [
+                        'p' => '¿Dan mantenimiento después de publicar?',
+                        'r' => 'Una app necesita actualizaciones por cambios de sistema, seguridad y mejoras. El soporte se define en la propuesta.',
+                    ],
+                    [
+                        'p' => '¿Cómo es el proceso de trabajo?',
+                        'r' => 'Descubrimiento, diseño, desarrollo, pruebas, publicación y mejora continua.',
+                        'guia' => 'ciclo-de-desarrollo-de-una-app',
+                    ],
+                ],
+            ],
         ];
     }
 
