@@ -556,7 +556,7 @@ class Servicios
                 'landings_titulo' => 'Redes sociales por ciudad',
                 'landings' => [
                     'Agencia de redes sociales en Monterrey' => 'servicios/social-media/monterrey',
-                    'Manejo de redes sociales en Guadalajara' => null,
+                    'Manejo de redes sociales en Guadalajara' => 'servicios/social-media/guadalajara',
                     'Community manager en Puebla' => null,
                 ],
                 'relacionado' => [

@@ -89,6 +89,17 @@ class LandingsSocialTest extends TestCase
         }
     }
 
+    public function test_guadalajara_lleva_metadatos_afines_y_enlace_a_analitica(): void
+    {
+        $this->get('/servicios/social-media/guadalajara')->assertOk()
+            ->assertSee('<title>Manejo de Redes Sociales en Guadalajara | RankPro</title>', false)
+            ->assertSee('href="'.url('/servicios/social-media/monterrey').'"', false)
+            ->assertSee('href="'.url('/servicios/analytics-data').'">Google Analytics 4', false)
+            ->assertDontSee('[CONFIRMAR')->assertDontSee('[VERIFICAR')->assertDontSee('[DATO REAL');
+
+        $this->get('/servicios/social-media/monterrey')->assertSee('href="'.url('/servicios/social-media/guadalajara').'"', false);
+    }
+
     public function test_las_guias_solo_se_enlazan_publicadas(): void
     {
         $this->get('/servicios/social-media/monterrey')->assertDontSee('/blog/community-manager', false);

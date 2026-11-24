@@ -116,7 +116,12 @@
                             @foreach ($seccion['puntos'] as $punto)
                                 <div class="cv-card-soft" style="background:#ffffff;">
                                     <h3>{{ $punto['t'] }}</h3>
-                                    <p>{{ $punto['d'] }}</p>
+                                    <p>
+                                        {{ $punto['d'] }}
+                                        @isset($punto['servicio'])
+                                            <a href="{{ route('servicios.show', $punto['servicio']) }}">{{ $punto['ancla'] }}</a>.
+                                        @endisset
+                                    </p>
                                 </div>
                             @endforeach
                         </div>
@@ -169,7 +174,7 @@
                 </div>
                 <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
                     <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de gestión de redes sociales</a></li>
-                    @foreach (['cuanto-cuesta-manejo-de-redes-sociales', 'community-manager', 'social-media-ads'] as $slugGuia)
+                    @foreach ($landing['guias'] ?? ['cuanto-cuesta-manejo-de-redes-sociales', 'community-manager', 'social-media-ads'] as $slugGuia)
                         @isset($guias[$slugGuia])
                             <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
