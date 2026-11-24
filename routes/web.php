@@ -108,6 +108,10 @@ Route::get('/servicios/desarrollo-web/{slugLanding}', [PaginasController::class,
 Route::get('/servicios/automatizacion-de-procesos/{slugLanding}', [PaginasController::class, 'automatizacionLanding'])
     ->where('slugLanding', '[a-z-]+')
     ->name('servicios.automatizacion');
+// Landings comerciales de Ads (App\Support\LandingsAds), hijas de /servicios/sem-google-ads.
+Route::get('/servicios/sem-google-ads/{slugLanding}', [PaginasController::class, 'adsLanding'])
+    ->where('slugLanding', '[a-z-]+')
+    ->name('servicios.ads');
 
 // Casos de exito: prueba social con cifras verificables (App\Support\CasosExito).
 // Se restringe el slug para que una URL con mayusculas o caracteres raros no

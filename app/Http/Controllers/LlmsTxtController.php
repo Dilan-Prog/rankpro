@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsAds;
 use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Clusters;
@@ -53,6 +54,9 @@ class LlmsTxtController extends Controller
         }
         foreach (LandingsWeb::todos() as $w) {
             $l[] = sprintf('- [%s](%s): %s', $w['enlace'], route('servicios.web', $w['slug']), $w['meta_description']);
+        }
+        foreach (LandingsAds::todos() as $ad) {
+            $l[] = sprintf('- [%s](%s): %s', $ad['enlace'], route('servicios.ads', $ad['slug']), $ad['meta_description']);
         }
         foreach (LandingsAutomatizacion::todos() as $a) {
             $l[] = sprintf('- [%s](%s): %s', $a['enlace'], route('servicios.automatizacion', $a['slug']), $a['meta_description']);

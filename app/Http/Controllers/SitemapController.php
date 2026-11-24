@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
+use App\Support\LandingsAds;
 use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Clusters;
@@ -144,6 +145,12 @@ class SitemapController extends Controller
 
                     if ($slug === LandingsWeb::SERVICIO) {
                         foreach (LandingsWeb::todos() as $landing) {
+                            $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
+                        }
+                    }
+
+                    if ($slug === LandingsAds::SERVICIO) {
+                        foreach (LandingsAds::todos() as $landing) {
                             $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
                         }
                     }

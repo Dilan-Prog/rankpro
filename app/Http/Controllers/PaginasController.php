@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
 use App\Support\Clusters;
+use App\Support\LandingsAds;
 use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsWeb;
 use App\Support\Servicios;
@@ -120,6 +121,19 @@ class PaginasController extends Controller
             'landing' => $landing,
             'servicio' => $servicio,
             'guias' => $this->guiasDelServicio($servicio),
+        ]);
+    }
+
+    public function adsLanding(string $slugLanding): View
+    {
+        $landing = LandingsAds::encontrar($slugLanding);
+
+        abort_if($landing === null, 404);
+
+        return view("pages.servicios.ads-{$slugLanding}", [
+            'landing' => $landing,
+            'servicio' => $this->servicios()[LandingsAds::SERVICIO],
+            'guias' => $this->guiasDelServicio($landing),
         ]);
     }
 

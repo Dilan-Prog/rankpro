@@ -392,6 +392,12 @@
                         </a>
                     @endforeach
                 </div>
+                <p style="margin-top:1.5rem;">
+                    ¿Aún no decides el canal? Conoce nuestra
+                    @foreach (\App\Support\LandingsAds::todos() as $l)
+                        <a href="{{ route('servicios.ads', $l['slug']) }}">{{ Str::lower($l['enlace']) }}</a>{{ $loop->last ? '.' : ',' }}
+                    @endforeach
+                </p>
             </div>
         </section>
     </main>
