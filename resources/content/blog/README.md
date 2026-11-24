@@ -26,6 +26,6 @@ entornos.
 
 ## Nota
 
-Los articulos de demo que genera `ArticuloSeeder` son texto de relleno y no se
-versionan. Aqui van solo los articulos reales; los publicados desde el panel de
-produccion faltan hasta que se exporten.
+Este directorio esta vacio a proposito: los articulos de demo que genera
+`ArticuloSeeder` son texto de relleno y no se versionan. Los `.md` reales
+apareceran aqui conforme se publiquen los articulos del plan editorial.
