@@ -38,7 +38,7 @@ class LandingsAdsTest extends TestCase
         $nodos = collect($m[1])->flatMap(fn ($json) => json_decode($json, true)['@graph'] ?? []);
         preg_match_all('/cv-faq__trigger.*?<span>(.*?)<\/span>.*?cv-faq__panel[^>]*>(.*?)<\/div>/s', $html, $v, PREG_SET_ORDER);
 
-        $this->assertCount(4, $v);
+        $this->assertCount(6, $v);
         $this->assertSame(
             array_map(fn ($x) => [html_entity_decode($x[1], ENT_QUOTES), html_entity_decode($x[2], ENT_QUOTES)], $v),
             array_map(fn ($q) => [$q['name'], $q['acceptedAnswer']['text']], $nodos->firstWhere('@type', 'FAQPage')['mainEntity']),
@@ -61,6 +61,15 @@ class LandingsAdsTest extends TestCase
         $comunes = $propias->intersect($frases('/servicios/sem-google-ads'));
 
         $this->assertLessThan(0.10, $comunes->count() / $propias->count(), $comunes->count().'/'.$propias->count().': '.$comunes->implode(' | '));
+    }
+
+    public function test_al_menos_700_palabras_visibles(): void
+    {
+        preg_match('/<main>(.*)<\/main>/s', $this->get(self::URL)->getContent(), $m);
+        $texto = html_entity_decode(strip_tags(preg_replace(['/<nav.*?<\/nav>/s', '/<svg.*?<\/svg>/s', '/</'], [' ', ' ', ' <'], $m[1])), ENT_QUOTES);
+        preg_match_all('/\S*[\p{L}\p{N}]\S*/u', $texto, $palabras);
+
+        $this->assertGreaterThanOrEqual(700, count($palabras[0]));
     }
 
     public function test_la_guia_de_costos_se_enlaza_solo_publicada(): void

@@ -26,6 +26,32 @@
     $wa = 'https://wa.me/525562230266?text='.rawurlencode('Hola RankPro, quiero revisar mi estrategia de publicidad digital.');
     $correo = 'administracion@rankprosolutions.com.mx';
 
+    $objetivos = [
+        ['Captar demanda activa', 'Búsqueda en Google Ads', 'Cuando tu cliente escribe en Google el problema o el producto y quiere resolverlo pronto'],
+        ['Dar a conocer la marca', 'Display, YouTube o redes sociales', 'Cuando casi nadie te busca por nombre o lanzas algo que aún no se conoce'],
+        ['Volver a contactar visitantes', 'Remarketing en Display y YouTube', 'Cuando recibes visitas que comparan y tardan en decidir'],
+        ['Generar mensajes o leads', 'Pauta en Meta', 'Cuando la venta se cierra conversando y tienes quien conteste'],
+        ['Llegar a quien decide en una empresa', 'Pauta en LinkedIn', 'Cuando vendes a otras empresas y conoces el puesto o la industria'],
+    ];
+
+    $metricas = [
+        ['Costo por lead o por venta', 'Cuánto cuesta cada oportunidad, por canal y por campaña.'],
+        ['Leads calificados', 'Cuántos contactos eran de verdad clientes posibles, según tu equipo.'],
+        ['Ventas atribuidas y ROAS', 'Qué parte de lo vendido se puede ligar a los anuncios, con los límites de cada plataforma.'],
+        ['Calidad del tráfico', 'Qué hicieron los visitantes al llegar: si leyeron, llamaron, escribieron o se fueron.'],
+    ];
+
+    $errores = [
+        ['Pautar sin un objetivo', 'Pedir ventas, seguidores y reconocimiento en la misma campaña deja a la plataforma sin saber qué buscar.'],
+        ['Invertir sin seguimiento', 'Si nadie registra la llamada o el mensaje, no hay forma de saber qué anuncio los produjo.'],
+        ['Cambiar todo cada día', 'Los anuncios necesitan tiempo y datos; mover presupuesto, textos y público a la vez borra el aprendizaje.'],
+        ['Repartir poco en muchos canales', 'Un presupuesto dividido en cinco plataformas rara vez junta información suficiente en alguna.'],
+        ['Tardar en contestar', 'Un contacto que espera hasta mañana suele haber hablado ya con otro proveedor.'],
+        ['Juzgar por los clics', 'Un anuncio barato que atrae a quien no compra sale más caro que uno con pocos clics útiles.'],
+    ];
+
+    $celda = 'padding:0.75rem;vertical-align:top;';
+
     $etapas = [
         ['Diagnóstico', 'Auditamos la cuenta o definimos la meta si no existe'],
         ['Estrategia', 'Canal, presupuesto, mensajes y página de destino'],
@@ -141,45 +167,96 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="canal">
-            <div class="container">
+            <div class="container" style="max-width:60rem;">
                 <div class="cv-head">
-                    <h2 id="canal">¿Qué canal conviene primero?</h2>
+                    <h2 id="canal">Qué canal usar según tu objetivo</h2>
                     <p>Una agencia de publicidad digital no debería empezar por la plataforma, sino por cómo compra tu cliente.</p>
                 </div>
-                <div class="cv-cards">
-                    <div class="cv-card-soft">
-                        <h3>Búsqueda en Google Ads</h3>
-                        <p>Cuando la gente ya busca lo que ofreces. El detalle está en nuestro servicio de <a href="{{ $urlPadre }}">agencia de Google Ads</a>.</p>
+                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="canal">
+                    <table style="width:100%;min-width:36rem;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                <th scope="col" style="{{ $celda }}">Objetivo</th>
+                                <th scope="col" style="{{ $celda }}">Canal recomendado</th>
+                                <th scope="col" style="{{ $celda }}">Cuándo conviene</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($objetivos as [$objetivo, $canal, $cuando])
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <th scope="row" style="{{ $celda }}text-align:left;">{{ $objetivo }}</th>
+                                    <td style="{{ $celda }}">{{ $canal }}</td>
+                                    <td style="{{ $celda }}">{{ $cuando }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-top:2.5rem;font-size:1.125rem;font-weight:700;color:var(--ink);">Cómo decidimos el canal</h3>
+                <p style="margin-top:0.75rem;line-height:1.7;color:var(--muted);">Miramos cuatro cosas. El tipo de negocio: no se anuncia igual un despacho que una tienda. La etapa de compra: si tu cliente apenas descubre el problema o ya compara precios. El presupuesto: si alcanza para reunir datos en un canal antes de abrir otro. Y tu capacidad de atender: de poco sirve duplicar los mensajes si el equipo ya no puede con los que recibe.</p>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="relacion">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="relacion">Cómo se relaciona con Google Ads y redes sociales</h2>
+                </div>
+                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));">
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>Google Ads, para la demanda que ya existe</h3>
+                        <p>Suele ser la primera pieza, porque permite medir pronto si hay interés. En esta página decidimos qué papel juega dentro del plan; cómo se arma y se optimiza una cuenta está en <a href="{{ $urlPadre }}">agencia de Google Ads</a>.</p>
                     </div>
-                    <div class="cv-card-soft">
-                        <h3>Display y YouTube</h3>
-                        <p>Para remarketing y alcance: recordarle a quien ya te visitó, o mostrarte a un público nuevo.</p>
-                    </div>
-                    <div class="cv-card-soft">
-                        <h3>Redes sociales</h3>
-                        <p>Cuando necesitas generar interés donde todavía no hay búsquedas. Lo llevamos desde <a href="{{ $urlSocial }}">Social Media</a>.</p>
+                    <div class="cv-card-soft" style="background:#ffffff;">
+                        <h3>Redes sociales, para crear interés</h3>
+                        <p>La pauta en redes pone tu oferta frente a personas que todavía no la buscaban y rinde más con contenido constante detrás. La parte de contenido, comunidad y campañas pagadas vive en <a href="{{ $urlSocial }}">Social Media</a>.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="reporte">
-            <div class="container">
-                <div class="cv-head" style="margin-bottom:0;">
+        <section class="cv-section cv-section--tight" aria-labelledby="reporte">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head" style="margin-bottom:1.5rem;">
                     <h2 id="reporte">Qué reportamos</h2>
-                    <p>Costo por lead, leads calificados, ventas atribuidas y ROAS. No presumimos impresiones. Sin contratos forzosos y con la cuenta a tu nombre.</p>
+                    <p>No presumimos impresiones. Sin contratos forzosos y con la cuenta a tu nombre, revisamos contigo estas métricas:</p>
                 </div>
+                <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;line-height:1.7;color:var(--muted);">
+                    @foreach ($metricas as [$metrica, $detalle])
+                        <li><strong style="color:var(--ink);">{{ $metrica }}.</strong> {{ $detalle }}</li>
+                    @endforeach
+                </ul>
+                <p style="margin-top:1.25rem;line-height:1.7;color:var(--muted);">
+                    El seguimiento se configura con
+                    @isset($guias['google-analytics-4'])<a href="{{ route('blog.show', 'google-analytics-4') }}">Google Analytics 4</a>@else Google Analytics 4 @endisset
+                    y
+                    @isset($guias['google-tag-manager'])<a href="{{ route('blog.show', 'google-tag-manager') }}">Google Tag Manager</a>@else Google Tag Manager @endisset
+                    antes de publicar el primer anuncio, para que cada formulario, llamada o mensaje quede registrado una sola vez.
+                </p>
             </div>
         </section>
 
-        <section class="cv-section cv-section--tight" aria-labelledby="pagina">
-            <div class="container">
-                <div class="cv-head" style="margin-bottom:0;">
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="pagina">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head" style="margin-bottom:1.5rem;">
                     <h2 id="pagina">La publicidad no sustituye una página que convierta</h2>
-                    <p>
-                        Si la página es lenta o confusa, pagas por clics que no compran. Conoce nuestro <a href="{{ $urlWeb }}">servicio de desarrollo web</a>@foreach ($guias as $slugGuia => $textoGuia) y la guía <a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a>@endforeach.
-                    </p>
+                    <p>Si la página es lenta o confusa, pagas por clics que no compran.</p>
                 </div>
+                <p style="line-height:1.7;color:var(--muted);">Antes de subir la inversión revisamos que la página repita la promesa del anuncio, cargue bien con datos móviles y deje claro el siguiente paso. Si el problema es la velocidad, se corrige con <a href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">optimización de PageSpeed y Core Web Vitals</a>; si hace falta una página nueva, con nuestro <a href="{{ $urlWeb }}">servicio de desarrollo web</a>.@isset($guias['cuanto-cuesta-google-ads']) Para calcular la parte de medios, lee <a href="{{ route('blog.show', 'cuanto-cuesta-google-ads') }}">{{ $guias['cuanto-cuesta-google-ads'] }}</a>@endisset</p>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--tight" aria-labelledby="errores">
+            <div class="container" style="max-width:56rem;">
+                <div class="cv-head" style="margin-bottom:1.5rem;">
+                    <h2 id="errores">Errores comunes al invertir en publicidad</h2>
+                </div>
+                <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;line-height:1.7;color:var(--muted);">
+                    @foreach ($errores as [$error, $porque])
+                        <li><strong style="color:var(--ink);">{{ $error }}.</strong> {{ $porque }}</li>
+                    @endforeach
+                </ul>
             </div>
         </section>
 
