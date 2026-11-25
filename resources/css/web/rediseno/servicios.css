@@ -1813,3 +1813,18 @@
     position: absolute;
     inset: -6px;
 }
+
+/* Tarjeta de artículo dentro de una página de servicio. */
+.rd-servicio .articulo-card {
+    border-radius: var(--rp-r-lg);
+}
+
+.rd-servicio .articulo-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--brand);
+    box-shadow: var(--rp-shadow-2);
+}
+
+.rd-servicio .articulo-card__resumen {
+    color: var(--rp-gray-700);
+}

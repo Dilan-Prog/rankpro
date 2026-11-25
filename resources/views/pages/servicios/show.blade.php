@@ -6,7 +6,7 @@
 @section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @include('pages.servicios._schema')
