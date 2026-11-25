@@ -1,0 +1,501 @@
+/* Rediseño: agendar y cancelar reunión. Todo bajo .rd-agendar (ver base.css). */
+
+/* ---------- Hero ---------- */
+
+.rd-agendar .agendar-hero {
+    padding: clamp(1.75rem, 4vw, 3rem) 0 clamp(1.5rem, 3vw, 2.25rem);
+    background: linear-gradient(180deg, var(--surface) 0%, #ffffff 100%);
+}
+
+.rd-agendar .agendar-hero__inner {
+    text-align: left;
+}
+
+.rd-agendar .agendar-badge {
+    padding: 0.4375rem 0.75rem;
+    background: var(--rp-green-50);
+    color: var(--rp-green-600);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.rd-agendar .agendar-hero__titulo {
+    max-width: 48rem;
+    margin-bottom: 0;
+    font-size: clamp(2.125rem, 4.6vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+}
+
+.rd-agendar .agendar-hero__lead {
+    max-width: 40rem;
+    margin-top: 1rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--rp-gray-700);
+    text-wrap: pretty;
+}
+
+/* ---------- Tarjeta de reserva ---------- */
+
+.rd-agendar .agendar-seccion {
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+    background: #ffffff;
+}
+
+.rd-agendar .agendar {
+    max-width: none;
+}
+
+.rd-agendar .agendar__tarjeta {
+    border-radius: var(--rp-r-xl);
+    box-shadow: 0 1px 2px rgba(14, 26, 21, .04), 0 24px 48px rgba(14, 26, 21, .08);
+}
+
+.rd-agendar .agendar__lateral,
+.rd-agendar .agendar__contenido {
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.rd-agendar .agendar__lateral {
+    background: var(--surface);
+}
+
+@media (min-width: 901px) {
+    .rd-agendar .agendar__tarjeta {
+        grid-template-columns: 340px minmax(0, 1fr);
+    }
+}
+
+.rd-agendar .agendar__marca {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__lateral-titulo {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.rd-agendar .agendar__resumen li {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--rp-gray-700);
+}
+
+/* agendar.css fija display:flex en el li y eso anula el atributo hidden. */
+.rd-agendar .agendar__resumen li[hidden] {
+    display: none;
+}
+
+.rd-agendar .agendar__resumen li.agendar__resumen-elegido {
+    padding: 0.75rem 0.875rem;
+    border-radius: var(--rp-r-md);
+    background: var(--rp-green-50);
+    color: var(--rp-green-700);
+}
+
+.rd-agendar .agendar__temas-titulo {
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.rd-agendar .agendar__tema {
+    padding: 0.5rem 0.875rem;
+    border: 1.5px solid var(--border);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.rd-agendar .agendar__tema:hover {
+    border-color: var(--rp-green-600);
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__tema.is-activo {
+    background: var(--rp-green-600);
+    border-color: var(--rp-green-600);
+    color: #ffffff;
+}
+
+/* ---------- Calendario ---------- */
+
+.rd-agendar .agendar__elegir {
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.rd-agendar .agendar__calendario-mes {
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+}
+
+.rd-agendar .agendar__nav-btn {
+    border: 1.5px solid var(--border);
+    background: #ffffff;
+    color: var(--ink);
+}
+
+.rd-agendar .agendar__nav-btn:hover:not(:disabled) {
+    border-color: var(--rp-green-600);
+    background: var(--rp-green-50);
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__nav-btn:disabled {
+    opacity: 0.4;
+}
+
+.rd-agendar .agendar__calendario-dow {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    font-size: 0.75rem;
+    letter-spacing: 0;
+}
+
+.rd-agendar .agendar__calendario-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.375rem;
+}
+
+.rd-agendar .agendar__dia-celda {
+    aspect-ratio: auto;
+    height: 52px;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rd-agendar .agendar__dia-celda.is-pasado {
+    font-weight: 400;
+}
+
+.rd-agendar .agendar__dia-celda:not(.is-pasado) {
+    background: var(--rp-green-50);
+    color: var(--rp-green-700);
+    font-weight: 700;
+}
+
+.rd-agendar .agendar__dia-celda:not(.is-pasado):hover {
+    border-color: var(--rp-green-600);
+    background: var(--rp-green-100);
+}
+
+.rd-agendar .agendar__dia-celda.is-hoy {
+    border-color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__dia-celda.is-hoy::after {
+    bottom: 0.3125rem;
+    background: var(--rp-green-600);
+}
+
+/* El :not() iguala la especificidad del estado disponible y de su hover. */
+.rd-agendar .agendar__dia-celda.is-elegido:not(.is-pasado),
+.rd-agendar .agendar__dia-celda.is-elegido:not(.is-pasado):hover {
+    border-color: var(--rp-green-600);
+    background: var(--rp-green-600);
+    color: #ffffff;
+}
+
+.rd-agendar .agendar__dia-celda.is-elegido.is-hoy::after {
+    background: #ffffff;
+}
+
+/* ---------- Horarios ---------- */
+
+.rd-agendar .agendar__horarios-fecha {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.rd-agendar .agendar__sin-fecha,
+.rd-agendar .agendar__cargando,
+.rd-agendar .agendar__vacio {
+    padding: 1rem;
+    border-radius: var(--rp-r-md);
+    background: var(--surface);
+    color: var(--rp-gray-700);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.rd-agendar .agendar__horarios {
+    max-height: 21.5rem;
+    /* El scroll recorta el anillo de foco si los botones tocan el borde. */
+    padding: 5px;
+    margin: -5px;
+}
+
+.rd-agendar .agendar__horario {
+    flex: none;
+    min-height: 48px;
+    padding: 0.625rem 0.5rem;
+    border: 1.5px solid var(--rp-gray-300);
+    border-radius: 12px;
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rd-agendar .agendar__horario:hover {
+    border-color: var(--rp-green-600);
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__horario.is-elegido {
+    background: var(--rp-green-600);
+    border-color: var(--rp-green-600);
+    color: #ffffff;
+}
+
+.rd-agendar .agendar__siguiente {
+    margin-top: 1rem;
+}
+
+@media (max-width: 720px) {
+    .rd-agendar .agendar__horarios:not([hidden]) {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+        max-height: none;
+    }
+
+    .rd-agendar .agendar__horarios > p {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .rd-agendar .agendar .agendar__contenido {
+        padding-inline: 0.75rem;
+    }
+
+    .rd-agendar .agendar__calendario-grid {
+        gap: 0.25rem;
+    }
+
+    .rd-agendar .agendar__dia-celda {
+        height: 46px;
+    }
+}
+
+/* ---------- Formulario ---------- */
+
+.rd-agendar .agendar__volver,
+.rd-agendar .agendar__confirmacion-reiniciar {
+    min-height: 44px;
+    color: var(--rp-gray-700);
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.rd-agendar .agendar__volver {
+    margin-bottom: 0.75rem;
+}
+
+.rd-agendar .agendar__volver:hover,
+.rd-agendar .agendar__confirmacion-reiniciar:hover {
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__form-titulo {
+    font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+    letter-spacing: -0.02em;
+}
+
+.rd-agendar .agendar__form-subtitulo {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--rp-gray-700);
+}
+
+.rd-agendar .field__label {
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+/* Vacío reservaba un renglón y descuadraba el ritmo entre campos. */
+.rd-agendar .field__error:empty {
+    display: none;
+}
+
+.rd-agendar .field__error {
+    font-size: 0.8125rem;
+}
+
+.rd-agendar .agendar__form .input {
+    min-height: 52px;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--rp-gray-300);
+    border-radius: 12px;
+    /* 16px: por debajo, iOS amplía la página al enfocar. */
+    font-size: 1rem;
+}
+
+.rd-agendar .agendar__form textarea.input {
+    min-height: 6.5rem;
+    line-height: 1.5;
+}
+
+.rd-agendar .agendar__form .input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+.rd-agendar .agendar__form .input:focus {
+    border-color: var(--rp-green-600);
+    box-shadow: 0 0 0 3px rgba(11, 125, 88, 0.2);
+}
+
+.rd-agendar .agendar__form .input.is-invalido {
+    border-color: #dc2626;
+}
+
+.rd-agendar .agendar__aviso {
+    border-radius: 12px;
+    font-size: 0.9375rem;
+}
+
+.rd-agendar .agendar__form-nota {
+    font-size: 0.8125rem;
+}
+
+/* ---------- Confirmación y cancelar ---------- */
+
+.rd-agendar .agendar__confirmacion {
+    max-width: 32rem;
+}
+
+.rd-agendar .agendar__confirmacion-icono {
+    background: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__confirmacion-icono.agendar-cancelar__icono--alerta {
+    background: #b45309;
+}
+
+.rd-agendar .agendar__confirmacion-titulo {
+    font-size: clamp(1.625rem, 3vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.rd-agendar .agendar__confirmacion-texto {
+    line-height: 1.6;
+    color: var(--rp-gray-700);
+    overflow-wrap: anywhere;
+}
+
+.rd-agendar .agendar__confirmacion-cita {
+    border: 1px solid var(--rp-green-100);
+    border-radius: var(--rp-r-lg);
+    background: var(--rp-green-50);
+    overflow-wrap: anywhere;
+}
+
+.rd-agendar .agendar__confirmacion-cita-etiqueta {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--rp-green-700);
+}
+
+.rd-agendar .agendar__confirmacion-cita-tema {
+    color: var(--rp-gray-700);
+}
+
+.rd-agendar .agendar__confirmacion-cancelar {
+    padding-block: 0.75rem;
+    margin-bottom: 0;
+}
+
+.rd-agendar .agendar-cancelar__tarjeta {
+    max-width: 40rem;
+    margin-inline: 0;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border-radius: var(--rp-r-xl);
+    box-shadow: 0 1px 2px rgba(14, 26, 21, .04), 0 24px 48px rgba(14, 26, 21, .08);
+}
+
+.rd-agendar .form-status {
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    background: var(--rp-green-50);
+    color: var(--rp-green-700);
+    font-weight: 600;
+}
+
+@media (max-width: 479px) {
+    .rd-agendar .agendar-cancelar__acciones .btn,
+    .rd-agendar .agendar-no-disponible__acciones .btn {
+        width: 100%;
+    }
+}
+
+/* ---------- Agenda no disponible ---------- */
+
+.rd-agendar .agendar-no-disponible {
+    max-width: 44rem;
+    margin-inline: 0;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: none;
+    border-radius: 28px;
+    text-align: left;
+}
+
+.rd-agendar .agendar-no-disponible h2 {
+    font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.rd-agendar .agendar-no-disponible p {
+    line-height: 1.6;
+    color: var(--rp-gray-700);
+}
+
+.rd-agendar .agendar-no-disponible__acciones {
+    justify-content: flex-start;
+}
+
+/* ---------- Insignias ---------- */
+
+.rd-agendar .agendar__badges {
+    max-width: none;
+    margin-top: 1.5rem;
+}
+
+.rd-agendar .agendar__badge-item {
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--rp-r-lg);
+    background: #ffffff;
+    box-shadow: var(--rp-shadow-1);
+}
+
+.rd-agendar .agendar__badge-item svg {
+    box-sizing: border-box;
+    width: 48px;
+    height: 48px;
+    padding: 13px;
+    border-radius: var(--rp-r-md);
+    background: var(--rp-green-50);
+    color: var(--rp-green-600);
+}
+
+.rd-agendar .agendar__badge-label {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.rd-agendar .agendar__badge-sub {
+    font-size: 0.875rem;
+    color: var(--rp-gray-700);
+}

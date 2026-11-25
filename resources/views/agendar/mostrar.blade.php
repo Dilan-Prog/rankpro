@@ -3,9 +3,14 @@
 @section('title', 'Agendar una reunión | RankPro Agencia de Marketing Digital')
 @section('description', 'Elige el día y la hora que mejor te acomoden para una llamada con RankPro. Sin formularios largos: agenda en menos de un minuto.')
 @section('canonical', route('agendar.mostrar'))
+@section('body_class', 'rd rd-agendar')
 
 @push('styles')
-    @vite('resources/css/web/agendar.css')
+    {{-- Sin agenda activa, la vista usa .page-hero y .breadcrumb de pages.css. --}}
+    @if (!$config || !$config->activa)
+        @vite('resources/css/web/pages.css')
+    @endif
+    @vite(['resources/css/web/agendar.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/agendar.css'])
 @endpush
 
 {{--

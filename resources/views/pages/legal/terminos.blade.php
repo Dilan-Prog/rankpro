@@ -11,9 +11,10 @@
 @section('title', 'Términos y Condiciones | RankPro')
 @section('description', 'Términos y condiciones de uso del sitio web y de contratación de los servicios de marketing digital de RankPro en México.')
 @section('canonical', route('legal.terminos'))
+@section('body_class', 'rd rd-legal')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/legales.css'])
 @endpush
 
 @push('jsonld')

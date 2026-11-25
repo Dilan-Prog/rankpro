@@ -9,9 +9,10 @@
 @section('title', $landing['meta_title'])
 @section('description', $landing['meta_description'])
 @section('canonical', route('servicios.automatizacion', $landing['slug']))
+@section('body_class', 'rd rd-servicio rd-landing')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -23,7 +24,6 @@
     $urlLanding = route('servicios.automatizacion', $landing['slug']);
     $wa = 'https://wa.me/525562230266';
     $waDiagnostico = $wa.'?text='.rawurlencode('Hola RankPro, quiero el diagnóstico gratuito de automatización para mi empresa en '.$landing['nombre'].'.');
-    $rejilla = 'display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));';
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
     $icoCheck = '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
@@ -75,7 +75,7 @@
     @include('components.navbar')
 
     <main>
-        <section class="cv-hero" style="background:#ffffff;">
+        <section class="cv-hero">
             <div class="container">
                 <nav class="breadcrumb" aria-label="Ruta de navegación">
                     <ol>
@@ -89,22 +89,25 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
+                <div class="cv-hero__grid">
+                <div>
                     <h1 class="cv-title">{{ $landing['h1'] }}</h1>
-                    <p class="cv-lead" style="max-width:44rem;">{{ $landing['intro'] }}</p>
-                    <p style="margin-top:1.25rem;font-weight:700;line-height:1.5;color:var(--ink);">{{ $landing['notas'] }}</p>
+                    <p class="cv-lead">{{ $landing['intro'] }}</p>
+                    <p class="cv-dato">{{ $landing['notas'] }}</p>
 
                     <div class="cv-actions">
                         <a href="{{ $waDiagnostico }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Agenda tu diagnóstico gratis {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ route('contacto') }}" class="cv-btn cv-btn--ghost">Cuéntanos qué te quita tiempo</a>
                     </div>
                 </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'flujo'])
+                </div>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="sector">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head cv-head--left" style="margin-bottom:0;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="sector">{{ $landing['sector']['titulo'] }}</h2>
                     @foreach ($landing['sector']['puntos'] as $parrafo)
                         <p>{{ $parrafo }}</p>
@@ -118,9 +121,9 @@
                 <div class="cv-head">
                     <h2 id="publico">{{ $landing['publico']['titulo'] }}</h2>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['publico']['puntos'] as $punto)
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
                             <p>{{ $punto['d'] }}</p>
                         </div>
@@ -130,24 +133,24 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="procesos">
-            <div class="container" style="max-width:56rem;">
+            <div class="container cv-angosto">
                 <div class="cv-head">
                     <h2 id="procesos">{{ $landing['procesos']['titulo'] }}</h2>
                     <p>{{ $landing['procesos']['texto'] }}</p>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="procesos">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:var(--ink);">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="procesos">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="padding:0.75rem;">Proceso</th>
-                                <th scope="col" style="padding:0.75rem;">Resultado</th>
+                            <tr>
+                                <th scope="col">Proceso</th>
+                                <th scope="col">Resultado</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($landing['procesos']['filas'] as [$proceso, $resultado])
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $proceso }}</th>
-                                    <td style="padding:0.75rem;">{{ $resultado }}</td>
+                                <tr>
+                                    <th scope="row">{{ $proceso }}</th>
+                                    <td>{{ $resultado }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -161,9 +164,9 @@
                 <div class="cv-head">
                     <h2 id="detalle">{{ $landing['detalle']['titulo'] }}</h2>
                 </div>
-                <div style="{{ $rejilla }}list-style:none;padding:0;">
+                <div class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['detalle']['puntos'] as $punto)
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
                             <p>{{ $punto['d'] }}</p>
                         </div>
@@ -173,8 +176,8 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="tipos">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="tipos">{{ $landing['tipos']['titulo'] }}</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -187,7 +190,7 @@
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="trabajo">
             <div class="container">
-                <div class="cv-head" style="margin-bottom:0;">
+                <div class="cv-head">
                     <h2 id="trabajo">{{ $landing['trabajo']['titulo'] }}</h2>
                     <p>{{ $landing['trabajo']['texto'] }} <a href="{{ $urlPadre }}">{{ $landing['trabajo']['enlace'] }}</a>.</p>
                 </div>
@@ -196,7 +199,7 @@
 
         <section class="cv-section cv-section--tight" aria-labelledby="remoto">
             <div class="container">
-                <div class="cv-head" style="margin-bottom:0;">
+                <div class="cv-head">
                     <h2 id="remoto">{{ $landing['remoto']['titulo'] }}</h2>
                     <p>{{ $landing['remoto']['texto'] }}</p>
                 </div>
@@ -208,9 +211,9 @@
                 <div class="cv-head">
                     <h2 id="etapas">{{ $landing['etapas']['titulo'] }}</h2>
                 </div>
-                <ol style="{{ $rejilla }}list-style:none;padding:0;">
+                <ol class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['etapas']['puntos'] as $punto)
-                        <li class="cv-card-soft" style="background:#ffffff;">
+                        <li class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
                             <p>{{ $punto['d'] }}</p>
                         </li>
@@ -220,8 +223,8 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="cuidados">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="cuidados">{{ $landing['cuidados']['titulo'] }}</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -233,8 +236,8 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="errores">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="errores">{{ $landing['errores']['titulo'] }}</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -252,7 +255,7 @@
                 </div>
                 <div class="cv-faq">
                     @foreach ($landing['faqs'] as $i => $faq)
-                        <div class="cv-faq__item" style="background:#ffffff;">
+                        <div class="cv-faq__item">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">
                                 <span>{{ $faq['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
@@ -279,21 +282,21 @@
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="revisa">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="revisa" style="font-size:1.5rem;">Más información</h2>
+                <div class="cv-head">
+                    <h2 id="revisa">Más información</h2>
                 </div>
-                <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
-                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de automatización de procesos</a></li>
+                <ul class="cv-pildoras">
+                    <li><a class="cv-chip" href="{{ $urlPadre }}">Servicio de automatización de procesos</a></li>
                     @foreach (['que-es-la-automatizacion-de-procesos', 'n8n-que-es', 'chatbot-whatsapp-business'] as $slugGuia)
                         @isset($guias[$slugGuia])
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
+                            <li><a class="cv-chip" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
                     @endforeach
                     @isset($landing['web'])
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.web', $landing['web']) }}">Páginas web en {{ $landing['nombre'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ route('servicios.web', $landing['web']) }}">Páginas web en {{ $landing['nombre'] }}</a></li>
                     @endisset
                     @isset($landing['seo_ciudad'])
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
                     @endisset
                 </ul>
             </div>

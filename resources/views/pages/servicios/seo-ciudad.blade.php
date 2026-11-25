@@ -11,9 +11,10 @@
 @section('title', $ciudad['meta_title'])
 @section('description', $ciudad['meta_description'])
 @section('canonical', route('servicios.ciudad', $ciudad['slug']))
+@section('body_class', 'rd rd-servicio rd-landing')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -83,9 +84,9 @@
     @include('components.navbar')
 
     <main>
-        <section class="cv-section--dark">
+        <section class="cv-hero">
             <div class="container">
-                <nav class="breadcrumb breadcrumb--light" aria-label="Ruta de navegación">
+                <nav class="breadcrumb" aria-label="Ruta de navegación">
                     <ol>
                         <li><a href="{{ route('home') }}">Inicio</a></li>
                         <li><span class="breadcrumb__sep" aria-hidden="true">/</span></li>
@@ -97,19 +98,22 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
-                    <span class="cv-badge cv-badge--outline">{!! $ico($icoPin, 12) !!} Agencia SEO en {{ $ciudad['nombre'] }}</span>
+                <div class="cv-hero__grid">
+                <div>
+                    <span class="cv-badge">{!! $ico($icoPin, 12) !!} Agencia SEO en {{ $ciudad['nombre'] }}</span>
 
-                    <h1 class="cv-title cv-title--light">{{ $ciudad['h1'] }}</h1>
+                    <h1 class="cv-title">{{ $ciudad['h1'] }}</h1>
 
-                    <p class="cv-lead cv-lead--light">{{ $ciudad['intro'] }}</p>
+                    <p class="cv-lead">{{ $ciudad['intro'] }}</p>
 
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">{{ $ctaAuditoria }} {!! $ico($icoFlecha, 17) !!}</a>
-                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--outline-light">Prefiero agendar una llamada</a>
+                        <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--ghost">Prefiero agendar una llamada</a>
                     </div>
 
-                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">{{ $ciudad['confianza'] }}</p>
+                    <p class="cv-nota">{{ $ciudad['confianza'] }}</p>
+                </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'seo'])
                 </div>
             </div>
         </section>
@@ -123,7 +127,7 @@
                     @endif
                 </div>
                 {{-- Con 4 puntos la rejilla de 3 dejaría uno suelto. --}}
-                <div class="cv-cards" @if (count($ciudad['contexto']['puntos']) === 4) style="grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));" @endif>
+                <div class="cv-rejilla {{ count($ciudad['contexto']['puntos']) === 4 ? 'cv-rejilla--2' : 'cv-rejilla--3' }}">
                     @foreach ($ciudad['contexto']['puntos'] as $punto)
                         <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
@@ -140,9 +144,9 @@
                     <h2 id="servicio">{{ $ciudad['servicio_titulo'] ?? 'Servicio de SEO para empresas en '.$ciudad['nombre'] }}</h2>
                 </div>
                 {{-- Son 4 frentes: rejilla propia para que no quede uno suelto en la de 3. --}}
-                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">
+                <div class="cv-rejilla cv-rejilla--2">
                     @foreach ($ciudad['frentes'] as $frente)
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $frente['t'] }}</h3>
                             <p>
                                 {{ $frente['d'] }}
@@ -197,13 +201,13 @@
         {{-- Texto propio en lugar de las tarjetas comunes: repetían las mismas tres
              en todas las ciudades. Ningún caso se presenta como cliente local. --}}
         <section class="cv-section cv-section--alt" aria-labelledby="casos-titulo">
-            <div class="container" style="max-width:48rem;">
+            <div class="container cv-angosto">
                 <span class="cv-badge">Casos de éxito</span>
                 <h2 id="casos-titulo" class="cv-casos__title">{{ $ciudad['casos']['titulo'] }}</h2>
                 @foreach ($ciudad['casos']['parrafos'] as $parrafo)
-                    <p style="margin-top:1rem;line-height:1.7;color:var(--muted);">{{ $parrafo }}</p>
+                    <p class="cv-intro">{{ $parrafo }}</p>
                 @endforeach
-                <p style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:1.25rem;">
+                <p class="cv-enlaces">
                     <a class="cv-casos__todos" href="{{ route('casos.show', $ciudad['casos']['caso']) }}">{{ $ciudad['casos']['enlace'] }} →</a>
                     <a class="cv-casos__todos" href="{{ route('casos.index') }}">Ver todos los casos →</a>
                 </p>
@@ -252,16 +256,16 @@
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="otros">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="otros" style="font-size:1.5rem;">{{ 'SEO fuera de '.$ciudad['nombre'].' y otros servicios' }}</h2>
+                <div class="cv-head">
+                    <h2 id="otros">{{ 'SEO fuera de '.$ciudad['nombre'].' y otros servicios' }}</h2>
                 </div>
-                <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
+                <ul class="cv-pildoras">
                     @foreach ($otrasCiudades as $otra)
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ $otra['url'] }}">{{ $otra['label'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ $otra['url'] }}">{{ $otra['label'] }}</a></li>
                     @endforeach
-                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">SEO orgánico en todo México</a></li>
+                    <li><a class="cv-chip" href="{{ $urlPadre }}">SEO orgánico en todo México</a></li>
                     @foreach ($otrosServicios as $otro)
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.show', $otro['slug']) }}">{{ $otro['nombre'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ route('servicios.show', $otro['slug']) }}">{{ $otro['nombre'] }}</a></li>
                     @endforeach
                 </ul>
             </div>

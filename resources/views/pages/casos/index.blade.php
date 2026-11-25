@@ -17,9 +17,10 @@
 @section('title', 'Casos de éxito: SEO y Google Ads con cifras | RankPro')
 @section('description', 'Casos de éxito de RankPro con cifras verificables: ocupación hotelera, retorno sobre inversión y tráfico orgánico, cada uno con su fuente indicada.')
 @section('canonical', route('casos.index'))
+@section('body_class', 'rd rd-casos')
 
 @push('styles')
-    @vite(['resources/css/web/servicios-conversion.css', 'resources/css/web/casos.css'])
+    @vite(['resources/css/web/servicios-conversion.css', 'resources/css/web/casos.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/casos.css'])
 @endpush
 
 @php

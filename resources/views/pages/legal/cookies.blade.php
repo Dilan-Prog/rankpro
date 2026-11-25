@@ -11,9 +11,10 @@
 @section('title', 'Política de Cookies | RankPro')
 @section('description', 'Qué cookies utiliza el sitio de RankPro, para qué sirven y cómo puedes configurarlas o eliminarlas desde tu navegador.')
 @section('canonical', route('legal.cookies'))
+@section('body_class', 'rd rd-legal')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/legales.css'])
 @endpush
 
 @push('jsonld')

@@ -77,9 +77,10 @@
 @section('description', $descripcion)
 @section('canonical', $urlCaso)
 @section('og_type', 'article')
+@section('body_class', 'rd rd-caso')
 
 @push('styles')
-    @vite(['resources/css/web/servicios-conversion.css', 'resources/css/web/casos.css'])
+    @vite(['resources/css/web/servicios-conversion.css', 'resources/css/web/casos.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/casos.css'])
 @endpush
 
 @push('jsonld')
@@ -221,7 +222,7 @@
         @if ($caso['reto'])
             <section class="cs-bloque" aria-labelledby="reto">
                 <div class="container cs-bloque__grid">
-                    <div><span class="cs-kicker">{{ $numero('reto') }} · El reto</span></div>
+                    <div><span class="cs-kicker"><span class="cs-kicker__num">{{ $numero('reto') }}</span> · El reto</span></div>
                     <div class="cs-bloque__cuerpo">
                         <h2 id="reto">{{ $caso['reto']['titulo'] }}</h2>
                         <div class="cs-prosa">
@@ -238,7 +239,7 @@
         @if ($haySolucion)
             <section class="cs-bloque" aria-labelledby="solucion">
                 <div class="container cs-bloque__grid">
-                    <div><span class="cs-kicker">{{ $numero('solucion') }} · La solución</span></div>
+                    <div><span class="cs-kicker"><span class="cs-kicker__num">{{ $numero('solucion') }}</span> · La solución</span></div>
                     <div class="cs-bloque__cuerpo">
                         <h2 id="solucion">Qué hicimos, servicio por servicio</h2>
                         @php
@@ -287,7 +288,7 @@
         @if ($caso['resultados'])
             <section class="cs-bloque" aria-labelledby="resultados">
                 <div class="container cs-bloque__grid">
-                    <div><span class="cs-kicker">{{ $numero('resultados') }} · Resultados</span></div>
+                    <div><span class="cs-kicker"><span class="cs-kicker__num">{{ $numero('resultados') }}</span> · Resultados</span></div>
                     <div class="cs-bloque__cuerpo">
                         <h2 id="resultados">{{ $caso['resultados']['titulo'] }}</h2>
                         <div class="cs-prosa"><p>{{ $caso['resultados']['parrafo'] }}</p></div>
@@ -307,7 +308,7 @@
         @if ($caso['evolucion'])
             <section class="cs-bloque" aria-labelledby="evolucion">
                 <div class="container cs-bloque__grid">
-                    <div><span class="cs-kicker" id="evolucion">{{ $numero('evolucion') }} · Evolución</span></div>
+                    <div><span class="cs-kicker" id="evolucion"><span class="cs-kicker__num">{{ $numero('evolucion') }}</span> · Evolución</span></div>
                     <div class="cs-bloque__cuerpo">
                         <div class="cs-graficas">
                             @foreach ($caso['evolucion'] as $grafica)

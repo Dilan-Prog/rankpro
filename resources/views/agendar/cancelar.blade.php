@@ -2,9 +2,10 @@
 
 @section('title', 'Cancelar reunión | RankPro Agencia de Marketing Digital')
 @section('description', 'Cancela tu reunión agendada con RankPro.')
+@section('body_class', 'rd rd-agendar')
 
 @push('styles')
-    @vite('resources/css/web/agendar.css')
+    @vite(['resources/css/web/agendar.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/agendar.css'])
 @endpush
 
 {{--

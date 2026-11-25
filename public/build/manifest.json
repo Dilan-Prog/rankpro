@@ -194,7 +194,7 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-CG9CG5Dm.css",
+    "file": "assets/app-CMH9-fea.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
@@ -213,6 +213,11 @@
     "src": "resources/css/web/pages.css",
     "isEntry": true
   },
+  "resources/css/web/rediseno/agendar.css": {
+    "file": "assets/agendar-CSHFxHAb.css",
+    "src": "resources/css/web/rediseno/agendar.css",
+    "isEntry": true
+  },
   "resources/css/web/rediseno/base.css": {
     "file": "assets/base-CUR9FjiR.css",
     "src": "resources/css/web/rediseno/base.css",
@@ -223,9 +228,19 @@
     "src": "resources/css/web/rediseno/blog.css",
     "isEntry": true
   },
+  "resources/css/web/rediseno/casos.css": {
+    "file": "assets/casos-DpVN8Mcw.css",
+    "src": "resources/css/web/rediseno/casos.css",
+    "isEntry": true
+  },
   "resources/css/web/rediseno/contacto.css": {
     "file": "assets/contacto-sYksv1dm.css",
     "src": "resources/css/web/rediseno/contacto.css",
+    "isEntry": true
+  },
+  "resources/css/web/rediseno/legales.css": {
+    "file": "assets/legales-rjVje78u.css",
+    "src": "resources/css/web/rediseno/legales.css",
     "isEntry": true
   },
   "resources/css/web/rediseno/nosotros.css": {
@@ -234,12 +249,12 @@
     "isEntry": true
   },
   "resources/css/web/rediseno/servicios.css": {
-    "file": "assets/servicios-CMOibNdV.css",
+    "file": "assets/servicios-DPInzOnX.css",
     "src": "resources/css/web/rediseno/servicios.css",
     "isEntry": true
   },
   "resources/css/web/servicios-conversion.css": {
-    "file": "assets/servicios-conversion-BvDVToGf.css",
+    "file": "assets/servicios-conversion-CIVUoB7t.css",
     "src": "resources/css/web/servicios-conversion.css",
     "isEntry": true
   },

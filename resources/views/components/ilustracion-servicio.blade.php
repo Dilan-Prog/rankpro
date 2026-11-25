@@ -19,6 +19,26 @@
             @endforeach
             <path d="M52 136l6-7 6 7M58 130v15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
             @break
+        @case ('web')
+            <rect x="1" y="1" width="518" height="398" rx="24" fill="#fff" stroke="#E3E9E6"/>
+            <path d="M1 25A24 24 0 0 1 25 1H495A24 24 0 0 1 519 25V45H1Z" fill="#FAFBFA"/><path d="M1 45H519" stroke="#EEF2F0"/>
+            <g fill="#E3E9E6"><circle cx="24" cy="23" r="5"/><circle cx="40" cy="23" r="5"/><circle cx="56" cy="23" r="5"/></g><rect x="78" y="13" width="300" height="20" rx="10" fill="#F4F7F5"/>
+            <rect x="28" y="66" width="84" height="12" rx="6" fill="#0E1A15"/><g fill="#EEF2F0"><rect x="270" y="67" width="46" height="10" rx="5"/><rect x="328" y="67" width="46" height="10" rx="5"/></g><rect x="396" y="58" width="96" height="28" rx="10" fill="#0B7D58"/>
+            <rect x="28" y="112" width="230" height="20" rx="8" fill="#0E1A15"/><rect x="28" y="142" width="170" height="20" rx="8" fill="#0F9D6E"/><g fill="#E3E9E6"><rect x="28" y="178" width="220" height="8" rx="4"/><rect x="28" y="194" width="184" height="8" rx="4"/></g><rect x="28" y="220" width="126" height="36" rx="12" fill="#0B7D58"/>
+            <rect x="292" y="108" width="200" height="148" rx="18" fill="#E6F4EE"/><path d="M292 226l54-44 40 30 46-56 60 60v22a18 18 0 0 1-18 18H310a18 18 0 0 1-18-18z" fill="#9CD3BD"/><circle cx="336" cy="146" r="14" fill="#0F9D6E"/>
+            @foreach ([28, 188, 348] as $x)
+                <rect x="{{ $x }}" y="282" width="144" height="92" rx="16" fill="#F4F7F5"/><rect x="{{ $x + 16 }}" y="298" width="26" height="26" rx="8" fill="#C6E7D9"/><rect x="{{ $x + 16 }}" y="336" width="90" height="8" rx="4" fill="#C9D3CE"/><rect x="{{ $x + 16 }}" y="352" width="62" height="7" rx="3.5" fill="#E3E9E6"/>
+            @endforeach
+            @break
+        @case ('flujo')
+            <rect x="1" y="1" width="518" height="398" rx="24" fill="#fff" stroke="#E3E9E6"/>
+            <g fill="none" stroke="#9CD3BD" stroke-width="3" stroke-linecap="round"><path d="M172 110h64"/><path d="M260 154v44c0 14-6 20-20 20H140c-14 0-20 6-20 20v24"/><path d="M260 154v108"/><path d="M260 154v44c0 14 6 20 20 20h100c14 0 20 6 20 20v24"/></g>
+            <rect x="36" y="62" width="136" height="96" rx="18" fill="#E6F4EE" stroke="#0F9D6E" stroke-width="2"/><rect x="54" y="80" width="28" height="28" rx="9" fill="#0B7D58"/><rect x="54" y="122" width="80" height="9" rx="4.5" fill="#0E1A15"/><rect x="54" y="138" width="56" height="7" rx="3.5" fill="#9CD3BD"/>
+            <rect x="236" y="62" width="248" height="92" rx="18" fill="#0B1712"/><circle cx="276" cy="108" r="18" fill="#4FD1A5"/><path d="M268 108l6 6 11-12" fill="none" stroke="#0B1712" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="310" y="92" width="126" height="10" rx="5" fill="#B5C4BD"/><rect x="310" y="112" width="84" height="8" rx="4" fill="#3A5347"/>
+            @foreach ([52, 192, 332] as $x)
+                <rect x="{{ $x }}" y="264" width="136" height="100" rx="18" fill="#F4F7F5"/><rect x="{{ $x + 18 }}" y="282" width="28" height="28" rx="9" fill="#C6E7D9"/><rect x="{{ $x + 18 }}" y="324" width="76" height="9" rx="4.5" fill="#0E1A15"/><rect x="{{ $x + 18 }}" y="341" width="52" height="7" rx="3.5" fill="#C9D3CE"/>
+            @endforeach
+            @break
         @case ('app')
             <rect x="262" y="60" width="180" height="300" rx="30" fill="#fff" stroke="#E3E9E6"/>
             <rect x="280" y="86" width="144" height="90" rx="16" fill="#0B1712"/><rect x="296" y="106" width="70" height="10" rx="5" fill="#4FD1A5"/><rect x="296" y="126" width="104" height="7" rx="3.5" fill="#3A5347"/>

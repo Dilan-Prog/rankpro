@@ -8,9 +8,10 @@
 @section('title', $landing['meta_title'])
 @section('description', $landing['meta_description'])
 @section('canonical', route('servicios.social', $landing['slug']))
+@section('body_class', 'rd rd-servicio rd-landing')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -21,7 +22,6 @@
     $urlPadre = route('servicios.show', $servicio['slug']);
     $urlLanding = route('servicios.social', $landing['slug']);
     $wa = 'https://wa.me/525562230266?text='.rawurlencode('Hola RankPro, quiero cotizar redes sociales en '.$landing['nombre'].'.');
-    $rejilla = 'display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));';
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
     $icoCheck = '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
@@ -84,25 +84,28 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
+                <div class="cv-hero__grid">
+                <div>
                     <h1 class="cv-title">{{ $landing['h1'] }}</h1>
-                    <p class="cv-lead" style="max-width:44rem;">{{ $landing['intro'] }}</p>
+                    <p class="cv-lead">{{ $landing['intro'] }}</p>
                     <div class="cv-actions">
                         <a href="{{ $wa }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Cotizar mi estrategia de redes {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ route('agendar.mostrar') }}" class="cv-btn cv-btn--ghost">Prefiero agendar una llamada</a>
                     </div>
+                </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'social'])
                 </div>
             </div>
         </section>
 
         @foreach ($landing['secciones'] as $i => $seccion)
             <section class="cv-section cv-section--tight {{ $i % 2 ? 'cv-section--alt' : '' }}" aria-labelledby="seccion-{{ $i }}">
-                <div class="container" @empty($seccion['puntos']) style="max-width:48rem;" @endempty>
-                    <div class="cv-head" style="margin-bottom:1.5rem;">
+                <div class="container @empty($seccion['puntos']) cv-angosto @endempty">
+                    <div class="cv-head">
                         <h2 id="seccion-{{ $i }}">{{ $seccion['titulo'] }}</h2>
                     </div>
                     @foreach ($seccion['parrafos'] ?? [] as $parrafo)
-                        <p style="margin-top:1rem;line-height:1.7;color:var(--muted);">{{ $parrafo }}</p>
+                        <p class="cv-intro">{{ $parrafo }}</p>
                     @endforeach
                     @isset($seccion['lista'])
                         <ul class="cv-checklist">
@@ -112,9 +115,9 @@
                         </ul>
                     @endisset
                     @isset($seccion['puntos'])
-                        <div style="{{ $rejilla }}">
+                        <div class="cv-rejilla cv-rejilla--3">
                             @foreach ($seccion['puntos'] as $punto)
-                                <div class="cv-card-soft" style="background:#ffffff;">
+                                <div class="cv-card-soft">
                                     <h3>{{ $punto['t'] }}</h3>
                                     <p>
                                         {{ $punto['d'] }}
@@ -169,18 +172,18 @@
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="mas">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="mas" style="font-size:1.5rem;">Más información</h2>
+                <div class="cv-head">
+                    <h2 id="mas">Más información</h2>
                 </div>
-                <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
-                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de gestión de redes sociales</a></li>
+                <ul class="cv-pildoras">
+                    <li><a class="cv-chip" href="{{ $urlPadre }}">Servicio de gestión de redes sociales</a></li>
                     @foreach ($landing['guias'] ?? ['cuanto-cuesta-manejo-de-redes-sociales', 'community-manager', 'social-media-ads'] as $slugGuia)
                         @isset($guias[$slugGuia])
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
+                            <li><a class="cv-chip" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
                     @endforeach
                     @foreach ($afines as $otra)
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ $otra['url'] }}">{{ $otra['label'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ $otra['url'] }}">{{ $otra['label'] }}</a></li>
                     @endforeach
                 </ul>
             </div>

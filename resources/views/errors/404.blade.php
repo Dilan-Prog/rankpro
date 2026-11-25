@@ -16,9 +16,10 @@
 @section('robots', 'noindex, follow')
 @section('title', 'Página no encontrada · RankPro')
 @section('description', 'La página que buscas no existe o cambió de dirección. Consulta nuestros servicios de marketing digital o vuelve al inicio.')
+@section('body_class', 'rd rd-404')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/legales.css'])
 @endpush
 
 @section('content')

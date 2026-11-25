@@ -9,9 +9,10 @@
 @section('title', $landing['meta_title'])
 @section('description', $landing['meta_description'])
 @section('canonical', route('servicios.ads', $landing['slug']))
+@section('body_class', 'rd rd-servicio rd-landing')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -49,8 +50,6 @@
         ['Tardar en contestar', 'Un contacto que espera hasta mañana suele haber hablado ya con otro proveedor.'],
         ['Juzgar por los clics', 'Un anuncio barato que atrae a quien no compra sale más caro que uno con pocos clics útiles.'],
     ];
-
-    $celda = 'padding:0.75rem;vertical-align:top;';
 
     $etapas = [
         ['Diagnóstico', 'Auditamos la cuenta o definimos la meta si no existe'],
@@ -120,20 +119,23 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
+                <div class="cv-hero__grid">
+                <div>
                     <h1 class="cv-title">{{ $landing['h1'] }}</h1>
-                    <p class="cv-lead" style="max-width:44rem;">{{ $landing['intro'] }}</p>
+                    <p class="cv-lead">{{ $landing['intro'] }}</p>
                     <div class="cv-actions">
                         <a href="{{ $urlPadre }}" class="cv-btn cv-btn--primary">Auditar mi cuenta gratis {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ $wa }}" class="cv-btn cv-btn--ghost" target="_blank" rel="noopener nofollow">Escribir por WhatsApp</a>
                     </div>
+                </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'panel'])
                 </div>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="que-es">
             <div class="container">
-                <div class="cv-head" style="margin-bottom:0;">
+                <div class="cv-head">
                     <h2 id="que-es">Qué es la publicidad digital con enfoque en resultados</h2>
                     <p>Es publicar anuncios en plataformas digitales y optimizarlos con datos. La diferencia con «hacer anuncios» está en la estrategia, el seguimiento y el reporte.</p>
                 </div>
@@ -141,23 +143,23 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="estrategia">
-            <div class="container" style="max-width:56rem;">
+            <div class="container cv-angosto">
                 <div class="cv-head">
                     <h2 id="estrategia">Cómo armamos una estrategia de publicidad digital</h2>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="estrategia">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="estrategia">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="padding:0.75rem;">Etapa</th>
-                                <th scope="col" style="padding:0.75rem;">Qué hacemos</th>
+                            <tr>
+                                <th scope="col">Etapa</th>
+                                <th scope="col">Qué hacemos</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($etapas as [$etapa, $detalle])
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $etapa }}</th>
-                                    <td style="padding:0.75rem;">{{ $detalle }}</td>
+                                <tr>
+                                    <th scope="row">{{ $etapa }}</th>
+                                    <td>{{ $detalle }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -167,34 +169,34 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="canal">
-            <div class="container" style="max-width:60rem;">
+            <div class="container">
                 <div class="cv-head">
                     <h2 id="canal">Qué canal usar según tu objetivo</h2>
                     <p>Una agencia de publicidad digital no debería empezar por la plataforma, sino por cómo compra tu cliente.</p>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="canal">
-                    <table style="width:100%;min-width:36rem;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="canal">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="{{ $celda }}">Objetivo</th>
-                                <th scope="col" style="{{ $celda }}">Canal recomendado</th>
-                                <th scope="col" style="{{ $celda }}">Cuándo conviene</th>
+                            <tr>
+                                <th scope="col">Objetivo</th>
+                                <th scope="col">Canal recomendado</th>
+                                <th scope="col">Cuándo conviene</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($objetivos as [$objetivo, $canal, $cuando])
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="{{ $celda }}text-align:left;">{{ $objetivo }}</th>
-                                    <td style="{{ $celda }}">{{ $canal }}</td>
-                                    <td style="{{ $celda }}">{{ $cuando }}</td>
+                                <tr>
+                                    <th scope="row">{{ $objetivo }}</th>
+                                    <td>{{ $canal }}</td>
+                                    <td>{{ $cuando }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
 
-                <h3 style="margin-top:2.5rem;font-size:1.125rem;font-weight:700;color:var(--ink);">Cómo decidimos el canal</h3>
-                <p style="margin-top:0.75rem;line-height:1.7;color:var(--muted);">Miramos cuatro cosas. El tipo de negocio: no se anuncia igual un despacho que una tienda. La etapa de compra: si tu cliente apenas descubre el problema o ya compara precios. El presupuesto: si alcanza para reunir datos en un canal antes de abrir otro. Y tu capacidad de atender: de poco sirve duplicar los mensajes si el equipo ya no puede con los que recibe.</p>
+                <h3 class="cv-h3">Cómo decidimos el canal</h3>
+                <p class="cv-intro">Miramos cuatro cosas. El tipo de negocio: no se anuncia igual un despacho que una tienda. La etapa de compra: si tu cliente apenas descubre el problema o ya compara precios. El presupuesto: si alcanza para reunir datos en un canal antes de abrir otro. Y tu capacidad de atender: de poco sirve duplicar los mensajes si el equipo ya no puede con los que recibe.</p>
             </div>
         </section>
 
@@ -203,12 +205,12 @@
                 <div class="cv-head">
                     <h2 id="relacion">Cómo se relaciona con Google Ads y redes sociales</h2>
                 </div>
-                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));">
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                <div class="cv-rejilla cv-rejilla--2">
+                    <div class="cv-card-soft">
                         <h3>Google Ads, para la demanda que ya existe</h3>
                         <p>Suele ser la primera pieza, porque permite medir pronto si hay interés. En esta página decidimos qué papel juega dentro del plan; cómo se arma y se optimiza una cuenta está en <a href="{{ $urlPadre }}">agencia de Google Ads</a>.</p>
                     </div>
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                    <div class="cv-card-soft">
                         <h3>Redes sociales, para crear interés</h3>
                         <p>La pauta en redes pone tu oferta frente a personas que todavía no la buscaban y rinde más con contenido constante detrás. La parte de contenido, comunidad y campañas pagadas vive en <a href="{{ $urlSocial }}">Social Media</a>.</p>
                     </div>
@@ -217,17 +219,17 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="reporte">
-            <div class="container" style="max-width:56rem;">
-                <div class="cv-head" style="margin-bottom:1.5rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="reporte">Qué reportamos</h2>
                     <p>No presumimos impresiones. Sin contratos forzosos y con la cuenta a tu nombre, revisamos contigo estas métricas:</p>
                 </div>
-                <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;line-height:1.7;color:var(--muted);">
+                <ul class="cv-lista">
                     @foreach ($metricas as [$metrica, $detalle])
-                        <li><strong style="color:var(--ink);">{{ $metrica }}.</strong> {{ $detalle }}</li>
+                        <li><strong>{{ $metrica }}.</strong> {{ $detalle }}</li>
                     @endforeach
                 </ul>
-                <p style="margin-top:1.25rem;line-height:1.7;color:var(--muted);">
+                <p class="cv-intro">
                     El seguimiento se configura con
                     @isset($guias['google-analytics-4'])<a href="{{ route('blog.show', 'google-analytics-4') }}">Google Analytics 4</a>@else Google Analytics 4 @endisset
                     y
@@ -238,23 +240,23 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="pagina">
-            <div class="container" style="max-width:56rem;">
-                <div class="cv-head" style="margin-bottom:1.5rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="pagina">La publicidad no sustituye una página que convierta</h2>
                     <p>Si la página es lenta o confusa, pagas por clics que no compran.</p>
                 </div>
-                <p style="line-height:1.7;color:var(--muted);">Antes de subir la inversión revisamos que la página repita la promesa del anuncio, cargue bien con datos móviles y deje claro el siguiente paso. Si el problema es la velocidad, se corrige con <a href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">optimización de PageSpeed y Core Web Vitals</a>; si hace falta una página nueva, con nuestro <a href="{{ $urlWeb }}">servicio de desarrollo web</a>.@isset($guias['cuanto-cuesta-google-ads']) Para calcular la parte de medios, lee <a href="{{ route('blog.show', 'cuanto-cuesta-google-ads') }}">{{ $guias['cuanto-cuesta-google-ads'] }}</a>@endisset</p>
+                <p class="cv-intro">Antes de subir la inversión revisamos que la página repita la promesa del anuncio, cargue bien con datos móviles y deje claro el siguiente paso. Si el problema es la velocidad, se corrige con <a href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">optimización de PageSpeed y Core Web Vitals</a>; si hace falta una página nueva, con nuestro <a href="{{ $urlWeb }}">servicio de desarrollo web</a>.@isset($guias['cuanto-cuesta-google-ads']) Para calcular la parte de medios, lee <a href="{{ route('blog.show', 'cuanto-cuesta-google-ads') }}">{{ $guias['cuanto-cuesta-google-ads'] }}</a>@endisset</p>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="errores">
-            <div class="container" style="max-width:56rem;">
-                <div class="cv-head" style="margin-bottom:1.5rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="errores">Errores comunes al invertir en publicidad</h2>
                 </div>
-                <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;line-height:1.7;color:var(--muted);">
+                <ul class="cv-lista">
                     @foreach ($errores as [$error, $porque])
-                        <li><strong style="color:var(--ink);">{{ $error }}.</strong> {{ $porque }}</li>
+                        <li><strong>{{ $error }}.</strong> {{ $porque }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -267,7 +269,7 @@
                 </div>
                 <div class="cv-faq">
                     @foreach ($landing['faqs'] as $i => $faq)
-                        <div class="cv-faq__item" style="background:#ffffff;">
+                        <div class="cv-faq__item">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">
                                 <span>{{ $faq['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}

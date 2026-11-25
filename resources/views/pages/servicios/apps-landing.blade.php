@@ -9,9 +9,10 @@
 @section('title', $landing['meta_title'])
 @section('description', $landing['meta_description'])
 @section('canonical', route('servicios.apps', $landing['slug']))
+@section('body_class', 'rd rd-servicio rd-landing')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -24,7 +25,6 @@
     $urlLanding = route('servicios.apps', $landing['slug']);
     $wa = 'https://wa.me/525562230266';
     $waCotizar = $wa.'?text='.rawurlencode('Hola RankPro, quiero cotizar una app para mi empresa en '.$landing['nombre'].'.');
-    $rejilla = 'display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));';
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
     $icoCheck = '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
@@ -76,7 +76,7 @@
     @include('components.navbar')
 
     <main>
-        <section class="cv-hero" style="background:#ffffff;">
+        <section class="cv-hero">
             <div class="container">
                 <nav class="breadcrumb" aria-label="Ruta de navegación">
                     <ol>
@@ -90,20 +90,23 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
+                <div class="cv-hero__grid">
+                <div>
                     <h1 class="cv-title">{{ $landing['h1'] }}</h1>
-                    <p class="cv-lead" style="max-width:44rem;">{{ $landing['intro'] }}</p>
+                    <p class="cv-lead">{{ $landing['intro'] }}</p>
                     <div class="cv-actions">
                         <a href="{{ $urlPadre }}" class="cv-btn cv-btn--primary">Cotizar mi app {!! $ico($icoFlecha, 17) !!}</a>
                         <a href="{{ $urlWeb }}" class="cv-btn cv-btn--ghost">Ver desarrollo web</a>
                     </div>
                 </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'app'])
+                </div>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="sector">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head cv-head--left" style="margin-bottom:0;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="sector">{{ $landing['sector']['titulo'] }}</h2>
                     @foreach ($landing['sector']['puntos'] as $parrafo)
                         <p>{{ $parrafo }}</p>
@@ -117,9 +120,9 @@
                 <div class="cv-head">
                     <h2 id="publico">{{ $landing['publico']['titulo'] }}</h2>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['publico']['puntos'] as $punto)
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
                             <p>{{ $punto['d'] }}</p>
                         </div>
@@ -129,8 +132,8 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="incluye">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="incluye">{{ $landing['incluye']['titulo'] }}</h2>
                     <p>{{ $landing['incluye']['texto'] }}</p>
                 </div>
@@ -148,15 +151,15 @@
                     <h2 id="trabajo">{{ $landing['trabajo']['titulo'] }}</h2>
                     <p>{{ $landing['trabajo']['texto'] }}</p>
                 </div>
-                <ol style="{{ $rejilla }}list-style:none;padding:0;">
+                <ol class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['trabajo']['puntos'] as $punto)
-                        <li class="cv-card-soft" style="background:#ffffff;">
+                        <li class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
                             <p>{{ $punto['d'] }}</p>
                         </li>
                     @endforeach
                 </ol>
-                <p style="margin-top:1.5rem;line-height:1.7;color:var(--muted);">Más detalle en @isset($guias['ciclo-de-desarrollo-de-una-app'])<a href="{{ route('blog.show', 'ciclo-de-desarrollo-de-una-app') }}">el ciclo de desarrollo de una app</a> y en @endisset<a href="{{ $urlPadre }}">nuestro servicio de aplicaciones móviles</a>.</p>
+                <p class="cv-intro">Más detalle en @isset($guias['ciclo-de-desarrollo-de-una-app'])<a href="{{ route('blog.show', 'ciclo-de-desarrollo-de-una-app') }}">el ciclo de desarrollo de una app</a> y en @endisset<a href="{{ $urlPadre }}">nuestro servicio de aplicaciones móviles</a>.</p>
             </div>
         </section>
 
@@ -165,7 +168,7 @@
                 <div class="cv-head">
                     <h2 id="operacion">{{ $landing['operacion']['titulo'] }}</h2>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla cv-rejilla--3">
                     @foreach ($landing['operacion']['puntos'] as $punto)
                         <div class="cv-card-soft">
                             <h3>{{ $punto['t'] }}</h3>
@@ -177,8 +180,8 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="cuidados">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="cuidados">{{ $landing['cuidados']['titulo'] }}</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -190,8 +193,8 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="errores">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="errores">{{ $landing['errores']['titulo'] }}</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -209,7 +212,7 @@
                 </div>
                 <div class="cv-faq">
                     @foreach ($landing['faqs'] as $i => $faq)
-                        <div class="cv-faq__item" style="background:#ffffff;">
+                        <div class="cv-faq__item">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">
                                 <span>{{ $faq['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
@@ -241,22 +244,22 @@
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="revisa">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="revisa" style="font-size:1.5rem;">Más información</h2>
+                <div class="cv-head">
+                    <h2 id="revisa">Más información</h2>
                 </div>
-                <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
-                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlPadre }}">Servicio de aplicaciones móviles</a></li>
-                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ $urlWeb }}">Desarrollo web</a></li>
+                <ul class="cv-pildoras">
+                    <li><a class="cv-chip" href="{{ $urlPadre }}">Servicio de aplicaciones móviles</a></li>
+                    <li><a class="cv-chip" href="{{ $urlWeb }}">Desarrollo web</a></li>
                     @foreach (['cuanto-cuesta-crear-una-app', 'como-crear-una-app-para-mi-negocio', 'diseno-de-aplicaciones-moviles'] as $slugGuia)
                         @isset($guias[$slugGuia])
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
+                            <li><a class="cv-chip" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
                     @endforeach
                     @isset($landing['web'])
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.web', $landing['web']) }}">Páginas web en {{ $landing['nombre'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ route('servicios.web', $landing['web']) }}">Páginas web en {{ $landing['nombre'] }}</a></li>
                     @endisset
                     @isset($landing['seo_ciudad'])
-                        <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
+                        <li><a class="cv-chip" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
                     @endisset
                 </ul>
             </div>

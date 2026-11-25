@@ -12,9 +12,10 @@
 @section('title', 'Aviso de Privacidad | RankPro')
 @section('description', 'Aviso de privacidad de RankPro conforme a la LFPDPPP: qué datos personales tratamos, con qué finalidad y cómo ejercer tus derechos ARCO.')
 @section('canonical', route('legal.privacidad'))
+@section('body_class', 'rd rd-legal')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/legales.css'])
 @endpush
 
 @push('jsonld')

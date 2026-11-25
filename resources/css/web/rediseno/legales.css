@@ -1,0 +1,211 @@
+/* Rediseño: páginas legales (.rd-legal) y error 404 (.rd-404). Ver base.css. */
+
+/* ---------- Legales: hero y lectura ---------- */
+
+.rd-legal .page-hero {
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.rd-legal .page-section {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.rd-legal .page-section__inner {
+    max-width: 46rem;
+}
+
+.rd-legal .prose {
+    overflow-wrap: break-word;
+}
+
+.rd-legal .prose .prose__updated {
+    justify-self: start;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    padding: 0.4375rem 0.75rem;
+    border-radius: 999px;
+    background: var(--rp-green-50);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--rp-green-600);
+}
+
+.rd-legal .prose > h2 {
+    margin-top: 2.25rem;
+    padding-top: 2.25rem;
+    border-top: 1px solid var(--border);
+    font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+    line-height: 1.2;
+    scroll-margin-top: 4.5rem;
+}
+
+.rd-legal .prose > ul,
+.rd-legal .prose > ol {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0.25rem 0 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--rp-gray-700);
+}
+
+.rd-legal .prose > ul {
+    padding: clamp(1.125rem, 3vw, 1.5rem);
+    border-radius: var(--rp-r-lg);
+    background: var(--surface);
+    list-style: none;
+}
+
+.rd-legal .prose > ul > li {
+    position: relative;
+    margin: 0;
+    padding-left: 1.375rem;
+}
+
+.rd-legal .prose > ul > li::before {
+    content: '';
+    position: absolute;
+    top: 0.6em;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rp-green-600);
+}
+
+.rd-legal .prose > ol {
+    padding-left: 1.5rem;
+}
+
+/* ---------- Legales: índice ---------- */
+
+.rd-legal .legal-toc {
+    padding: 1.25rem;
+    border-radius: var(--rp-r-lg);
+    background: #ffffff;
+    box-shadow: var(--rp-shadow-1);
+}
+
+.rd-legal .legal-toc h2 {
+    margin: 0 0 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+}
+
+.rd-legal .legal-toc ol {
+    margin: 0 0 0 1.5rem;
+    line-height: 1.4;
+}
+
+.rd-legal .legal-toc li {
+    margin: 0;
+}
+
+.rd-legal .legal-toc li::marker {
+    color: var(--rp-green-600);
+    font-weight: 700;
+}
+
+.rd-legal .legal-toc a {
+    display: block;
+    padding-block: 0.6875rem;
+    color: var(--ink);
+}
+
+.rd-legal .legal-toc a:hover {
+    color: var(--rp-green-600);
+}
+
+@media (min-width: 1024px) {
+    .rd-legal .page-section__inner {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 46rem);
+        column-gap: clamp(2.5rem, 5vw, 4.5rem);
+        max-width: none;
+    }
+
+    .rd-legal .prose > * {
+        grid-column: 2;
+        min-width: 0;
+    }
+
+    /* El índice abarca todas las filas del texto (las implícitas vacías miden 0)
+       para que sticky pueda recorrer la página entera. */
+    .rd-legal .prose > .legal-toc {
+        grid-column: 1;
+        grid-row: 1 / span 120;
+        align-self: start;
+        position: sticky;
+        top: 6rem;
+        max-height: calc(100vh - 7.5rem);
+        margin-bottom: 0;
+        overflow-y: auto;
+    }
+
+    .rd-legal .legal-toc a {
+        padding-block: 0.375rem;
+    }
+
+    .rd-legal .prose > .prose__updated {
+        grid-row: 1;
+    }
+
+    /* El índice ya no precede al texto: la primera sección no lleva filete. */
+    .rd-legal .prose > .legal-toc + h2 {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+}
+
+/* ---------- 404 ---------- */
+
+.rd-404 .services {
+    padding-top: clamp(1rem, 2vw, 1.5rem);
+}
+
+.rd-404 .page-hero {
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.rd-404 .page-section__inner {
+    max-width: none;
+}
+
+.rd-404 .prose h2 {
+    margin-bottom: 1.5rem;
+}
+
+.rd-404 .prose ul {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    list-style: none;
+}
+
+.rd-404 .prose li {
+    margin: 0;
+    padding: 1.25rem 1.375rem;
+    border: 1px solid var(--border);
+    border-radius: var(--rp-r-lg);
+    background: #ffffff;
+    box-shadow: var(--rp-shadow-1);
+    line-height: 1.5;
+    color: var(--rp-gray-700);
+}
+
+.rd-404 .prose li a {
+    display: inline-block;
+    padding-block: 0.625rem;
+    margin-block: -0.625rem;
+    font-weight: 800;
+}
+
+@media (min-width: 640px) {
+    .rd-404 .prose ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
