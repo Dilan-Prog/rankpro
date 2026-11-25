@@ -298,6 +298,7 @@
                 <div class="container cv-angosto">
                     <div class="cv-head">
                         <h2 id="ciudades">Desarrollo de apps por ciudad</h2>
+                        <p>Trabajamos de forma remota con empresas de todo México. Si tu negocio está en Querétaro, conoce cómo lo hacemos.</p>
                     </div>
                     <ul class="cv-pildoras">
                         @foreach ($landings as $textoLanding => $ruta)
