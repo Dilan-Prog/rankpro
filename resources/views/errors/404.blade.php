@@ -57,7 +57,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 id="servicios-404">Quizá buscabas uno de nuestros servicios</h2>
-                    <p>Estos son los siete frentes que trabajamos. Entra al que corresponda a lo que necesitas.</p>
+                    <p>Estos son los ocho frentes que trabajamos. Entra al que corresponda a lo que necesitas.</p>
                 </div>
 
                 <div class="services__grid">

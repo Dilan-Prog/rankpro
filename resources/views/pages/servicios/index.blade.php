@@ -55,9 +55,10 @@
                 <div class="page-hero__inner">
                     <h1>Servicios de Marketing Digital</h1>
                     <p class="page-hero__lead">
-                        Trabajamos seis frentes que se refuerzan entre sí: captación pagada, posicionamiento
+                        Trabajamos ocho frentes que se refuerzan entre sí: captación pagada, posicionamiento
                         orgánico, la plataforma donde aterriza el tráfico, su velocidad, la medición que
-                        permite decidir y la construcción de marca en redes. No todos aplican a todos los
+                        permite decidir, la construcción de marca en redes, la automatización de procesos y las
+                        aplicaciones móviles. No todos aplican a todos los
                         negocios, y parte de nuestro trabajo es decirte cuáles sí.
                     </p>
                     <div class="page-hero__actions">
