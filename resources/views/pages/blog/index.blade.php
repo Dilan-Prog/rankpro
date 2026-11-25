@@ -38,8 +38,10 @@
     @section('robots', 'noindex, follow')
 @endif
 
+@section('body_class', 'rd rd-blog')
+
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/blog.css'])
 @endpush
 
 @push('head')

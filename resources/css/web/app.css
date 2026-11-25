@@ -17,7 +17,8 @@
        y para fondos con texto blanco se usa el verde 600 (5.1:1). */
     --brand-texto: #0B7D58;
     --ink: #0E1A15;
-    --muted: #66756E;
+    /* #66756E del diseño da 4.49 sobre --surface; este llega a AA en todos los fondos claros. */
+    --muted: #5F6E67;
     --surface: #F4F7F5;
     --border: #E3E9E6;
     --max-width: 1200px;

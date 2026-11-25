@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const titulos = Array.from(contenido.querySelectorAll('h2[id], h3[id]'))
+    // El id va en el ancla (.ancla-titulo) que el Markdown pone dentro del título.
+    const titulos = Array.from(contenido.querySelectorAll('h2[id], h3[id], h2 [id], h3 [id]'))
         .filter((titulo) => enlaces.has(titulo.id));
 
     if (titulos.length === 0) {

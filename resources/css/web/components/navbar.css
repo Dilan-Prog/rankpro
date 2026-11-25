@@ -21,6 +21,7 @@
 }
 
 .navbar__brand {
+    min-height: 44px;
     display: flex;
     align-items: center;
     text-decoration: none;

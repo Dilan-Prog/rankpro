@@ -189,27 +189,27 @@
     "isEntry": true
   },
   "resources/css/web/agendar.css": {
-    "file": "assets/agendar-CFP9MxyJ.css",
+    "file": "assets/agendar-xYWuaBnW.css",
     "src": "resources/css/web/agendar.css",
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-DqCzGBJc.css",
+    "file": "assets/app-Cv231fG0.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
   "resources/css/web/blog.css": {
-    "file": "assets/blog-C5MICRjd.css",
+    "file": "assets/blog-CjaNS8xO.css",
     "src": "resources/css/web/blog.css",
     "isEntry": true
   },
   "resources/css/web/casos.css": {
-    "file": "assets/casos-QPxOOfcP.css",
+    "file": "assets/casos-CwJeigo5.css",
     "src": "resources/css/web/casos.css",
     "isEntry": true
   },
   "resources/css/web/pages.css": {
-    "file": "assets/pages-BOVmj6A9.css",
+    "file": "assets/pages-DPHVW81y.css",
     "src": "resources/css/web/pages.css",
     "isEntry": true
   },
@@ -218,13 +218,28 @@
     "src": "resources/css/web/rediseno/base.css",
     "isEntry": true
   },
+  "resources/css/web/rediseno/blog.css": {
+    "file": "assets/blog-BMRxVXWR.css",
+    "src": "resources/css/web/rediseno/blog.css",
+    "isEntry": true
+  },
+  "resources/css/web/rediseno/contacto.css": {
+    "file": "assets/contacto-sYksv1dm.css",
+    "src": "resources/css/web/rediseno/contacto.css",
+    "isEntry": true
+  },
+  "resources/css/web/rediseno/nosotros.css": {
+    "file": "assets/nosotros-Cr3WSx5L.css",
+    "src": "resources/css/web/rediseno/nosotros.css",
+    "isEntry": true
+  },
   "resources/css/web/rediseno/servicios.css": {
-    "file": "assets/servicios-bvNYuWqe.css",
+    "file": "assets/servicios-yG9w5RO1.css",
     "src": "resources/css/web/rediseno/servicios.css",
     "isEntry": true
   },
   "resources/css/web/servicios-conversion.css": {
-    "file": "assets/servicios-conversion-BTiXk70D.css",
+    "file": "assets/servicios-conversion-Cy1RqBoX.css",
     "src": "resources/css/web/servicios-conversion.css",
     "isEntry": true
   },
@@ -281,7 +296,7 @@
     "isEntry": true
   },
   "resources/js/blog-publico.js": {
-    "file": "assets/blog-publico-BSpZo1Ax.js",
+    "file": "assets/blog-publico-AbC_bJkU.js",
     "name": "blog-publico",
     "src": "resources/js/blog-publico.js",
     "isEntry": true
@@ -503,7 +518,7 @@
     ]
   },
   "resources/js/servicios-conversion.js": {
-    "file": "assets/servicios-conversion-uJPgqOUf.js",
+    "file": "assets/servicios-conversion-CzAAQoC9.js",
     "name": "servicios-conversion",
     "src": "resources/js/servicios-conversion.js",
     "isEntry": true

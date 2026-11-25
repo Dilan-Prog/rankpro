@@ -537,11 +537,6 @@ a.paginacion__enlace:hover {
     line-height: 1.45;
 }
 
-.toc__item--n3 {
-    padding-left: 0.875rem;
-    font-size: 0.8125rem;
-}
-
 .toc__enlace {
     color: var(--muted);
     font-size: 0.875rem;

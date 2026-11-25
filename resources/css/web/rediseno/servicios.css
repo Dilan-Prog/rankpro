@@ -297,7 +297,7 @@
 }
 
 .rd .cv-calc__range {
-    height: 28px;
+    height: 44px;
     cursor: pointer;
 }
 
@@ -1790,4 +1790,10 @@
 
 .rd .cv-flow-card__stat-l {
     overflow-wrap: anywhere;
+}
+
+.rd .cv-casos__todos {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
 }

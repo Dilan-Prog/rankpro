@@ -77,7 +77,7 @@
                 <div class="services__grid">
                     @foreach ($servicios as $servicio)
                         <a class="service-card" href="{{ route('servicios.show', $servicio['slug']) }}" style="text-decoration: none;">
-                            <div class="service-card__icon {{ $servicio['gradient'] }}">
+                            <div class="service-card__icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $servicio['icon'] !!}</svg>
                             </div>
                             <h3 class="service-card__title">{{ $servicio['nombre'] }}</h3>

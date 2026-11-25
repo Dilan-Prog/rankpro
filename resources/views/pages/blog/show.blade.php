@@ -15,8 +15,10 @@
     @section('og_image_alt', $articulo->imagen_alt ?: $articulo->titulo)
 @endif
 
+@section('body_class', 'rd rd-articulo')
+
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/blog.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/blog.css'])
 @endpush
 
 @push('scripts')

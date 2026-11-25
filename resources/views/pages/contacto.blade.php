@@ -3,9 +3,10 @@
 @section('title', 'Contacto | RankPro Agencia de Marketing Digital')
 @section('description', 'Escríbenos por WhatsApp al +52 55 6223 0266 o por correo. Diagnóstico inicial sin costo para tu proyecto de marketing digital en México.')
 @section('canonical', route('contacto'))
+@section('body_class', 'rd rd-contacto')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/contacto.css'])
 @endpush
 
 @push('jsonld')
@@ -50,6 +51,7 @@
                     </ol>
                 </nav>
 
+                <div class="page-hero__dos">
                 <div class="page-hero__inner">
                     <h1>Hablemos de tu proyecto</h1>
                     <p class="page-hero__lead">
@@ -58,14 +60,32 @@
                         qué vendes y qué has intentado, y te decimos con honestidad si podemos ayudarte.
                     </p>
                 </div>
+                {{-- Adorno sin texto ni cifras, para no aparentar datos reales. --}}
+                <div class="page-hero__adorno" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" focusable="false">
+                        <rect x="1" y="1" width="518" height="398" rx="24" fill="#fff" stroke="#E3E9E6"/>
+                        <path d="M1 25A24 24 0 0 1 25 1H495A24 24 0 0 1 519 25V80H1Z" fill="#0B1712"/>
+                        <circle cx="52" cy="40" r="20" fill="#4FD1A5"/><path d="M44 47a11 11 0 1 1 4 3l-6 2Z" fill="none" stroke="#0B1712" stroke-width="2.4" stroke-linejoin="round"/>
+                        <rect x="86" y="27" width="124" height="10" rx="5" fill="#fff"/><rect x="86" y="46" width="78" height="8" rx="4" fill="#B5C4BD"/>
+                        <path d="M30 120A18 18 0 0 1 48 102H282A18 18 0 0 1 300 120V150A18 18 0 0 1 282 168H36A6 6 0 0 1 30 162Z" fill="#F4F7F5"/>
+                        <rect x="52" y="122" width="212" height="8" rx="4" fill="#C9D3CE"/><rect x="52" y="141" width="140" height="8" rx="4" fill="#C9D3CE"/>
+                        <path d="M220 204A18 18 0 0 1 238 186H472A18 18 0 0 1 490 204V246A6 6 0 0 1 484 252H238A18 18 0 0 1 220 234Z" fill="#0B7D58"/>
+                        <rect x="244" y="206" width="218" height="8" rx="4" fill="#C6E7D9"/><rect x="244" y="225" width="156" height="8" rx="4" fill="#C6E7D9"/>
+                        <path d="M30 288A18 18 0 0 1 48 270H126A18 18 0 0 1 144 288V296A18 18 0 0 1 126 314H36A6 6 0 0 1 30 308Z" fill="#F4F7F5"/>
+                        <g fill="#8A9891"><circle cx="66" cy="292" r="5"/><circle cx="87" cy="292" r="5"/><circle cx="108" cy="292" r="5"/></g>
+                        <path d="M1 334H519" stroke="#EEF2F0"/><rect x="26" y="348" width="412" height="36" rx="18" fill="#F4F7F5"/><rect x="46" y="362" width="130" height="8" rx="4" fill="#C9D3CE"/>
+                        <circle cx="474" cy="366" r="18" fill="#0F9D6E"/><path d="M467 366h14m-6-6 6 6-6 6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                </div>
             </div>
         </section>
 
         <section class="page-section">
             <div class="container">
-                <div class="contact-grid contact-grid--simple">
+                <div class="contact-grid contact-grid--simple con-grid">
                     <div>
-                        <div class="prose">
+                        <div class="prose con-intro">
                             <h2>Canales directos</h2>
                             <p>
                                 Estos canales están atendidos por personas del equipo, no por un bot. Si nos
@@ -73,7 +93,7 @@
                             </p>
                         </div>
 
-                        <ul class="contact-channels" style="margin-top: 1.5rem;">
+                        <ul class="contact-channels">
                             <li>
                                 <a class="contact-channel" href="https://wa.me/525562230266" rel="noopener nofollow">
                                     <span class="contact-channel__icon" aria-hidden="true">
@@ -109,7 +129,7 @@
                             </li>
                         </ul>
 
-                        <div class="prose" style="margin-top: 2.5rem;">
+                        <div class="prose con-ayuda">
                             <h2>Qué nos ayuda a responderte mejor</h2>
                             <p>
                                 No necesitas tener nada preparado, pero si al escribirnos incluyes estos datos

@@ -3,9 +3,10 @@
 @section('title', 'Sobre RankPro | Agencia de Marketing Digital en México')
 @section('description', 'Quiénes somos y cómo trabajamos en RankPro: agencia de marketing digital en México enfocada en medición, transparencia y resultados verificables.')
 @section('canonical', route('nosotros'))
+@section('body_class', 'rd rd-nosotros')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/nosotros.css'])
 @endpush
 
 @push('jsonld')
@@ -47,6 +48,7 @@
                     </ol>
                 </nav>
 
+                <div class="page-hero__dos">
                 <div class="page-hero__inner">
                     <h1>Somos RankPro, una agencia digital que trabaja con datos a la vista</h1>
                     <p class="page-hero__lead">
@@ -60,12 +62,32 @@
                         <a href="{{ route('servicios.index') }}" class="btn btn-outline">Ver servicios</a>
                     </div>
                 </div>
+                {{-- Adorno sin texto ni cifras, para no aparentar datos reales. --}}
+                <div class="page-hero__adorno" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" focusable="false">
+                        <rect x="1" y="1" width="518" height="398" rx="24" fill="#fff" stroke="#E3E9E6"/>
+                        <rect x="26" y="26" width="132" height="12" rx="6" fill="#0E1A15"/><rect x="26" y="47" width="86" height="8" rx="4" fill="#C9D3CE"/>
+                        <rect x="402" y="26" width="92" height="28" rx="14" fill="#E6F4EE"/><rect x="420" y="36" width="56" height="8" rx="4" fill="#0B7D58"/>
+                        <path d="M1 76H519" stroke="#EEF2F0"/>
+                        <rect x="26" y="98" width="290" height="168" rx="16" fill="#F4F7F5"/>
+                        <g fill="#C9D3CE"><rect x="46" y="122" width="52" height="8" rx="4"/><rect x="46" y="156" width="40" height="8" rx="4"/><rect x="46" y="190" width="58" height="8" rx="4"/><rect x="46" y="224" width="46" height="8" rx="4"/></g>
+                        <g fill="#E3E9E6"><rect x="122" y="120" width="172" height="12" rx="6"/><rect x="122" y="154" width="172" height="12" rx="6"/><rect x="122" y="188" width="172" height="12" rx="6"/><rect x="122" y="222" width="172" height="12" rx="6"/></g>
+                        <rect x="122" y="120" width="138" height="12" rx="6" fill="#0B7D58"/><rect x="122" y="154" width="104" height="12" rx="6" fill="#0F9D6E"/><rect x="122" y="188" width="72" height="12" rx="6" fill="#4FD1A5"/><rect x="122" y="222" width="46" height="12" rx="6" fill="#0E1A15"/>
+                        <rect x="332" y="98" width="162" height="168" rx="16" fill="#0B1712"/>
+                        <path d="M362 182C378 154 396 144 413 144S448 154 464 182C448 210 430 220 413 220S378 210 362 182Z" fill="none" stroke="#4FD1A5" stroke-width="5" stroke-linejoin="round"/>
+                        <circle cx="413" cy="182" r="17" fill="#4FD1A5"/><circle cx="413" cy="182" r="6" fill="#0B1712"/>
+                        <g fill="none" stroke="#E3E9E6"><rect x="26" y="284" width="227" height="38" rx="12"/><rect x="267" y="284" width="227" height="38" rx="12"/><rect x="26" y="336" width="227" height="38" rx="12"/><rect x="267" y="336" width="227" height="38" rx="12"/></g>
+                        <g fill="#0F9D6E"><circle cx="47" cy="303" r="6"/><circle cx="288" cy="303" r="6"/><circle cx="288" cy="355" r="6"/></g><circle cx="47" cy="355" r="6" fill="#4FD1A5"/>
+                        <g fill="#C9D3CE"><rect x="64" y="299" width="110" height="8" rx="4"/><rect x="305" y="299" width="84" height="8" rx="4"/><rect x="64" y="351" width="92" height="8" rx="4"/><rect x="305" y="351" width="122" height="8" rx="4"/></g>
+                    </svg>
+                </div>
+                </div>
             </div>
         </section>
 
         <section class="page-section">
             <div class="container">
-                <div class="page-section__inner prose">
+                <div class="prose nos-historia">
                     <h2>Cómo empezó RankPro</h2>
                     <p>
                         RankPro nació de una frustración común entre empresarios mexicanos: contratar
@@ -87,6 +109,13 @@
                         y se sostiene en el tiempo, no por un contrato que cuesta cancelar.
                     </p>
 
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section nos-metodo">
+            <div class="container">
+                <div class="prose nos-metodo__intro">
                     <h2>Cómo trabajamos</h2>
                     <p>
                         Nuestro método no tiene nada de espectacular y esa es la intención. Es un ciclo
@@ -94,7 +123,11 @@
                         posicionamiento orgánico.
                     </p>
 
-                    <h3>1. Diagnóstico antes de proponer</h3>
+                </div>
+
+                <div class="prose nos-pasos">
+                    <div class="nos-paso">
+                    <h3><span class="nos-paso__num">1.</span> Diagnóstico antes de proponer</h3>
                     <p>
                         Nunca cotizamos sin haber revisado tu situación real: qué vendes, con qué margen,
                         a quién, qué has intentado antes y qué está pasando hoy en tus cuentas de
@@ -103,7 +136,9 @@
                         necesitas. Lo decimos aunque nos convenga menos.
                     </p>
 
-                    <h3>2. Plan con alcance escrito</h3>
+                    </div>
+                    <div class="nos-paso">
+                    <h3><span class="nos-paso__num">2.</span> Plan con alcance escrito</h3>
                     <p>
                         La propuesta detalla entregables, tiempos y qué indicadores vamos a mover. Sin
                         partidas vagas del tipo "gestión mensual". Si algo no está en el documento, no
@@ -111,7 +146,9 @@
                         factura.
                     </p>
 
-                    <h3>3. Medición configurada desde el día uno</h3>
+                    </div>
+                    <div class="nos-paso">
+                    <h3><span class="nos-paso__num">3.</span> Medición configurada desde el día uno</h3>
                     <p>
                         Antes de lanzar cualquier campaña verificamos que las conversiones estén bien
                         definidas, sin duplicados y con el tráfico interno filtrado. Optimizar sobre datos
@@ -119,7 +156,9 @@
                         la confianza del mundo.
                     </p>
 
-                    <h3>4. Ejecución y ajuste continuo</h3>
+                    </div>
+                    <div class="nos-paso">
+                    <h3><span class="nos-paso__num">4.</span> Ejecución y ajuste continuo</h3>
                     <p>
                         El trabajo real está en el mantenimiento semanal: revisar términos de búsqueda,
                         ajustar pujas, probar creatividades, publicar y actualizar contenido, corregir lo
@@ -127,20 +166,23 @@
                         para que los datos signifiquen algo, no cada 48 horas por ansiedad.
                     </p>
 
-                    <h3>5. Reporte que se entiende</h3>
+                    </div>
+                    <div class="nos-paso">
+                    <h3><span class="nos-paso__num">5.</span> Reporte que se entiende</h3>
                     <p>
                         Cada mes recibes un reporte con lo que se hizo, qué resultados dio, qué no
                         funcionó y qué sigue. En el idioma del negocio, no en jerga. Y con acceso directo
                         a las plataformas para que puedas verificar cada cifra por tu cuenta cuando
                         quieras.
                     </p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section class="page-section page-section--alt" aria-labelledby="valores">
             <div class="container">
-                <div class="page-section__inner prose">
+                <div class="page-section__inner prose nos-valores">
                     <h2 id="valores">En qué creemos</h2>
                     <p>
                         Estos principios son los que aplicamos cuando nadie está viendo, que es cuando de
@@ -148,7 +190,7 @@
                     </p>
                 </div>
 
-                <ul class="value-grid" style="margin-top: 2rem;">
+                <ul class="value-grid">
                     <li class="value-card">
                         <h3>Las cuentas son del cliente</h3>
                         <p>
@@ -191,7 +233,8 @@
 
         <section class="page-section">
             <div class="container">
-                <div class="page-section__inner prose">
+                <div class="prose nos-doble">
+                    <div class="nos-panel">
                     <h2>Cómo está formado el equipo</h2>
                     <p>
                         Trabajamos con especialistas por disciplina en lugar de generalistas que hacen un
@@ -208,6 +251,8 @@
                         ajustamos, sin esperar a que lo notes en los resultados.
                     </p>
 
+                    </div>
+                    <div class="nos-panel">
                     <h2>Con qué tipo de negocios trabajamos</h2>
                     <p>
                         Atendemos empresas en toda la República Mexicana, presencialmente en nuestra zona
@@ -222,6 +267,7 @@
                         optimizar. En esos casos preferimos decirlo de entrada y, si podemos, orientarte
                         hacia lo que sí tiene sentido en tu etapa.
                     </p>
+                    </div>
                 </div>
             </div>
         </section>

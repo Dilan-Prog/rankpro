@@ -47,96 +47,6 @@ function initFaq() {
     });
 }
 
-/* ------------------------------------------------------------ grafica de resultados */
-
-/** Construye la ruta de un area chart suavizado a partir de los valores. */
-function rutaArea(valores, w, h, pad) {
-    const max = Math.max(...valores);
-    const min = Math.min(...valores);
-    const rango = max - min || 1;
-    const paso = (w - pad * 2) / (valores.length - 1);
-
-    const puntos = valores.map((v, i) => [
-        pad + i * paso,
-        h - pad - ((v - min) / rango) * (h - pad * 2),
-    ]);
-
-    // Curva de Catmull-Rom convertida a Bezier, igual de suave que el "monotone"
-    // de recharts pero sin traer la libreria entera.
-    let d = `M ${puntos[0][0]} ${puntos[0][1]}`;
-    for (let i = 0; i < puntos.length - 1; i++) {
-        const p0 = puntos[i === 0 ? 0 : i - 1];
-        const p1 = puntos[i];
-        const p2 = puntos[i + 1];
-        const p3 = puntos[i + 2] ?? p2;
-        d += ` C ${p1[0] + (p2[0] - p0[0]) / 6} ${p1[1] + (p2[1] - p0[1]) / 6},` +
-             ` ${p2[0] - (p3[0] - p1[0]) / 6} ${p2[1] - (p3[1] - p1[1]) / 6},` +
-             ` ${p2[0]} ${p2[1]}`;
-    }
-
-    return { d, puntos };
-}
-
-function initChart() {
-    const raiz = document.querySelector('[data-cv-chart]');
-
-    if (!raiz) {
-        return;
-    }
-
-    const series = JSON.parse(raiz.dataset.cvChart);
-    const svg = raiz.querySelector('svg');
-    const area = svg.querySelector('[data-area]');
-    const linea = svg.querySelector('[data-linea]');
-    const puntosG = svg.querySelector('[data-puntos]');
-    const etiquetasY = svg.querySelectorAll('[data-y]');
-    const label = raiz.querySelector('[data-label]');
-    const hint = raiz.querySelector('[data-hint]');
-    const valor = raiz.querySelector('[data-valor]');
-    const delta = raiz.querySelector('[data-delta]');
-
-    const W = 640, H = 260, PAD = 28;
-
-    const pinta = (clave) => {
-        const s = series[clave];
-        const valores = s.data.map((p) => p.v);
-        const { d, puntos } = rutaArea(valores, W, H, PAD);
-
-        linea.setAttribute('d', d);
-        area.setAttribute('d', `${d} L ${puntos.at(-1)[0]} ${H - PAD} L ${puntos[0][0]} ${H - PAD} Z`);
-
-        puntosG.innerHTML = puntos.map(([x, y], i) =>
-            `<circle cx="${x}" cy="${y}" r="${i === puntos.length - 1 ? 5 : 3}" fill="#0F9D6E"${
-                i === puntos.length - 1 ? ' stroke="#fff" stroke-width="2"' : ''
-            }><title>${s.data[i].m}: ${s.data[i].v.toLocaleString('es-MX')}${s.suffix}</title></circle>`
-        ).join('');
-
-        const max = Math.max(...valores), min = Math.min(...valores);
-        etiquetasY.forEach((t, i) => {
-            const frac = 1 - i / (etiquetasY.length - 1);
-            t.textContent = Math.round(min + (max - min) * frac).toLocaleString('es-MX');
-        });
-
-        const primero = valores[0], ultimo = valores.at(-1);
-        const pct = Math.round(((ultimo - primero) / primero) * 100);
-
-        label.textContent = s.label;
-        hint.textContent = s.hint;
-        valor.textContent = ultimo.toLocaleString('es-MX') + s.suffix;
-        delta.textContent = `${pct > 0 ? '+' : ''}${pct}% vs. mes 0`;
-    };
-
-    raiz.querySelectorAll('.cv-tab').forEach((tab) => {
-        tab.addEventListener('click', () => {
-            raiz.querySelectorAll('.cv-tab').forEach((t) => t.setAttribute('aria-selected', 'false'));
-            tab.setAttribute('aria-selected', 'true');
-            pinta(tab.dataset.serie);
-        });
-    });
-
-    pinta(raiz.querySelector('.cv-tab[aria-selected="true"]')?.dataset.serie ?? Object.keys(series)[0]);
-}
-
 /* ------------------------------------------------------------ calculadora de ROI */
 
 function initCalculadora() {
@@ -302,7 +212,6 @@ function initConfigurador() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initFaq();
-    initChart();
     initCalculadora();
     initConfigurador();
 });
