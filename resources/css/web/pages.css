@@ -61,7 +61,7 @@
 }
 
 .breadcrumb a:hover {
-    color: var(--brand);
+    color: var(--brand-texto);
     text-decoration: underline;
 }
 
@@ -166,7 +166,7 @@
 .check-list svg {
     flex: 0 0 auto;
     margin-top: 0.2rem;
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 @media (min-width: 768px) {
@@ -208,7 +208,7 @@
 /* ---------- CTA de cierre ---------- */
 
 .page-cta {
-    background: linear-gradient(135deg, var(--brand-dark), var(--brand-light));
+    background: linear-gradient(135deg, var(--rp-green-600), var(--rp-green-700));
     border-radius: 1.25rem;
     padding: 2.5rem 1.75rem;
     color: #ffffff;
@@ -340,7 +340,7 @@ a.contact-channel:hover {
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    background: linear-gradient(to bottom right, var(--brand-light), var(--brand-dark));
+    background: linear-gradient(to bottom right, var(--rp-green-600), var(--rp-green-700));
 }
 
 .contact-channel__label {

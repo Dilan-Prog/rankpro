@@ -32,7 +32,7 @@
             padding: 32px 20px;
             background: #F9FAFB;
             color: #111827;
-            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
         }
         .box { max-width: 560px; width: 100%; text-align: center; }

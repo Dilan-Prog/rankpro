@@ -23,9 +23,9 @@
     --cs-gris: #9CA3AF;
     --cs-sombra: 0 2px 10px rgba(16, 24, 40, 0.04);
     --cs-sombra-alta: 0 8px 24px rgba(16, 24, 40, 0.07);
-    --cs-grad-identidad: linear-gradient(135deg, #34D399 0%, #059669 55%, #047857 100%);
-    --cs-grad-teal: linear-gradient(135deg, #34D399, #059669);
-    --cs-grad-brand: linear-gradient(135deg, #1A2332, #0F9D6E);
+    --cs-grad-identidad: linear-gradient(135deg, #0B7D58 0%, #086447 100%);
+    --cs-grad-teal: linear-gradient(135deg, #0B7D58, #086447);
+    --cs-grad-brand: linear-gradient(135deg, #0E1A15, #0B7D58);
     --cs-grad-ink: linear-gradient(135deg, #1A2332, #334155);
     --cs-trama-anon: repeating-linear-gradient(135deg, #1A2332 0 12px, #22304a 12px 24px);
 }
@@ -446,7 +446,7 @@
     font-size: clamp(1.875rem, 4vw, 2.5rem);
     font-weight: 800;
     letter-spacing: -0.04em;
-    color: var(--brand);
+    color: var(--brand-texto);
     line-height: 1;
     white-space: nowrap;
 }
@@ -881,7 +881,7 @@
 .cs-servicio__lista li::before {
     content: "·";
     flex-shrink: 0;
-    color: var(--brand);
+    color: var(--brand-texto);
     font-weight: 800;
 }
 
@@ -1345,7 +1345,7 @@
 
 .cs-otro__flecha {
     flex-shrink: 0;
-    color: var(--brand);
+    color: var(--brand-texto);
     font-size: 1.125rem;
     font-weight: 800;
 }
@@ -1427,7 +1427,7 @@
     height: 4.5rem;
     border-radius: 1rem;
     background: #ecfdf5;
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 .cs-servicio__icono svg {

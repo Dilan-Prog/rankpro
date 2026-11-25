@@ -1,0 +1,20 @@
+/* Plus Jakarta Sans variable (OFL), subconjunto latino: cubre el español. Va
+   alojada aquí para no pedir nada a Google Fonts. */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('../../../fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+}
+
+/* Reserva con métricas parecidas: evita el salto de texto (CLS) al cargar. */
+@font-face {
+    font-family: 'Plus Jakarta Sans Reserva';
+    font-weight: 400 800;
+    src: local('Arial');
+    size-adjust: 104%;
+    ascent-override: 100%;
+    descent-override: 21%;
+    line-gap-override: 0%;
+}

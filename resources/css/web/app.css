@@ -1,3 +1,4 @@
+@import './components/fuente.css';
 @import './components/topbar.css';
 @import './components/navbar.css';
 @import './components/hero.css';
@@ -10,13 +11,42 @@
 
 :root {
     --brand: #0F9D6E;
-    --brand-light: #34D399;
-    --brand-dark: #059669;
-    --ink: #1A2332;
-    --muted: #6B7280;
-    --surface: #F5F7FA;
-    --border: rgba(0, 0, 0, 0.05);
-    --max-width: 1280px;
+    --brand-light: #4FD1A5;
+    --brand-dark: #0B7D58;
+    /* #0F9D6E sobre blanco da 3.4:1: no llega a AA en texto normal. Para texto
+       y para fondos con texto blanco se usa el verde 600 (5.1:1). */
+    --brand-texto: #0B7D58;
+    --ink: #0E1A15;
+    --muted: #66756E;
+    --surface: #F4F7F5;
+    --border: #E3E9E6;
+    --max-width: 1200px;
+
+    /* Sistema de diseño (2026-11). */
+    --rp-green-50: #E6F4EE;
+    --rp-green-100: #C6E7D9;
+    --rp-green-300: #4FD1A5;
+    --rp-green-500: #0F9D6E;
+    --rp-green-600: #0B7D58;
+    --rp-green-700: #086447;
+    --rp-gray-100: #EEF2F0;
+    --rp-gray-300: #C9D3CE;
+    --rp-gray-700: #3D4B45;
+    --rp-dark-950: #07100C;
+    --rp-dark-900: #0B1712;
+    --rp-dark-700: #13241C;
+    --rp-dark-600: #1F3329;
+    --rp-on-dark: #B5C4BD;
+    --rp-r-sm: 10px;
+    --rp-r-md: 14px;
+    --rp-r-lg: 20px;
+    --rp-r-xl: 24px;
+    --rp-shadow-1: 0 1px 2px rgba(14, 26, 21, .05);
+    --rp-shadow-2: 0 18px 40px rgba(14, 26, 21, .08);
+    --rp-shadow-3: 0 24px 60px rgba(14, 26, 21, .14);
+    --rp-fast: 150ms;
+    --rp-base: 220ms;
+    --rp-ease: cubic-bezier(.2, .8, .2, 1);
 
     /* Degradados de los iconos de servicio. Viven aqui porque los usan tanto
        las tarjetas del home y del hub como el megamenu del navbar. */
@@ -26,7 +56,7 @@
     --gradient-4: linear-gradient(to bottom right, #10b981, #14b8a6);
     --gradient-5: linear-gradient(to bottom right, #14b8a6, #059669);
     --gradient-6: linear-gradient(to bottom right, #34d399, #0d9488);
-    --gradient-7: linear-gradient(to bottom right, #059669, #1A2332);
+    --gradient-7: linear-gradient(to bottom right, #0B7D58, #0E1A15);
 }
 
 * {
@@ -40,7 +70,7 @@ html {
 }
 
 body {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Reserva', system-ui, sans-serif;
     color: var(--ink);
     background: #ffffff;
     min-height: 100vh;
@@ -70,9 +100,9 @@ img {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: var(--brand);
+    background: var(--rp-green-50);
+    border: 1px solid var(--rp-green-100);
+    color: var(--brand-texto);
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.5rem 1rem;
@@ -111,8 +141,9 @@ img {
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
+    min-height: 44px;
+    border-radius: var(--rp-r-md);
+    font-weight: 700;
     font-size: 0.9375rem;
     border: none;
     cursor: pointer;
@@ -122,21 +153,37 @@ img {
 
 .btn-primary {
     color: #ffffff;
-    background: linear-gradient(to right, var(--brand), var(--brand-light));
-    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.25);
+    background: var(--rp-green-600);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.3);
-    transform: scale(1.05);
+    background: var(--rp-green-700);
 }
 
 .btn-outline {
-    color: var(--brand);
+    color: var(--brand-texto);
     background: transparent;
-    border: 2px solid var(--brand);
+    border: 2px solid var(--rp-green-600);
 }
 
 .btn-outline:hover {
-    background: #ecfdf5;
+    background: var(--rp-green-50);
+}
+
+:focus-visible {
+    outline: 3px solid var(--rp-green-300);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
 }

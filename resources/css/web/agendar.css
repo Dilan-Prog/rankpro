@@ -77,7 +77,7 @@
 }
 
 .agendar-hero__resaltado {
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 .agendar-hero__lead {
@@ -160,7 +160,7 @@
 
 .agendar__resumen li svg {
     flex-shrink: 0;
-    color: var(--brand);
+    color: var(--brand-texto);
     margin-top: 0.1rem;
 }
 
@@ -259,7 +259,7 @@
     border-radius: 999px;
     border: none;
     background: transparent;
-    color: var(--brand);
+    color: var(--brand-texto);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -420,7 +420,7 @@
 }
 
 .agendar__volver:hover {
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 /*
@@ -633,7 +633,7 @@ textarea.input {
 }
 
 .agendar__confirmacion-cancelar:hover {
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 .agendar__confirmacion-reiniciar {
@@ -651,7 +651,7 @@ textarea.input {
 }
 
 .agendar__confirmacion-reiniciar:hover {
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 /* ---------- Trust badges ---------- */
@@ -678,7 +678,7 @@ textarea.input {
 }
 
 .agendar__badge-item svg {
-    color: var(--brand);
+    color: var(--brand-texto);
     flex-shrink: 0;
 }
 

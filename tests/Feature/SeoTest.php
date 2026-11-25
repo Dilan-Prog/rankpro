@@ -454,9 +454,11 @@ class SeoTest extends TestCase
         $this->assertGreaterThan(0, filesize(public_path('favicon.ico')));
     }
 
-    public function test_google_fonts_entra_por_link_y_no_por_import_del_css(): void
+    public function test_la_fuente_es_propia_y_se_precarga(): void
     {
-        $this->get('/nosotros')->assertSee('rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope', false);
+        $this->get('/nosotros')
+            ->assertDontSee('fonts.googleapis.com', false)
+            ->assertSee('as="font" type="font/woff2" crossorigin', false);
         $this->assertStringNotContainsString('@import url(', file_get_contents(resource_path('css/web/app.css')));
     }
 

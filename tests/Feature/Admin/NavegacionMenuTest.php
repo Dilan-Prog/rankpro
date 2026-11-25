@@ -72,7 +72,7 @@ class NavegacionMenuTest extends TestCase
             'Clientes' => ['Lista', 'Servicios y contratos', 'Propuestas', 'Conversiones'],
             'Cliente activo' => ['Resumen', 'Identidad', 'Audiencia', 'SEO Plan', 'Contenido', 'SEO', 'Keywords', 'Ads', 'Métricas', 'Desarrollo', 'Reportes del cliente'],
             'Reportes' => ['Todos', 'Tablero', 'Programados'],
-            'Agencia' => ['Dashboard', 'Finanzas', 'Agenda pública', 'Archivos', 'Plantillas de correo', 'Enviar correo', 'Usuarios', 'Roles', 'Integraciones', 'Configuración de correo', 'Medición y Google'],
+            'Agencia' => ['Dashboard', 'Finanzas', 'Agenda pública', 'Archivos', 'Plantillas de correo', 'Enviar correo', 'Usuarios', 'Roles', 'Integraciones', 'Configuración de correo', 'Medición y Google', 'Redes sociales'],
             'Más' => ['Mi espacio', 'Automatizaciones', 'Blog'],
         ], $this->etiquetas(Navigation::groups()));
     }

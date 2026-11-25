@@ -189,34 +189,38 @@
     "isEntry": true
   },
   "resources/css/web/agendar.css": {
-    "file": "assets/agendar-Cm_RVGVJ.css",
+    "file": "assets/agendar-CFP9MxyJ.css",
     "src": "resources/css/web/agendar.css",
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-BhhMtVat.css",
+    "file": "assets/app-DbT4SV-Z.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
   "resources/css/web/blog.css": {
-    "file": "assets/blog-4xyhVLwn.css",
+    "file": "assets/blog-C5MICRjd.css",
     "src": "resources/css/web/blog.css",
     "isEntry": true
   },
   "resources/css/web/casos.css": {
-    "file": "assets/casos-CU6D3ol2.css",
+    "file": "assets/casos-QPxOOfcP.css",
     "src": "resources/css/web/casos.css",
     "isEntry": true
   },
   "resources/css/web/pages.css": {
-    "file": "assets/pages-Cz8GdPfT.css",
+    "file": "assets/pages-BOVmj6A9.css",
     "src": "resources/css/web/pages.css",
     "isEntry": true
   },
   "resources/css/web/servicios-conversion.css": {
-    "file": "assets/servicios-conversion-B93ZwPkS.css",
+    "file": "assets/servicios-conversion-BTiXk70D.css",
     "src": "resources/css/web/servicios-conversion.css",
     "isEntry": true
+  },
+  "resources/fonts/plus-jakarta-sans-latin.woff2": {
+    "file": "assets/plus-jakarta-sans-latin-eXO_dkmS.woff2",
+    "src": "resources/fonts/plus-jakarta-sans-latin.woff2"
   },
   "resources/js/ads.js": {
     "file": "assets/ads-D0izhRS9.js",
@@ -234,7 +238,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-B0mtBRqv.js",
+    "file": "assets/app-BuI60jXd.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

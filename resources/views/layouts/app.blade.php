@@ -13,11 +13,8 @@
     {{-- Datos para el JS publico (modo y etiquetas de conversion); va tras gtm/gtag. --}}
     @include('components.analytics.config')
 
-    {{-- Orígenes externos realmente usados: Google Fonts (Manrope). Va como <link> y no como @import del CSS para no encadenar peticiones. --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+    {{-- Fuente propia: sin peticiones a Google Fonts. --}}
+    <link rel="preload" href="{{ Vite::asset('resources/fonts/plus-jakarta-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     {{-- SEO: título, description, canonical, robots, Open Graph, Twitter Card, iconos --}}
     @include('components.seo.meta')

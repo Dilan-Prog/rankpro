@@ -128,7 +128,7 @@
 .fit-panel__icon {
     flex: 0 0 auto;
     margin-top: 0.2rem;
-    color: var(--brand);
+    color: var(--brand-texto);
 }
 
 .fit-panel--no .fit-panel__icon {

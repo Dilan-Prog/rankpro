@@ -67,7 +67,8 @@
 
 .cookie-banner__btn {
     padding: 0.7rem 1.25rem;
-    border-radius: 8px;
+    min-height: 44px;
+    border-radius: 12px;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -82,12 +83,12 @@
 }
 
 .cookie-banner__btn--primary {
-    background: var(--brand);
+    background: var(--rp-green-600);
     color: #ffffff;
 }
 
 .cookie-banner__btn--primary:hover {
-    background: var(--brand-dark);
+    background: var(--rp-green-700);
 }
 
 .cookie-banner__btn--ghost {
