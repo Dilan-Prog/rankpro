@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/web/app.css',
                 'resources/css/web/pages.css',
                 'resources/css/web/rediseno/base.css',
+                'resources/css/web/rediseno/servicios.css',
                 'resources/css/web/servicios-conversion.css',
                 'resources/js/app.js',
                 'resources/js/servicios-conversion.js',

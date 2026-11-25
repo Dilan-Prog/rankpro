@@ -3,9 +3,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @include('pages.servicios._schema')
@@ -27,6 +28,7 @@
                     </ol>
                 </nav>
 
+                <div class="page-hero__dos">
                 <div class="page-hero__inner">
                     <div class="section-badge">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $servicio['icon'] !!}</svg>
@@ -40,6 +42,12 @@
                         <a href="{{ route('contacto') }}" class="btn btn-primary">{{ $servicio['cta'] ?? 'Solicitar propuesta' }}</a>
                         <a href="https://wa.me/525562230266" class="btn btn-outline" rel="noopener nofollow">WhatsApp directo</a>
                     </div>
+                </div>
+                @include('components.ilustracion-servicio', ['tipo' => match ($servicio['slug']) {
+                    'pagespeed-core-web-vitals' => 'velocidad',
+                    'social-media' => 'social',
+                    default => 'panel',
+                }])
                 </div>
             </div>
         </section>
@@ -56,20 +64,20 @@
 
                     @isset($servicio['tabla'])
                         <h2 id="tabla">{{ $servicio['tabla']['titulo'] }}</h2>
-                        <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="tabla">
-                            <table style="width:100%;border-collapse:collapse;color:var(--ink);">
+                        <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="tabla">
+                            <table>
                                 <thead>
-                                    <tr style="border-bottom:2px solid var(--border);text-align:left;">
+                                    <tr>
                                         @foreach ($servicio['tabla']['encabezados'] as $encabezado)
-                                            <th scope="col" style="padding:0.75rem;">{{ $encabezado }}</th>
+                                            <th scope="col">{{ $encabezado }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($servicio['tabla']['filas'] as $fila)
-                                        <tr style="border-bottom:1px solid var(--border);">
+                                        <tr>
                                             @foreach ($fila as $celda)
-                                                <td style="padding:0.75rem;">{{ $celda }}</td>
+                                                <td>{{ $celda }}</td>
                                             @endforeach
                                         </tr>
                                     @endforeach
@@ -121,7 +129,7 @@
 
         <section class="page-section" aria-labelledby="faq">
             <div class="container">
-                <div class="page-section__inner">
+                <div class="faq-dos">
                     <div class="prose">
                         <h2 id="faq">Preguntas frecuentes sobre {{ $servicio['nombre'] }}</h2>
                     </div>
@@ -166,13 +174,13 @@
                         @endif
                     </div>
 
-                    <div class="services__grid" style="margin-top: 2rem;">
+                    <div class="services__grid services__grid--aire">
                         @foreach ($recientes as $articulo)
                             <x-blog.tarjeta :articulo="$articulo" />
                         @endforeach
                     </div>
 
-                    <p style="margin-top: 1.5rem;">
+                    <p class="cv-ver-mas">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>
                 </div>
@@ -189,7 +197,7 @@
                     </p>
                 </div>
 
-                <div class="services__grid" style="margin-top: 2rem;">
+                <div class="services__grid services__grid--aire">
                     @foreach (array_slice($otrosServicios, 0, 3) as $otro)
                         <a class="service-card" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration: none; background: #ffffff;">
                             <div class="service-card__icon {{ $otro['gradient'] }}">

@@ -20,9 +20,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio rd-auto')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -120,7 +121,7 @@
 
                         <h1 class="cv-auto-title">Automatización de procesos para empresas: <em>recupera tu tiempo</em></h1>
 
-                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:700;color:#ffffff;">Automatiza tus procesos, recupera tu tiempo.</p>
+                        <p class="cv-sub">Automatiza tus procesos, recupera tu tiempo.</p>
 
                         <p class="cv-auto-lead">Somos una agencia de automatización de procesos en México. Conectamos marketing, ventas y operaciones con n8n para que los leads lleguen solos al CRM, tu equipo se entere al instante y los reportes se armen sin nadie.</p>
 
@@ -230,31 +231,31 @@
         <section class="cv-dark-sec" aria-labelledby="procesos">
             <div class="container">
                 <div style="max-width:44rem;">
-                    <h2 class="cv-dark-h2" id="procesos" style="margin-top:0;">Automatización de tareas: qué procesos de tu empresa se pueden automatizar</h2>
+                    <h2 class="cv-dark-h2" id="procesos">Automatización de tareas: qué procesos de tu empresa se pueden automatizar</h2>
                     <p class="cv-dark-p">Un buen proyecto de automatización de procesos empieza por lo repetitivo y con reglas claras: la automatización de procesos manuales de ventas y la de procesos administrativos, como capturas, avisos y reportes.</p>
                 </div>
 
-                <div style="overflow-x:auto;margin-top:2rem;" tabindex="0" role="region" aria-labelledby="procesos">
-                    <table style="width:100%;min-width:34rem;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:#ffffff;">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="procesos">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid rgba(255,255,255,.3);text-align:left;">
-                                <th scope="col" style="padding:0.75rem;">Área</th>
-                                <th scope="col" style="padding:0.75rem;">Proceso</th>
-                                <th scope="col" style="padding:0.75rem;">Resultado</th>
+                            <tr>
+                                <th scope="col">Área</th>
+                                <th scope="col">Proceso</th>
+                                <th scope="col">Resultado</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($procesos as $p)
-                                <tr style="border-bottom:1px solid rgba(255,255,255,.15);">
-                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $p['area'] }}</th>
-                                    <td style="padding:0.75rem;">
+                                <tr>
+                                    <th scope="row">{{ $p['area'] }}</th>
+                                    <td>
                                         @if (isset($p['guia'], $guias[$p['guia']]))
-                                            <a href="{{ route('blog.show', $p['guia']) }}" style="color:inherit;text-decoration:underline;">{{ $p['proceso'] }}</a>
+                                            <a href="{{ route('blog.show', $p['guia']) }}">{{ $p['proceso'] }}</a>
                                         @else
                                             {{ $p['proceso'] }}
                                         @endif
                                     </td>
-                                    <td style="padding:0.75rem;">{{ $p['resultado'] }}</td>
+                                    <td>{{ $p['resultado'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -267,11 +268,11 @@
         <section class="cv-dark-sec cv-dark-sec--line" aria-labelledby="n8n">
             <div class="container">
                 <div style="max-width:44rem;">
-                    <h2 class="cv-dark-h2" id="n8n" style="margin-top:0;">Automatización con n8n</h2>
+                    <h2 class="cv-dark-h2" id="n8n">Automatización con n8n</h2>
                     <p class="cv-dark-p">
                         Usamos n8n, una plataforma que conecta aplicaciones sin desarrollar todo desde cero y que puede vivir en tu propio servidor.
                         @isset($guias['n8n-que-es'])
-                            Más en <a href="{{ route('blog.show', 'n8n-que-es') }}" style="color:inherit;text-decoration:underline;">¿Qué es n8n?</a>
+                            Más en <a href="{{ route('blog.show', 'n8n-que-es') }}">¿Qué es n8n?</a>
                         @endisset
                     </p>
                     <p class="cv-dark-p">Si comparas empresas de automatización o un programa de automatización de procesos, pregunta de quién quedan los flujos. Aquí son tuyos: viven en tu instancia, documentados y exportables.</p>
@@ -280,7 +281,7 @@
         </section>
 
         {{-- -------------------------------------------------------- proceso --}}
-        <section class="cv-dark-sec cv-dark-sec--panel" id="proceso">
+        <section class="cv-dark-sec cv-dark-sec--noche" id="proceso">
             <div class="container">
                 <div style="max-width:40rem;">
                     <div class="cv-dark-eyebrow">Cómo funciona</div>
@@ -291,7 +292,7 @@
                     @foreach ($pasos as $p)
                         <div class="cv-dark-card cv-dark-card--solid">
                             <div class="cv-dark-card__n">{{ $p['n'] }}</div>
-                            <h3 style="margin-top:.75rem;">{{ $p['title'] }}</h3>
+                            <h3>{{ $p['title'] }}</h3>
                             <p>{{ $p['desc'] }}</p>
                         </div>
                     @endforeach
@@ -300,7 +301,7 @@
         </section>
 
         {{-- -------------------------------------------------- CTA intermedio --}}
-        <section style="padding:4rem 0;">
+        <section class="cv-dark-sec cv-dark-sec--banda">
             <div class="container">
                 <div class="cv-band">
                     <div>
@@ -313,13 +314,15 @@
         </section>
 
         {{-- ------------------------------------------------------------ FAQ --}}
-        <section class="cv-dark-sec" id="faq">
+        <section class="cv-dark-sec cv-dark-sec--panel" id="faq">
             <div class="container">
-                <div style="max-width:48rem;margin:0 auto;">
+                <div class="cv-auto-faq">
+                    <div class="cv-auto-faq__cab">
                     <div class="cv-dark-eyebrow">Preguntas frecuentes</div>
                     <h2 class="cv-dark-h2">Lo que suelen preguntarnos</h2>
+                    </div>
 
-                    <div class="cv-faq cv-faq--dark" style="margin-top:2.5rem;">
+                    <div class="cv-faq">
                         @foreach ($servicio['faqs'] as $i => $faq)
                             <div class="cv-faq__item">
                                 <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">
@@ -335,11 +338,11 @@
         </section>
 
         {{-- --------------------------------------------------------- cierre --}}
-        <section style="padding:0 0 7rem;">
+        <section class="cv-dark-sec cv-dark-sec--banda">
             <div class="container">
                 <div class="cv-auto-cierre">
                     <div>
-                        <h2 class="cv-dark-h2" style="margin-top:0;">Cuéntanos qué te está quitando tiempo</h2>
+                        <h2 class="cv-dark-h2">Cuéntanos qué te está quitando tiempo</h2>
                         <p class="cv-dark-p">Un especialista de IT revisa tu caso y te propone el primer flujo a automatizar, con el ahorro estimado en horas.</p>
 
                         <ul class="cv-auto-cierre__lista">
@@ -380,13 +383,13 @@
 
         {{-- ------------------------------------------------------ ciudades --}}
         @if ($landingsCiudad !== [])
-            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="ciudades">
+            <section class="cv-dark-sec cv-dark-sec--junta" aria-labelledby="ciudades">
                 <div class="container">
-                    <h2 id="ciudades" class="cv-dark-h2" style="font-size:1.5rem;margin:0 0 1.5rem;">Automatización de procesos cerca de ti</h2>
-                    <p class="cv-dark-p" style="margin-bottom:1rem;">Trabajamos de forma remota con empresas de todo México.</p>
-                    <ul style="display:grid;gap:0.75rem;list-style:none;padding:0;">
+                    <h2 id="ciudades" class="cv-dark-h2">Automatización de procesos cerca de ti</h2>
+                    <p class="cv-dark-p">Trabajamos de forma remota con empresas de todo México.</p>
+                    <ul class="cv-pildoras cv-pildoras--aire">
                         @foreach ($landingsCiudad as $l)
-                            <li><a href="{{ $l['url'] }}" style="color:#ffffff;text-decoration:underline;">{{ $l['label'] }}</a></li>
+                            <li><a class="cv-chip" href="{{ $l['url'] }}">{{ $l['label'] }}</a></li>
                         @endforeach
                     </ul>
                 </div>
@@ -395,12 +398,12 @@
 
         {{-- ---------------------------------------------- guías del servicio --}}
         @if ($guias !== [])
-            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="guias-servicio">
+            <section class="cv-dark-sec cv-dark-sec--junta" aria-labelledby="guias-servicio">
                 <div class="container">
-                    <h2 id="guias-servicio" class="cv-dark-h2" style="font-size:1.5rem;margin:0 0 1.5rem;">Guías de automatización de procesos empresariales</h2>
-                    <ul style="display:grid;gap:0.75rem;list-style:none;padding:0;">
+                    <h2 id="guias-servicio" class="cv-dark-h2">Guías de automatización de procesos empresariales</h2>
+                    <ul class="cv-pildoras cv-pildoras--aire">
                         @foreach ($guias as $slugGuia => $textoGuia)
-                            <li><a href="{{ route('blog.show', $slugGuia) }}" style="color:#ffffff;text-decoration:underline;">{{ $textoGuia }}</a></li>
+                            <li><a class="cv-chip" href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
                         @endforeach
                     </ul>
                 </div>
@@ -413,15 +416,15 @@
              Hoy este servicio no tiene clúster propio en App\Support\Clusters, así
              que solo aparecerán artículos que lo declaren en la tabla pivote. --}}
         @if (isset($articulos) && $articulos->isNotEmpty())
-            <section class="cv-dark-sec" style="padding:4rem 0;" aria-labelledby="guias">
+            <section class="cv-dark-sec cv-dark-sec--junta" aria-labelledby="guias">
                 <div class="container">
-                    <h2 id="guias" class="cv-dark-h2" style="font-size:1.5rem;margin-bottom:2rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
-                    <div class="cv-dark-cards cv-dark-cards--3" style="margin-top:0;">
+                    <h2 id="guias" class="cv-dark-h2">Guías sobre {{ $servicio['nombre'] }}</h2>
+                    <div class="cv-dark-cards cv-dark-cards--3">
                         @foreach ($articulos as $articulo)
                             <x-blog.tarjeta :articulo="$articulo" />
                         @endforeach
                     </div>
-                    <p style="margin-top:1.5rem;">
+                    <p class="cv-ver-mas">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>
                 </div>
@@ -429,12 +432,12 @@
         @endif
 
         {{-- ------------------------------------------------ otros servicios --}}
-        <section class="cv-dark-sec cv-dark-sec--panel" style="padding:4rem 0;">
+        <section class="cv-dark-sec cv-dark-sec--panel">
             <div class="container">
-                <h2 class="cv-dark-h2" style="font-size:1.5rem;margin-bottom:2rem;">Otros servicios</h2>
-                <div class="cv-dark-cards cv-dark-cards--3" style="margin-top:0;">
+                <h2 class="cv-dark-h2">Otros servicios</h2>
+                <div class="cv-dark-cards cv-dark-cards--3">
                     @foreach (array_slice($otrosServicios, 0, 3) as $otro)
-                        <a class="cv-dark-card cv-dark-card--solid" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;display:block;">
+                        <a class="cv-dark-card cv-dark-card--solid" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;">
                             <div class="cv-dark-card__icon">{!! $ico($otro['icon'], 20) !!}</div>
                             <h3>{{ $otro['nombre'] }}</h3>
                             <p>{{ $otro['resumen'] }}</p>

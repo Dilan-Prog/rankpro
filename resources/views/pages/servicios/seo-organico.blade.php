@@ -22,9 +22,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -109,9 +110,9 @@
 
     <main>
         {{-- ---------------------------------------------------------- hero --}}
-        <section class="cv-section--dark">
+        <section class="cv-hero">
             <div class="container">
-                <nav class="breadcrumb breadcrumb--light" aria-label="Ruta de navegación">
+                <nav class="breadcrumb" aria-label="Ruta de navegación">
                     <ol>
                         <li><a href="{{ route('home') }}">Inicio</a></li>
                         <li><span class="breadcrumb__sep" aria-hidden="true">/</span></li>
@@ -121,21 +122,24 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
-                    <span class="cv-badge cv-badge--outline">{!! $ico($icoBusca, 12) !!} Agencia de servicios SEO</span>
+                <div class="cv-hero__grid">
+                <div>
+                    <span class="cv-badge">{!! $ico($icoBusca, 12) !!} Agencia de servicios SEO</span>
 
-                    <h1 class="cv-title cv-title--light">Agencia SEO en México que sabe qué te <span style="color:var(--brand-light);">frena</span> en Google</h1>
+                    <h1 class="cv-title">Agencia SEO en México que sabe qué te <span class="text-brand">frena</span> en Google</h1>
 
-                    <p style="margin-top:1rem;font-size:1.25rem;font-weight:600;line-height:1.4;color:#ffffff;">Sabemos qué te está frenando en Google. Y cómo arreglarlo.</p>
+                    <p class="cv-sub">Sabemos qué te está frenando en Google. Y cómo arreglarlo.</p>
 
-                    <p class="cv-lead cv-lead--light">Somos una agencia SEO en México especializada en posicionamiento web para empresas. Combinamos SEO técnico, de contenidos y de autoridad, y medimos cada avance en Google Search Console. Empezamos con una auditoría que te queda a ti, sin compromiso.</p>
+                    <p class="cv-lead">Somos una agencia SEO en México especializada en posicionamiento web para empresas. Combinamos SEO técnico, de contenidos y de autoridad, y medimos cada avance en Google Search Console. Empezamos con una auditoría que te queda a ti, sin compromiso.</p>
 
                     <div class="cv-actions">
                         <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Pedir mi auditoría SEO {!! $ico($icoFlecha, 17) !!}</a>
-                        <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría SEO') }}" class="cv-btn cv-btn--outline-light">Escribir por correo</a>
+                        <a href="mailto:{{ $correo }}?subject={{ rawurlencode('Auditoría SEO') }}" class="cv-btn cv-btn--ghost">Escribir por correo</a>
                     </div>
 
-                    <p style="margin-top:1.5rem;font-size:0.8125rem;color:rgba(255,255,255,0.45);">Sin llamadas de venta para empezar · Solo pedimos acceso de lectura · El informe es tuyo</p>
+                    <p class="cv-nota">Sin llamadas de venta para empezar · Solo pedimos acceso de lectura · El informe es tuyo</p>
+                </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'seo'])
                 </div>
             </div>
         </section>
@@ -163,7 +167,7 @@
         </section>
 
         {{-- --------------------------------------------------------- pasos --}}
-        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="proceso">
+        <section class="cv-section cv-section--oscura" aria-labelledby="proceso">
             <div class="container">
                 <div class="cv-head">
                     <h2 id="proceso">Cómo trabaja nuestra agencia SEO</h2>
@@ -212,7 +216,7 @@
                     <div class="cv-chart__head">
                         <div>
                             <span class="cv-badge">{!! $ico('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline>', 12) !!} Ejemplo de proyecto</span>
-                            <h2 class="cv-calc__title" style="font-size:1.5rem;">Lo que se deja sobre la mesa cada mes</h2>
+                            <h2 class="cv-calc__title">Lo que se deja sobre la mesa cada mes</h2>
                             <p class="cv-chart__hint" style="max-width:32rem;">Curva típica de un proyecto de SEO tras corregir los frentes de arriba, frente a un sitio que no cambia nada. <strong>Es un ejemplo ilustrativo, no datos de un cliente ni una proyección de tu sitio.</strong></p>
                         </div>
                     </div>
@@ -225,16 +229,16 @@
                                     <stop offset="100%" stop-color="#0F9D6E" stop-opacity="0.02"></stop>
                                 </linearGradient>
                             </defs>
-                            <text x="0" y="18" font-size="12" fill="#6B7280">Sesiones orgánicas al mes (ejemplo)</text>
+                            <text x="0" y="18" font-size="12" fill="#66756E">Sesiones orgánicas al mes (ejemplo)</text>
                             @for ($i = 0; $i < 5; $i++)
                                 <line x1="40" x2="600" y1="{{ 40 + $i * 55 }}" y2="{{ 40 + $i * 55 }}" stroke="rgba(0,0,0,0.06)" stroke-dasharray="4 4"></line>
-                                <text x="32" y="{{ 44 + $i * 55 }}" text-anchor="end" font-size="12" fill="#6B7280">{{ number_format(round($maxV * (1 - $i / 4))) }}</text>
+                                <text x="32" y="{{ 44 + $i * 55 }}" text-anchor="end" font-size="12" fill="#66756E">{{ number_format(round($maxV * (1 - $i / 4))) }}</text>
                             @endfor
                             <path d="{{ $areaRp }}" fill="url(#seoUp)"></path>
                             <polyline points="{{ $lineaTu }}" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="5 4"></polyline>
                             <polyline points="{{ $lineaRp }}" fill="none" stroke="#0F9D6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
                             @foreach ($gap as $i => $g)
-                                <text x="{{ round(40 + $i * ((640 - 80) / 4), 1) }}" y="292" text-anchor="middle" font-size="12" fill="#6B7280">{{ $g['m'] }}</text>
+                                <text x="{{ round(40 + $i * ((640 - 80) / 4), 1) }}" y="292" text-anchor="middle" font-size="12" fill="#66756E">{{ $g['m'] }}</text>
                             @endforeach
                         </svg>
                     </div>
@@ -253,8 +257,8 @@
 
         {{-- ------------------------------------------------ vista previa SERP --}}
         <section class="cv-section cv-section--tight">
-            <div class="container" style="max-width:48rem;">
-                <h2 class="cv-calc__title" style="font-size:1.375rem;margin-top:0;">Cómo cambia tu resultado en Google</h2>
+            <div class="container cv-angosto">
+                <h2 class="cv-calc__title">Cómo cambia tu resultado en Google</h2>
                 <p class="cv-chart__hint">Antes y después de reescribir títulos, meta descripciones y datos estructurados. Ejemplo con un negocio ficticio.</p>
 
                 <div class="cv-serp">
@@ -282,7 +286,7 @@
         {{-- ----------------------------------------------------- cobertura --}}
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="cobertura">
             <div class="container">
-                <div class="cv-head" @if ($ciudades === []) style="margin-bottom:0;" @endif>
+                <div class="cv-head">
                     <h2 id="cobertura">Agencia SEO para empresas en todo México</h2>
                     <p>
                         Trabajamos de forma remota con empresas de cualquier estado.
@@ -295,9 +299,9 @@
                     </p>
                 </div>
                 @if ($ciudades !== [])
-                    <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;">
+                    <ul class="cv-pildoras">
                         @foreach ($ciudades as $ciudad)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ $ciudad['url'] }}">{{ $ciudad['label'] }}</a></li>
+                            <li><a class="cv-chip" href="{{ $ciudad['url'] }}">{{ $ciudad['label'] }}</a></li>
                         @endforeach
                     </ul>
                 @endif
@@ -314,11 +318,11 @@
         @if ($guias !== [] || $recientes->isNotEmpty())
             <section class="cv-section cv-section--tight" aria-labelledby="guias">
                 <div class="container">
-                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
+                    <div class="cv-head">
                         <h2 id="guias">Antes de contratar, conviene entender el SEO</h2>
                     </div>
                     @if ($guias !== [])
-                        <ul style="display:grid;gap:0.75rem;margin-bottom:2rem;padding-left:1.25rem;">
+                        <ul class="cv-guias">
                             @foreach ($guias as $slugGuia => $textoGuia)
                                 <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
                             @endforeach
@@ -331,7 +335,7 @@
                             @endforeach
                         </div>
                     @endif
-                    <p style="margin-top:1.5rem;">
+                    <p class="cv-ver-mas">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>
                 </div>
@@ -339,7 +343,7 @@
         @endif
 
         {{-- ------------------------------------------------------ preguntas --}}
-        <section class="cv-section cv-section--tight">
+        <section class="cv-section cv-section--alt">
             <div class="container">
                 <div class="cv-head">
                     <h2>Preguntas frecuentes sobre el servicio de SEO</h2>
@@ -381,12 +385,12 @@
         {{-- ------------------------------------------- otros servicios --}}
         <section class="cv-section cv-section--alt cv-section--tight">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 style="font-size:1.5rem;">Otros servicios</h2>
+                <div class="cv-head">
+                    <h2>Otros servicios</h2>
                 </div>
                 <div class="cv-cards">
                     @foreach (array_slice($otrosServicios, 0, 3) as $otro)
-                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;display:block;">
+                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;">
                             <div class="cv-card-soft__icon">{!! $ico($otro['icon'], 20) !!}</div>
                             <h3>{{ $otro['nombre'] }}</h3>
                             <p>{{ $otro['resumen'] }}</p>

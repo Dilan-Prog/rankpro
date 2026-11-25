@@ -22,9 +22,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -103,7 +104,7 @@
 
                         <h1 class="cv-title">Agencia de Google Ads en México: deja de pagar clics, paga <span class="text-brand">ventas</span></h1>
 
-                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:700;color:var(--ink);">Deja de pagar clics. Empieza a pagar ventas.</p>
+                        <p class="cv-sub">Deja de pagar clics. Empieza a pagar ventas.</p>
 
                         <p class="cv-lead">Somos una agencia de Google Ads en México. Auditamos tu cuenta gratis, te mostramos con capturas dónde se va el presupuesto y reconstruimos estructura, pujas y seguimiento, con reportes de costo por lead y ROAS, no de impresiones.</p>
 
@@ -239,31 +240,31 @@
 
         {{-- ------------------------------------------------------ campañas --}}
         <section class="cv-section cv-section--tight" aria-labelledby="campanas">
-            <div class="container" style="max-width:56rem;">
+            <div class="container">
                 <div class="cv-head">
                     <h2 id="campanas">Campañas de Google Ads que gestionamos</h2>
                     <p>Como agencia de publicidad en Google, elegimos el tipo de campaña según lo que vendes y cómo te buscan.</p>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="campanas">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;line-height:1.5;color:var(--ink);">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="campanas">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="padding:0.75rem;">Campaña</th>
-                                <th scope="col" style="padding:0.75rem;">Para qué sirve</th>
+                            <tr>
+                                <th scope="col">Campaña</th>
+                                <th scope="col">Para qué sirve</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($campanas as $c)
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $c['tipo'] }}</th>
-                                    <td style="padding:0.75rem;">{{ $c['uso'] }}</td>
+                                <tr>
+                                    <th scope="row">{{ $c['tipo'] }}</th>
+                                    <td>{{ $c['uso'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
                 @isset($guias['ejemplos-de-google-ads'])
-                    <p style="margin-top:1.5rem;">Más en <a href="{{ route('blog.show', 'ejemplos-de-google-ads') }}">{{ $guias['ejemplos-de-google-ads'] }}</a>.</p>
+                    <p class="cv-ver-mas">Más en <a href="{{ route('blog.show', 'ejemplos-de-google-ads') }}">{{ $guias['ejemplos-de-google-ads'] }}</a>.</p>
                 @endisset
             </div>
         </section>
@@ -277,7 +278,7 @@
                 </div>
                 <div class="cv-cards">
                     @foreach ($trabajo as $t)
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $t['t'] }}</h3>
                             <p>{{ $t['d'] }}</p>
                         </div>
@@ -302,7 +303,7 @@
         </section>
 
         {{-- ----------------------------------------------------- objeciones --}}
-        <section class="cv-section cv-section--tight">
+        <section class="cv-section cv-section--alt">
             <div class="container">
                 <div class="cv-head">
                     <h2>Preguntas frecuentes sobre nuestra agencia Google Ads</h2>
@@ -320,7 +321,7 @@
                     @endforeach
                 </div>
 
-                <div class="cv-actions" style="justify-content:center;margin-top:2.5rem;">
+                <div class="cv-actions">
                     <a href="{{ $waAuditoria }}" class="cv-btn cv-btn--primary" target="_blank" rel="noopener nofollow">Resolver mi caso con un estratega {!! $ico($icoFlecha, 17) !!}</a>
                 </div>
             </div>
@@ -344,12 +345,12 @@
         @if ($guias !== [])
             <section class="cv-section cv-section--tight" aria-labelledby="guias-servicio">
                 <div class="container">
-                    <div class="cv-head cv-head--left" style="margin-bottom:1.5rem;">
-                        <h2 id="guias-servicio" style="font-size:1.5rem;">Guías de Google Ads</h2>
+                    <div class="cv-head">
+                        <h2 id="guias-servicio">Guías de Google Ads</h2>
                     </div>
-                    <ul style="display:flex;flex-wrap:wrap;gap:0.75rem;list-style:none;padding:0;">
+                    <ul class="cv-pildoras">
                         @foreach ($guias as $slugGuia => $textoGuia)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
+                            <li><a class="cv-chip" href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
                         @endforeach
                     </ul>
                 </div>
@@ -362,15 +363,15 @@
         @if (isset($articulos) && $articulos->isNotEmpty())
             <section class="cv-section cv-section--tight" aria-labelledby="guias">
                 <div class="container">
-                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                        <h2 id="guias" style="font-size:1.5rem;">Guías sobre {{ $servicio['nombre'] }}</h2>
+                    <div class="cv-head">
+                        <h2 id="guias">Guías sobre {{ $servicio['nombre'] }}</h2>
                     </div>
                     <div class="cv-cards">
                         @foreach ($articulos as $articulo)
                             <x-blog.tarjeta :articulo="$articulo" />
                         @endforeach
                     </div>
-                    <p style="margin-top:1.5rem;">
+                    <p class="cv-ver-mas">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>
                 </div>
@@ -380,19 +381,19 @@
         {{-- ------------------------------------------- otros servicios (enlazado interno) --}}
         <section class="cv-section cv-section--alt cv-section--tight">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 style="font-size:1.5rem;">Otros servicios</h2>
+                <div class="cv-head">
+                    <h2>Otros servicios</h2>
                 </div>
                 <div class="cv-cards">
                     @foreach (array_slice($otrosServicios, 0, 3) as $otro)
-                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;display:block;">
+                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;">
                             <div class="cv-card-soft__icon">{!! $ico($otro['icon'], 20) !!}</div>
                             <h3>{{ $otro['nombre'] }}</h3>
                             <p>{{ $otro['resumen'] }}</p>
                         </a>
                     @endforeach
                 </div>
-                <p style="margin-top:1.5rem;">
+                <p class="cv-ver-mas">
                     ¿Aún no decides el canal? Conoce nuestra
                     @foreach (\App\Support\LandingsAds::todos() as $l)
                         <a href="{{ route('servicios.ads', $l['slug']) }}">{{ Str::lower($l['enlace']) }}</a>{{ $loop->last ? '.' : ',' }}

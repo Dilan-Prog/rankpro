@@ -10,9 +10,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -24,9 +25,6 @@
 @php
     $wa = 'https://wa.me/525562230266?text='.rawurlencode('Hola RankPro, quiero cotizar una aplicación móvil.');
     $urlWeb = route('servicios.show', 'desarrollo-web');
-    $rejilla = 'display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));';
-    $parrafo = 'margin-top:1rem;line-height:1.7;color:var(--muted);';
-    $celda = 'padding:0.75rem;vertical-align:top;';
 
     // Enlace a una guía solo si está publicada; si no, nada.
     $guia = fn (string $slug, string $antes) => isset($guias[$slug])
@@ -101,9 +99,10 @@
                     </ol>
                 </nav>
 
-                <div style="max-width:48rem;">
+                <div class="cv-hero__grid">
+                <div>
                     <h1 class="cv-title">{{ $servicio['h1'] }}</h1>
-                    <p class="cv-lead" style="max-width:44rem;">{{ $servicio['intro'] }}</p>
+                    <p class="cv-lead">{{ $servicio['intro'] }}</p>
                     <ul class="cv-checklist">
                         @foreach ($resumen as $punto)
                             <li>{!! $ico($icoCheck, 18) !!} <span>{{ $punto }}</span></li>
@@ -114,16 +113,18 @@
                         <a href="{{ $urlWeb }}" class="cv-btn cv-btn--ghost">Ver desarrollo web</a>
                     </div>
                 </div>
+                @include('components.ilustracion-servicio', ['tipo' => 'app'])
+                </div>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="necesitas">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="necesitas">¿Una app es lo que necesitas?</h2>
                 </div>
-                <p style="{{ $parrafo }}">Una app tiene sentido cuando tus usuarios la van a usar con frecuencia, necesitan una cuenta, o requieres funciones del teléfono como notificaciones, cámara o ubicación. Si lo que buscas es dar información o vender de forma ocasional, un <a href="{{ $urlWeb }}">sitio web rápido</a> puede resolverlo con menos costo. Te lo decimos con claridad antes de cotizar.</p>
-                <p style="{{ $parrafo }}">Para decidirlo hacemos preguntas sencillas: cuántas veces al mes la abriría una misma persona, qué haría ahí que hoy no puede hacer, y qué pasaría si no la instala. Cuando las respuestas son vagas, suele ser mejor probar la idea en la web y dejar la aplicación móvil para después.</p>
+                <p class="cv-intro">Una app tiene sentido cuando tus usuarios la van a usar con frecuencia, necesitan una cuenta, o requieres funciones del teléfono como notificaciones, cámara o ubicación. Si lo que buscas es dar información o vender de forma ocasional, un <a href="{{ $urlWeb }}">sitio web rápido</a> puede resolverlo con menos costo. Te lo decimos con claridad antes de cotizar.</p>
+                <p class="cv-intro">Para decidirlo hacemos preguntas sencillas: cuántas veces al mes la abriría una misma persona, qué haría ahí que hoy no puede hacer, y qué pasaría si no la instala. Cuando las respuestas son vagas, suele ser mejor probar la idea en la web y dejar la aplicación móvil para después.</p>
             </div>
         </section>
 
@@ -132,9 +133,9 @@
                 <div class="cv-head">
                     <h2 id="tipos">Qué tipos de apps desarrollamos</h2>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla">
                     @foreach ($tipos as [$t, $d])
-                        <div class="cv-card-soft" style="background:#ffffff;">
+                        <div class="cv-card-soft">
                             <h3>{{ $t }}</h3>
                             <p>{{ $d }}</p>
                         </div>
@@ -144,31 +145,31 @@
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="plataformas">
-            <div class="container" style="max-width:60rem;">
+            <div class="container">
                 <div class="cv-head">
                     <h2 id="plataformas">Android, iOS o ambas</h2>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="plataformas">
-                    <table style="width:100%;min-width:34rem;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
+                <div class="cv-tabla cv-tabla--scroll" tabindex="0" role="region" aria-labelledby="plataformas">
+                    <table>
                         <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="{{ $celda }}">Opción</th>
-                                <th scope="col" style="{{ $celda }}">Cuándo conviene</th>
-                                <th scope="col" style="{{ $celda }}">Qué considerar</th>
+                            <tr>
+                                <th scope="col">Opción</th>
+                                <th scope="col">Cuándo conviene</th>
+                                <th scope="col">Qué considerar</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($plataformas as [$opcion, $cuando, $considera])
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="{{ $celda }}text-align:left;">{{ $opcion }}</th>
-                                    <td style="{{ $celda }}">{{ $cuando }}</td>
-                                    <td style="{{ $celda }}">{{ $considera }}</td>
+                                <tr>
+                                    <th scope="row">{{ $opcion }}</th>
+                                    <td>{{ $cuando }}</td>
+                                    <td>{{ $considera }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-                <p style="{{ $parrafo }}">La decisión depende de tus usuarios, no de la moda. Si ya tienes un sitio con analítica, ahí se ve qué sistema usan quienes te visitan; si es una app interna, basta con saber qué teléfonos tiene tu equipo. {{ $guia('como-crear-una-app-para-android', 'Ver') }}</p>
+                <p class="cv-intro">La decisión depende de tus usuarios, no de la moda. Si ya tienes un sitio con analítica, ahí se ve qué sistema usan quienes te visitan; si es una app interna, basta con saber qué teléfonos tiene tu equipo. {{ $guia('como-crear-una-app-para-android', 'Ver') }}</p>
             </div>
         </section>
 
@@ -178,21 +179,21 @@
                     <h2 id="proceso">Cómo trabajamos</h2>
                     <p>El desarrollo de apps sale mejor cuando cada etapa termina con algo que puedes revisar.</p>
                 </div>
-                <ol style="{{ $rejilla }}list-style:none;padding:0;">
+                <ol class="cv-rejilla cv-rejilla--3">
                     @foreach ($pasos as $i => [$t, $d])
-                        <li class="cv-card-soft" style="background:#ffffff;">
+                        <li class="cv-card-soft">
                             <h3>{{ $i + 1 }}. {{ $t }}</h3>
                             <p>{{ $d }} @if ($t === 'Diseño') {{ $guia('diseno-de-aplicaciones-moviles', 'Ver') }} @endif</p>
                         </li>
                     @endforeach
                 </ol>
-                <p style="{{ $parrafo }}">{{ $guia('ciclo-de-desarrollo-de-una-app', 'Más detalle en') }}</p>
+                <p class="cv-intro">{{ $guia('ciclo-de-desarrollo-de-una-app', 'Más detalle en') }}</p>
             </div>
         </section>
 
         <section class="cv-section cv-section--tight" aria-labelledby="incluye">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="incluye">Qué incluye el servicio</h2>
                     <p>El alcance de cada proyecto se define por escrito en la propuesta, a partir de esta base.</p>
                 </div>
@@ -205,12 +206,12 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="preparar">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="preparar">Qué conviene preparar antes de empezar</h2>
                 </div>
-                <p style="{{ $parrafo }}">No necesitas un documento técnico. Ayuda más tener claro quién la usará, qué tarea debe poder terminar y quién en tu empresa tomará decisiones. Si la app se va a conectar con un sistema que ya usas, averigua quién lo administra y si permite integraciones.</p>
-                <p style="{{ $parrafo }}">También hay trámites que dependen de ti: Google Play y App Store piden una cuenta de desarrollador, tienen reglas propias y revisan las aplicaciones antes de aceptarlas. Te indicamos qué datos reunir, y el aviso de privacidad debe validarlo tu asesor legal según la información que captes.</p>
+                <p class="cv-intro">No necesitas un documento técnico. Ayuda más tener claro quién la usará, qué tarea debe poder terminar y quién en tu empresa tomará decisiones. Si la app se va a conectar con un sistema que ya usas, averigua quién lo administra y si permite integraciones.</p>
+                <p class="cv-intro">También hay trámites que dependen de ti: Google Play y App Store piden una cuenta de desarrollador, tienen reglas propias y revisan las aplicaciones antes de aceptarlas. Te indicamos qué datos reunir, y el aviso de privacidad debe validarlo tu asesor legal según la información que captes.</p>
             </div>
         </section>
 
@@ -220,7 +221,7 @@
                     <h2 id="costo">De qué depende el costo</h2>
                     <p>No hay un precio único. Preferimos cotizar tras entender tu caso, porque estos seis factores mueven el alcance:</p>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla cv-rejilla--3">
                     @foreach ($costos as [$t, $d])
                         <div class="cv-card-soft">
                             <h3>{{ $t }}</h3>
@@ -228,13 +229,13 @@
                         </div>
                     @endforeach
                 </div>
-                <p style="{{ $parrafo }}">{{ $guia('cuanto-cuesta-crear-una-app', 'Más en') }}</p>
+                <p class="cv-intro">{{ $guia('cuanto-cuesta-crear-una-app', 'Más en') }}</p>
             </div>
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="para-quien">
-            <div class="container" style="max-width:48rem;">
-                <div class="cv-head" style="margin-bottom:1rem;">
+            <div class="container cv-angosto">
+                <div class="cv-head">
                     <h2 id="para-quien">Para quién es</h2>
                 </div>
                 <ul class="cv-checklist">
@@ -242,7 +243,7 @@
                     <li>{!! $ico($icoCheck, 18) !!} <span>Empresas que necesitan digitalizar un proceso con su equipo en campo.</span></li>
                     <li>{!! $ico($icoCheck, 18) !!} <span>Emprendedores que quieren validar una idea con una primera versión.</span></li>
                 </ul>
-                <p style="{{ $parrafo }}">No es para quien busca una app solo por tener presencia. Si tu meta es que te encuentren, rinde más un buen sitio y posicionamiento; el desarrollo de apps en México es una inversión que se justifica por el uso repetido, no por aparecer en una tienda.</p>
+                <p class="cv-intro">No es para quien busca una app solo por tener presencia. Si tu meta es que te encuentren, rinde más un buen sitio y posicionamiento; el desarrollo de apps en México es una inversión que se justifica por el uso repetido, no por aparecer en una tienda.</p>
             </div>
         </section>
 
@@ -251,7 +252,7 @@
                 <div class="cv-head">
                     <h2 id="cuidamos">Lo que cuidamos en cada aplicación móvil</h2>
                 </div>
-                <div style="{{ $rejilla }}">
+                <div class="cv-rejilla cv-rejilla--3">
                     <div class="cv-card-soft"><h3>Un problema concreto</h3><p>Cada pantalla debe ayudar a terminar una tarea; lo que no, se queda fuera.</p></div>
                     <div class="cv-card-soft"><h3>Rapidez y facilidad</h3><p>Que se entienda sin manual y responda bien en teléfonos que no son los más nuevos.</p></div>
                     <div class="cv-card-soft"><h3>Datos personales</h3><p>Se piden solo los permisos y datos necesarios, y se protegen en su envío y resguardo.</p></div>
@@ -262,13 +263,13 @@
         </section>
 
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="errores">
-            <div class="container" style="max-width:56rem;">
-                <div class="cv-head" style="margin-bottom:1.5rem;">
+            <div class="container">
+                <div class="cv-head">
                     <h2 id="errores">Errores frecuentes al encargar una app</h2>
                 </div>
-                <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;line-height:1.7;color:var(--muted);">
+                <ul class="cv-lista">
                     @foreach ($errores as [$t, $d])
-                        <li><strong style="color:var(--ink);">{{ $t }}</strong> {{ $d }}</li>
+                        <li><strong>{{ $t }}</strong> {{ $d }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -279,11 +280,11 @@
         @endphp
         @if ($guiasDecidir !== [])
             <section class="cv-section cv-section--tight" aria-labelledby="guias">
-                <div class="container" style="max-width:48rem;">
-                    <div class="cv-head" style="margin-bottom:1rem;">
+                <div class="container cv-angosto">
+                    <div class="cv-head">
                         <h2 id="guias">Guías antes de decidir</h2>
                     </div>
-                    <ul style="display:grid;gap:0.75rem;padding-left:1.25rem;">
+                    <ul class="cv-guias">
                         @foreach ($guiasDecidir as $slugGuia => $textoGuia)
                             <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
                         @endforeach
@@ -294,13 +295,13 @@
 
         @if ($landings = array_filter($servicio['landings'] ?? []))
             <section class="cv-section cv-section--tight" aria-labelledby="ciudades">
-                <div class="container" style="max-width:48rem;">
-                    <div class="cv-head" style="margin-bottom:1rem;">
+                <div class="container cv-angosto">
+                    <div class="cv-head">
                         <h2 id="ciudades">Desarrollo de apps por ciudad</h2>
                     </div>
-                    <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;padding:0;">
+                    <ul class="cv-pildoras">
                         @foreach ($landings as $textoLanding => $ruta)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ url($ruta) }}">{{ $textoLanding }}</a></li>
+                            <li><a class="cv-chip" href="{{ url($ruta) }}">{{ $textoLanding }}</a></li>
                         @endforeach
                     </ul>
                 </div>

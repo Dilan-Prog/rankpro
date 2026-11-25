@@ -20,9 +20,10 @@
 @section('title', $servicio['meta_title'])
 @section('description', $servicio['meta_description'])
 @section('canonical', route('servicios.show', $servicio['slug']))
+@section('body_class', 'rd rd-servicio')
 
 @push('styles')
-    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css'])
+    @vite(['resources/css/web/pages.css', 'resources/css/web/servicios-conversion.css', 'resources/css/web/rediseno/base.css', 'resources/css/web/rediseno/servicios.css'])
 @endpush
 
 @push('scripts')
@@ -57,11 +58,11 @@
     ];
 
     $fases = [
-        ['nombre' => 'Descubrimiento', 'peso' => 0.12, 'color' => '#1A2332'],
-        ['nombre' => 'UI / Prototipo', 'peso' => 0.24, 'color' => '#0F9D6E'],
-        ['nombre' => 'Desarrollo', 'peso' => 0.40, 'color' => '#34D399'],
-        ['nombre' => 'QA y contenido', 'peso' => 0.16, 'color' => '#F59E0B'],
-        ['nombre' => 'Lanzamiento', 'peso' => 0.08, 'color' => '#6B7280'],
+        ['nombre' => 'Descubrimiento', 'peso' => 0.12, 'color' => '#0E1A15'],
+        ['nombre' => 'UI / Prototipo', 'peso' => 0.24, 'color' => '#086447'],
+        ['nombre' => 'Desarrollo', 'peso' => 0.40, 'color' => '#0B7D58'],
+        ['nombre' => 'QA y contenido', 'peso' => 0.16, 'color' => '#3D4B45'],
+        ['nombre' => 'Lanzamiento', 'peso' => 0.08, 'color' => '#66756E'],
     ];
 
     $stack = ['React / Next.js', 'TypeScript', 'Tailwind', 'Node', 'PostgreSQL', 'Vercel / AWS', 'Stripe / Conekta', 'GA4 + GTM'];
@@ -123,7 +124,7 @@
 
     <main>
         {{-- ---------------------------------------------------------- hero --}}
-        <section class="cv-hero" style="background:#ffffff;">
+        <section class="cv-hero">
             <div class="container">
                 <nav class="breadcrumb" aria-label="Ruta de navegación">
                     <ol>
@@ -135,13 +136,13 @@
                     </ol>
                 </nav>
 
-                <div class="cv-hero__grid" style="align-items:center;">
+                <div class="cv-hero__grid">
                     <div>
                         <span class="cv-badge">{!! $ico('<path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path>', 12) !!} Desarrollo web a la medida</span>
 
                         <h1 class="cv-title"><span class="text-brand">Desarrollo web</span> y diseño de páginas web a la medida en México</h1>
 
-                        <p style="margin-top:1rem;font-size:1.25rem;font-weight:600;line-height:1.4;color:var(--ink);">Tu sitio, armado a tu medida. Con precio y fecha antes de la junta.</p>
+                        <p class="cv-sub">Tu sitio, armado a tu medida. Con precio y fecha antes de la junta.</p>
 
                         <p class="cv-lead">Somos una agencia de desarrollo web en México. Diseñamos y desarrollamos páginas web, tiendas en línea y plataformas a la medida, con precio, semanas de entrega y cronograma por fases antes de la primera junta.</p>
 
@@ -162,9 +163,9 @@
                     {{-- Mock de navegador: decorativo, se oculta a lectores de pantalla. --}}
                     <div class="cv-mock" aria-hidden="true">
                         <div class="cv-mock__bar">
-                            <span class="cv-mock__dot" style="background:#EF4444;"></span>
-                            <span class="cv-mock__dot" style="background:#F59E0B;"></span>
-                            <span class="cv-mock__dot" style="background:#0F9D6E;"></span>
+                            <span class="cv-mock__dot"></span>
+                            <span class="cv-mock__dot"></span>
+                            <span class="cv-mock__dot"></span>
                             <div class="cv-mock__url">https://tumarca.mx</div>
                         </div>
                         <div class="cv-mock__body">
@@ -212,12 +213,12 @@
         </section>
 
         {{-- -------------------------------------------------- configurador --}}
-        <section class="cv-section cv-section--alt" id="configurador">
+        <section class="cv-section" id="configurador">
             <div class="container">
                 <div style="max-width:40rem;">
                     <span class="cv-badge">Configurador</span>
                     <h2 class="cv-calc__title">Arma tu proyecto y mira el precio moverse</h2>
-                    <p class="cv-card__text">Son precios base de referencia por tipo de proyecto. Los proyectos a la medida que hemos entregado van de $200 mil a $2 millones de pesos + IVA; la propuesta final se ajusta después de entender tu operación.</p>
+                    <p class="cv-intro">Son precios base de referencia por tipo de proyecto. Los proyectos a la medida que hemos entregado van de $200 mil a $2 millones de pesos + IVA; la propuesta final se ajusta después de entender tu operación.</p>
                 </div>
 
                 <div class="cv-config" data-cv-config='@json($cfgJs)' data-wa="{{ $wa }}">
@@ -301,7 +302,7 @@
 
                             {{-- El CTA arrastra la configuracion al mensaje de WhatsApp. --}}
                             <a href="{{ $waGenerico }}" class="cv-btn cv-btn--primary cv-btn--block" style="margin-top:1.75rem;" target="_blank" rel="noopener nofollow" data-cta-wa>Recibir propuesta detallada {!! $ico($icoFlecha, 16) !!}</a>
-                            <p class="cv-resumen__pie">Te llega con alcance, cronograma y supuestos. Sin compromiso. También puedes escribirnos a <a href="mailto:{{ $correo }}" style="color:var(--brand-light);">{{ $correo }}</a>.</p>
+                            <p class="cv-resumen__pie">Te llega con alcance, cronograma y supuestos. Sin compromiso. También puedes escribirnos a <a href="mailto:{{ $correo }}">{{ $correo }}</a>.</p>
                         </div>
                     </div>
                 </div>
@@ -309,31 +310,31 @@
         </section>
 
         {{-- ----------------------------------------------- tipos de proyecto --}}
-        <section class="cv-section cv-section--tight" aria-labelledby="tipos">
-            <div class="container" style="max-width:56rem;">
+        <section class="cv-section cv-section--alt" aria-labelledby="tipos">
+            <div class="container">
                 <div class="cv-head">
                     <h2 id="tipos">Qué tipo de sitio necesitas</h2>
                 </div>
-                <div style="overflow-x:auto;" tabindex="0" role="region" aria-labelledby="tipos">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.9375rem;color:var(--ink);">
-                        <thead>
-                            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                                <th scope="col" style="padding:0.75rem;">Proyecto</th>
-                                <th scope="col" style="padding:0.75rem;">Para qué sirve</th>
-                                <th scope="col" style="padding:0.75rem;text-align:right;">Desde (MXN + IVA)</th>
+                <div class="cv-tabla">
+                    <table role="table">
+                        <thead role="rowgroup">
+                            <tr role="row">
+                                <th role="columnheader" scope="col">Proyecto</th>
+                                <th role="columnheader" scope="col">Para qué sirve</th>
+                                <th role="columnheader" scope="col" class="cv-tabla__cifra">Desde (MXN + IVA)</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid var(--border);">
-                                <th scope="row" style="padding:0.75rem;text-align:left;">Landing sencilla</th>
-                                <td style="padding:0.75rem;">Una página de presentación (se cotiza aparte del configurador)</td>
-                                <td style="padding:0.75rem;text-align:right;white-space:nowrap;">{{ $money(\App\Support\Servicios::PRECIO_LANDING_SENCILLA) }}</td>
+                        <tbody role="rowgroup">
+                            <tr role="row">
+                                <th role="rowheader" scope="row">Landing sencilla</th>
+                                <td role="cell">Una página de presentación (se cotiza aparte del configurador)</td>
+                                <td role="cell" class="cv-tabla__cifra">{{ $money(\App\Support\Servicios::PRECIO_LANDING_SENCILLA) }}</td>
                             </tr>
                             @foreach ($tipos as $key => $t)
-                                <tr style="border-bottom:1px solid var(--border);">
-                                    <th scope="row" style="padding:0.75rem;text-align:left;">{{ $t['label'] }}</th>
-                                    <td style="padding:0.75rem;">{{ $usos[$key] }}</td>
-                                    <td style="padding:0.75rem;text-align:right;white-space:nowrap;">{{ $money($t['base']) }}</td>
+                                <tr role="row">
+                                    <th role="rowheader" scope="row">{{ $t['label'] }}</th>
+                                    <td role="cell">{{ $usos[$key] }}</td>
+                                    <td role="cell" class="cv-tabla__cifra">{{ $money($t['base']) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -352,26 +353,26 @@
         </section>
 
         {{-- ----------------------------------------------- diseño y desarrollo --}}
-        <section class="cv-section cv-section--alt" aria-labelledby="equipo">
+        <section class="cv-section" aria-labelledby="equipo">
             <div class="container">
                 <div class="cv-head">
                     <h2 id="equipo">Diseño de páginas web y desarrollo web en un solo equipo</h2>
                     <p>Un sitio que se ve bien pero carga lento o no se puede editar cuesta más después. Por eso el diseño y el desarrollo van juntos: el prototipo se valida antes de programar, el código se mide en velocidad móvil antes de entregar y la estructura se prepara desde el inicio para posicionar en Google.</p>
                 </div>
-                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                <div class="cv-rejilla cv-rejilla--2">
+                    <div class="cv-card-soft">
                         <h3>Diseño</h3>
                         <p>Prototipo en las semanas 1 y 2, validado contigo antes de programar.</p>
                     </div>
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                    <div class="cv-card-soft">
                         <h3>Desarrollo</h3>
                         <p>Entregas semanales en ambiente de pruebas.</p>
                     </div>
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                    <div class="cv-card-soft">
                         <h3>Velocidad y accesibilidad</h3>
                         <p>Medimos Core Web Vitals y revisamos contraste y navegación por teclado (WCAG AA). No prometemos una calificación, medimos y corregimos. Si tu sitio ya existe, mira la <a href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">optimización de velocidad de carga</a>.</p>
                     </div>
-                    <div class="cv-card-soft" style="background:#ffffff;">
+                    <div class="cv-card-soft">
                         <h3>SEO desde la arquitectura</h3>
                         <p>Estructura de URLs, encabezados, datos estructurados y redirecciones. Si quieres ir más allá, mira nuestro <a href="{{ route('servicios.show', 'seo-organico') }}">servicio de SEO</a>.</p>
                     </div>
@@ -380,8 +381,8 @@
         </section>
 
         {{-- --------------------------------------------------- cronograma --}}
-        <section class="cv-section">
-            <div class="container" style="max-width:64rem;">
+        <section class="cv-section cv-section--alt">
+            <div class="container">
                 <span class="cv-badge">Cronograma estimado</span>
                 <h2 class="cv-calc__title">Cómo se reparten esas <span data-out-semanas-titulo>{{ $semanasIni }}</span> semanas</h2>
 
@@ -409,13 +410,13 @@
         </section>
 
         {{-- ------------------------------------------------ stack y estándares --}}
-        <section class="cv-section" style="background:var(--ink);">
+        <section class="cv-section cv-section--oscura">
             <div class="container">
                 <div class="cv-stack">
                     <div>
                         <div class="cv-stack__eyebrow">Con qué lo construimos</div>
-                        <h2 class="cv-title cv-title--light" style="font-size:clamp(1.75rem,4vw,2rem);margin-top:.5rem;">Tecnología que tu equipo puede mantener</h2>
-                        <p class="cv-lead cv-lead--light" style="font-size:1rem;">Nada de frameworks exóticos ni código que solo nosotros entendemos. Stack estándar de mercado, documentado, en tu repositorio, con capacitación al cierre.</p>
+                        <h2 class="cv-title cv-title--light">Tecnología que tu equipo puede mantener</h2>
+                        <p class="cv-lead cv-lead--light">Nada de frameworks exóticos ni código que solo nosotros entendemos. Stack estándar de mercado, documentado, en tu repositorio, con capacitación al cierre.</p>
 
                         <div class="cv-stack__tags">
                             @foreach ($stack as $s)
@@ -455,9 +456,9 @@
                     </p>
                 </div>
                 @if ($landingsWeb !== [])
-                    <ul style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;list-style:none;padding:0;">
+                    <ul class="cv-pildoras">
                         @foreach ($landingsWeb as $l)
-                            <li><a class="cv-chip" style="text-decoration:none;" href="{{ $l['url'] }}">{{ $l['label'] }}</a></li>
+                            <li><a class="cv-chip" href="{{ $l['url'] }}">{{ $l['label'] }}</a></li>
                         @endforeach
                     </ul>
                 @endif
@@ -473,7 +474,7 @@
 
                 <div class="cv-faq">
                     @foreach ($servicio['faqs'] as $i => $o)
-                        <div class="cv-faq__item" style="background:#ffffff;">
+                        <div class="cv-faq__item">
                             <button type="button" class="cv-faq__trigger" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="obj-{{ $i }}">
                                 <span>{{ $o['p'] }}</span>
                                 {!! $ico('<path d="m6 9 6 6 6-6"></path>', 18) !!}
@@ -501,12 +502,12 @@
 
         {{-- --------------------------------------------------------- casos --}}
         {{-- Cada cifra con su fuente; el cliente anonimizado, sin nombre ni lugar. --}}
-        <section class="cv-section cv-section--tight" aria-labelledby="casos">
+        <section class="cv-section cv-section--tight cv-section--junta" aria-labelledby="casos">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 id="casos" style="font-size:1.5rem;">Sitios que ya entregamos</h2>
+                <div class="cv-head">
+                    <h2 id="casos">Sitios que ya entregamos</h2>
                 </div>
-                <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));">
+                <div class="cv-rejilla cv-rejilla--2">
                     <div class="cv-card-soft">
                         <h3>Equiterm Industries, sitio hecho a la medida</h3>
                         <p>+790 % en clics en tres meses; partía de una base pequeña. Fuente: Google Search Console.</p>
@@ -528,13 +529,13 @@
             $recientes = $articulos->reject(fn ($a) => isset($guias[$a->slug]));
         @endphp
         @if ($guiasProceso !== [] || $recientes->isNotEmpty())
-            <section class="cv-section cv-section--tight" aria-labelledby="guias">
+            <section class="cv-section cv-section--tight cv-section--junta" aria-labelledby="guias">
                 <div class="container">
-                    <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                        <h2 id="guias" style="font-size:1.5rem;">Antes de cotizar, conviene entender el proceso</h2>
+                    <div class="cv-head">
+                        <h2 id="guias">Antes de cotizar, conviene entender el proceso</h2>
                     </div>
                     @if ($guiasProceso !== [])
-                        <ul style="display:grid;gap:0.75rem;margin-bottom:2rem;padding-left:1.25rem;">
+                        <ul class="cv-guias">
                             @foreach ($guiasProceso as $slugGuia => $textoGuia)
                                 <li><a href="{{ route('blog.show', $slugGuia) }}">{{ $textoGuia }}</a></li>
                             @endforeach
@@ -547,7 +548,7 @@
                             @endforeach
                         </div>
                     @endif
-                    <p style="margin-top:1.5rem;">
+                    <p class="cv-ver-mas">
                         <a href="{{ route('blog.index') }}">Ver todas las guías del blog</a>
                     </p>
                 </div>
@@ -557,12 +558,12 @@
         {{-- --------------------------------------------------- otros servicios --}}
         <section class="cv-section cv-section--alt cv-section--tight">
             <div class="container">
-                <div class="cv-head cv-head--left" style="margin-bottom:2rem;">
-                    <h2 style="font-size:1.5rem;">Otros servicios</h2>
+                <div class="cv-head">
+                    <h2>Otros servicios</h2>
                 </div>
                 <div class="cv-cards">
                     @foreach (array_slice($otrosServicios, 0, 3) as $otro)
-                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;display:block;background:#ffffff;">
+                        <a class="cv-card-soft" href="{{ route('servicios.show', $otro['slug']) }}" style="text-decoration:none;">
                             <div class="cv-card-soft__icon">{!! $ico($otro['icon'], 20) !!}</div>
                             <h3>{{ $otro['nombre'] }}</h3>
                             <p>{{ $otro['resumen'] }}</p>

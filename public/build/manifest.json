@@ -218,6 +218,11 @@
     "src": "resources/css/web/rediseno/base.css",
     "isEntry": true
   },
+  "resources/css/web/rediseno/servicios.css": {
+    "file": "assets/servicios-bvNYuWqe.css",
+    "src": "resources/css/web/rediseno/servicios.css",
+    "isEntry": true
+  },
   "resources/css/web/servicios-conversion.css": {
     "file": "assets/servicios-conversion-BTiXk70D.css",
     "src": "resources/css/web/servicios-conversion.css",
