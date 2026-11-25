@@ -27,7 +27,7 @@
     @stack('styles')
     @vite(['resources/css/web/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="@yield('body_class')">
     @include('components.analytics.gtm-noscript')
 
     @yield('content')

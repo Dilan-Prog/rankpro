@@ -3,11 +3,29 @@
    Sustituyen a los testimonios y a las cifras que se retiraron en la revisión
    de E-E-A-T. Reutilizan los tokens y las utilidades globales de app.css. */
 
-/* ── Metodología ─────────────────────────────────────────────────────────── */
+/* ── Metodología (banda oscura) ──────────────────────────────────────────── */
 
 .process {
-    padding: 6rem 1rem;
-    background: var(--surface);
+    padding: clamp(3rem, 7vw, 6rem) 0;
+    background: var(--rp-dark-900);
+    color: #ffffff;
+}
+
+.rd .process .section-badge {
+    background: var(--rp-dark-700);
+    color: var(--rp-green-300);
+}
+
+.rd .process .section-header h2 {
+    color: #ffffff;
+}
+
+.rd .process .section-header p {
+    color: var(--rp-on-dark);
+}
+
+.process .text-brand {
+    color: var(--rp-green-300);
 }
 
 .process__grid {
@@ -17,97 +35,112 @@
     list-style: none;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .process-step {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    padding: 1.75rem;
-    transition: all 0.3s ease;
-}
-
-.process-step:hover {
-    box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.15);
-    transform: translateY(-4px);
+    position: relative;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.875rem 1rem;
+    padding: 1.5rem;
+    background: var(--rp-dark-700);
+    border: 1px solid var(--rp-dark-600);
+    border-radius: var(--rp-r-lg);
 }
 
 .process-step__number {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-    color: #ffffff;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    border: 1.5px solid var(--rp-green-300);
+    color: var(--rp-green-300);
     font-weight: 800;
-    font-size: 1.125rem;
-    background: var(--gradient-1);
+    font-size: 1.25rem;
 }
 
-.process-step__number.gradient-1 { background: var(--gradient-1); }
-.process-step__number.gradient-2 { background: var(--gradient-2); }
-.process-step__number.gradient-3 { background: var(--gradient-3); }
-.process-step__number.gradient-4 { background: var(--gradient-4); }
-.process-step__number.gradient-5 { background: var(--gradient-5); }
-
 .process-step__title {
-    font-weight: 700;
-    color: var(--ink);
-    font-size: 1.125rem;
-    margin-bottom: 0.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-size: 1.1875rem;
 }
 
 .process-step__desc {
-    color: var(--muted);
-    font-size: 0.875rem;
-    line-height: 1.7;
+    grid-column: 1 / -1;
+    color: var(--rp-on-dark);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-wrap: pretty;
 }
 
-@media (min-width: 768px) {
+/* Cinco pasos: tres arriba y dos abajo, sin dejar hueco. */
+@media (min-width: 900px) {
     .process__grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
     }
-}
 
-@media (min-width: 1024px) {
-    .process__grid {
-        grid-template-columns: repeat(3, 1fr);
+    .process-step {
+        grid-column: span 2;
+        align-content: start;
+    }
+
+    .process-step:nth-child(n + 4) {
+        grid-column: span 3;
     }
 }
 
 /* ── Encaje: para quién es y para quién no ───────────────────────────────── */
 
 .fit {
-    padding: 6rem 1rem;
+    padding: clamp(3rem, 7vw, 6rem) 0;
     background: #ffffff;
 }
 
 .fit__grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .fit-panel {
+    padding: clamp(1.25rem, 3vw, 2rem);
     border: 1px solid var(--border);
-    border-radius: 1rem;
-    padding: 1.75rem;
-    background: var(--surface);
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: var(--rp-shadow-1);
 }
 
-.fit-panel--yes {
-    background: #ecfdf5;
-    border-color: #a7f3d0;
+.fit-panel--no {
+    border: 1px dashed var(--rp-gray-300);
+    background: var(--surface);
+    box-shadow: none;
 }
 
 .fit-panel__title {
-    font-weight: 700;
-    color: var(--ink);
-    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     margin-bottom: 1rem;
+    font-weight: 800;
+    color: var(--ink);
+    font-size: 1.25rem;
+}
+
+/* Palomita o cruz decorativa delante del título. */
+.fit-panel__title::before {
+    content: '';
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--rp-green-600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center / 22px no-repeat;
+}
+
+.fit-panel--no .fit-panel__title::before {
+    background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E") center / 20px no-repeat;
 }
 
 .fit-panel__list {
@@ -119,16 +152,27 @@
 .fit-panel__item {
     display: flex;
     align-items: flex-start;
-    gap: 0.625rem;
+    gap: 0.75rem;
     color: var(--ink);
-    font-size: 0.875rem;
-    line-height: 1.65;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.fit-panel__list .fit-panel__item {
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--rp-gray-100);
+}
+
+.fit-panel--no .fit-panel__item {
+    border-color: var(--border);
+    color: var(--rp-gray-700);
 }
 
 .fit-panel__icon {
     flex: 0 0 auto;
     margin-top: 0.2rem;
-    color: var(--brand-texto);
+    color: var(--brand);
 }
 
 .fit-panel--no .fit-panel__icon {
@@ -136,67 +180,117 @@
 }
 
 .fit__deliverables {
-    margin-top: 3rem;
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    padding: 1.75rem;
+    margin-top: 1rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 22px;
+    background: var(--rp-green-50);
 }
 
 .fit__deliverables-title {
-    font-weight: 700;
-    color: var(--ink);
-    font-size: 1.125rem;
     margin-bottom: 1rem;
+    font-weight: 800;
+    color: var(--ink);
+    font-size: 1.25rem;
 }
 
 .fit__deliverables-list {
     list-style: none;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.875rem;
+    gap: 0.875rem 2rem;
 }
 
 @media (min-width: 768px) {
-    .fit__grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
+    .fit__grid,
     .fit__deliverables-list {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 /* ── Preguntas frecuentes de la portada ──────────────────────────────────── */
 
 .home-faq {
-    padding: 6rem 1rem;
+    padding: clamp(3rem, 7vw, 6rem) 0;
     background: var(--surface);
 }
 
 .home-faq__list {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    max-width: 52rem;
-    margin: 0 auto;
+    gap: 0.5rem;
+    align-content: start;
 }
 
 .home-faq__item {
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 1rem;
-    padding: 1.5rem 1.75rem;
+    border-radius: 16px;
+    transition: border-color var(--rp-fast);
+}
+
+.home-faq__item[open] {
+    border-color: var(--brand);
+}
+
+.home-faq__item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 56px;
+    padding: 1.125rem 1.25rem;
+    border-radius: 16px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.home-faq__item summary::-webkit-details-marker {
+    display: none;
+}
+
+.home-faq__item summary::after {
+    content: '';
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--rp-green-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B7D58' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E") center / 14px no-repeat;
+    transition: transform var(--rp-base) var(--rp-ease);
+}
+
+.home-faq__item[open] summary::after {
+    transform: rotate(45deg);
 }
 
 .home-faq__question {
     font-weight: 700;
     color: var(--ink);
     font-size: 1rem;
-    margin-bottom: 0.625rem;
+    line-height: 1.35;
+}
+
+.home-faq__item summary:hover .home-faq__question {
+    color: var(--rp-green-600);
 }
 
 .home-faq__answer {
-    color: var(--muted);
-    font-size: 0.875rem;
-    line-height: 1.7;
+    padding: 0 1.25rem 1.25rem;
+    color: var(--rp-gray-700);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+}
+
+@media (min-width: 1024px) {
+    .home-faq > .container {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: 3.5rem;
+        align-items: start;
+    }
+
+    .home-faq .section-header {
+        position: sticky;
+        top: 6.5rem;
+        margin-bottom: 0;
+    }
 }

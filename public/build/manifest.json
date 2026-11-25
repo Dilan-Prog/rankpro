@@ -194,7 +194,7 @@
     "isEntry": true
   },
   "resources/css/web/app.css": {
-    "file": "assets/app-DbT4SV-Z.css",
+    "file": "assets/app-DqCzGBJc.css",
     "src": "resources/css/web/app.css",
     "isEntry": true
   },
@@ -211,6 +211,11 @@
   "resources/css/web/pages.css": {
     "file": "assets/pages-BOVmj6A9.css",
     "src": "resources/css/web/pages.css",
+    "isEntry": true
+  },
+  "resources/css/web/rediseno/base.css": {
+    "file": "assets/base-CZh4l-n3.css",
+    "src": "resources/css/web/rediseno/base.css",
     "isEntry": true
   },
   "resources/css/web/servicios-conversion.css": {

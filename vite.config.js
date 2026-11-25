@@ -9,6 +9,7 @@ export default defineConfig({
                 // Marketing site
                 'resources/css/web/app.css',
                 'resources/css/web/pages.css',
+                'resources/css/web/rediseno/base.css',
                 'resources/css/web/servicios-conversion.css',
                 'resources/js/app.js',
                 'resources/js/servicios-conversion.js',

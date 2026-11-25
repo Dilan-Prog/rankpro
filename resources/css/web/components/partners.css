@@ -1,44 +1,41 @@
 .partners {
-    background: var(--surface);
-    padding: 2.5rem 1rem;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+    padding: clamp(1.75rem, 4vw, 2.75rem) 0;
+    border-top: 1px solid var(--rp-gray-100);
+    border-bottom: 1px solid var(--rp-gray-100);
 }
 
 .partners__inner {
-    max-width: 64rem;
-}
-
-.partners__label {
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 1.75rem;
-}
-
-.partners__list {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+    gap: 0.875rem 1.75rem;
 }
 
-.partners__item {
-    color: var(--ink);
+.partners__label {
+    font-size: 0.75rem;
     font-weight: 700;
-    font-size: 0.875rem;
-    opacity: 0.4;
-    transition: opacity 0.2s ease;
-}
-
-.partners__item:hover {
-    opacity: 1;
+    color: var(--muted);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
 .partners__list {
     list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1.75rem;
+}
+
+/* El gris del diseño (#8A9891) no llega a AA; se usa el secundario. */
+.partners__item {
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
 }

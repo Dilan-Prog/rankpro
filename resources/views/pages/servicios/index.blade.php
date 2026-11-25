@@ -3,9 +3,10 @@
 @section('title', 'Servicios de Marketing Digital en México | RankPro')
 @section('description', 'Google Ads, SEO orgánico, desarrollo web, optimización de Core Web Vitals, analítica digital y redes sociales para empresas en México.')
 @section('canonical', route('servicios.index'))
+@section('body_class', 'rd rd-servicios')
 
 @push('styles')
-    @vite('resources/css/web/pages.css')
+    @vite(['resources/css/web/pages.css', 'resources/css/web/rediseno/base.css'])
 @endpush
 
 @push('jsonld')
@@ -50,6 +51,7 @@
                     </ol>
                 </nav>
 
+                <div class="page-hero__dos">
                 <div class="page-hero__inner">
                     <h1>Servicios de Marketing Digital</h1>
                     <p class="page-hero__lead">
@@ -63,6 +65,8 @@
                         <a href="https://wa.me/525562230266" class="btn btn-outline" rel="noopener nofollow">Escribir por WhatsApp</a>
                     </div>
                 </div>
+                @include('components.ilustracion-panel')
+                </div>
             </div>
         </section>
 
@@ -72,7 +76,7 @@
 
                 <div class="services__grid">
                     @foreach ($servicios as $servicio)
-                        <a class="service-card" href="{{ route('servicios.show', $servicio['slug']) }}" style="text-decoration: none; display: block;">
+                        <a class="service-card" href="{{ route('servicios.show', $servicio['slug']) }}" style="text-decoration: none;">
                             <div class="service-card__icon {{ $servicio['gradient'] }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $servicio['icon'] !!}</svg>
                             </div>

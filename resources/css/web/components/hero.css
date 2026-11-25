@@ -1,41 +1,47 @@
 .hero {
-    background: #ffffff;
-    padding: 4rem 1rem 5rem;
-    overflow: hidden;
+    background: linear-gradient(180deg, var(--surface) 0%, #ffffff 100%);
+    padding: clamp(2rem, 5vw, 4.5rem) 0 clamp(2.5rem, 6vw, 5rem);
 }
 
 .hero__grid {
     display: grid;
-    gap: 3rem;
+    gap: clamp(2rem, 4vw, 3.5rem);
     align-items: center;
 }
 
 .hero__content {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.hero .section-badge {
+    margin-bottom: 0;
 }
 
 .hero__heading h1 {
-    font-size: 3rem;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
     font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    line-height: 1.03;
+    letter-spacing: -0.03em;
     color: var(--ink);
 }
 
 .hero__subtitle {
-    margin-top: 0.75rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #10b981;
+    margin-top: 1rem;
+    font-size: clamp(1.125rem, 1.7vw, 1.375rem);
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
 }
 
 .hero__description {
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.7;
-    max-width: 32rem;
+    color: var(--rp-gray-700);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    max-width: 34rem;
+    text-wrap: pretty;
 }
 
 .hero__actions {
@@ -52,7 +58,7 @@
     grid-template-columns: 1fr;
     gap: 0.875rem 1.5rem;
     margin: 0;
-    padding: 1.5rem 0 0;
+    padding: 1.25rem 0 0;
     border-top: 1px solid var(--border);
 }
 
@@ -65,12 +71,12 @@
 .hero__commitment-icon {
     flex-shrink: 0;
     margin-top: 0.15rem;
-    color: var(--brand-texto);
+    color: var(--brand);
 }
 
 .hero__commitment-title {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 700;
     color: var(--ink);
     line-height: 1.35;
@@ -78,59 +84,79 @@
 
 .hero__commitment-desc {
     display: block;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--muted);
     line-height: 1.5;
     margin-top: 0.125rem;
 }
 
+/* Panel con marco de ventana: ocupa el lugar del tablero del diseño, sin cifras. */
 .hero__cards {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 1.125rem 1.125rem;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--rp-r-xl);
+    box-shadow: 0 1px 2px rgba(14, 26, 21, .05), 0 30px 60px rgba(14, 26, 21, .1);
+    overflow: hidden;
+}
+
+.hero__cards::before {
+    content: '';
+    grid-column: 1 / -1;
+    height: 36px;
+    margin: 0 -1.125rem 0.5rem;
+    border-bottom: 1px solid var(--rp-gray-100);
+    background:
+        radial-gradient(circle at 21px 50%, var(--border) 5px, transparent 5.5px),
+        radial-gradient(circle at 37px 50%, var(--border) 5px, transparent 5.5px),
+        radial-gradient(circle at 53px 50%, var(--border) 5px, transparent 5.5px),
+        #FAFBFA;
 }
 
 .feature-card {
     display: flex;
     flex-direction: column;
-    background: #ffffff;
-    border-radius: 1rem;
-    padding: 1.25rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: var(--rp-r-md);
+    background: var(--surface);
+    border: 1px solid transparent;
+    transition: background var(--rp-fast), border-color var(--rp-fast), box-shadow var(--rp-fast);
 }
 
 .feature-card:hover {
-    box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.15);
-    transform: translateY(-4px);
+    background: #ffffff;
+    border-color: var(--border);
+    box-shadow: 0 12px 28px rgba(14, 26, 21, .07);
 }
 
 .feature-card__icon {
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(to bottom right, #ecfdf5, #d1fae5);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: var(--rp-shadow-1);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.75rem;
-    color: var(--brand-texto);
+    color: var(--brand);
 }
 
 .feature-card__title {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--ink);
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.3;
 }
 
 .feature-card__desc {
-    font-size: 0.75rem;
-    color: var(--muted);
+    font-size: 0.8125rem;
+    color: var(--rp-gray-700);
     margin-top: 0.25rem;
     line-height: 1.5;
 }
@@ -138,7 +164,8 @@
 .feature-card__deliverable {
     margin-top: auto;
     padding-top: 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
     line-height: 1.45;
     color: var(--ink);
 }
@@ -146,29 +173,22 @@
 .feature-card__deliverable-label {
     display: block;
     font-size: 0.6875rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    /* --muted alcanza 4.8:1 sobre blanco; --brand se queda en 3.4:1 y no
-       cumpliría AA en un texto de este tamaño. */
-    color: var(--muted);
+    color: var(--rp-green-600);
     margin-bottom: 0.125rem;
 }
 
-@media (min-width: 640px) {
-    .hero__commitments {
-        grid-template-columns: repeat(2, 1fr);
+@media (min-width: 560px) {
+    .hero__commitments,
+    .hero__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 1024px) {
     .hero__grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1280px) {
-    .hero__heading h1 {
-        font-size: 3.75rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

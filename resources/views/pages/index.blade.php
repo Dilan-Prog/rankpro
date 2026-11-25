@@ -6,6 +6,12 @@
 
 @section('canonical', url('/'))
 
+@section('body_class', 'rd rd-inicio')
+
+@push('styles')
+    @vite('resources/css/web/rediseno/base.css')
+@endpush
+
 @php
     /*
      * Contenido propio de la portada. Sustituye a los testimonios y a las
@@ -111,7 +117,7 @@
                 <ol class="process__grid">
                     @foreach ($proceso as $i => $paso)
                         <li class="process-step">
-                            <div class="process-step__number gradient-{{ $i + 1 }}" aria-hidden="true">{{ $i + 1 }}</div>
+                            <div class="process-step__number" aria-hidden="true">{{ $i + 1 }}</div>
                             <h3 class="process-step__title">{{ $paso['titulo'] }}</h3>
                             <p class="process-step__desc">{{ $paso['desc'] }}</p>
                         </li>
@@ -178,10 +184,11 @@
 
                 <div class="home-faq__list">
                     @foreach ($faqs as $faq)
-                        <article class="home-faq__item">
-                            <h3 class="home-faq__question">{{ $faq['p'] }}</h3>
+                        {{-- <details>: la respuesta siempre está en el HTML y funciona sin JS. --}}
+                        <details class="home-faq__item" @if ($loop->first) open @endif>
+                            <summary><h3 class="home-faq__question">{{ $faq['p'] }}</h3></summary>
                             <p class="home-faq__answer">{{ $faq['r'] }}</p>
-                        </article>
+                        </details>
                     @endforeach
                 </div>
             </div>
