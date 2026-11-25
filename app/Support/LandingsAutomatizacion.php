@@ -34,7 +34,7 @@ class LandingsAutomatizacion
                 'seo_ciudad' => 'puebla',
                 'nombre' => 'Puebla',
                 'enlace' => 'Empresas de automatización en Puebla',
-                'actualizado' => '2026-11-23',
+                'actualizado' => '2026-11-24',
                 'meta_title' => 'Empresas de Automatización en Puebla | RankPro',
                 'meta_description' => 'Automatización de procesos para empresas en Puebla: leads al CRM, avisos y reportes con n8n. Diagnóstico gratuito de 45 minutos, de forma remota.',
                 'h1' => 'Empresas de automatización en Puebla',
@@ -71,6 +71,60 @@ class LandingsAutomatizacion
                     'titulo' => 'Trabajo remoto, con tu equipo en la llamada',
                     'texto' => 'El diagnóstico y la implementación se hacen por videollamada. Ayuda que participe quien realiza hoy la tarea, porque conoce las excepciones que no están escritas. Antes de conectar una herramienta acordamos qué accesos hacen falta.',
                 ],
+                'sector' => [
+                    'titulo' => 'Qué necesitan las empresas de Puebla',
+                    'puntos' => [
+                        'En Puebla hay escuelas con temporadas de inscripción, talleres que surten a la industria, comercios familiares y despachos que viven de la agenda. Sus herramientas suelen ser correctas; lo que se pierde es el paso entre una y otra: el dato que alguien debía copiar, el mensaje que se quedó sin contestar, la cotización que nadie volvió a mirar.',
+                        'Automatizar ahí no significa sustituir al personal. Significa que el sistema mueva la información y que la persona decida, hable con el cliente y atienda lo que se sale de lo normal.',
+                    ],
+                ],
+                'detalle' => [
+                    'titulo' => 'Cómo se ve cada automatización en el día a día',
+                    'puntos' => [
+                        ['t' => 'Seguimiento de clientes', 'd' => 'Cuando un interesado deja de responder, se crea una tarea para su vendedor con el historial a la vista. Si contesta, la tarea se cierra sola.'],
+                        ['t' => 'Cotizaciones', 'd' => 'Los datos del formulario llenan la plantilla, alguien autoriza el precio y el documento sale por correo. Queda anotada la fecha para volver a preguntar.'],
+                        ['t' => 'Reportes', 'd' => 'La información se toma de las mismas fuentes cada semana y llega a quien decide, con la lista de registros que tienen campos vacíos.'],
+                        ['t' => 'Mensajes', 'd' => 'Se confirman citas, se avisa que una solicitud fue recibida y se canaliza al área indicada. Los temas delicados pasan siempre a una persona.'],
+                    ],
+                ],
+                'tipos' => [
+                    'titulo' => 'Señales de que tu empresa ya lo necesita',
+                    'puntos' => [
+                        'Dos personas capturan lo mismo en sistemas distintos',
+                        'El dueño pregunta por el estado de un pedido y hay que llamar a tres áreas',
+                        'En época de inscripciones o de cierre se contrata apoyo solo para copiar datos',
+                        'Las solicitudes llegan por redes, teléfono y formulario, sin un registro común',
+                        'Cuando falta la encargada, nadie sabe en qué paso quedó cada cliente',
+                    ],
+                ],
+                'etapas' => [
+                    'titulo' => 'Cómo trabajamos en Puebla, etapa por etapa',
+                    'puntos' => [
+                        ['t' => 'Observar', 'd' => 'En videollamada nos muestras la tarea tal como se hace, con sus atajos y excepciones.'],
+                        ['t' => 'Dibujar', 'd' => 'Enviamos un diagrama sencillo que indica qué dispara el flujo, qué decide y dónde interviene tu equipo.'],
+                        ['t' => 'Probar', 'd' => 'Corre con registros de ensayo y luego con unos cuantos reales, mientras el método anterior sigue disponible.'],
+                        ['t' => 'Entregar', 'd' => 'Documentamos el recorrido, las conexiones usadas y qué hacer si una herramienta deja de responder.'],
+                    ],
+                ],
+                'cuidados' => [
+                    'titulo' => 'Qué cuidamos en cada flujo',
+                    'puntos' => [
+                        'Rapidez: el aviso debe salir cuando todavía sirve, y eso se verifica en las pruebas.',
+                        'Claridad: los pasos llevan nombres que entiende quien opera, no solo quien programa.',
+                        'Permisos: cada conexión usa únicamente los accesos que hacen falta.',
+                        'Medición: se guarda cuántas veces corrió, cuántas falló y por qué.',
+                        'Mantenimiento: si cambia un formulario o una cuenta, se revisa el flujo y se vuelve a probar.',
+                    ],
+                ],
+                'errores' => [
+                    'titulo' => 'Errores comunes al automatizar por primera vez',
+                    'puntos' => [
+                        'Empezar por el proceso más enredado de la empresa en lugar del más repetido.',
+                        'Automatizar una base con duplicados y contactos sin teléfono.',
+                        'Enviar respuestas automáticas a quien ya estaba hablando con un asesor.',
+                        'No nombrar a un responsable que reciba las alertas cuando algo se detiene.',
+                    ],
+                ],
                 'faqs' => [
                     [
                         'p' => '¿Tienen oficina en Puebla?',
@@ -83,6 +137,14 @@ class LandingsAutomatizacion
                     [
                         'p' => '¿Qué empresas de Puebla lo necesitan?',
                         'r' => 'Cualquiera con tareas repetitivas entre herramientas: comercios, escuelas, manufactura y servicios.',
+                    ],
+                    [
+                        'p' => 'Somos una escuela en Puebla. ¿Qué parte de las inscripciones se puede automatizar?',
+                        'r' => 'El registro del interesado, el envío de requisitos según el programa, los recordatorios de documentos y el aviso al área de admisiones. La revisión de cada caso la sigue haciendo tu personal.',
+                    ],
+                    [
+                        'p' => '¿Un taller o proveedor industrial necesita cambiar su sistema para automatizar?',
+                        'r' => 'No necesariamente. Primero se revisa si lo que usa permite conectarse o exportar datos. Si no es posible, te lo decimos en el diagnóstico y se valora otra forma de resolverlo.',
                     ],
                 ],
                 'cierre' => [

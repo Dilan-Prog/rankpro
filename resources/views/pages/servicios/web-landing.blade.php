@@ -27,6 +27,7 @@
 
     $ico = fn ($p, $s = 16) => '<svg xmlns="http://www.w3.org/2000/svg" width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$p.'</svg>';
     $icoCheck = '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
+    $icoCruz = '<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>';
     $icoFlecha = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>';
     $icoWa = '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>';
     $icoTel = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>';
@@ -110,6 +111,33 @@
             </div>
         </section>
 
+        <section class="cv-section cv-section--tight" aria-labelledby="sector">
+            <div class="container" style="max-width:48rem;">
+                <div class="cv-head cv-head--left" style="margin-bottom:0;">
+                    <h2 id="sector">{{ $landing['sector']['titulo'] }}</h2>
+                    @foreach ($landing['sector']['puntos'] as $parrafo)
+                        <p>{{ $parrafo }}</p>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        @isset($landing['tipos'])
+        <section class="cv-section cv-section--tight" aria-labelledby="tipos">
+            <div class="container" style="max-width:48rem;">
+                <div class="cv-head" style="margin-bottom:1rem;">
+                    <h2 id="tipos">{{ $landing['tipos']['titulo'] }}</h2>
+                </div>
+                <ul class="cv-checklist">
+                    @foreach ($landing['tipos']['puntos'] as $punto)
+                        <li>{!! $ico($icoCheck, 18) !!} <span>{{ $punto }}</span></li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+
+        @endisset
+
         <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="publico">
             <div class="container" style="max-width:48rem;">
                 <div class="cv-head" style="margin-bottom:1rem;">
@@ -169,6 +197,35 @@
                     <h2 id="trabajo">{{ $landing['trabajo']['titulo'] }}</h2>
                     <p>{{ $landing['trabajo']['texto'] }} <a href="{{ $urlPadre }}">{{ $landing['trabajo']['enlace'] }}</a>.</p>
                 </div>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--alt cv-section--tight" aria-labelledby="etapas">
+            <div class="container">
+                <div class="cv-head">
+                    <h2 id="etapas">{{ $landing['etapas']['titulo'] }}</h2>
+                </div>
+                <ol style="{{ $rejilla }}list-style:none;padding:0;">
+                    @foreach ($landing['etapas']['puntos'] as $punto)
+                        <li class="cv-card-soft" style="background:#ffffff;">
+                            <h3>{{ $punto['t'] }}</h3>
+                            <p>{{ $punto['d'] }}</p>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        </section>
+
+        <section class="cv-section cv-section--tight" aria-labelledby="errores">
+            <div class="container" style="max-width:48rem;">
+                <div class="cv-head" style="margin-bottom:1rem;">
+                    <h2 id="errores">{{ $landing['errores']['titulo'] }}</h2>
+                </div>
+                <ul class="cv-checklist">
+                    @foreach ($landing['errores']['puntos'] as $punto)
+                        <li>{!! $ico($icoCruz, 18) !!} <span>{{ $punto }}</span></li>
+                    @endforeach
+                </ul>
             </div>
         </section>
 
@@ -233,6 +290,8 @@
                             <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('blog.show', $slugGuia) }}">{{ $guias[$slugGuia] }}</a></li>
                         @endisset
                     @endforeach
+                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.show', 'pagespeed-core-web-vitals') }}">Velocidad web</a></li>
+                    <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.show', 'seo-organico') }}">SEO orgánico</a></li>
                     @isset($landing['seo_ciudad'])
                         <li><a class="cv-chip" style="text-decoration:none;" href="{{ route('servicios.ciudad', $landing['seo_ciudad']) }}">SEO en {{ $landing['nombre'] }}</a></li>
                     @endisset

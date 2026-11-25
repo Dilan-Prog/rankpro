@@ -58,6 +58,20 @@ class LandingsWebTest extends TestCase
         }
     }
 
+    /** Mínimo del texto visible en las landings de ciudad, incluida la de automatización. */
+    public function test_cada_landing_tiene_al_menos_800_palabras(): void
+    {
+        $urls = array_map(fn ($slug) => '/servicios/desarrollo-web/'.$slug, array_keys(LandingsWeb::todos()));
+
+        foreach ([...$urls, '/servicios/automatizacion-de-procesos/puebla'] as $url) {
+            preg_match('/<main>(.*)<\/main>/s', $this->get($url)->getContent(), $m);
+            $texto = html_entity_decode(strip_tags(preg_replace(['/<nav.*?<\/nav>/s', '/<svg.*?<\/svg>/s', '/</'], [' ', ' ', ' <'], $m[1])), ENT_QUOTES);
+            preg_match_all('/\S*[\p{L}\p{N}]\S*/u', $texto, $palabras);
+
+            $this->assertGreaterThanOrEqual(800, count($palabras[0]), $url);
+        }
+    }
+
     /** Regla del plan: no más de ~10 % de frases iguales entre landings. */
     public function test_dos_landings_comparten_menos_del_10_por_ciento(): void
     {
