@@ -108,6 +108,10 @@ Route::get('/servicios/desarrollo-web/{slugLanding}', [PaginasController::class,
 Route::get('/servicios/automatizacion-de-procesos/{slugLanding}', [PaginasController::class, 'automatizacionLanding'])
     ->where('slugLanding', '[a-z-]+')
     ->name('servicios.automatizacion');
+// Landings de aplicaciones móviles (App\Support\LandingsApps), hijas de /servicios/desarrollo-de-aplicaciones-moviles.
+Route::get('/servicios/desarrollo-de-aplicaciones-moviles/{slugLanding}', [PaginasController::class, 'appsLanding'])
+    ->where('slugLanding', '[a-z-]+')
+    ->name('servicios.apps');
 // Landings comerciales de Ads (App\Support\LandingsAds), hijas de /servicios/sem-google-ads.
 Route::get('/servicios/sem-google-ads/{slugLanding}', [PaginasController::class, 'adsLanding'])
     ->where('slugLanding', '[a-z-]+')

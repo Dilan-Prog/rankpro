@@ -727,7 +727,7 @@ class Servicios
                 'icon' => '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path>',
                 'tags' => ['Android', 'iOS', 'Apps internas'],
                 'resumen' => 'Apps para clientes o para tu equipo: diseño, desarrollo, publicación en tiendas y mejora continua.',
-                'actualizado' => '2026-11-23',
+                'actualizado' => '2026-11-24',
                 'meta_title' => 'Desarrollo de Aplicaciones Móviles en México | RankPro',
                 'meta_description' => 'Desarrollo de aplicaciones móviles para negocios en México: diseño, desarrollo para Android y iOS, publicación en tiendas y mantenimiento. Cotiza tu app.',
                 'h1' => 'Desarrollo de aplicaciones móviles en México',
@@ -747,7 +747,7 @@ class Servicios
                 ],
                 // texto => ruta. null = sin publicar, no se enlaza.
                 'landings' => [
-                    'Desarrollo de apps en Querétaro' => null,
+                    'Desarrollo de apps en Querétaro' => '/servicios/desarrollo-de-aplicaciones-moviles/queretaro',
                 ],
                 'entregables' => [
                     'Definición de alcance y funciones.',

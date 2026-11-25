@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
 use App\Support\LandingsAds;
+use App\Support\LandingsApps;
 use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsSocial;
 use App\Support\LandingsWeb;
@@ -62,6 +63,10 @@ class LlmsTxtController extends Controller
         foreach (LandingsAds::todos() as $ad) {
             $l[] = sprintf('- [%s](%s): %s', $ad['enlace'], route('servicios.ads', $ad['slug']), $ad['meta_description']);
         }
+        foreach (LandingsApps::todos() as $ap) {
+            $l[] = sprintf('- [%s](%s): %s', $ap['enlace'], route('servicios.apps', $ap['slug']), $ap['meta_description']);
+        }
+
         foreach (LandingsAutomatizacion::todos() as $a) {
             $l[] = sprintf('- [%s](%s): %s', $a['enlace'], route('servicios.automatizacion', $a['slug']), $a['meta_description']);
         }

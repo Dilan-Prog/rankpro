@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Support\CasosExito;
 use App\Support\CiudadesSeo;
 use App\Support\LandingsAds;
+use App\Support\LandingsApps;
 use App\Support\LandingsAutomatizacion;
 use App\Support\LandingsSocial;
 use App\Support\LandingsWeb;
@@ -158,6 +159,12 @@ class SitemapController extends Controller
 
                     if ($slug === LandingsAds::SERVICIO) {
                         foreach (LandingsAds::todos() as $landing) {
+                            $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
+                        }
+                    }
+
+                    if ($slug === LandingsApps::SERVICIO) {
+                        foreach (LandingsApps::todos() as $landing) {
                             $paginas["/servicios/{$slug}/{$landing['slug']}"] = ['monthly', '0.8', null, $landing['actualizado']];
                         }
                     }
