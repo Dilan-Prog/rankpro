@@ -1,10 +1,6 @@
 /**
- * Interactividad de las landings de servicio (SEM y SEO).
- *
- * Sustituye al React del prototipo: acordeon de objeciones, pestanas de la
- * grafica de resultados y calculadora de ROI. Todo progresivo: si el JS falla,
- * las respuestas del acordeon quedan visibles y la grafica muestra su serie
- * por defecto, porque el HTML se sirve ya renderizado desde Blade.
+ * Interactividad de las páginas de servicio: acordeón de preguntas, calculadora
+ * de ROI y configurador. Todo progresivo: el HTML se sirve ya renderizado.
  */
 
 const money = (n) => '$' + Math.round(n).toLocaleString('es-MX');

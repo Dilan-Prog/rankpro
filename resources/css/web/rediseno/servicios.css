@@ -1350,11 +1350,7 @@
     padding-top: clamp(3rem, 7vw, 6rem);
 }
 
-.rd .cv-dark-sec--banda:has(.cv-band) {
-    padding-top: clamp(3rem, 7vw, 6rem);
-}
-
-.rd .cv-dark-sec--banda:has(.cv-auto-cierre) {
+.rd .cv-dark-sec--banda:has(.cv-band, .cv-auto-cierre) {
     padding-top: clamp(3rem, 7vw, 6rem);
 }
 
@@ -1649,6 +1645,7 @@
 
 .rd .cv-btn--oscuro:hover {
     background: var(--ink);
+    color: #ffffff;
 }
 
 @media (min-width: 1024px) {
@@ -1796,4 +1793,23 @@
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+}
+
+.rd .cv-dark .breadcrumb a:hover {
+    color: var(--rp-green-600);
+}
+
+.rd .cv-band .cv-btn--oscuro:focus-visible {
+    outline-color: #ffffff;
+}
+
+/* 44px de área de toque para el interruptor. */
+.rd .cv-switch {
+    position: relative;
+}
+
+.rd .cv-switch::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
 }

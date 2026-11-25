@@ -49,8 +49,7 @@
     --rp-base: 220ms;
     --rp-ease: cubic-bezier(.2, .8, .2, 1);
 
-    /* Degradados de los iconos de servicio. Viven aqui porque los usan tanto
-       las tarjetas del home y del hub como el megamenu del navbar. */
+    /* Degradados por categoría; hoy solo los usa blog.css. */
     --gradient-1: linear-gradient(to bottom right, #34d399, #059669);
     --gradient-2: linear-gradient(to bottom right, #2dd4bf, #10b981);
     --gradient-3: linear-gradient(to bottom right, #4ade80, #10b981);
@@ -172,8 +171,42 @@ img {
 }
 
 :focus-visible {
-    outline: 3px solid var(--rp-green-300);
+    outline: 3px solid var(--rp-foco, var(--rp-green-600));
     outline-offset: 2px;
+}
+
+/* Sobre oscuro el verde 600 no se distingue: se aclara el anillo. */
+.topbar,
+.site-footer,
+.megamenu__aside,
+.process,
+.page-cta,
+.cv-final,
+.cv-section--dark,
+.cv-section--oscura,
+.cv-dark-sec--noche,
+.cv-auto-cierre,
+.cv-calc__panel,
+.nos-metodo,
+.hub-banner,
+.cs-hero {
+    --rp-foco: var(--rp-green-300);
+}
+
+.cv-band,
+.cv-section--brand {
+    --rp-foco: #ffffff;
+}
+
+@media print {
+    .cv-faq__panel[hidden] {
+        display: block;
+    }
+
+    .home-faq__item::details-content {
+        content-visibility: visible;
+        block-size: auto;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

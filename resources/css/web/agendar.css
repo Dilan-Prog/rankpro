@@ -720,3 +720,14 @@ textarea.input {
 .agendar-cancelar__acciones form {
     display: contents;
 }
+
+/* Teléfono: menos relleno para que cada día mida cerca de 40px. */
+@media (max-width: 480px) {
+    .agendar .agendar__contenido {
+        padding-inline: 0.5rem;
+    }
+
+    .agendar__calendario-grid {
+        gap: 0.125rem;
+    }
+}

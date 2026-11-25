@@ -247,6 +247,7 @@
 }
 
 .articulo-card__cluster {
+    position: relative;
     align-self: flex-start;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -260,13 +261,15 @@
     background: var(--brand);
 }
 
-.articulo-card__cluster.gradient-1 { background: var(--gradient-1); }
-.articulo-card__cluster.gradient-2 { background: var(--gradient-2); }
-.articulo-card__cluster.gradient-3 { background: var(--gradient-3); }
-.articulo-card__cluster.gradient-4 { background: var(--gradient-4); }
-.articulo-card__cluster.gradient-5 { background: var(--gradient-5); }
-.articulo-card__cluster.gradient-6 { background: var(--gradient-6); }
-.articulo-card__cluster.gradient-7 { background: var(--gradient-7); }
+/* Área de toque mayor que la píldora. */
+.articulo-card__cluster::before {
+    content: "";
+    position: absolute;
+    inset: -0.75rem -0.25rem;
+}
+
+/* Verde 600: los degradados claros no daban contraste con texto blanco. */
+.articulo-card__cluster[class*="gradient-"] { background: var(--rp-green-600); }
 
 .articulo-card__titulo {
     font-size: 1.0625rem;
@@ -370,7 +373,14 @@ a.paginacion__enlace:hover {
 
 @media (max-width: 480px) {
     /* En movil sobra la palabra: quedan las flechas. */
-    .paginacion__texto { display: none; }
+    .paginacion__texto {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
 }
 
 /* ------------------------------------------------------------------ */

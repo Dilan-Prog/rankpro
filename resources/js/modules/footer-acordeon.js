@@ -16,8 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const boton = col.querySelector('.site-footer__col-btn');
 
             col.classList.toggle('is-cerrada', cerrada);
-            boton.setAttribute('aria-expanded', String(!cerrada));
             boton.tabIndex = telefono.matches ? 0 : -1;
+
+            // Fuera del teléfono es solo un título: no debe anunciarse como control.
+            if (telefono.matches) {
+                boton.setAttribute('aria-expanded', String(!cerrada));
+                boton.setAttribute('aria-controls', boton.dataset.controla);
+                boton.removeAttribute('aria-disabled');
+            } else {
+                boton.removeAttribute('aria-expanded');
+                boton.removeAttribute('aria-controls');
+                boton.setAttribute('aria-disabled', 'true');
+            }
         });
     };
 

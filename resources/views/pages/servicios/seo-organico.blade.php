@@ -229,16 +229,16 @@
                                     <stop offset="100%" stop-color="#0F9D6E" stop-opacity="0.02"></stop>
                                 </linearGradient>
                             </defs>
-                            <text x="0" y="18" font-size="12" fill="#66756E">Sesiones orgánicas al mes (ejemplo)</text>
+                            <text x="0" y="18" font-size="12" fill="#5F6E67">Sesiones orgánicas al mes (ejemplo)</text>
                             @for ($i = 0; $i < 5; $i++)
                                 <line x1="40" x2="600" y1="{{ 40 + $i * 55 }}" y2="{{ 40 + $i * 55 }}" stroke="rgba(0,0,0,0.06)" stroke-dasharray="4 4"></line>
-                                <text x="32" y="{{ 44 + $i * 55 }}" text-anchor="end" font-size="12" fill="#66756E">{{ number_format(round($maxV * (1 - $i / 4))) }}</text>
+                                <text x="32" y="{{ 44 + $i * 55 }}" text-anchor="end" font-size="12" fill="#5F6E67">{{ number_format(round($maxV * (1 - $i / 4))) }}</text>
                             @endfor
                             <path d="{{ $areaRp }}" fill="url(#seoUp)"></path>
                             <polyline points="{{ $lineaTu }}" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="5 4"></polyline>
                             <polyline points="{{ $lineaRp }}" fill="none" stroke="#0F9D6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
                             @foreach ($gap as $i => $g)
-                                <text x="{{ round(40 + $i * ((640 - 80) / 4), 1) }}" y="292" text-anchor="middle" font-size="12" fill="#66756E">{{ $g['m'] }}</text>
+                                <text x="{{ round(40 + $i * ((640 - 80) / 4), 1) }}" y="292" text-anchor="middle" font-size="12" fill="#5F6E67">{{ $g['m'] }}</text>
                             @endforeach
                         </svg>
                     </div>

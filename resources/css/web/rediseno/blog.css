@@ -557,3 +557,112 @@
 .rd-articulo .articulo__volver a {
     color: var(--rp-green-600);
 }
+
+:is(.rd-blog, .rd-articulo) .breadcrumb a:hover {
+    color: var(--rp-green-600);
+}
+
+/* H3 del índice: la clase es dinámica (toc__item--n{nivel}). */
+.rd-articulo .toc__item--n3 {
+    padding-left: 0.875rem;
+}
+
+/* ---------- Ajustes tras la auditoría ---------- */
+
+/* Lámina: tres variantes para que no se repita la misma en fila. */
+:is(.rd-blog, .rd-articulo) .articulo-card:nth-child(3n + 2):not(:has(.articulo-card__media))::before {
+    background-image:
+        radial-gradient(circle at 50% 100%, transparent 5.5rem, var(--trazo) 5.55rem 5.65rem, transparent 5.7rem),
+        radial-gradient(circle at 50% 100%, transparent 3.5rem, var(--trazo) 3.55rem 3.65rem, transparent 3.7rem),
+        radial-gradient(var(--trazo) 1.5px, transparent 1.5px);
+}
+
+:is(.rd-blog, .rd-articulo) .articulo-card:nth-child(3n):not(:has(.articulo-card__media))::before {
+    background-image:
+        repeating-linear-gradient(135deg, transparent 0 22px, var(--trazo) 22px 23px),
+        radial-gradient(circle at 0 100%, transparent 6rem, var(--trazo) 6.05rem 6.15rem, transparent 6.2rem);
+    background-size: auto;
+}
+
+@media (max-width: 767px) {
+    :is(.rd-blog, .rd-articulo) .articulo-card:not(:has(.articulo-card__media))::before {
+        min-height: 4.5rem;
+    }
+}
+
+/* Destacado + 8 tarjetas: las dos últimas se reparten la fila. */
+@media (min-width: 1024px) {
+    .rd-blog .articulo-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .rd-blog .articulo-grid .articulo-card:not(:first-child) {
+        grid-column: span 2;
+    }
+
+    .rd-blog .articulo-grid .articulo-card:nth-child(3n + 2):nth-last-child(2),
+    .rd-blog .articulo-grid .articulo-card:nth-child(3n):last-child {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 480px) {
+    .rd-blog .paginacion__lista {
+        gap: 4px;
+    }
+
+    .rd-blog .paginacion__enlace {
+        min-width: 2.625rem;
+        padding: 0;
+    }
+
+    .rd-articulo .breadcrumb li:has([aria-current="page"]) {
+        overflow: hidden;
+        max-width: 12rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .rd-articulo .prosa-articulo :is(th, td) {
+        min-width: 6.5rem;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+.rd-articulo .prosa-articulo thead tr {
+    background: var(--rp-dark-900);
+}
+
+.rd-articulo .toc__titulo {
+    padding-left: calc(0.75rem + 3px);
+}
+
+/* Móvil: el índice no empuja el artículo fuera de la pantalla. */
+@media (max-width: 1023px) {
+    .rd-articulo .toc__lista {
+        max-height: 14rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .rd-articulo .toc__enlace {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+}
+
+/* Cabecera y cuerpo comparten eje. */
+@media (min-width: 1024px) {
+    .rd-articulo .articulo__cabecera > .container.container {
+        max-width: calc(17rem + 3.5rem + 720px + 2.5rem);
+    }
+}
+
+.rd-articulo .articulo__autor,
+.rd-articulo .articulo__volver a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}

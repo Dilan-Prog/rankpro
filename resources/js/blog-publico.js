@@ -8,6 +8,11 @@
  * reflows en cada pixel (coste directo en INP).
  */
 document.addEventListener('DOMContentLoaded', () => {
+    // Las tablas anchas se desplazan dentro de su marco: que también se pueda con teclado.
+    document.querySelectorAll('.prosa-articulo table').forEach((tabla) => {
+        if (tabla.scrollWidth > tabla.clientWidth) tabla.tabIndex = 0;
+    });
+
     const toc = document.querySelector('.toc');
     const contenido = document.querySelector('.prosa-articulo');
 

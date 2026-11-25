@@ -27,6 +27,7 @@
     display: flex;
     align-items: center;
     gap: 0.375rem;
+    position: relative;
     justify-content: center;
     /* 44px de área táctil sin engordar la barra. */
     min-width: 44px;
@@ -41,8 +42,22 @@
     color: #ffffff;
 }
 
+/* Oculto a la vista, no a los lectores: es el nombre del enlace en móvil. */
 .topbar__link-text {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* El icono, y no su área de toque, queda alineado con el margen. */
+@media (max-width: 767px) {
+    .topbar__contacts {
+        gap: 0.25rem;
+        margin-right: -14px;
+    }
 }
 
 @media (min-width: 640px) {
@@ -57,6 +72,10 @@
 
 @media (min-width: 768px) {
     .topbar__link-text {
-        display: inline;
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
     }
 }

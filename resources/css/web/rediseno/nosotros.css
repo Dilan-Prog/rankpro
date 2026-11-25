@@ -91,7 +91,7 @@
     line-height: 1.65;
 }
 
-/* Cinco pasos: dos arriba más anchos y tres abajo, sin huecos. */
+/* Cinco pasos: dos por fila en tablet; desde 1024 dos arriba y tres abajo. */
 @media (min-width: 768px) {
     .rd-nosotros .nos-pasos {
         grid-template-columns: repeat(6, minmax(0, 1fr));

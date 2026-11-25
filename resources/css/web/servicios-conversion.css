@@ -839,6 +839,12 @@
     transition: background 0.2s ease;
 }
 
+/* La tarjeta recorta el contorno exterior: el anillo va por dentro. */
+.cv-faq__trigger:focus-visible {
+    outline-offset: -3px;
+    border-radius: 1rem;
+}
+
 .cv-faq__trigger:hover {
     background: rgba(236, 253, 245, 0.6);
 }

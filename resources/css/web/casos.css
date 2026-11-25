@@ -1347,11 +1347,11 @@
 .cs-btn--ink:hover { background: #22304a; color: #ffffff; }
 
 .cs-btn--brand {
-    background: var(--brand);
+    background: var(--rp-green-600);
     color: #ffffff;
 }
 
-.cs-btn--brand:hover { background: var(--brand-dark); color: #ffffff; }
+.cs-btn--brand:hover { background: var(--rp-green-700); color: #ffffff; }
 
 .cs-btn--blanco {
     background: #ffffff;
