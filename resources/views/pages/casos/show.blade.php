@@ -348,7 +348,9 @@
                     </figure>
                 </div>
             </section>
-        @else
+        @elseif ($anonimo)
+            {{-- Solo el caso anonimizado explica por que falta la marca. Un caso
+                 con nombre y sin cita (aun sin testimonio) no lleva este bloque. --}}
             <section class="cs-verifica-wrap" aria-labelledby="verificacion">
                 <div class="container">
                     <div class="cs-verifica">

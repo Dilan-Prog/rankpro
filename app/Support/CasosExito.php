@@ -186,6 +186,43 @@ class CasosExito
                 ],
             ],
             [
+                'slug' => 'hotel-la-finca-del-minero',
+                'nombre' => 'Hotel La Finca del Minero',
+                'url' => 'https://hotellafincadelminero.com/',
+                'iniciales' => 'FM',
+                // Mismo criterio que Fratelli: logo blanco enlazado desde el
+                // servidor del cliente; si cae, la vista muestra las iniciales.
+                'logo' => 'https://hotellafincadelminero.com/images/logo-hotel-la-finca-del-minero-zacatecas-blanco.webp',
+                'sector' => 'hotelero',
+                'ubicacion' => 'Zacatecas, México',
+                'duracion' => null,
+                'titulo' => 'Un hotel del Centro Histórico de Zacatecas con sitio propio para la reserva directa',
+                'resumen' => 'Hotel de cuatro estrellas en una casona colonial del Centro Histórico de Zacatecas. Desarrollamos su sitio y trabajamos su SEO orgánico.',
+                'servicios' => ['desarrollo', 'seo'],
+                // Sin cifras todavía: no hay datos de Search Console ni de
+                // ocupación entregados. Se publican cuando existan, con fuente.
+                'kpis' => [],
+                'reto' => null,
+                'solucion' => [
+                    'desarrollo' => [
+                        'Sitio propio del hotel con fichas por tipo de habitación y precio "desde" visible.',
+                        'Páginas de servicios, estacionamiento, reservaciones y contacto, con la reserva directa por WhatsApp.',
+                    ],
+                    'seo' => [
+                        'Página de inicio orientada a las búsquedas de hotel en el Centro de Zacatecas, con preguntas frecuentes.',
+                        'Página propia para la búsqueda de hotel con estacionamiento en Zacatecas.',
+                    ],
+                    'ads' => null,
+                ],
+                'resultados' => null,
+                'evolucion' => [],
+                'cita' => null,
+                'cta' => [
+                    'titulo' => '¿Tu hotel depende de las OTAs?',
+                    'texto' => 'Revisamos tu Search Console contigo y te decimos qué reservas podrías estar captando directo.',
+                ],
+            ],
+            [
                 'slug' => 'equiterm-industries',
                 'nombre' => 'Equiterm Industries',
                 'url' => 'https://equitermindustries.com.mx/',

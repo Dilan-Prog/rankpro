@@ -77,6 +77,12 @@ class CasosExitoTest extends TestCase
         $this->assertStringContainsString('href="https://hotelfratelli.com.mx/hoteles-en-aguascalientes"', $fratelli);
         $this->assertStringContainsString('Fichas de habitación', $fratelli);
 
+        // Con nombre pero sin cita ni cifras todavía: enlaza al cliente y NO
+        // muestra el bloque de "no nos autorizó", que es solo del anonimizado.
+        $finca = $this->get('/casos-de-exito/hotel-la-finca-del-minero')->getContent();
+        $this->assertStringContainsString('href="https://hotellafincadelminero.com/"', $finca);
+        $this->assertStringNotContainsString('Cómo verificamos este caso', $finca);
+
         $equiterm = $this->get('/casos-de-exito/equiterm-industries')->getContent();
         $this->assertStringContainsString('href="https://equitermindustries.com.mx/"', $equiterm);
 
