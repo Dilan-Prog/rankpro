@@ -195,13 +195,18 @@ class CasosExito
                 'logo' => 'https://hotellafincadelminero.com/images/logo-hotel-la-finca-del-minero-zacatecas-blanco.webp',
                 'sector' => 'hotelero',
                 'ubicacion' => 'Zacatecas, México',
-                'duracion' => null,
-                'titulo' => 'Un hotel del Centro Histórico de Zacatecas con sitio propio para la reserva directa',
-                'resumen' => 'Hotel de cuatro estrellas en una casona colonial del Centro Histórico de Zacatecas. Desarrollamos su sitio y trabajamos su SEO orgánico.',
+                'duracion' => 'Primer mes',
+                'titulo' => 'Primero en Google por su nombre y citado por la IA de Google desde el primer mes',
+                'resumen' => 'Hotel de cuatro estrellas en el Centro Histórico de Zacatecas. Sitio nuevo y SEO orgánico: ya recibe tráfico y consultas desde su primer mes.',
                 'servicios' => ['desarrollo', 'seo'],
-                // Sin cifras todavía: no hay datos de Search Console ni de
-                // ocupación entregados. Se publican cuando existan, con fuente.
-                'kpis' => [],
+                // Search Console, filtro "3 meses" a 2026-11-25: los datos
+                // empiezan el 25 de octubre, así que es el primer mes del sitio.
+                // GSC muestra "1,07 mil": se publica redondeado hacia abajo.
+                'kpis' => [
+                    ['valor' => '+1,000', 'label' => 'Impresiones en búsqueda, 25 oct a 23 nov de 2026', 'fuente' => 'gsc'],
+                    ['valor' => '4.8', 'label' => 'Posición media en Google en el mismo periodo', 'fuente' => 'gsc'],
+                    ['valor' => '4.3 %', 'label' => 'CTR en búsqueda en el mismo periodo', 'fuente' => 'gsc'],
+                ],
                 'reto' => null,
                 'solucion' => [
                     'desarrollo' => [
@@ -214,7 +219,16 @@ class CasosExito
                     ],
                     'ads' => null,
                 ],
-                'resultados' => null,
+                // Top 1 y cita en la IA: búsqueda "hotel finca del minero" en
+                // Google, observada el 2026-11-25 (captura del equipo).
+                'resultados' => [
+                    'titulo' => 'Recibiendo tráfico y consultas desde el primer mes',
+                    'parrafo' => 'En su primer mes en Google, del 25 de octubre al 23 de noviembre de 2026, el sitio sumó más de mil impresiones y 46 clics, con una posición media de 4.8 y un CTR del 4.3 % (Google Search Console). Las primeras consultas de clientes potenciales llegan por búsquedas de su marca.',
+                    'puntos' => [
+                        ['titulo' => 'Primer resultado en Google', 'texto' => 'al buscar el nombre del hotel, por encima de su Facebook y de las agencias de viaje en línea.'],
+                        ['titulo' => 'Citado en la visión general con IA', 'texto' => 'de Google para la búsqueda de su marca, con el sitio del hotel como fuente.'],
+                    ],
+                ],
                 'evolucion' => [],
                 'cita' => null,
                 'cta' => [
